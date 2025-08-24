@@ -3,8 +3,7 @@
  */
 package vn.edu.iuh.fit.iuhpharmacitymanagement;
 
-import com.formdev.flatlaf.FlatDarculaLaf;
-import com.formdev.flatlaf.FlatLaf;
+import com.formdev.flatlaf.FlatDarkLaf;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.staff.form.MenuForm;
 
 /**
@@ -14,10 +13,24 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.staff.form.MenuForm;
 public class Iuhpharmacitymanagement {
 
     public static void main(String[] args) {
-        FlatLaf.registerCustomDefaultsSource("vn.edu.iuh.fit.iuhpharmacitymanagement.gui.staff.theme");
-        FlatDarculaLaf.setup();
-        java.awt.EventQueue.invokeLater(() -> {
-            new MenuForm().setVisible(true);
-        });
+        try {
+            // Sử dụng FlatDarkLaf thay vì FlatDarculaLaf để tránh lỗi
+            FlatDarkLaf.setup();
+
+            java.awt.EventQueue.invokeLater(() -> {
+                new MenuForm().setVisible(true);
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Fallback to system look and feel
+            try {
+                javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getSystemLookAndFeelClassName());
+                java.awt.EventQueue.invokeLater(() -> {
+                    new MenuForm().setVisible(true);
+                });
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
     }
 }
