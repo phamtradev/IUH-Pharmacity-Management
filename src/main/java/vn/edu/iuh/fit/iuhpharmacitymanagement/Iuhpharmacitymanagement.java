@@ -4,6 +4,7 @@
 package vn.edu.iuh.fit.iuhpharmacitymanagement;
 
 import com.formdev.flatlaf.FlatDarkLaf;
+import com.formdev.flatlaf.FlatLaf;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.staff.form.MenuForm;
 
 /**
@@ -14,7 +15,8 @@ public class Iuhpharmacitymanagement {
 
     public static void main(String[] args) {
         try {
-            // Sử dụng FlatDarkLaf thay vì FlatDarculaLaf để tránh lỗi
+            // Đăng ký custom theme cho menu
+            FlatLaf.registerCustomDefaultsSource("vn.edu.iuh.fit.iuhpharmacitymanagement.gui.staff.theme");
             FlatDarkLaf.setup();
 
             java.awt.EventQueue.invokeLater(() -> {

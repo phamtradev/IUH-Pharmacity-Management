@@ -49,27 +49,36 @@ public class LightDarkMode extends JPanel {
     private void init() {
         setBorder(new EmptyBorder(2, 2, 2, 2));
         setLayout(new LightDarkModeLayout());
+        setBackground(java.awt.Color.decode("#002A42"));
         putClientProperty(FlatClientProperties.STYLE, ""
                 + "arc:999;"
-                + "background:$Menu.lightdark.background");
+                + "background:#002A42");
         FlatSVGIcon lightIcon = new FlatSVGIcon("icon/mode/light.svg");
         FlatSVGIcon darkIcon = new FlatSVGIcon("icon/mode/dark.svg");
 
         FlatSVGIcon.ColorFilter colorFilter = new FlatSVGIcon.ColorFilter();
-        // Light mode: icon tối, Dark mode: icon sáng
+        // Icon luôn màu trắng cho menu xanh đậm
         colorFilter.add(java.awt.Color.decode("#969696"),
-                       java.awt.Color.decode("#404040"), // Màu tối cho light mode
-                       java.awt.Color.decode("#E0E0E0")); // Màu sáng cho dark mode
+                       java.awt.Color.WHITE, // Luôn màu trắng
+                       java.awt.Color.WHITE); // Luôn màu trắng
         lightIcon.setColorFilter(colorFilter);
         darkIcon.setColorFilter(colorFilter);
 
         buttonLight = new JButton("Light", lightIcon);
         buttonDark = new JButton("Dark", darkIcon);
+
+        // Đảm bảo chữ luôn màu trắng
+        buttonLight.setForeground(java.awt.Color.WHITE);
+        buttonDark.setForeground(java.awt.Color.WHITE);
+        buttonLight.setBackground(java.awt.Color.decode("#00385C"));
+        buttonDark.setBackground(java.awt.Color.decode("#00385C"));
         buttonLighDark = new JButton();
+        buttonLighDark.setBackground(java.awt.Color.decode("#1A4A73"));
+        buttonLighDark.setForeground(java.awt.Color.WHITE);
         buttonLighDark.putClientProperty(FlatClientProperties.STYLE, ""
                 + "arc:999;"
-                + "background:$Menu.lightdark.button.background;"
-                + "foreground:$Menu.foreground;"
+                + "background:#1A4A73;"
+                + "foreground:#FFFFFF;"
                 + "focusWidth:0;"
                 + "borderWidth:0;"
                 + "innerFocusWidth:0");
@@ -127,11 +136,11 @@ public class LightDarkMode extends JPanel {
             icon = new FlatSVGIcon("icon/mode/light.svg");
         }
 
-        // Thêm color filter cho icon
+        // Thêm color filter cho icon - luôn màu trắng
         FlatSVGIcon.ColorFilter colorFilter = new FlatSVGIcon.ColorFilter();
         colorFilter.add(java.awt.Color.decode("#969696"),
-                       java.awt.Color.decode("#404040"), // Màu tối cho light mode
-                       java.awt.Color.decode("#E0E0E0")); // Màu sáng cho dark mode
+                       java.awt.Color.WHITE, // Luôn màu trắng
+                       java.awt.Color.WHITE); // Luôn màu trắng
         icon.setColorFilter(colorFilter);
 
         buttonLighDark.setIcon(icon);
@@ -144,8 +153,8 @@ public class LightDarkMode extends JPanel {
 
         FlatSVGIcon.ColorFilter colorFilter = new FlatSVGIcon.ColorFilter();
         colorFilter.add(java.awt.Color.decode("#969696"),
-                       java.awt.Color.decode("#404040"), // Màu tối cho light mode
-                       java.awt.Color.decode("#E0E0E0")); // Màu sáng cho dark mode
+                       java.awt.Color.WHITE, // Luôn màu trắng
+                       java.awt.Color.WHITE); // Luôn màu trắng
         lightIcon.setColorFilter(colorFilter);
         darkIcon.setColorFilter(colorFilter);
 
@@ -154,23 +163,25 @@ public class LightDarkMode extends JPanel {
     }
 
     private void addStyle(JButton button, boolean style) {
+        // Đảm bảo chữ luôn màu trắng
+        button.setForeground(java.awt.Color.WHITE);
+
         if (style) {
             button.putClientProperty(FlatClientProperties.STYLE, ""
                     + "arc:999;"
-                    + "background:$Menu.lightdark.button.background;"
-                    + "foreground:$Menu.foreground;"
+                    + "background:#1A4A73;"
+                    + "foreground:#FFFFFF;"
                     + "focusWidth:0;"
                     + "borderWidth:0;"
                     + "innerFocusWidth:0");
         } else {
             button.putClientProperty(FlatClientProperties.STYLE, ""
                     + "arc:999;"
-                    + "background:$Menu.lightdark.button.background;"
-                    + "foreground:$Menu.foreground;"
+                    + "background:#00385C;"
+                    + "foreground:#FFFFFF;"
                     + "focusWidth:0;"
                     + "borderWidth:0;"
-                    + "innerFocusWidth:0;"
-                    + "background:null");
+                    + "innerFocusWidth:0");
         }
     }
 

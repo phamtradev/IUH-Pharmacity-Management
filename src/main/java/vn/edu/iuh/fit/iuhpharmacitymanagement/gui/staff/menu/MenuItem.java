@@ -79,22 +79,23 @@ public class MenuItem extends JPanel {
     }
 
     private Icon getIcon() {
-        // Light mode: icon tối, Dark mode: icon sáng
-        Color lightModeColor = Color.decode("#404040"); // Màu tối cho light mode
-        Color darkModeColor = Color.decode("#E0E0E0");  // Màu sáng cho dark mode
+        // Icon luôn màu trắng cho menu xanh đậm
+        Color iconColor = Color.WHITE;
 
         FlatSVGIcon icon = new FlatSVGIcon("icon/menu/" + menuIndex + ".svg");
         FlatSVGIcon.ColorFilter f = new FlatSVGIcon.ColorFilter();
-        f.add(Color.decode("#969696"), lightModeColor, darkModeColor);
+        f.add(Color.decode("#969696"), iconColor, iconColor);
         icon.setColorFilter(f);
         return icon;
     }
 
     private void init() {
         setLayout(new MenuLayout());
+        setBackground(java.awt.Color.decode("#00385C"));
+        setForeground(java.awt.Color.WHITE);
         putClientProperty(FlatClientProperties.STYLE, ""
-                + "background:$Menu.background;"
-                + "foreground:$Menu.lineColor");
+                + "background:#00385C;"
+                + "foreground:#FFFFFF");
         for (int i = 0; i < menus.length; i++) {
             JButton menuItem = createButtonItem(menus[i]);
             menuItem.setHorizontalAlignment(menuItem.getComponentOrientation().isLeftToRight() ? JButton.LEADING : JButton.TRAILING);
@@ -140,11 +141,17 @@ public class MenuItem extends JPanel {
 
     private JButton createButtonItem(String text) {
         JButton button = new JButton(text);
+        button.setBackground(java.awt.Color.decode("#00385C"));
+        button.setForeground(java.awt.Color.WHITE);
+        // Đảm bảo chữ luôn màu trắng
+        button.addPropertyChangeListener("UI", evt -> {
+            button.setForeground(java.awt.Color.WHITE);
+        });
         button.putClientProperty(FlatClientProperties.STYLE, ""
-                + "background:$Menu.background;"
-                + "foreground:$Menu.foreground;"
-                + "selectedBackground:$Menu.button.selectedBackground;"
-                + "selectedForeground:$Menu.button.selectedForeground;"
+                + "background:#00385C;"
+                + "foreground:#FFFFFF;"
+                + "selectedBackground:#1A4A73;"
+                + "selectedForeground:#FFFFFF;"
                 + "borderWidth:0;"
                 + "focusWidth:0;"
                 + "innerFocusWidth:0;"
@@ -168,6 +175,8 @@ public class MenuItem extends JPanel {
                     JButton button = (JButton) com;
                     button.setText(menus[i]);
                     button.setHorizontalAlignment(getComponentOrientation().isLeftToRight() ? JButton.LEFT : JButton.RIGHT);
+                    // Đảm bảo chữ luôn màu trắng
+                    button.setForeground(java.awt.Color.WHITE);
                 }
             }
         } else {
@@ -176,6 +185,8 @@ public class MenuItem extends JPanel {
                     JButton button = (JButton) com;
                     button.setText("");
                     button.setHorizontalAlignment(JButton.CENTER);
+                    // Đảm bảo chữ luôn màu trắng
+                    button.setForeground(java.awt.Color.WHITE);
                 }
             }
             animate = 0f;

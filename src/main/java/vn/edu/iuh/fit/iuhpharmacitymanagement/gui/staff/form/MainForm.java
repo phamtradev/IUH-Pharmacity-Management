@@ -67,10 +67,10 @@ public class MainForm extends JLayeredPane {
         String icon = (getComponentOrientation().isLeftToRight()) ? "menu_left.svg" : "menu_right.svg";
         FlatSVGIcon svgIcon = new FlatSVGIcon("icon/svg/" + icon, 0.8f);
         FlatSVGIcon.ColorFilter colorFilter = new FlatSVGIcon.ColorFilter();
-        // Light mode: icon tối, Dark mode: icon sáng
+        // Icon thay đổi theo theme: đen cho light mode, trắng cho dark mode
         colorFilter.add(java.awt.Color.decode("#969696"),
-                       java.awt.Color.decode("#404040"), // Màu tối cho light mode
-                       java.awt.Color.decode("#E0E0E0")); // Màu sáng cho dark mode
+                       java.awt.Color.BLACK, // Màu đen cho light mode
+                       java.awt.Color.WHITE); // Màu trắng cho dark mode
         svgIcon.setColorFilter(colorFilter);
         menuButton.setIcon(svgIcon);
     }
@@ -104,10 +104,10 @@ public class MainForm extends JLayeredPane {
         }
         FlatSVGIcon svgIcon = new FlatSVGIcon("icon/svg/" + icon, 0.8f);
         FlatSVGIcon.ColorFilter colorFilter = new FlatSVGIcon.ColorFilter();
-        // Light mode: icon tối, Dark mode: icon sáng
+        // Icon thay đổi theo theme: đen cho light mode, trắng cho dark mode
         colorFilter.add(java.awt.Color.decode("#969696"),
-                       java.awt.Color.decode("#404040"), // Màu tối cho light mode
-                       java.awt.Color.decode("#E0E0E0")); // Màu sáng cho dark mode
+                       java.awt.Color.BLACK, // Màu đen cho light mode
+                       java.awt.Color.WHITE); // Màu trắng cho dark mode
         svgIcon.setColorFilter(colorFilter);
         menuButton.setIcon(svgIcon);
         menu.setMenuFull(full);

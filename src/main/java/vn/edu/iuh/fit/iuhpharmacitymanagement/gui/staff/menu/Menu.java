@@ -58,6 +58,9 @@ public class Menu extends JPanel {
             header.setText("");
             header.setHorizontalAlignment(JLabel.CENTER);
         }
+        // Đảm bảo header luôn màu trắng
+        header.setForeground(java.awt.Color.WHITE);
+
         for (Component com : panelMenu.getComponents()) {
             if (com instanceof MenuItem) {
                 ((MenuItem) com).setFull(menuFull);
@@ -84,22 +87,26 @@ public class Menu extends JPanel {
 
     private void init() {
         setLayout(new MenuLayout());
+        // Đặt màu nền cố định cho menu
+        setBackground(java.awt.Color.decode("#00385C"));
         putClientProperty(FlatClientProperties.STYLE, ""
                 + "border:20,2,2,2;"
-                + "background:$Menu.background;"
+                + "background:#00385C;"
                 + "arc:10");
         header = new JLabel(headerName);
         header.setIcon(new ImageIcon(getClass().getResource("/icon/menu/0.svg")));
+        header.setForeground(java.awt.Color.WHITE);
         header.putClientProperty(FlatClientProperties.STYLE, ""
                 + "font:$Menu.header.font;"
-                + "foreground:$Menu.foreground");
+                + "foreground:#FFFFFF");
 
         //  Menu
         scroll = new JScrollPane();
         panelMenu = new JPanel(new MenuItemLayout(this));
+        panelMenu.setBackground(java.awt.Color.decode("#00385C"));
         panelMenu.putClientProperty(FlatClientProperties.STYLE, ""
                 + "border:5,5,5,5;"
-                + "background:$Menu.background");
+                + "background:#00385C");
 
         scroll.setViewportView(panelMenu);
         scroll.putClientProperty(FlatClientProperties.STYLE, ""
@@ -134,9 +141,11 @@ public class Menu extends JPanel {
     private JLabel createTitle(String title) {
         String menuName = title.substring(1, title.length() - 1);
         JLabel lbTitle = new JLabel(menuName);
+        // Đặt màu trắng cố định cho tiêu đề
+        lbTitle.setForeground(java.awt.Color.WHITE);
         lbTitle.putClientProperty(FlatClientProperties.STYLE, ""
                 + "font:$Menu.label.font;"
-                + "foreground:$Menu.title.foreground");
+                + "foreground:#FFFFFF");
         return lbTitle;
     }
 
