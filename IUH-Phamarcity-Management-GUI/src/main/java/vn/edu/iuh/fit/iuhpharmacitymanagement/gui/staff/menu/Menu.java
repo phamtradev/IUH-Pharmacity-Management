@@ -142,6 +142,9 @@ public class Menu extends JPanel {
                 panelMenu.add(menuItem);
             }
         }
+        // các icon trong menu ghi theo dạng [số]+[tên] cho dễ chia
+        // vd: 1-hehe, không ghi 01
+        // icon tải về dùng đuôi svg để đỡ sửa lại w và h
     }
 
     private JLabel createTitle(String title) {
