@@ -1,5 +1,6 @@
 package vn.edu.iuh.fit.IUH_Phamarcity_Management_Backend.controller;
 
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +21,7 @@ public class AuthController {
 
 
     @PostMapping("/login")
-    public ResponseEntity<RestResponse<LoginResponse>> login(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<RestResponse<LoginResponse>> login(@Valid @RequestBody LoginRequest loginRequest) {
         // xác thực thông tin đăng nhập - exception sẽ được GlobalExceptionHandler xử lý
         Account account = accountService.validateLogin(
             loginRequest.getAccountId(),
@@ -35,22 +36,21 @@ public class AuthController {
             true
         );
 
-        RestResponse<LoginResponse> response = new RestResponse<>(
-            HttpStatus.OK.value(),
-            "Đăng nhập thành công",
-            loginData
-        );
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok()
+                .body(new RestResponse<>(
+                    HttpStatus.OK.value(),
+                    "Đăng nhập thành công",
+                    loginData
+                ));
     }
 
     @PostMapping("/logout")
     public ResponseEntity<RestResponse<Object>> logout() {
-        RestResponse<Object> response = new RestResponse<>(
-            HttpStatus.OK.value(),
-            "Đăng xuất thành công",
-            null
-        );
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok()
+                .body(new RestResponse<>(
+                    HttpStatus.OK.value(),
+                    "Đăng xuất thành công",
+                    null
+                ));
     }
 }
