@@ -1,4 +1,4 @@
-package vn.edu.iuh.fit.IUH_Phamarcity_Management_Backend.dto;
+package vn.edu.iuh.fit.IUH_Phamarcity_Management_Backend.dto.req;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;

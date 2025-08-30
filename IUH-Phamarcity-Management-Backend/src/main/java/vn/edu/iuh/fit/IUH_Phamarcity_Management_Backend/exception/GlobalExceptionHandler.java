@@ -4,7 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import vn.edu.iuh.fit.IUH_Phamarcity_Management_Backend.dto.RestResponse;
+import vn.edu.iuh.fit.IUH_Phamarcity_Management_Backend.dto.res.RestResponse;
 
 
 @RestControllerAdvice
