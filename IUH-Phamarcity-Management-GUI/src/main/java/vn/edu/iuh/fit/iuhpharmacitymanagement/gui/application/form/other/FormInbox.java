@@ -1,4 +1,4 @@
-package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.staff.form.other;
+package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.form.other;
 
 import com.formdev.flatlaf.FlatClientProperties;
 

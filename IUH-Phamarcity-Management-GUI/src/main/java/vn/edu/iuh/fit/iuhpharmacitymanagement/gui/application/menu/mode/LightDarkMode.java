@@ -1,4 +1,4 @@
-package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.staff.menu.mode;
+package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.menu.mode;
 
 import com.formdev.flatlaf.FlatClientProperties;
 import com.formdev.flatlaf.FlatLaf;

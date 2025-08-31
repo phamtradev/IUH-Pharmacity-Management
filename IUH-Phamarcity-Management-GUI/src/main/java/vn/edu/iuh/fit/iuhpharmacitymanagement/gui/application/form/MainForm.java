@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.staff.form;
+package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.form;
 
 import com.formdev.flatlaf.FlatClientProperties;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
@@ -19,9 +19,8 @@ import javax.swing.JButton;
 import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
-import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.staff.form.other.FormInbox;
-import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.staff.form.other.FormRead;
-import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.staff.menu.Menu;
+
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.menu.Menu;
 
 /**
  *
@@ -34,13 +33,23 @@ public class MainForm extends JLayeredPane {
     }
 
     private void init() {
-        setBorder(new EmptyBorder(5, 5, 5, 5));
+        setBorder(new EmptyBorder(0, 0, 0, 0));
         setLayout(new MainFormLayout());
+        setBackground(java.awt.Color.WHITE);
+        putClientProperty(FlatClientProperties.STYLE, ""
+                + "background:#FFFFFF;"
+                + "border:0,0,0,0");
         menu = new Menu();
         panelBody = new JPanel(new BorderLayout());
+        panelBody.setBackground(java.awt.Color.WHITE);
+        // Loại bỏ viền xám
+        panelBody.setBorder(null);
+        panelBody.putClientProperty(FlatClientProperties.STYLE, ""
+                + "background:#FFFFFF;"
+                + "border:0,0,0,0");
         initMenuArrowIcon();
         menuButton.putClientProperty(FlatClientProperties.STYLE, ""
-                + "background:$Menu.button.background;"
+                + "background:#D3D3D3;"
                 + "arc:999;"
                 + "focusWidth:0;"
                 + "borderWidth:0");
@@ -67,10 +76,8 @@ public class MainForm extends JLayeredPane {
         String icon = (getComponentOrientation().isLeftToRight()) ? "menu_left.svg" : "menu_right.svg";
         FlatSVGIcon svgIcon = new FlatSVGIcon("icon/svg/" + icon, 0.8f);
         FlatSVGIcon.ColorFilter colorFilter = new FlatSVGIcon.ColorFilter();
-        // Icon thay đổi theo theme: đen cho light mode, trắng cho dark mode
-        colorFilter.add(java.awt.Color.decode("#969696"),
-                       java.awt.Color.BLACK, // Màu đen cho light mode
-                       java.awt.Color.WHITE); // Màu trắng cho dark mode
+        // Icon màu đen
+        colorFilter.add(java.awt.Color.decode("#969696"), java.awt.Color.BLACK);
         svgIcon.setColorFilter(colorFilter);
         menuButton.setIcon(svgIcon);
     }
@@ -104,10 +111,8 @@ public class MainForm extends JLayeredPane {
         }
         FlatSVGIcon svgIcon = new FlatSVGIcon("icon/svg/" + icon, 0.8f);
         FlatSVGIcon.ColorFilter colorFilter = new FlatSVGIcon.ColorFilter();
-        // Icon thay đổi theo theme: đen cho light mode, trắng cho dark mode
-        colorFilter.add(java.awt.Color.decode("#969696"),
-                       java.awt.Color.BLACK, // Màu đen cho light mode
-                       java.awt.Color.WHITE); // Màu trắng cho dark mode
+        // Icon màu đen
+        colorFilter.add(java.awt.Color.decode("#969696"), java.awt.Color.BLACK);
         svgIcon.setColorFilter(colorFilter);
         menuButton.setIcon(svgIcon);
         menu.setMenuFull(full);
@@ -163,12 +168,13 @@ public class MainForm extends JLayeredPane {
                 boolean ltr = parent.getComponentOrientation().isLeftToRight();
                 Insets insets = UIScale.scale(parent.getInsets());
                 int x = insets.left;
-                int y = insets.top;
+                int y = 0; // Menu bắt đầu từ y = 0 để tràn lên trên
                 int width = parent.getWidth() - (insets.left + insets.right);
-                int height = parent.getHeight() - (insets.top + insets.bottom);
+                int height = parent.getHeight(); // Sử dụng toàn bộ chiều cao
                 int menuWidth = UIScale.scale(menu.isMenuFull() ? menu.getMenuMaxWidth() : menu.getMenuMinWidth());
                 int menuX = ltr ? x : x + width - menuWidth;
-                menu.setBounds(menuX, y, menuWidth, height);
+                menu.setBounds(menuX, y, menuWidth, height); // Menu tràn từ trên xuống dưới
+
                 int menuButtonWidth = menuButton.getPreferredSize().width;
                 int menuButtonHeight = menuButton.getPreferredSize().height;
                 int menubX;
@@ -177,12 +183,13 @@ public class MainForm extends JLayeredPane {
                 } else {
                     menubX = (int) (menuX - (menuButtonWidth * (menu.isMenuFull() ? 0.5f : 0.7f)));
                 }
-                menuButton.setBounds(menubX, UIScale.scale(30), menuButtonWidth, menuButtonHeight);
+                menuButton.setBounds(menubX, UIScale.scale(35), menuButtonWidth, menuButtonHeight); // Đặt button menu cách top 35px
+
                 int gap = UIScale.scale(5);
                 int bodyWidth = width - menuWidth - gap;
-                int bodyHeight = height;
+                int bodyHeight = height - UIScale.scale(5);
                 int bodyx = ltr ? (x + menuWidth + gap) : x;
-                int bodyy = y;
+                int bodyy = UIScale.scale(5);
                 panelBody.setBounds(bodyx, bodyy, bodyWidth, bodyHeight);
             }
         }

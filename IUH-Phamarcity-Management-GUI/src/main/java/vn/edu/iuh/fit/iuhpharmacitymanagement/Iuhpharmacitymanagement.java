@@ -5,7 +5,7 @@ package vn.edu.iuh.fit.iuhpharmacitymanagement;
 
 import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatLaf;
-import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.staff.form.MenuForm;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.form.MenuForm;
 
 /**
  *

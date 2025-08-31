@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.staff.menu;
+package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.menu;
 
 import com.formdev.flatlaf.FlatClientProperties;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
@@ -155,7 +155,7 @@ public class MenuItem extends JPanel {
                 + "borderWidth:0;"
                 + "focusWidth:0;"
                 + "innerFocusWidth:0;"
-                + "arc:10;"
+                + "arc:10;" // Đã đúng định dạng
                 + "iconTextGap:10;"
                 + "margin:3,11,3,11");
         return button;

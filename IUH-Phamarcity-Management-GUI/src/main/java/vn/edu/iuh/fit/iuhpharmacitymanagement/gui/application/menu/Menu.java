@@ -2,11 +2,9 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.staff.menu;
+package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.menu;
 
 import com.formdev.flatlaf.FlatClientProperties;
-import com.formdev.flatlaf.extras.FlatSVGIcon;
-import com.formdev.flatlaf.ui.FlatUIUtils;
 import com.formdev.flatlaf.util.UIScale;
 import java.awt.Component;
 import java.awt.Container;
@@ -15,13 +13,10 @@ import java.awt.Insets;
 import java.awt.LayoutManager;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
-import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.staff.menu.mode.LightDarkMode;
-import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.staff.menu.mode.ToolBarAccentColor;
 
 /**
  *
@@ -72,8 +67,6 @@ public class Menu extends JPanel {
                 ((MenuItem) com).setFull(menuFull);
             }
         }
-        lightDarkMode.setMenuFull(menuFull);
-        toolBarAccentColor.setMenuFull(menuFull);
     }
 
     private final List<MenuEvent> events = new ArrayList<>();
@@ -83,8 +76,8 @@ public class Menu extends JPanel {
     protected final boolean hideMenuTitleOnMinimum = true;
     protected final int menuTitleLeftInset = 5;
     protected final int menuTitleVgap = 5;
-    protected final int menuMaxWidth = 250;
-    protected final int menuMinWidth = 60;
+    protected final int menuMaxWidth = 300; // Tăng từ 250 lên 300
+    protected final int menuMinWidth = 80; // Tăng từ 60 lên 80
     protected final int headerFullHgap = 5;
 
     public Menu() {
@@ -96,11 +89,12 @@ public class Menu extends JPanel {
         // Đặt màu nền cố định cho menu
         setBackground(java.awt.Color.decode("#00385C"));
         putClientProperty(FlatClientProperties.STYLE, ""
-                + "border:20,2,2,2;"
+                + "border:0,0,0,0;" // Loại bỏ tất cả border để menu có thể tràn lên trên
                 + "background:#00385C;"
-                + "arc:10");
+                + "arc:10"); // Sửa từ "arc:0,0,10,10" thành "arc:10"
         header = new JLabel(headerName);
-        // Tạm thời bỏ icon để tránh lỗi
+        // Ẩn header bằng cách đặt visible = false
+        header.setVisible(false);
         header.setForeground(java.awt.Color.WHITE);
         header.putClientProperty(FlatClientProperties.STYLE, ""
                 + "font:$Menu.header.font;"
@@ -111,7 +105,7 @@ public class Menu extends JPanel {
         panelMenu = new JPanel(new MenuItemLayout(this));
         panelMenu.setBackground(java.awt.Color.decode("#00385C"));
         panelMenu.putClientProperty(FlatClientProperties.STYLE, ""
-                + "border:5,5,5,5;"
+                + "border:2,2,2,2;" // Giảm padding
                 + "background:#00385C");
 
         scroll.setViewportView(panelMenu);
@@ -122,13 +116,8 @@ public class Menu extends JPanel {
         // Loại bỏ styling để tránh lỗi với Java 24
         // vscroll.putClientProperty(FlatClientProperties.STYLE, "");
         createMenu();
-        lightDarkMode = new LightDarkMode();
-        toolBarAccentColor = new ToolBarAccentColor(this);
-        toolBarAccentColor.setVisible(FlatUIUtils.getUIBoolean("AccentControl.show", false));
         add(header);
         add(scroll);
-        add(lightDarkMode);
-        add(toolBarAccentColor);
     }
 
     private void createMenu() {
@@ -223,8 +212,6 @@ public class Menu extends JPanel {
     private JLabel header;
     private JScrollPane scroll;
     private JPanel panelMenu;
-    private LightDarkMode lightDarkMode;
-    private ToolBarAccentColor toolBarAccentColor;
 
     private class MenuLayout implements LayoutManager {
 
@@ -255,41 +242,23 @@ public class Menu extends JPanel {
             synchronized (parent.getTreeLock()) {
                 Insets insets = parent.getInsets();
                 int x = insets.left;
-                int y = insets.top;
-                int gap = UIScale.scale(5);
+                int y = UIScale.scale(5); // Bắt đầu từ 5px vì header bị ẩn
+                int gap = UIScale.scale(3); // Giảm gap
                 int sheaderFullHgap = UIScale.scale(headerFullHgap);
                 int width = parent.getWidth() - (insets.left + insets.right);
-                int height = parent.getHeight() - (insets.top + insets.bottom);
+                int height = parent.getHeight() - y - insets.bottom; // Điều chỉnh chiều cao
                 int iconWidth = width;
-                int iconHeight = header.getPreferredSize().height;
+                int iconHeight = 0; // Header không hiển thị nên height = 0
                 int hgap = menuFull ? sheaderFullHgap : 0;
-                int accentColorHeight = 0;
-                if (toolBarAccentColor.isVisible()) {
-                    accentColorHeight = toolBarAccentColor.getPreferredSize().height + gap;
-                }
 
-                header.setBounds(x + hgap, y, iconWidth - (hgap * 2), iconHeight);
-                int ldgap = UIScale.scale(10);
-                int ldWidth = width - ldgap * 2;
-                int ldHeight = lightDarkMode.getPreferredSize().height;
-                int ldx = x + ldgap;
-                int ldy = y + height - ldHeight - ldgap - accentColorHeight;
+                // Header không hiển thị nên không cần setBounds
+                header.setBounds(0, 0, 0, 0);
 
                 int menux = x;
-                int menuy = y + iconHeight + gap;
+                int menuy = y; // Scroll bắt đầu ngay từ y vì không có header
                 int menuWidth = width;
-                int menuHeight = height - (iconHeight + gap) - (ldHeight + ldgap * 2) - (accentColorHeight);
+                int menuHeight = height; // Sử dụng toàn bộ chiều cao còn lại
                 scroll.setBounds(menux, menuy, menuWidth, menuHeight);
-
-                lightDarkMode.setBounds(ldx, ldy, ldWidth, ldHeight);
-
-                if (toolBarAccentColor.isVisible()) {
-                    int tbheight = toolBarAccentColor.getPreferredSize().height;
-                    int tbwidth = Math.min(toolBarAccentColor.getPreferredSize().width, ldWidth);
-                    int tby = y + height - tbheight - ldgap;
-                    int tbx = ldx + ((ldWidth - tbwidth) / 2);
-                    toolBarAccentColor.setBounds(tbx, tby, tbwidth, tbheight);
-                }
             }
         }
     }

@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.staff.menu;
+package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.menu;
 
 import com.formdev.flatlaf.FlatClientProperties;
 import com.formdev.flatlaf.util.UIScale;
@@ -75,7 +75,7 @@ public class PopupSubmenu extends JPanel {
                 + "selectedBackground:$Menu.button.selectedBackground;"
                 + "selectedForeground:$Menu.button.selectedForeground;"
                 + "borderWidth:0;"
-                + "arc:10;"
+                + "arc:10;" // Đã đúng định dạng
                 + "focusWidth:0;"
                 + "iconTextGap:10;"
                 + "margin:5,11,5,11");
