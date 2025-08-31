@@ -24,27 +24,38 @@ import javax.swing.JScrollPane;
  */
 public class Menu extends JPanel {
 
-    private final String menuItems[][] = {
-        {"~MAIN~"},
-        {"Dashboard"},
-        {"~MENU~"},
-        {"1", "1.1", "1.2", "1.3"},
-        {"2"},
-        {"3"},
-        {"~QUẢN LÝ~"},
-        {"Quản lý khách hàng", "4.1", "4.2", "4.3", "4.4"},
-        {"5", "5.1", "5.2", "5.3", "5.4"},
-        {"Test", "ok"},
-        {"Test", "ok"},
-        {"Test", "ok"},
-        {"Test", "ok"},
-        {"Test", "ok"},
-        {"~BÁO CÁO~"},
-        {"6", "6.1", "6.2", "6.3", "6.4"},
-        {"7", "7.1", "7.2", "7.3"},
-        {"8", "8.1", "8.2", "8.3", "8.4", "8.5", "8.6", "8.7"},
-        {"Logout"}
+    private final String menuItemsManager[][] = {
+            {"Thống kê"},
+            {"Báo cáo thu chi"},
+            {"Quản lý sản phẩm"},
+            {"Quản lý đơn vị tính"},
+            {"Quản lý nhân viên"},
+            {"Quản lý khách hàng"},
+            {"Quản lý nhà cung cấp"},
+            {"Quản lý nhập hàng"},
+            {"Quản lý trả hàng"},
+            {"Quản lý xuất hủy"},
+            {"Quản lý đơn hàng"},
+            {"Quản lý khuyến mãi"},
+            {"Thông tin cá nhân"},
+            {"Hướng dẫn sử dụng"},
+            {"Đăng xuất"}
+
     };
+
+    private final String menuItemsStaff[][] = {
+            {"Bán hàng"},
+            {"Quản lý sản phẩm"},
+            {"Quản lý khách hàng"},
+            {"Quản lý nhà cung cấp"},
+            {"Phiếu nhập hàng"},
+            {"Phiếu trả hàng"},
+            {"Phiếu xuất hủy"},
+            {"Thống kê cá nhân"},
+            {"Thông tin cá nhân"},
+            {"Hướng dẫn sử dụng"},
+            {"Đăng xuất"}};
+
 
     public boolean isMenuFull() {
         return menuFull;
@@ -122,12 +133,12 @@ public class Menu extends JPanel {
 
     private void createMenu() {
         int index = 0;
-        for (int i = 0; i < menuItems.length; i++) {
-            String menuName = menuItems[i][0];
+        for (int i = 0; i < menuItemsStaff.length; i++) {
+            String menuName = menuItemsStaff[i][0];
             if (menuName.startsWith("~") && menuName.endsWith("~")) {
                 panelMenu.add(createTitle(menuName));
             } else {
-                MenuItem menuItem = new MenuItem(this, menuItems[i], index++, events);
+                MenuItem menuItem = new MenuItem(this, menuItemsStaff[i], index++, events);
                 panelMenu.add(menuItem);
             }
         }
