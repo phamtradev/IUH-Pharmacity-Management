@@ -15,6 +15,7 @@ import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.LayoutManager;
 import java.awt.event.ActionEvent;
+import java.net.URL;
 import javax.swing.JButton;
 import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
@@ -69,14 +70,22 @@ public class MainForm extends JLayeredPane {
         initMenuArrowIcon();
     }
 
+    
     private void initMenuArrowIcon() {
         if (menuButton == null) {
             menuButton = new JButton();
         }
-        String icon = (getComponentOrientation().isLeftToRight()) ? "menu_left.svg" : "menu_right.svg";
-        FlatSVGIcon svgIcon = new FlatSVGIcon("vn/edu/iuh/fit/iuhpharmacitymanagement/gui/application/icon/svg/" + icon, 0.8f);
-        FlatSVGIcon.ColorFilter colorFilter = new FlatSVGIcon.ColorFilter();
+
+        String iconFile = getComponentOrientation().isLeftToRight()
+                ? "menu_left.svg"
+                : "menu_right.svg";
+
+        // Load từ resources/img/
+        URL iconUrl = getClass().getResource("/img/" + iconFile);
+        FlatSVGIcon svgIcon = new FlatSVGIcon(iconUrl);
+            
         // Icon màu đen
+        FlatSVGIcon.ColorFilter colorFilter = new FlatSVGIcon.ColorFilter();
         colorFilter.add(java.awt.Color.decode("#969696"), java.awt.Color.BLACK);
         svgIcon.setColorFilter(colorFilter);
         menuButton.setIcon(svgIcon);
@@ -109,15 +118,53 @@ public class MainForm extends JLayeredPane {
         } else {
             icon = (full) ? "menu_right.svg" : "menu_left.svg";
         }
-        FlatSVGIcon svgIcon = new FlatSVGIcon("vn/edu/iuh/fit/iuhpharmacitymanagement/gui/application/icon/svg/" + icon, 0.8f);
+
+        URL iconUrl = getClass().getResource("/img/" + icon);
+        FlatSVGIcon svgIcon = new FlatSVGIcon(iconUrl);
+
+        // tạo scaled thay cho FlatSVGIcon svgIcon = new FlatSVGIcon(iconPath, 0.8f); để bt tải icon thành công hay k
+        FlatSVGIcon scaledIcon = svgIcon.derive(0.8f);
+
+    // ok
         FlatSVGIcon.ColorFilter colorFilter = new FlatSVGIcon.ColorFilter();
-        // Icon màu đen
         colorFilter.add(java.awt.Color.decode("#969696"), java.awt.Color.BLACK);
-        svgIcon.setColorFilter(colorFilter);
-        menuButton.setIcon(svgIcon);
+        scaledIcon.setColorFilter(colorFilter);
+
+        menuButton.setIcon(scaledIcon);
         menu.setMenuFull(full);
         revalidate();
     }
+    
+//    private void setMenuFull(boolean full) {
+//    String icon;
+//    if (getComponentOrientation().isLeftToRight()) {
+//        icon = (full) ? "menu_left.svg" : "menu_right.svg";
+//    } else {
+//        icon = (full) ? "menu_right.svg" : "menu_left.svg";
+//    }
+//    
+//            // Load từ resources/img/
+//        URL iconUrl = getClass().getResource("/img/" + icon);
+//
+//    //thử coi lỗi ở đâu mà k load hình
+//    
+//    URL resourceUrl = getClass().getResource(iconUrl);
+//    
+//    if (resourceUrl == null) {
+//        System.err.println("sai cmnr");
+//    } else {
+//        System.out.println("adu ngon" + resourceUrl.toExternalForm());
+//    }
+//
+//    FlatSVGIcon svgIcon = new FlatSVGIcon(iconPath, 0.8f);
+//    FlatSVGIcon.ColorFilter colorFilter = new FlatSVGIcon.ColorFilter();
+//    // Icon màu đen
+//    colorFilter.add(java.awt.Color.decode("#969696"), java.awt.Color.BLACK);
+//    svgIcon.setColorFilter(colorFilter);
+//    menuButton.setIcon(svgIcon);
+//    menu.setMenuFull(full);
+//    revalidate();
+//}
 
     public void hideMenu() {
         menu.hideMenuItem();
