@@ -6,38 +6,23 @@ package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.menu;
 
 import com.formdev.flatlaf.FlatClientProperties;
 import com.formdev.flatlaf.util.UIScale;
-import java.awt.BasicStroke;
-import java.awt.Component;
-import java.awt.ComponentOrientation;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Insets;
-import java.awt.LayoutManager;
-import java.awt.RenderingHints;
-import java.awt.Shape;
-import java.awt.event.ActionEvent;
+import java.awt.*;
 import java.awt.geom.Path2D;
-import javax.swing.JButton;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 
 /**
- *
  * @author PhamTra
  */
 public class PopupSubmenu extends JPanel {
-
     private final Menu menu;
     private final int menuIndex;
     private final int subMenuLeftGap = 20;
     private final int subMenuItemHeight = 30;
-    private final String menus[];
+    private final int subMenuItemGap = 8;
+    private final String[] menus;
     private JPopupMenu popup;
 
-    public PopupSubmenu(ComponentOrientation orientation, Menu menu, int menuIndex, String menus[]) {
+    public PopupSubmenu(ComponentOrientation orientation, Menu menu, int menuIndex, String[] menus) {
         this.menu = menu;
         this.menuIndex = menuIndex;
         this.menus = menus;
@@ -48,17 +33,18 @@ public class PopupSubmenu extends JPanel {
     private void init() {
         setLayout(new MenuLayout());
         popup = new JPopupMenu();
-        popup.putClientProperty(FlatClientProperties.STYLE, ""
-                + "background:$Menu.background;"
-                + "borderColor:$Menu.background;");
-        putClientProperty(FlatClientProperties.STYLE, ""
-                + "border:0,3,0,3;"
-                + "background:$Menu.background;"
-                + "foreground:$Menu.lineColor");
+        popup.putClientProperty(FlatClientProperties.STYLE,
+                "background:$Menu.background;" +
+                "borderColor:$Menu.background;");
+        putClientProperty(FlatClientProperties.STYLE,
+                "border:0,3,0,3;" +
+                "background:$Menu.background;" +
+                "foreground:$Menu.lineColor");
+
         for (int i = 1; i < menus.length; i++) {
             JButton button = createButtonItem(menus[i]);
             final int subIndex = i;
-            button.addActionListener((ActionEvent e) -> {
+            button.addActionListener(e -> {
                 menu.runEvent(menuIndex, subIndex);
                 popup.setVisible(false);
             });
@@ -75,9 +61,10 @@ public class PopupSubmenu extends JPanel {
                 + "selectedBackground:$Menu.button.selectedBackground;"
                 + "selectedForeground:$Menu.button.selectedForeground;"
                 + "borderWidth:0;"
-                + "arc:10;" // Đã đúng định dạng
+                + "arc:10;"
                 + "focusWidth:0;"
                 + "iconTextGap:10;"
+                + "font:bold 15 Roboto;" // Tăng kích thước font lên 15
                 + "margin:5,11,5,11");
         return button;
     }
@@ -86,8 +73,7 @@ public class PopupSubmenu extends JPanel {
         if (menu.getComponentOrientation().isLeftToRight()) {
             popup.show(com, x, y);
         } else {
-            int px = getPreferredSize().width + UIScale.scale(5);
-            popup.show(com, -px, y);
+            popup.show(com, -getPreferredSize().width - UIScale.scale(5), y);
         }
         applyAlignment();
         SwingUtilities.updateComponentTreeUI(popup);
@@ -95,19 +81,19 @@ public class PopupSubmenu extends JPanel {
 
     private void applyAlignment() {
         setComponentOrientation(menu.getComponentOrientation());
+        boolean isLeftToRight = menu.getComponentOrientation().isLeftToRight();
         for (Component c : getComponents()) {
-            if (c instanceof JButton) {
-                ((JButton) c).setHorizontalAlignment(menu.getComponentOrientation().isLeftToRight() ? JButton.LEFT : JButton.RIGHT);
+            if (c instanceof JButton button) {
+                button.setHorizontalAlignment(isLeftToRight ? JButton.LEFT : JButton.RIGHT);
             }
         }
     }
 
     protected void setSelectedIndex(int index) {
-        int size = getComponentCount();
-        for (int i = 0; i < size; i++) {
+        for (int i = 0; i < getComponentCount(); i++) {
             Component com = getComponent(i);
-            if (com instanceof JButton) {
-                ((JButton) com).setSelected(i == index - 1);
+            if (com instanceof JButton button) {
+                button.setSelected(i == index - 1);
             }
         }
     }
@@ -118,6 +104,7 @@ public class PopupSubmenu extends JPanel {
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+
         int ssubMenuItemHeight = UIScale.scale(subMenuItemHeight);
         int ssubMenuLeftGap = UIScale.scale(subMenuLeftGap);
         Path2D.Double p = new Path2D.Double();
@@ -125,12 +112,14 @@ public class PopupSubmenu extends JPanel {
         boolean ltr = getComponentOrientation().isLeftToRight();
         int round = UIScale.scale(10);
         int x = ltr ? (ssubMenuLeftGap - round) : (getWidth() - (ssubMenuLeftGap - round));
+
         p.moveTo(x, 0);
         p.lineTo(x, last - round);
         for (int i = 0; i < getComponentCount(); i++) {
             int com = getComponent(i).getY() + (ssubMenuItemHeight / 2);
             p.append(createCurve(round, x, com, ltr), false);
         }
+
         g2.setColor(getForeground());
         g2.setStroke(new BasicStroke(UIScale.scale(1f)));
         g2.draw(p);
@@ -144,7 +133,8 @@ public class PopupSubmenu extends JPanel {
         return p2;
     }
 
-    private class MenuLayout implements LayoutManager {
+    private static class MenuLayout implements LayoutManager {
+        private static final int MAX_WIDTH = 150;
 
         @Override
         public void addLayoutComponent(String name, Component comp) {
@@ -158,18 +148,19 @@ public class PopupSubmenu extends JPanel {
         public Dimension preferredLayoutSize(Container parent) {
             synchronized (parent.getTreeLock()) {
                 Insets insets = parent.getInsets();
-                int maxWidth = UIScale.scale(150);
-                int ssubMenuLeftGap = UIScale.scale(subMenuLeftGap);
+                int maxWidth = UIScale.scale(MAX_WIDTH);
+                int ssubMenuLeftGap = UIScale.scale(((PopupSubmenu)parent).subMenuLeftGap);
                 int width = getMaxWidth(parent) + ssubMenuLeftGap;
-                int height = (insets.top + insets.bottom);
-                int size = parent.getComponentCount();
-                for (int i = 0; i < size; i++) {
+                int height = insets.top + insets.bottom;
+
+                for (int i = 0; i < parent.getComponentCount(); i++) {
                     Component com = parent.getComponent(i);
                     if (com.isVisible()) {
-                        height += UIScale.scale(subMenuItemHeight);
+                        height += UIScale.scale(((PopupSubmenu)parent).subMenuItemHeight);
                         width = Math.max(width, com.getPreferredSize().width);
                     }
                 }
+
                 width += insets.left + insets.right;
                 return new Dimension(Math.max(width, maxWidth), height);
             }
@@ -177,43 +168,41 @@ public class PopupSubmenu extends JPanel {
 
         @Override
         public Dimension minimumLayoutSize(Container parent) {
-            synchronized (parent.getTreeLock()) {
-                return new Dimension(0, 0);
-            }
+            return new Dimension(0, 0);
         }
 
         @Override
         public void layoutContainer(Container parent) {
             synchronized (parent.getTreeLock()) {
+                PopupSubmenu popupSubmenu = (PopupSubmenu)parent;
                 boolean ltr = parent.getComponentOrientation().isLeftToRight();
                 Insets insets = parent.getInsets();
-                int ssubMenuLeftGap = UIScale.scale(subMenuLeftGap);
-                int ssubMenuItemHeight = UIScale.scale(subMenuItemHeight);
+                int ssubMenuLeftGap = UIScale.scale(popupSubmenu.subMenuLeftGap);
+                int ssubMenuItemHeight = UIScale.scale(popupSubmenu.subMenuItemHeight);
                 int x = insets.left + (ltr ? ssubMenuLeftGap : 0);
                 int y = insets.top;
                 int width = getMaxWidth(parent);
                 int size = parent.getComponentCount();
+
                 for (int i = 0; i < size; i++) {
                     Component com = parent.getComponent(i);
                     if (com.isVisible()) {
                         com.setBounds(x, y, width, ssubMenuItemHeight);
-                        y += ssubMenuItemHeight;
+                        y += ssubMenuItemHeight + UIScale.scale(popupSubmenu.subMenuItemGap);
                     }
                 }
             }
         }
 
         private int getMaxWidth(Container parent) {
-            int size = parent.getComponentCount();
-            int maxWidth = UIScale.scale(150);
-            int max = 0;
-            for (int i = 0; i < size; i++) {
+            int width = 0;
+            for (int i = 0; i < parent.getComponentCount(); i++) {
                 Component com = parent.getComponent(i);
                 if (com.isVisible()) {
-                    max = Math.max(max, com.getPreferredSize().width);
+                    width = Math.max(width, com.getPreferredSize().width);
                 }
             }
-            return Math.max(max, maxWidth);
+            return width;
         }
     }
 }

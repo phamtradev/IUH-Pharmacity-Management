@@ -5,26 +5,20 @@
 package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.menu;
 
 import com.formdev.flatlaf.FlatClientProperties;
+import com.formdev.flatlaf.ui.FlatUIUtils;
 import com.formdev.flatlaf.util.UIScale;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.Insets;
-import java.awt.LayoutManager;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.menu.mode.ToolBarAccentColor;
+
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollBar;
-import javax.swing.JScrollPane;
+import javax.swing.*;
 
 /**
- *
  * @author PhamTra
  */
 public class Menu extends JPanel {
-
-    private final String menuItemsManager[][] = {
+    private final String[][] menuItemsManager = {
             {"Thống kê"},
             {"Báo cáo thu chi"},
             {"Quản lý sản phẩm"},
@@ -40,10 +34,9 @@ public class Menu extends JPanel {
             {"Thông tin cá nhân"},
             {"Hướng dẫn sử dụng"},
             {"Đăng xuất"}
-
     };
 
-    private final String menuItemsStaff[][] = {
+    private final String[][] menuItemsStaff = {
             {"Bán hàng"},
             {"Quản lý sản phẩm"},
             {"Quản lý khách hàng"},
@@ -54,8 +47,28 @@ public class Menu extends JPanel {
             {"Thống kê cá nhân"},
             {"Thông tin cá nhân"},
             {"Hướng dẫn sử dụng"},
-            {"Đăng xuất"}};
+            {"Đăng xuất"}
+    };
 
+    private final List<MenuEvent> events = new ArrayList<>();
+    private boolean menuFull = true;
+
+    protected final boolean hideMenuTitleOnMinimum = true;
+    protected final int menuTitleLeftInset = 8;
+    protected final int menuTitleVgap = 8;
+    protected final int menuMaxWidth = 280;
+    protected final int menuMinWidth = 70;
+    protected final int headerFullHgap = 8;
+    private final int type;
+
+    private JScrollPane scroll;
+    private JPanel panelMenu;
+    private ToolBarAccentColor toolBarAccentColor;
+
+    public Menu(int type) {
+        this.type = type;
+        init();
+    }
 
     public boolean isMenuFull() {
         return menuFull;
@@ -63,98 +76,62 @@ public class Menu extends JPanel {
 
     public void setMenuFull(boolean menuFull) {
         this.menuFull = menuFull;
-        if (menuFull) {
-            header.setText(headerName);
-            header.setHorizontalAlignment(getComponentOrientation().isLeftToRight() ? JLabel.LEFT : JLabel.RIGHT);
-        } else {
-            header.setText("");
-            header.setHorizontalAlignment(JLabel.CENTER);
-        }
-        // Đảm bảo header luôn màu trắng
-        header.setForeground(java.awt.Color.WHITE);
-
         for (Component com : panelMenu.getComponents()) {
             if (com instanceof MenuItem) {
                 ((MenuItem) com).setFull(menuFull);
             }
         }
-    }
-
-    private final List<MenuEvent> events = new ArrayList<>();
-    private boolean menuFull = true;
-    private final String headerName = "IUH PHARMACITY";
-
-    protected final boolean hideMenuTitleOnMinimum = true;
-    protected final int menuTitleLeftInset = 5;
-    protected final int menuTitleVgap = 5;
-    protected final int menuMaxWidth = 300; // Tăng từ 250 lên 300
-    protected final int menuMinWidth = 80; // Tăng từ 60 lên 80
-    protected final int headerFullHgap = 5;
-
-    public Menu() {
-        init();
+        if (toolBarAccentColor != null) toolBarAccentColor.setMenuFull(menuFull);
     }
 
     private void init() {
         setLayout(new MenuLayout());
-        // Đặt màu nền cố định cho menu
-        setBackground(java.awt.Color.decode("#00385C"));
-        putClientProperty(FlatClientProperties.STYLE, ""
-                + "border:0,0,0,0;" // Loại bỏ tất cả border để menu có thể tràn lên trên
-                + "background:#00385C;"
-                + "arc:10"); // Sửa từ "arc:0,0,10,10" thành "arc:10"
-        header = new JLabel(headerName);
-        // Ẩn header bằng cách đặt visible = false
-        header.setVisible(false);
-        header.setForeground(java.awt.Color.WHITE);
-        header.putClientProperty(FlatClientProperties.STYLE, ""
-                + "font:$Menu.header.font;"
-                + "foreground:#FFFFFF");
+        putClientProperty(FlatClientProperties.STYLE,
+                "border:20,2,2,2;" +
+                "background:$Menu.background;" +
+                "arc:10");
 
-        //  Menu
         scroll = new JScrollPane();
         panelMenu = new JPanel(new MenuItemLayout(this));
-        panelMenu.setBackground(java.awt.Color.decode("#00385C"));
-        panelMenu.putClientProperty(FlatClientProperties.STYLE, ""
-                + "border:2,2,2,2;" // Giảm padding
-                + "background:#00385C");
+        panelMenu.putClientProperty(FlatClientProperties.STYLE,
+                "border:5,5,5,5;" +
+                "background:$Menu.background");
 
         scroll.setViewportView(panelMenu);
-        scroll.putClientProperty(FlatClientProperties.STYLE, ""
-                + "border:null");
+        scroll.putClientProperty(FlatClientProperties.STYLE, "border:null");
+
         JScrollBar vscroll = scroll.getVerticalScrollBar();
         vscroll.setUnitIncrement(10);
-        // Loại bỏ styling để tránh lỗi với Java 24
-        // vscroll.putClientProperty(FlatClientProperties.STYLE, "");
+
         createMenu();
-        add(header);
+
+        toolBarAccentColor = new ToolBarAccentColor(this);
+        toolBarAccentColor.setVisible(FlatUIUtils.getUIBoolean("AccentControl.show", false));
+
         add(scroll);
+        add(toolBarAccentColor);
     }
 
     private void createMenu() {
         int index = 0;
-        for (int i = 0; i < menuItemsStaff.length; i++) {
-            String menuName = menuItemsStaff[i][0];
-            if (menuName.startsWith("~") && menuName.endsWith("~")) {
-                panelMenu.add(createTitle(menuName));
+        String[][] items = (type == 1) ? menuItemsManager : menuItemsStaff;
+
+        for (String[] item : items) {
+            if (item[0].startsWith("~") && item[0].endsWith("~")) {
+                panelMenu.add(createTitle(item[0]));
             } else {
-                MenuItem menuItem = new MenuItem(this, menuItemsStaff[i], index++, events);
-                panelMenu.add(menuItem);
+                panelMenu.add(new MenuItem(this, item, type == 1 ? index : index + 20, events));
+                index++;
             }
         }
-        // các icon trong menu ghi theo dạng [số]+[tên] cho dễ chia
-        // vd: 1-hehe, không ghi 01
-        // icon tải về dùng đuôi svg để đỡ sửa lại w và h
     }
 
     private JLabel createTitle(String title) {
         String menuName = title.substring(1, title.length() - 1);
         JLabel lbTitle = new JLabel(menuName);
-        // Đặt màu trắng cố định cho tiêu đề
-        lbTitle.setForeground(java.awt.Color.WHITE);
-        lbTitle.putClientProperty(FlatClientProperties.STYLE, ""
-                + "font:$Menu.label.font;"
-                + "foreground:#FFFFFF");
+        lbTitle.putClientProperty(FlatClientProperties.STYLE,
+                "font:$Menu.label.font;" +
+                "foreground:$Menu.title.foreground");
         return lbTitle;
     }
 
@@ -163,11 +140,8 @@ public class Menu extends JPanel {
     }
 
     protected void setSelected(int index, int subIndex) {
-        int size = panelMenu.getComponentCount();
-        for (int i = 0; i < size; i++) {
-            Component com = panelMenu.getComponent(i);
-            if (com instanceof MenuItem) {
-                MenuItem item = (MenuItem) com;
+        for (Component com : panelMenu.getComponents()) {
+            if (com instanceof MenuItem item) {
                 if (item.getMenuIndex() == index) {
                     item.setSelectedIndex(subIndex);
                 } else {
@@ -180,15 +154,23 @@ public class Menu extends JPanel {
     protected void runEvent(int index, int subIndex) {
         MenuAction menuAction = new MenuAction();
         for (MenuEvent event : events) {
-            event.menuSelected(index, subIndex, menuAction);
+            if (event != null) {
+                event.menuSelected(index, subIndex, menuAction);
+                if (menuAction.isCancel()) {
+                    break;
+                }
+            }
         }
         if (!menuAction.isCancel()) {
             setSelected(index, subIndex);
+            hideMenuItem();
         }
     }
 
     public void addMenuEvent(MenuEvent event) {
-        events.add(event);
+        if (event != null && !events.contains(event)) {
+            events.add(event);
+        }
     }
 
     public void hideMenuItem() {
@@ -198,6 +180,15 @@ public class Menu extends JPanel {
             }
         }
         revalidate();
+        repaint();
+    }
+
+    @Override
+    public void revalidate() {
+        super.revalidate();
+        if (getParent() != null) {
+            getParent().revalidate();
+        }
     }
 
     public boolean isHideMenuTitleOnMinimum() {
@@ -220,12 +211,7 @@ public class Menu extends JPanel {
         return menuMinWidth;
     }
 
-    private JLabel header;
-    private JScrollPane scroll;
-    private JPanel panelMenu;
-
     private class MenuLayout implements LayoutManager {
-
         @Override
         public void addLayoutComponent(String name, Component comp) {
         }
@@ -253,23 +239,26 @@ public class Menu extends JPanel {
             synchronized (parent.getTreeLock()) {
                 Insets insets = parent.getInsets();
                 int x = insets.left;
-                int y = UIScale.scale(5); // Bắt đầu từ 5px vì header bị ẩn
-                int gap = UIScale.scale(3); // Giảm gap
-                int sheaderFullHgap = UIScale.scale(headerFullHgap);
+                int y = insets.top;
+                int gap = UIScale.scale(5);
                 int width = parent.getWidth() - (insets.left + insets.right);
-                int height = parent.getHeight() - y - insets.bottom; // Điều chỉnh chiều cao
-                int iconWidth = width;
-                int iconHeight = 0; // Header không hiển thị nên height = 0
-                int hgap = menuFull ? sheaderFullHgap : 0;
+                int height = parent.getHeight() - (insets.top + insets.bottom);
 
-                // Header không hiển thị nên không cần setBounds
-                header.setBounds(0, 0, 0, 0);
+                int accentColorHeight = 0;
+                if (toolBarAccentColor != null && toolBarAccentColor.isVisible()) {
+                    accentColorHeight = toolBarAccentColor.getPreferredSize().height + gap;
+                }
 
-                int menux = x;
-                int menuy = y; // Scroll bắt đầu ngay từ y vì không có header
-                int menuWidth = width;
-                int menuHeight = height; // Sử dụng toàn bộ chiều cao còn lại
-                scroll.setBounds(menux, menuy, menuWidth, menuHeight);
+                // Scroll panel chiếm toàn bộ không gian từ top
+                scroll.setBounds(x, y, width, height - accentColorHeight);
+
+                if (toolBarAccentColor != null && toolBarAccentColor.isVisible()) {
+                    int tbWidth = width - gap * 2;
+                    int tbHeight = toolBarAccentColor.getPreferredSize().height;
+                    int tbx = x + gap;
+                    int tby = y + height - tbHeight - gap;
+                    toolBarAccentColor.setBounds(tbx, tby, tbWidth, tbHeight);
+                }
             }
         }
     }

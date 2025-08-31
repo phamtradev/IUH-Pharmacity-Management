@@ -8,30 +8,18 @@ import com.formdev.flatlaf.FlatClientProperties;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 import com.formdev.flatlaf.ui.FlatUIUtils;
 import com.formdev.flatlaf.util.UIScale;
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Insets;
-import java.awt.LayoutManager;
-import java.awt.RenderingHints;
-import java.awt.Shape;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.util.ResizeImage;
+
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.geom.Path2D;
 import java.util.List;
-import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.JPanel;
+import javax.swing.*;
 
 /**
- *
  * @author PhamTra
  */
 public class MenuItem extends JPanel {
-
     public boolean isMenuShow() {
         return menuShow;
     }
@@ -60,11 +48,11 @@ public class MenuItem extends JPanel {
     private final Menu menu;
     private final String menus[];
     private final int menuIndex;
-    private final int menuItemHeight = 38;
-    private final int subMenuItemHeight = 35;
+    private final int menuItemHeight = 50; // Tăng từ 45 lên 50
+    private final int subMenuItemHeight = 40; // Tăng từ 35 lên 40
     private final int subMenuLeftGap = 34;
-    private final int firstGap = 5;
-    private final int bottomGap = 5;
+    private final int firstGap = 10; // Tăng từ 5 lên 10
+    private final int bottomGap = 10; // Tăng từ 5 lên 10
     private boolean menuShow;
     private float animate;
 
@@ -79,23 +67,22 @@ public class MenuItem extends JPanel {
     }
 
     private Icon getIcon() {
-        // Icon luôn màu trắng cho menu xanh đậm
-        Color iconColor = Color.WHITE;
-
-        FlatSVGIcon icon = new FlatSVGIcon("icon/menu/" + menuIndex + ".svg");
+        Color lightColor = FlatUIUtils.getUIColor("Menu.icon.lightColor", Color.red);
+        Color darkColor = FlatUIUtils.getUIColor("Menu.icon.darkColor", Color.red);
+        FlatSVGIcon icon = new FlatSVGIcon(getClass().getResource("/img/" + menuIndex + ".svg"));
         FlatSVGIcon.ColorFilter f = new FlatSVGIcon.ColorFilter();
-        f.add(Color.decode("#969696"), iconColor, iconColor);
+        f.add(Color.decode("#969696"), lightColor, darkColor);
         icon.setColorFilter(f);
-        return icon;
+        return ResizeImage.resizeImage(icon,34,34);
     }
 
     private void init() {
         setLayout(new MenuLayout());
-        setBackground(java.awt.Color.decode("#00385C"));
-        setForeground(java.awt.Color.WHITE);
         putClientProperty(FlatClientProperties.STYLE, ""
-                + "background:#00385C;"
-                + "foreground:#FFFFFF");
+                + "background:$Menu.background;"
+                + "foreground:$Menu.lineColor; "
+                + "font:bold 15 Roboto"); // Tăng kích thước font lên 15
+
         for (int i = 0; i < menus.length; i++) {
             JButton menuItem = createButtonItem(menus[i]);
             menuItem.setHorizontalAlignment(menuItem.getComponentOrientation().isLeftToRight() ? JButton.LEADING : JButton.TRAILING);
@@ -141,23 +128,18 @@ public class MenuItem extends JPanel {
 
     private JButton createButtonItem(String text) {
         JButton button = new JButton(text);
-        button.setBackground(java.awt.Color.decode("#00385C"));
-        button.setForeground(java.awt.Color.WHITE);
-        // Đảm bảo chữ luôn màu trắng
-        button.addPropertyChangeListener("UI", evt -> {
-            button.setForeground(java.awt.Color.WHITE);
-        });
         button.putClientProperty(FlatClientProperties.STYLE, ""
-                + "background:#00385C;"
-                + "foreground:#FFFFFF;"
-                + "selectedBackground:#1A4A73;"
-                + "selectedForeground:#FFFFFF;"
+                + "background:$Menu.background;"
+                + "foreground:$Menu.foreground;"
+                + "selectedBackground:$Menu.button.selectedBackground;"
+                + "selectedForeground:$Menu.button.selectedForeground;"
                 + "borderWidth:0;"
                 + "focusWidth:0;"
                 + "innerFocusWidth:0;"
-                + "arc:10;" // Đã đúng định dạng
+                + "arc:10;"
                 + "iconTextGap:10;"
-                + "margin:3,11,3,11");
+                + "font:bold 15 Roboto;"
+                + "margin:8,11,8,11"); // Tăng margin từ 3,11,3,11 thành 8,11,8,11
         return button;
     }
 
@@ -175,8 +157,6 @@ public class MenuItem extends JPanel {
                     JButton button = (JButton) com;
                     button.setText(menus[i]);
                     button.setHorizontalAlignment(getComponentOrientation().isLeftToRight() ? JButton.LEFT : JButton.RIGHT);
-                    // Đảm bảo chữ luôn màu trắng
-                    button.setForeground(java.awt.Color.WHITE);
                 }
             }
         } else {
@@ -185,8 +165,6 @@ public class MenuItem extends JPanel {
                     JButton button = (JButton) com;
                     button.setText("");
                     button.setHorizontalAlignment(JButton.CENTER);
-                    // Đảm bảo chữ luôn màu trắng
-                    button.setForeground(java.awt.Color.WHITE);
                 }
             }
             animate = 0f;
@@ -229,42 +207,68 @@ public class MenuItem extends JPanel {
         if (menus.length > 1) {
             Graphics2D g2 = (Graphics2D) g.create();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
-            g2.setColor(FlatUIUtils.getUIColor("Menu.arrowColor", getForeground()));
-            int smenuItemHeight = UIScale.scale(menuItemHeight);
-            boolean ltr = getComponentOrientation().isLeftToRight();
-            g2.setStroke(new BasicStroke(UIScale.scale(1f)));
+
             if (menu.isMenuFull()) {
-                int arrowWidth = UIScale.scale(10);
-                int arrowHeight = UIScale.scale(5);
-                int ax = ltr ? (getWidth() - arrowWidth * 2) : arrowWidth;
-                int ay = (smenuItemHeight - arrowHeight) / 2;
-                Path2D p = new Path2D.Double();
-                p.moveTo(0, animate * arrowHeight);
-                p.lineTo(arrowWidth / 2, (1f - animate) * arrowHeight);
-                p.lineTo(arrowWidth, animate * arrowHeight);
-                g2.translate(ax, ay);
-                g2.draw(p);
-            } else {
-                int arrowWidth = UIScale.scale(4);
-                int arrowHeight = UIScale.scale(8);
-                int ax = ltr ? (getWidth() - arrowWidth - UIScale.scale(3)) : UIScale.scale(3);
-                int ay = (smenuItemHeight - arrowHeight) / 2;
-                Path2D p = new Path2D.Double();
-                if (ltr) {
-                    p.moveTo(0, 0);
-                    p.lineTo(arrowWidth, arrowHeight / 2);
-                    p.lineTo(0, arrowHeight);
-                } else {
-                    p.moveTo(arrowWidth, 0);
-                    p.lineTo(0, arrowHeight / 2);
-                    p.lineTo(arrowWidth, arrowHeight);
+                try {
+                    // Sử dụng icon SVG từ resources
+                    FlatSVGIcon icon;
+                    if (menuShow) {
+                        icon = new FlatSVGIcon(getClass().getResource("/img/menu_left.svg"));
+                    } else {
+                        icon = new FlatSVGIcon(getClass().getResource("/img/menu_right.svg"));
+                    }
+
+                    // Thiết lập màu cho icon
+                    FlatSVGIcon.ColorFilter colorFilter = new FlatSVGIcon.ColorFilter();
+                    colorFilter.add(Color.decode("#969696"), FlatUIUtils.getUIColor("Menu.arrowColor", getForeground()));
+                    icon.setColorFilter(colorFilter);
+
+                    // Điều chỉnh kích thước icon
+                    icon = icon.derive(16, 16);
+
+                    // Tính toán vị trí vẽ icon
+                    boolean ltr = getComponentOrientation().isLeftToRight();
+                    int smenuItemHeight = UIScale.scale(menuItemHeight);
+                    int x = ltr ? getWidth() - icon.getIconWidth() - UIScale.scale(15) : UIScale.scale(15);
+                    int y = (smenuItemHeight - icon.getIconHeight()) / 2;
+
+                    // Vẽ icon
+                    icon.paintIcon(this, g2, x, y);
+                } catch (Exception e) {
+                    // Fallback: vẽ mũi tên truyền thống nếu không load được icon
+                    drawTraditionalArrow(g2);
                 }
-                g2.translate(ax, ay);
-                g2.draw(p);
             }
+
             g2.dispose();
         }
+    }
+
+    private void drawTraditionalArrow(Graphics2D g2) {
+        g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+        g2.setColor(FlatUIUtils.getUIColor("Menu.arrowColor", getForeground()));
+        int smenuItemHeight = UIScale.scale(menuItemHeight);
+        boolean ltr = getComponentOrientation().isLeftToRight();
+        g2.setStroke(new BasicStroke(UIScale.scale(1.5f)));
+
+        // Vẽ mũi tên xoay khi menu mở rộng
+        int arrowWidth = UIScale.scale(8);
+        int arrowHeight = UIScale.scale(5);
+        int ax = ltr ? (getWidth() - arrowWidth - UIScale.scale(15)) : UIScale.scale(15);
+        int ay = (smenuItemHeight - arrowHeight) / 2;
+        Path2D p = new Path2D.Double();
+        if (!menuShow) {
+            // Mũi tên chỉ xuống khi menu đóng
+            p.moveTo(ax, ay);
+            p.lineTo(ax + arrowWidth/2f, ay + arrowHeight);
+            p.lineTo(ax + arrowWidth, ay);
+        } else {
+            // Mũi tên chỉ lên khi menu mở
+            p.moveTo(ax, ay + arrowHeight);
+            p.lineTo(ax + arrowWidth/2f, ay);
+            p.lineTo(ax + arrowWidth, ay + arrowHeight);
+        }
+        g2.draw(p);
     }
 
     private Shape createCurve(int round, int x, int y, boolean ltr) {
@@ -272,6 +276,7 @@ public class MenuItem extends JPanel {
         p2.moveTo(x, y - round);
         p2.curveTo(x, y - round, x, y, x + (ltr ? round : -round), y);
         return p2;
+
     }
 
     private class MenuLayout implements LayoutManager {

@@ -5,48 +5,52 @@
 package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.form;
 
 import com.formdev.flatlaf.FlatLightLaf;
+import java.awt.Color;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 /**
- *
+ * Main application window that contains the menu and main content
  * @author PhamTra
  */
 public class MenuForm extends javax.swing.JFrame {
+    private static final Color WHITE = Color.WHITE;
+    private static final Color BLACK = Color.BLACK;
+    private static final Color GRAY = Color.GRAY;
+    private static final int WINDOW_WIDTH = 1200;
+    private static final int WINDOW_HEIGHT = 800;
 
-    /**
-     * Creates new form MenuForm
-     */
     public static MainForm mainForm;
 
     public MenuForm() {
         initComponents();
+        setupWindow();
+        setupMainForm();
+    }
 
-        // Cấu hình thanh tiêu đề màu trắng
-        getRootPane().putClientProperty("JRootPane.titleBarBackground", java.awt.Color.WHITE);
-        getRootPane().putClientProperty("JRootPane.titleBarForeground", java.awt.Color.BLACK);
+    private void setupWindow() {
+        // Configure title bar
+        getRootPane().putClientProperty("JRootPane.titleBarBackground", WHITE);
+        getRootPane().putClientProperty("JRootPane.titleBarForeground", BLACK);
 
-        // Đặt màu nền trắng cho toàn bộ cửa sổ và loại bỏ mọi màu xám
-        getContentPane().setBackground(java.awt.Color.WHITE);
-        setBackground(java.awt.Color.WHITE);
+        // Set white background for entire window
+        getContentPane().setBackground(WHITE);
+        setBackground(WHITE);
 
-        // Loại bỏ mọi border có thể gây ra màu xám
+        // Remove borders that might cause gray colors
         getRootPane().setBorder(null);
 
-        // Đặt tiêu đề cho ứng dụng
+        // Set window title
         setTitle("IUH Pharmacity Management");
 
+        // Set window size and center it
+        setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
+        setLocationRelativeTo(null);
+    }
+
+    private void setupMainForm() {
         mainForm = new MainForm();
         setContentPane(mainForm);
-
-        // Thiết lập cửa sổ hiển thị giữa màn hình
-        setLocationRelativeTo(null);
-
-        // Thiết lập kích thước cửa sổ
-        setSize(1200, 800);
-
-        // Đảm bảo cửa sổ hiển thị giữa màn hình sau khi set size
-        setLocationRelativeTo(null);
     }
 
     /**
@@ -55,38 +59,37 @@ public class MenuForm extends javax.swing.JFrame {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             try {
-                // Cấu hình FlatLaf với thanh tiêu đề màu trắng
-                System.setProperty("flatlaf.useWindowDecorations", "true");
-
-                // Thiết lập Look and Feel
-                FlatLightLaf.setup();
-
-                // Cấu hình màu thanh tiêu đề toàn cục
-                UIManager.put("TitlePane.background", java.awt.Color.WHITE);
-                UIManager.put("TitlePane.foreground", java.awt.Color.BLACK);
-                UIManager.put("TitlePane.inactiveBackground", java.awt.Color.WHITE);
-                UIManager.put("TitlePane.inactiveForeground", java.awt.Color.GRAY);
-
-                // Loại bỏ tất cả shadow effects và màu xám
-                UIManager.put("Component.focusWidth", 0);
-                UIManager.put("Component.innerFocusWidth", 0);
-                UIManager.put("Component.borderWidth", 0);
-                UIManager.put("PopupMenu.borderWidth", 0);
-                UIManager.put("ScrollPane.borderWidth", 0);
-                UIManager.put("Panel.borderWidth", 0);
-
-                // Loại bỏ background mặc định có thể gây màu xám
-                UIManager.put("Panel.background", java.awt.Color.WHITE);
-                UIManager.put("ScrollPane.background", java.awt.Color.WHITE);
-                UIManager.put("Viewport.background", java.awt.Color.WHITE);
-
-                // Khởi tạo ứng dụng
+                setupLookAndFeel();
                 new MenuForm().setVisible(true);
-
             } catch (Exception e) {
                 e.printStackTrace();
             }
         });
+    }
+
+    private static void setupLookAndFeel() {
+        // Configure FlatLaf with white title bar
+        System.setProperty("flatlaf.useWindowDecorations", "true");
+        FlatLightLaf.setup();
+
+        // Configure global title bar colors
+        UIManager.put("TitlePane.background", WHITE);
+        UIManager.put("TitlePane.foreground", BLACK);
+        UIManager.put("TitlePane.inactiveBackground", WHITE);
+        UIManager.put("TitlePane.inactiveForeground", GRAY);
+
+        // Remove all shadow effects and gray colors
+        UIManager.put("Component.focusWidth", 0);
+        UIManager.put("Component.innerFocusWidth", 0);
+        UIManager.put("Component.borderWidth", 0);
+        UIManager.put("PopupMenu.borderWidth", 0);
+        UIManager.put("ScrollPane.borderWidth", 0);
+        UIManager.put("Panel.borderWidth", 0);
+
+        // Remove default backgrounds that might cause gray colors
+        UIManager.put("Panel.background", WHITE);
+        UIManager.put("ScrollPane.background", WHITE);
+        UIManager.put("Viewport.background", WHITE);
     }
 
     /**
@@ -100,15 +103,13 @@ public class MenuForm extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        // Cấu hình thanh tiêu đề trước khi tạo layout
-        getRootPane().putClientProperty("JRootPane.titleBarBackground", java.awt.Color.WHITE);
-        getRootPane().putClientProperty("JRootPane.titleBarForeground", java.awt.Color.BLACK);
+        // Configure title bar before creating layout
+        getRootPane().putClientProperty("JRootPane.titleBarBackground", WHITE);
+        getRootPane().putClientProperty("JRootPane.titleBarForeground", BLACK);
 
-        // Đặt background màu trắng cho frame và loại bỏ mọi màu xám
-        setBackground(java.awt.Color.WHITE);
-
-        // Đặt màu nền trắng cho layout
-        getContentPane().setBackground(java.awt.Color.WHITE);
+        // Set white background for frame and layout
+        setBackground(WHITE);
+        getContentPane().setBackground(WHITE);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents

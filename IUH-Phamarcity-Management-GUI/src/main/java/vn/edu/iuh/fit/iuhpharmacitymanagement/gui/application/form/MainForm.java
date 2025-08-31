@@ -39,7 +39,7 @@ public class MainForm extends JLayeredPane {
         putClientProperty(FlatClientProperties.STYLE, ""
                 + "background:#FFFFFF;"
                 + "border:0,0,0,0");
-        menu = new Menu();
+        menu = new Menu(1);
         panelBody = new JPanel(new BorderLayout());
         panelBody.setBackground(java.awt.Color.WHITE);
         // Loại bỏ viền xám
@@ -74,7 +74,7 @@ public class MainForm extends JLayeredPane {
             menuButton = new JButton();
         }
         String icon = (getComponentOrientation().isLeftToRight()) ? "menu_left.svg" : "menu_right.svg";
-        FlatSVGIcon svgIcon = new FlatSVGIcon("icon/svg/" + icon, 0.8f);
+        FlatSVGIcon svgIcon = new FlatSVGIcon("vn/edu/iuh/fit/iuhpharmacitymanagement/gui/application/icon/svg/" + icon, 0.8f);
         FlatSVGIcon.ColorFilter colorFilter = new FlatSVGIcon.ColorFilter();
         // Icon màu đen
         colorFilter.add(java.awt.Color.decode("#969696"), java.awt.Color.BLACK);
@@ -109,7 +109,7 @@ public class MainForm extends JLayeredPane {
         } else {
             icon = (full) ? "menu_right.svg" : "menu_left.svg";
         }
-        FlatSVGIcon svgIcon = new FlatSVGIcon("icon/svg/" + icon, 0.8f);
+        FlatSVGIcon svgIcon = new FlatSVGIcon("vn/edu/iuh/fit/iuhpharmacitymanagement/gui/application/icon/svg/" + icon, 0.8f);
         FlatSVGIcon.ColorFilter colorFilter = new FlatSVGIcon.ColorFilter();
         // Icon màu đen
         colorFilter.add(java.awt.Color.decode("#969696"), java.awt.Color.BLACK);

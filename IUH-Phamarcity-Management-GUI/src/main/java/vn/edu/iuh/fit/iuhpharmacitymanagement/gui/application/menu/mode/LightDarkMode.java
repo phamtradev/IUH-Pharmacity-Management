@@ -53,8 +53,8 @@ public class LightDarkMode extends JPanel {
         putClientProperty(FlatClientProperties.STYLE, ""
                 + "arc:999;"
                 + "background:#002A42");
-        FlatSVGIcon lightIcon = new FlatSVGIcon("icon/mode/light.svg");
-        FlatSVGIcon darkIcon = new FlatSVGIcon("icon/mode/dark.svg");
+        FlatSVGIcon lightIcon = new FlatSVGIcon("vn/edu/iuh/fit/iuhpharmacitymanagement/gui/application/icon/mode/light.svg");
+        FlatSVGIcon darkIcon = new FlatSVGIcon("vn/edu/iuh/fit/iuhpharmacitymanagement/gui/application/icon/mode/dark.svg");
 
         FlatSVGIcon.ColorFilter colorFilter = new FlatSVGIcon.ColorFilter();
         // Icon luôn màu trắng cho menu xanh đậm
@@ -131,9 +131,9 @@ public class LightDarkMode extends JPanel {
 
         FlatSVGIcon icon;
         if (isDark) {
-            icon = new FlatSVGIcon("icon/mode/dark.svg");
+            icon = new FlatSVGIcon("vn/edu/iuh/fit/iuhpharmacitymanagement/gui/application/icon/mode/dark.svg");
         } else {
-            icon = new FlatSVGIcon("icon/mode/light.svg");
+            icon = new FlatSVGIcon("vn/edu/iuh/fit/iuhpharmacitymanagement/gui/application/icon/mode/light.svg");
         }
 
         // Thêm color filter cho icon - luôn màu trắng
@@ -148,8 +148,8 @@ public class LightDarkMode extends JPanel {
 
     private void updateIcons() {
         // Cập nhật lại icon cho buttonLight và buttonDark
-        FlatSVGIcon lightIcon = new FlatSVGIcon("icon/mode/light.svg");
-        FlatSVGIcon darkIcon = new FlatSVGIcon("icon/mode/dark.svg");
+        FlatSVGIcon lightIcon = new FlatSVGIcon("vn/edu/iuh/fit/iuhpharmacitymanagement/gui/application/icon/mode/light.svg");
+        FlatSVGIcon darkIcon = new FlatSVGIcon("vn/edu/iuh/fit/iuhpharmacitymanagement/gui/application/icon/mode/dark.svg");
 
         FlatSVGIcon.ColorFilter colorFilter = new FlatSVGIcon.ColorFilter();
         colorFilter.add(java.awt.Color.decode("#969696"),

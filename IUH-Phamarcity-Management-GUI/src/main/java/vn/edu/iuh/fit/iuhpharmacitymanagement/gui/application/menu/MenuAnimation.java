@@ -6,39 +6,43 @@ package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.menu;
 
 import com.formdev.flatlaf.util.Animator;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
- *
+ * Class quản lý hiệu ứng animation cho menu
  * @author PhamTra
  */
-public class MenuAnimation {
+public final class MenuAnimation {
+    private static final Map<MenuItem, Animator> animators = new HashMap<>();
+    private static final int ANIMATION_DURATION = 400;
+    private static final int ANIMATION_RESOLUTION = 1;
 
-    private static final HashMap<MenuItem, Animator> hash = new HashMap<>();
+    private MenuAnimation() {
+        // Private constructor để ngăn tạo instance
+    }
 
     public static void animate(MenuItem menu, boolean show) {
-        if (hash.containsKey(menu) && hash.get(menu).isRunning()) {
-            hash.get(menu).stop();
+        // Dừng animation đang chạy nếu có
+        Animator currentAnimator = animators.get(menu);
+        if (currentAnimator != null && currentAnimator.isRunning()) {
+            currentAnimator.stop();
         }
+
         menu.setMenuShow(show);
-        Animator animator = new Animator(400, new Animator.TimingTarget() {
+
+        Animator animator = new Animator(ANIMATION_DURATION);
+        animator.addTarget(new Animator.TimingTarget() {
             @Override
-            public void timingEvent(float f) {
-                if (show) {
-                    menu.setAnimate(f);
-                } else {
-                    menu.setAnimate(1f - f);
-                }
+            public void timingEvent(float fraction) {
+                menu.setAnimate(show ? fraction : 1f - fraction);
                 menu.revalidate();
             }
-
-            @Override
-            public void end() {
-                hash.remove(menu);
-            }
         });
-        animator.setResolution(1);
-        animator.setInterpolator((float f) -> (float) (1 - Math.pow(1 - f, 3)));
+
+        animator.setResolution(ANIMATION_RESOLUTION);
+        animator.setInterpolator(f -> (float) (1 - Math.pow(1 - f, 3)));
         animator.start();
-        hash.put(menu, animator);
+
+        animators.put(menu, animator);
     }
 }

@@ -5,14 +5,11 @@
 package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.menu;
 
 import com.formdev.flatlaf.util.UIScale;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.Insets;
-import java.awt.LayoutManager;
+import java.awt.*;
 import javax.swing.JLabel;
 
 /**
+ * Layout manager for menu items
  *
  * @author PhamTra
  */
