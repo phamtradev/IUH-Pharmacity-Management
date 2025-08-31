@@ -114,13 +114,33 @@ public class Menu extends JPanel {
 
     private void createMenu() {
         int index = 0;
-        String[][] items = (type == 1) ? menuItemsManager : menuItemsStaff;
+        String[][] items = (type == 2) ? menuItemsManager : menuItemsStaff;
 
         for (String[] item : items) {
             if (item[0].startsWith("~") && item[0].endsWith("~")) {
                 panelMenu.add(createTitle(item[0]));
             } else {
-                panelMenu.add(new MenuItem(this, item, type == 1 ? index : index + 20, events));
+                int iconIndex;
+                if (type == 2) { // Nhân viên
+                    // Map chính xác icon cho từng chức năng của nhân viên
+                    switch (index) {
+                        case 0: iconIndex = 20; break;  // Bán hàng -> 20.svg
+                        case 1: iconIndex = 21; break;  // Quản lý sản phẩm -> 21.svg
+                        case 2: iconIndex = 22; break;  // Quản lý khách hàng -> 22.svg
+                        case 3: iconIndex = 23; break;  // Quản lý nhà cung cấp -> 23.svg
+                        case 4: iconIndex = 24; break;  // Phiếu nhập hàng -> 24.svg
+                        case 5: iconIndex = 25; break;  // Phiếu trả hàng -> 25.svg
+                        case 6: iconIndex = 26; break;  // Phiếu xuất hủy -> 26.svg
+                        case 7: iconIndex = 27; break;  // Thống kê cá nhân -> 27.svg
+                        case 8: iconIndex = 28; break;  // Thông tin cá nhân -> 28.svg
+                        case 9: iconIndex = 29; break;  // Hướng dẫn sử dụng -> 29.svg
+                        case 10: iconIndex = 30; break; // Đăng xuất -> 30.svg
+                        default: iconIndex = 20; break;
+                    }
+                } else { // Quản lý
+                    iconIndex = index;
+                }
+                panelMenu.add(new MenuItem(this, item, iconIndex, events));
                 index++;
             }
         }

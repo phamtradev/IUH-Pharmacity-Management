@@ -69,11 +69,27 @@ public class MenuItem extends JPanel {
     private Icon getIcon() {
         Color lightColor = FlatUIUtils.getUIColor("Menu.icon.lightColor", Color.red);
         Color darkColor = FlatUIUtils.getUIColor("Menu.icon.darkColor", Color.red);
-        FlatSVGIcon icon = new FlatSVGIcon(getClass().getResource("/img/" + menuIndex + ".svg"));
+
+        FlatSVGIcon icon;
+        try {
+            // Kiểm tra và ánh xạ chính xác icon dựa trên menuIndex
+            String iconPath = "/img/" + menuIndex + ".svg";
+            icon = new FlatSVGIcon(getClass().getResource(iconPath));
+
+            // Nếu không tìm thấy icon, ném ngoại lệ để sử dụng fallback
+            if (icon == null || icon.getIconWidth() <= 0) {
+                throw new Exception("Icon not found");
+            }
+        } catch (Exception e) {
+            // Fallback nếu không tìm thấy file tương ứng
+            System.out.println("Cannot find icon for menuIndex: " + menuIndex + ", using fallback");
+            icon = new FlatSVGIcon(getClass().getResource("/img/0.svg"));
+        }
+
         FlatSVGIcon.ColorFilter f = new FlatSVGIcon.ColorFilter();
         f.add(Color.decode("#969696"), lightColor, darkColor);
         icon.setColorFilter(f);
-        return ResizeImage.resizeImage(icon,34,34);
+        return ResizeImage.resizeImage(icon, 34, 34);
     }
 
     private void init() {
