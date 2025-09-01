@@ -18,36 +18,37 @@ import javax.swing.*;
  * @author PhamTra
  */
 public class Menu extends JPanel {
+
     private final String[][] menuItemsManager = {
-            {"Thống kê"},
-            {"Báo cáo thu chi"},
-            {"Quản lý sản phẩm"},
-            {"Quản lý đơn vị tính"},
-            {"Quản lý nhân viên"},
-            {"Quản lý khách hàng"},
-            {"Quản lý nhà cung cấp"},
-            {"Quản lý nhập hàng"},
-            {"Quản lý trả hàng"},
-            {"Quản lý xuất hủy"},
-            {"Quản lý đơn hàng"},
-            {"Quản lý khuyến mãi"},
-            {"Thông tin cá nhân"},
-            {"Hướng dẫn sử dụng"},
-            {"Đăng xuất"}
+        {"Thống kê"},
+        {"Báo cáo thu chi"},
+        {"Quản lý sản phẩm"},
+        {"Quản lý đơn vị tính"},
+        {"Quản lý nhân viên"},
+        {"Quản lý khách hàng"},
+        {"Quản lý nhà cung cấp"},
+        {"Quản lý nhập hàng"},
+        {"Quản lý trả hàng"},
+        {"Quản lý xuất hủy"},
+        {"Quản lý đơn hàng"},
+        {"Quản lý khuyến mãi"},
+        {"Thông tin cá nhân"},
+        {"Hướng dẫn sử dụng"},
+        {"Đăng xuất"}
     };
 
     private final String[][] menuItemsStaff = {
-            {"Bán hàng"},
-            {"Quản lý sản phẩm"},
-            {"Quản lý khách hàng"},
-            {"Quản lý nhà cung cấp"},
-            {"Phiếu nhập hàng"},
-            {"Phiếu trả hàng"},
-            {"Phiếu xuất hủy"},
-            {"Thống kê cá nhân"},
-            {"Thông tin cá nhân"},
-            {"Hướng dẫn sử dụng"},
-            {"Đăng xuất"}
+        {"Bán hàng"},
+        {"Quản lý sản phẩm"},
+        {"Quản lý khách hàng"},
+        {"Quản lý nhà cung cấp"},
+        {"Phiếu nhập hàng"},
+        {"Phiếu trả hàng"},
+        {"Phiếu xuất hủy"},
+        {"Thống kê cá nhân"},
+        {"Thông tin cá nhân"},
+        {"Hướng dẫn sử dụng"},
+        {"Đăng xuất"}
     };
 
     private final List<MenuEvent> events = new ArrayList<>();
@@ -81,21 +82,23 @@ public class Menu extends JPanel {
                 ((MenuItem) com).setFull(menuFull);
             }
         }
-        if (toolBarAccentColor != null) toolBarAccentColor.setMenuFull(menuFull);
+        if (toolBarAccentColor != null) {
+            toolBarAccentColor.setMenuFull(menuFull);
+        }
     }
 
     private void init() {
         setLayout(new MenuLayout());
         putClientProperty(FlatClientProperties.STYLE,
-                "border:20,2,2,2;" +
-                "background:$Menu.background;" +
-                "arc:10");
+                "border:20,2,2,2;"
+                + "background:$Menu.background;"
+                + "arc:10");
 
         scroll = new JScrollPane();
         panelMenu = new JPanel(new MenuItemLayout(this));
         panelMenu.putClientProperty(FlatClientProperties.STYLE,
-                "border:5,5,5,5;" +
-                "background:$Menu.background");
+                "border:5,5,5,5;"
+                + "background:$Menu.background");
 
         scroll.setViewportView(panelMenu);
         scroll.putClientProperty(FlatClientProperties.STYLE, "border:null");
@@ -145,36 +148,38 @@ public class Menu extends JPanel {
 //            }
 //        }
 //    }
-    
-        private void createMenu() {
-        //kt type đang chạy
-        System.out.println(">>> createMenu() đang chạy với type = " + this.type);
-
+    private void createMenu() {
         int index = 0;
-        String[][] items = (type == 1) ? menuItemsManager : menuItemsStaff;
-
-        for (String[] item : items) {
-            if (item[0].startsWith("~") && item[0].endsWith("~")) {
-                panelMenu.add(createTitle(item[0]));
-            } else {
-                int iconIndex;
-                if (type == 1) { //QL => Dùng icon từ 0.svg
-                    iconIndex = index;
-                } else { //NV (type == 2) => Dùng icon từ 20.svg
-                    iconIndex = 20 + index;
-                }
-                panelMenu.add(new MenuItem(this, item, iconIndex, events));
-                index++;
+        if (type == 1) { //staff
+            for (int i = 0; i < menuItemsManager.length; i++) {
+                String menuName = menuItemsManager[i][0];
+                if (menuName.startsWith("~") && menuName.endsWith("~")) {
+                    panelMenu.add(createTitle(menuName));
+                } else {
+                    MenuItem menuItem = new MenuItem(this, menuItemsManager[i], index++, events);
+                    panelMenu.add(menuItem);
                 }
             }
-        }   
+        } else { // manager 
+            for (int i = 0; i < menuItemsStaff.length; i++) {
+                String menuName = menuItemsStaff[i][0];
+                if (menuName.startsWith("~") && menuName.endsWith("~")) {
+                    panelMenu.add(createTitle(menuName));
+                } else {
+                    MenuItem menuItem = new MenuItem(this, menuItemsStaff[i], 20 + index++, events);
+                    panelMenu.add(menuItem);
+                }
+            }
+        }
+
+    }
 
     private JLabel createTitle(String title) {
         String menuName = title.substring(1, title.length() - 1);
         JLabel lbTitle = new JLabel(menuName);
         lbTitle.putClientProperty(FlatClientProperties.STYLE,
-                "font:$Menu.label.font;" +
-                "foreground:$Menu.title.foreground");
+                "font:$Menu.label.font;"
+                + "foreground:$Menu.title.foreground");
         return lbTitle;
     }
 
@@ -255,6 +260,7 @@ public class Menu extends JPanel {
     }
 
     private class MenuLayout implements LayoutManager {
+
         @Override
         public void addLayoutComponent(String name, Component comp) {
         }
