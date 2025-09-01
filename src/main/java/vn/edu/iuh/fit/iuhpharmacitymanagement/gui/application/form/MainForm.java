@@ -40,7 +40,7 @@ public class MainForm extends JLayeredPane {
         putClientProperty(FlatClientProperties.STYLE, ""
                 + "background:#FFFFFF;"
                 + "border:0,0,0,0");
-        menu = new Menu(1);
+        menu = new Menu(2);
         panelBody = new JPanel(new BorderLayout());
         panelBody.setBackground(java.awt.Color.WHITE);
         // Loại bỏ viền xám
