@@ -3,6 +3,8 @@ package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application;
 import com.formdev.flatlaf.FlatLightLaf;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.JOptionPane;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.connectDB.ConnectDB;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.form.MenuForm;
 
 import java.awt.*;
@@ -12,6 +14,15 @@ public class MainApplication {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             try {
+                // Test kết nối database
+                if (!ConnectDB.testConnection()) {
+                    JOptionPane.showMessageDialog(null,
+                            "Không thể kết nối đến cơ sở dữ liệu.",
+                            "Lỗi Kết Nối",
+                            JOptionPane.ERROR_MESSAGE);
+                    System.exit(1);
+                }
+
                 // Cấu hình FlatLaf với thanh tiêu đề màu trắng
                 System.setProperty("flatlaf.useWindowDecorations", "true");
 
