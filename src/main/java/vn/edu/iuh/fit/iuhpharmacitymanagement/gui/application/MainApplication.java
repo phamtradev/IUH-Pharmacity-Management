@@ -14,6 +14,19 @@ public class MainApplication {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             try {
+                // Thiết lập Look and Feel trước khi test kết nối
+                System.setProperty("flatlaf.useWindowDecorations", "true");
+                FlatLightLaf.setup();
+                UIManager.put("TitlePane.background", java.awt.Color.WHITE);
+                UIManager.put("TitlePane.foreground", java.awt.Color.BLACK);
+                UIManager.put("TitlePane.inactiveBackground", java.awt.Color.WHITE);
+                UIManager.put("TitlePane.inactiveForeground", Color.WHITE);
+                UIManager.put("Component.focusWidth", 0);
+                UIManager.put("Component.innerFocusWidth", 0);
+                UIManager.put("Component.borderWidth", 0);
+                UIManager.put("PopupMenu.borderWidth", 0);
+                UIManager.put("ScrollPane.borderWidth", 0);
+
                 // Test kết nối database
                 if (!ConnectDB.testConnection()) {
                     JOptionPane.showMessageDialog(null,
@@ -21,32 +34,18 @@ public class MainApplication {
                             "Lỗi Kết Nối",
                             JOptionPane.ERROR_MESSAGE);
                     System.exit(1);
+                } else {
+                    System.out.println("Kết nối đến cơ sở dữ liệu thành công!");
                 }
-
-                // Cấu hình FlatLaf với thanh tiêu đề màu trắng
-                System.setProperty("flatlaf.useWindowDecorations", "true");
-
-                // Thiết lập Look and Feel
-                FlatLightLaf.setup();
-
-                // Cấu hình màu thanh tiêu đề toàn cục
-                UIManager.put("TitlePane.background", java.awt.Color.WHITE);
-                UIManager.put("TitlePane.foreground", java.awt.Color.BLACK);
-                UIManager.put("TitlePane.inactiveBackground", java.awt.Color.WHITE);
-                UIManager.put("TitlePane.inactiveForeground", Color.WHITE);
-
-                // Loại bỏ tất cả shadow effects
-                UIManager.put("Component.focusWidth", 0);
-                UIManager.put("Component.innerFocusWidth", 0);
-                UIManager.put("Component.borderWidth", 0);
-                UIManager.put("PopupMenu.borderWidth", 0);
-                UIManager.put("ScrollPane.borderWidth", 0);
 
                 // Khởi tạo ứng dụng
                 new MenuForm().setVisible(true);
-
             } catch (Exception e) {
-                e.printStackTrace();
+                JOptionPane.showMessageDialog(null,
+                        "Đã xảy ra lỗi khi khởi động ứng dụng: " + e.getMessage(),
+                        "Lỗi Ứng Dụng",
+                        JOptionPane.ERROR_MESSAGE);
+                System.exit(1);
             }
         });
     }

@@ -4,12 +4,15 @@
  */
 package vn.edu.iuh.fit.iuhpharmacitymanagement.entity;
 
+import vn.edu.iuh.fit.iuhpharmacitymanagement.constant.LoaiSanPham;
+
+import java.util.List;
+
 /**
  *
  * @author PhamTra
  */
 public class SanPham {
-
     private String maSanPham;
     private String tenSanPham;
     private String soDangKy;
@@ -24,21 +27,16 @@ public class SanPham {
     private double thueVAT = 0.1;
     private String hinhAnh;
 
+    private LoaiSanPham loaiSanPham; // enum riêng
+    private List<LoHang> danhSachLoHang;
+    private DonViTinh donViTinh;
+
     public SanPham() {
     }
 
-    public SanPham(String maSanPham,
-            String tenSanPham,
-            String soDangKy,
-            String hoatChat,
-            String lieuDung,
-            String cachDongGoi,
-            String quocGiaSanXuat,
-            String nhaSanXuat,
-            double giaNhap,
-            double giaBan,
-            boolean hoatDong,
-            String hinhAnh) {
+    public SanPham(String maSanPham, String tenSanPham, String soDangKy, String hoatChat,
+                   String lieuDung, String cachDongGoi, String quocGiaSanXuat, String nhaSanXuat,
+                   double giaNhap, double giaBan, boolean hoatDong, String hinhAnh, LoaiSanPham loaiSanPham) {
         this.maSanPham = maSanPham;
         this.tenSanPham = tenSanPham;
         this.soDangKy = soDangKy;
@@ -51,6 +49,7 @@ public class SanPham {
         this.giaBan = giaBan;
         this.hoatDong = hoatDong;
         this.hinhAnh = hinhAnh;
+        this.loaiSanPham = loaiSanPham;
     }
 
     public String getMaSanPham() {
@@ -157,21 +156,47 @@ public class SanPham {
         this.hinhAnh = hinhAnh;
     }
 
-    @Override
-    public String toString() {
-        return "SanPham{" + "maSanPham=" + maSanPham + ","
-                + " tenSanPham=" + tenSanPham + ","
-                + " soDangKy=" + soDangKy + ","
-                + " hoatChat=" + hoatChat + ","
-                + " lieuDung=" + lieuDung + ","
-                + " cachDongGoi=" + cachDongGoi + ","
-                + " quocGiaSanXuat=" + quocGiaSanXuat + ","
-                + " nhaSanXuat=" + nhaSanXuat + ","
-                + " giaNhap=" + giaNhap + ","
-                + " giaBan=" + giaBan + ","
-                + " hoatDong=" + hoatDong + ","
-                + " thueVAT=" + thueVAT + ","
-                + " hinhAnh=" + hinhAnh + '}';
+    public LoaiSanPham getLoaiSanPham() {
+        return loaiSanPham;
     }
 
+    public void setLoaiSanPham(LoaiSanPham loaiSanPham) {
+        this.loaiSanPham = loaiSanPham;
+    }
+
+    public List<LoHang> getDanhSachLoHang() {
+        return danhSachLoHang;
+    }
+
+    public void setDanhSachLoHang(List<LoHang> danhSachLoHang) {
+        this.danhSachLoHang = danhSachLoHang;
+    }
+
+    public DonViTinh getDonViTinh() {
+        return donViTinh;
+    }
+
+    public void setDonViTinh(DonViTinh donViTinh) {
+        this.donViTinh = donViTinh;
+    }
+
+    @Override
+    public String toString() {
+        return "SanPham{" +
+                "maSanPham='" + maSanPham + '\'' +
+                ", tenSanPham='" + tenSanPham + '\'' +
+                ", soDangKy='" + soDangKy + '\'' +
+                ", hoatChat='" + hoatChat + '\'' +
+                ", lieuDung='" + lieuDung + '\'' +
+                ", cachDongGoi='" + cachDongGoi + '\'' +
+                ", quocGiaSanXuat='" + quocGiaSanXuat + '\'' +
+                ", nhaSanXuat='" + nhaSanXuat + '\'' +
+                ", giaNhap=" + giaNhap +
+                ", giaBan=" + giaBan +
+                ", hoatDong=" + hoatDong +
+                ", thueVAT=" + thueVAT +
+                ", hinhAnh='" + hinhAnh + '\'' +
+                ", loaiSanPham=" + loaiSanPham +
+                '}';
+    }
 }

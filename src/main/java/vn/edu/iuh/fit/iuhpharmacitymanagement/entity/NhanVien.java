@@ -11,12 +11,16 @@ import java.util.Objects;
  * @author User
  */
 public class NhanVien {
+
     private String maNhanVien;
     private String tenNhanVien;
     private String diaChi;
     private String soDienThoai;
     private String email;
     private String vaiTro;
+
+    public NhanVien() {
+    }
 
     public NhanVien(String maNhanVien, String tenNhanVien, String diaChi, String soDienThoai, String email, String vaiTro) {
         this.maNhanVien = maNhanVien;
@@ -27,51 +31,48 @@ public class NhanVien {
         this.vaiTro = vaiTro;
     }
 
-    public NhanVien() {
-    }
-
     public String getMaNhanVien() {
         return maNhanVien;
-    }
-
-    public String getTenNhanVien() {
-        return tenNhanVien;
-    }
-
-    public String getDiaChi() {
-        return diaChi;
-    }
-
-    public String getSoDienThoai() {
-        return soDienThoai;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public String getVaiTro() {
-        return vaiTro;
     }
 
     public void setMaNhanVien(String maNhanVien) {
         this.maNhanVien = maNhanVien;
     }
 
+    public String getTenNhanVien() {
+        return tenNhanVien;
+    }
+
     public void setTenNhanVien(String tenNhanVien) {
         this.tenNhanVien = tenNhanVien;
+    }
+
+    public String getDiaChi() {
+        return diaChi;
     }
 
     public void setDiaChi(String diaChi) {
         this.diaChi = diaChi;
     }
 
+    public String getSoDienThoai() {
+        return soDienThoai;
+    }
+
     public void setSoDienThoai(String soDienThoai) {
         this.soDienThoai = soDienThoai;
     }
 
+    public String getEmail() {
+        return email;
+    }
+
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getVaiTro() {
+        return vaiTro;
     }
 
     public void setVaiTro(String vaiTro) {
@@ -80,51 +81,31 @@ public class NhanVien {
 
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 29 * hash + Objects.hashCode(this.maNhanVien);
-        hash = 29 * hash + Objects.hashCode(this.tenNhanVien);
-        hash = 29 * hash + Objects.hashCode(this.diaChi);
-        hash = 29 * hash + Objects.hashCode(this.soDienThoai);
-        hash = 29 * hash + Objects.hashCode(this.email);
-        hash = 29 * hash + Objects.hashCode(this.vaiTro);
-        return hash;
+        return Objects.hash(maNhanVien, tenNhanVien, diaChi, soDienThoai, email, vaiTro);
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final NhanVien other = (NhanVien) obj;
-        if (!Objects.equals(this.maNhanVien, other.maNhanVien)) {
-            return false;
-        }
-        if (!Objects.equals(this.tenNhanVien, other.tenNhanVien)) {
-            return false;
-        }
-        if (!Objects.equals(this.diaChi, other.diaChi)) {
-            return false;
-        }
-        if (!Objects.equals(this.soDienThoai, other.soDienThoai)) {
-            return false;
-        }
-        if (!Objects.equals(this.email, other.email)) {
-            return false;
-        }
-        return Objects.equals(this.vaiTro, other.vaiTro);
+        if (this == obj) return true;
+        if (!(obj instanceof NhanVien)) return false;
+        NhanVien other = (NhanVien) obj;
+        return Objects.equals(maNhanVien, other.maNhanVien)
+                && Objects.equals(tenNhanVien, other.tenNhanVien)
+                && Objects.equals(diaChi, other.diaChi)
+                && Objects.equals(soDienThoai, other.soDienThoai)
+                && Objects.equals(email, other.email)
+                && Objects.equals(vaiTro, other.vaiTro);
     }
 
     @Override
     public String toString() {
-        return "NhanVien{" + "maNhanVien=" + maNhanVien + ", tenNhanVien=" + tenNhanVien + ", diaChi=" + diaChi + 
-                ", soDienThoai=" + soDienThoai + ", email=" + email + ", vaiTro=" + vaiTro + '}';
+        return "NhanVien{" +
+                "maNhanVien='" + maNhanVien + '\'' +
+                ", tenNhanVien='" + tenNhanVien + '\'' +
+                ", diaChi='" + diaChi + '\'' +
+                ", soDienThoai='" + soDienThoai + '\'' +
+                ", email='" + email + '\'' +
+                ", vaiTro='" + vaiTro + '\'' +
+                '}';
     }
-    
-    
 }

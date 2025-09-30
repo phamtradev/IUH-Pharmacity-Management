@@ -5,7 +5,6 @@
 package vn.edu.iuh.fit.iuhpharmacitymanagement.entity;
 
 import java.util.Objects;
-
 /**
  *
  * @author User
@@ -21,7 +20,8 @@ public class KhachHang {
     public KhachHang() {
     }
 
-    public KhachHang(String maKhachHang, String tenKhachHang, String soDienThoai, String diaChi, String email, String gioiTinh) {
+    public KhachHang(String maKhachHang, String tenKhachHang, String soDienThoai,
+                     String diaChi, String email, String gioiTinh) {
         this.maKhachHang = maKhachHang;
         this.tenKhachHang = tenKhachHang;
         this.soDienThoai = soDienThoai;
@@ -34,44 +34,44 @@ public class KhachHang {
         return maKhachHang;
     }
 
-    public String getTenKhachHang() {
-        return tenKhachHang;
-    }
-
-    public String getSoDienThoai() {
-        return soDienThoai;
-    }
-
-    public String getDiaChi() {
-        return diaChi;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public String getGioiTinh() {
-        return gioiTinh;
-    }
-
     public void setMaKhachHang(String maKhachHang) {
         this.maKhachHang = maKhachHang;
+    }
+
+    public String getTenKhachHang() {
+        return tenKhachHang;
     }
 
     public void setTenKhachHang(String tenKhachHang) {
         this.tenKhachHang = tenKhachHang;
     }
 
+    public String getSoDienThoai() {
+        return soDienThoai;
+    }
+
     public void setSoDienThoai(String soDienThoai) {
         this.soDienThoai = soDienThoai;
+    }
+
+    public String getDiaChi() {
+        return diaChi;
     }
 
     public void setDiaChi(String diaChi) {
         this.diaChi = diaChi;
     }
 
+    public String getEmail() {
+        return email;
+    }
+
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getGioiTinh() {
+        return gioiTinh;
     }
 
     public void setGioiTinh(String gioiTinh) {
@@ -80,52 +80,31 @@ public class KhachHang {
 
     @Override
     public int hashCode() {
-        int hash = 5;
-        hash = 61 * hash + Objects.hashCode(this.maKhachHang);
-        hash = 61 * hash + Objects.hashCode(this.tenKhachHang);
-        hash = 61 * hash + Objects.hashCode(this.soDienThoai);
-        hash = 61 * hash + Objects.hashCode(this.diaChi);
-        hash = 61 * hash + Objects.hashCode(this.email);
-        hash = 61 * hash + Objects.hashCode(this.gioiTinh);
-        return hash;
+        return Objects.hash(maKhachHang, tenKhachHang, soDienThoai, diaChi, email, gioiTinh);
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final KhachHang other = (KhachHang) obj;
-        if (!Objects.equals(this.maKhachHang, other.maKhachHang)) {
-            return false;
-        }
-        if (!Objects.equals(this.tenKhachHang, other.tenKhachHang)) {
-            return false;
-        }
-        if (!Objects.equals(this.soDienThoai, other.soDienThoai)) {
-            return false;
-        }
-        if (!Objects.equals(this.diaChi, other.diaChi)) {
-            return false;
-        }
-        if (!Objects.equals(this.email, other.email)) {
-            return false;
-        }
-        return Objects.equals(this.gioiTinh, other.gioiTinh);
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        KhachHang other = (KhachHang) obj;
+        return Objects.equals(maKhachHang, other.maKhachHang) &&
+                Objects.equals(tenKhachHang, other.tenKhachHang) &&
+                Objects.equals(soDienThoai, other.soDienThoai) &&
+                Objects.equals(diaChi, other.diaChi) &&
+                Objects.equals(email, other.email) &&
+                Objects.equals(gioiTinh, other.gioiTinh);
     }
 
     @Override
     public String toString() {
-        return "KhachHang{" + "maKhachHang=" + maKhachHang + ", tenKhachHang=" + tenKhachHang + 
-                ", soDienThoai=" + soDienThoai + ", diaChi=" + diaChi + ", email=" + email + 
-                ", gioiTinh=" + gioiTinh + '}';
+        return "KhachHang{" +
+                "maKhachHang='" + maKhachHang + '\'' +
+                ", tenKhachHang='" + tenKhachHang + '\'' +
+                ", soDienThoai='" + soDienThoai + '\'' +
+                ", diaChi='" + diaChi + '\'' +
+                ", email='" + email + '\'' +
+                ", gioiTinh='" + gioiTinh + '\'' +
+                '}';
     }
-    
-    
 }

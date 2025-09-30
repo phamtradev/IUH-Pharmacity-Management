@@ -5,70 +5,79 @@
 package vn.edu.iuh.fit.iuhpharmacitymanagement.entity;
 
 import java.time.LocalDate;
-import java.util.Objects;
+import java.util.List;
 
 /**
  *
  * @author User
  */
 public class HangHong {
-    private String mahangHong;
+    private String maHangHong;
     private LocalDate ngayNhap;
+    private double thanhTien;
+    private NhanVien nhanVien;
+    private List<ChiTietHangHong> chiTietHangHong;
 
     public HangHong() {
     }
 
-    public HangHong(String mahangHong, LocalDate ngayNhap) {
-        this.mahangHong = mahangHong;
+    public HangHong(String maHangHong, LocalDate ngayNhap, double thanhTien,
+                    NhanVien nhanVien, List<ChiTietHangHong> chiTietHangHong) {
+        this.maHangHong = maHangHong;
         this.ngayNhap = ngayNhap;
+        this.thanhTien = thanhTien;
+        this.nhanVien = nhanVien;
+        this.chiTietHangHong = chiTietHangHong;
     }
 
-    public String getMahangHong() {
-        return mahangHong;
+    public String getMaHangHong() {
+        return maHangHong;
+    }
+
+    public void setMaHangHong(String maHangHong) {
+        this.maHangHong = maHangHong;
     }
 
     public LocalDate getNgayNhap() {
         return ngayNhap;
     }
 
-    public void setMahangHong(String mahangHong) {
-        this.mahangHong = mahangHong;
-    }
-
     public void setNgayNhap(LocalDate ngayNhap) {
         this.ngayNhap = ngayNhap;
     }
 
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 53 * hash + Objects.hashCode(this.mahangHong);
-        hash = 53 * hash + Objects.hashCode(this.ngayNhap);
-        return hash;
+    public double getThanhTien() {
+        return thanhTien;
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final HangHong other = (HangHong) obj;
-        if (!Objects.equals(this.mahangHong, other.mahangHong)) {
-            return false;
-        }
-        return Objects.equals(this.ngayNhap, other.ngayNhap);
+    public void setThanhTien(double thanhTien) {
+        this.thanhTien = thanhTien;
+    }
+
+    public NhanVien getNhanVien() {
+        return nhanVien;
+    }
+
+    public void setNhanVien(NhanVien nhanVien) {
+        this.nhanVien = nhanVien;
+    }
+
+    public List<ChiTietHangHong> getChiTietHangHong() {
+        return chiTietHangHong;
+    }
+
+    public void setChiTietHangHong(List<ChiTietHangHong> chiTietHangHong) {
+        this.chiTietHangHong = chiTietHangHong;
     }
 
     @Override
     public String toString() {
-        return "HangHong{" + "mahangHong=" + mahangHong + ", ngayNhap=" + ngayNhap + '}';
+        return "HangHong{" +
+                "maHangHong='" + maHangHong + '\'' +
+                ", ngayNhap=" + ngayNhap +
+                ", thanhTien=" + thanhTien +
+                ", nhanVien=" + nhanVien +
+                ", chiTietHangHong=" + chiTietHangHong +
+                '}';
     }
-    
-    
 }

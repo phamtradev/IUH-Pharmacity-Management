@@ -3,7 +3,6 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package vn.edu.iuh.fit.iuhpharmacitymanagement.entity;
-
 import java.util.Objects;
 
 /**
@@ -11,8 +10,9 @@ import java.util.Objects;
  * @author User
  */
 public class NhaCungCap {
-    private String maNCC;
-    private String tenNCC;
+
+    private String maNhaCungCap;
+    private String tenNhaCungCap;
     private String diaChi;
     private String soDienThoai;
     private String email;
@@ -21,57 +21,57 @@ public class NhaCungCap {
     public NhaCungCap() {
     }
 
-    public NhaCungCap(String maNCC, String tenNCC, String diaChi, String soDienThoai, String email, String maSoThue) {
-        this.maNCC = maNCC;
-        this.tenNCC = tenNCC;
+    public NhaCungCap(String maNhaCungCap, String tenNhaCungCap, String diaChi, String soDienThoai, String email, String maSoThue) {
+        this.maNhaCungCap = maNhaCungCap;
+        this.tenNhaCungCap = tenNhaCungCap;
         this.diaChi = diaChi;
         this.soDienThoai = soDienThoai;
         this.email = email;
         this.maSoThue = maSoThue;
     }
 
-    public String getMaNCC() {
-        return maNCC;
+    public String getMaNhaCungCap() {
+        return maNhaCungCap;
     }
 
-    public String getTenNCC() {
-        return tenNCC;
+    public void setMaNhaCungCap(String maNhaCungCap) {
+        this.maNhaCungCap = maNhaCungCap;
+    }
+
+    public String getTenNhaCungCap() {
+        return tenNhaCungCap;
+    }
+
+    public void setTenNhaCungCap(String tenNhaCungCap) {
+        this.tenNhaCungCap = tenNhaCungCap;
     }
 
     public String getDiaChi() {
         return diaChi;
     }
 
-    public String getSoDienThoai() {
-        return soDienThoai;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public String getMaSoThue() {
-        return maSoThue;
-    }
-
-    public void setMaNCC(String maNCC) {
-        this.maNCC = maNCC;
-    }
-
-    public void setTenNCC(String tenNCC) {
-        this.tenNCC = tenNCC;
-    }
-
     public void setDiaChi(String diaChi) {
         this.diaChi = diaChi;
+    }
+
+    public String getSoDienThoai() {
+        return soDienThoai;
     }
 
     public void setSoDienThoai(String soDienThoai) {
         this.soDienThoai = soDienThoai;
     }
 
+    public String getEmail() {
+        return email;
+    }
+
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getMaSoThue() {
+        return maSoThue;
     }
 
     public void setMaSoThue(String maSoThue) {
@@ -80,51 +80,29 @@ public class NhaCungCap {
 
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 37 * hash + Objects.hashCode(this.maNCC);
-        hash = 37 * hash + Objects.hashCode(this.tenNCC);
-        hash = 37 * hash + Objects.hashCode(this.diaChi);
-        hash = 37 * hash + Objects.hashCode(this.soDienThoai);
-        hash = 37 * hash + Objects.hashCode(this.email);
-        hash = 37 * hash + Objects.hashCode(this.maSoThue);
-        return hash;
+        return Objects.hash(maNhaCungCap, tenNhaCungCap, soDienThoai, email);
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final NhaCungCap other = (NhaCungCap) obj;
-        if (!Objects.equals(this.maNCC, other.maNCC)) {
-            return false;
-        }
-        if (!Objects.equals(this.tenNCC, other.tenNCC)) {
-            return false;
-        }
-        if (!Objects.equals(this.diaChi, other.diaChi)) {
-            return false;
-        }
-        if (!Objects.equals(this.soDienThoai, other.soDienThoai)) {
-            return false;
-        }
-        if (!Objects.equals(this.email, other.email)) {
-            return false;
-        }
-        return Objects.equals(this.maSoThue, other.maSoThue);
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        NhaCungCap other = (NhaCungCap) obj;
+        return Objects.equals(maNhaCungCap, other.maNhaCungCap)
+                && Objects.equals(tenNhaCungCap, other.tenNhaCungCap)
+                && Objects.equals(soDienThoai, other.soDienThoai)
+                && Objects.equals(email, other.email);
     }
 
     @Override
     public String toString() {
-        return "NhaCungCap{" + "maNCC=" + maNCC + ", tenNCC=" + tenNCC + ", diaChi=" + diaChi + 
-                ", soDienThoai=" + soDienThoai + ", email=" + email + ", maSoThue=" + maSoThue + '}';
+        return "NhaCungCap{" +
+                "maNhaCungCap='" + maNhaCungCap + '\'' +
+                ", tenNhaCungCap='" + tenNhaCungCap + '\'' +
+                ", diaChi='" + diaChi + '\'' +
+                ", soDienThoai='" + soDienThoai + '\'' +
+                ", email='" + email + '\'' +
+                ", maSoThue='" + maSoThue + '\'' +
+                '}';
     }
-    
-    
 }

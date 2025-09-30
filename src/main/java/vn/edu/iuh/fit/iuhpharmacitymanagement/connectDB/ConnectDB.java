@@ -4,9 +4,9 @@
  */
 package vn.edu.iuh.fit.iuhpharmacitymanagement.connectDB;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.Persistence;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 
 /**
  *
@@ -15,14 +15,17 @@ import jakarta.persistence.Persistence;
 public class ConnectDB {
 
     private static ConnectDB instance = null;
-    private static EntityManagerFactory emf = null;
-    private static EntityManager em = null;
+    private static Connection connection = null;
+
+    private static final String URL = "jdbc:sqlserver://localhost:1433;databaseName=IUHPharmacityManagement;encrypt=true;trustServerCertificate=true";
+    private static final String USER = "sa";
+    private static final String PASSWORD = "sapassword";
 
     private ConnectDB() {
         try {
-            emf = Persistence.createEntityManagerFactory("IUHPharmacityManagement");
-            em = emf.createEntityManager();
-        } catch (Exception e) {
+            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+            connection = DriverManager.getConnection(URL, USER, PASSWORD);
+        } catch (ClassNotFoundException | SQLException e) {
             e.printStackTrace();
         }
     }
@@ -34,28 +37,29 @@ public class ConnectDB {
         return instance;
     }
 
-    public static EntityManager getEntityManager() {
-        if (em == null || !em.isOpen()) {
+    public static Connection getConnection() {
+        if (connection == null) {
             getInstance();
         }
-        return em;
+        return connection;
     }
 
     public static void closeConnection() {
-        if (em != null && em.isOpen()) {
-            em.close();
-        }
-        if (emf != null && emf.isOpen()) {
-            emf.close();
+        if (connection != null) {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 
-    // Hàm test kết nối
+    // Test connection
     public static boolean testConnection() {
         try {
-            EntityManager testEm = getInstance().getEntityManager();
-            return testEm != null && testEm.isOpen();
-        } catch (Exception e) {
+            Connection testConn = getInstance().getConnection();
+            return testConn != null && !testConn.isClosed();
+        } catch (SQLException e) {
             e.printStackTrace();
             return false;
         }

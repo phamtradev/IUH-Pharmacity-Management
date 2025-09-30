@@ -17,6 +17,7 @@ public class LoHang {
     private LocalDate hanSuDung;
     private int tonKho;
     private boolean trangThai;
+    private SanPham sanPham;
 
     public LoHang() {
     }
@@ -69,13 +70,23 @@ public class LoHang {
         this.trangThai = trangThai;
     }
 
-    @Override
-    public String toString() {
-        return "LoHang{" + "maLoHang=" + maLoHang + ","
-                + " tenLoHang=" + tenLoHang + ","
-                + " hanSuDung=" + hanSuDung + ","
-                + " tonKho=" + tonKho + ","
-                + " trangThai=" + trangThai + '}';
+    public SanPham getSanPham() {
+        return sanPham;
     }
 
+    public void setSanPham(SanPham sanPham) {
+        this.sanPham = sanPham;
+    }
+
+    @Override
+    public String toString() {
+        return "LoHang{" +
+                "maLoHang='" + maLoHang + '\'' +
+                ", tenLoHang='" + tenLoHang + '\'' +
+                ", hanSuDung=" + hanSuDung +
+                ", tonKho=" + tonKho +
+                ", trangThai=" + trangThai +
+                ", sanPham=" + (sanPham != null ? sanPham.getMaSanPham() : "null") +
+                '}';
+    }
 }

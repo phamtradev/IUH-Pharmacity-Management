@@ -4,6 +4,8 @@
  */
 package vn.edu.iuh.fit.iuhpharmacitymanagement.entity;
 
+import vn.edu.iuh.fit.iuhpharmacitymanagement.constant.LoaiKhuyenMai;
+
 import java.time.LocalDate;
 
 /**
@@ -15,25 +17,28 @@ public class KhuyenMai {
     private String maKhuyenMai;
     private String tenKhuyenMai;
     private LocalDate ngayBatDau;
-    private String ngayKetThuc;
+    private LocalDate ngayKetThuc;
     private double giamGia;
     private boolean trangThai;
+    private LoaiKhuyenMai loaiKhuyenMai;
 
     public KhuyenMai() {
     }
 
     public KhuyenMai(String maKhuyenMai,
-            String tenKhuyenMai,
-            LocalDate ngayBatDau,
-            String ngayKetThuc,
-            double giamGia,
-            boolean trangThai) {
+                     String tenKhuyenMai,
+                     LocalDate ngayBatDau,
+                     LocalDate ngayKetThuc,
+                     double giamGia,
+                     boolean trangThai,
+                     LoaiKhuyenMai loaiKhuyenMai) {
         this.maKhuyenMai = maKhuyenMai;
         this.tenKhuyenMai = tenKhuyenMai;
         this.ngayBatDau = ngayBatDau;
         this.ngayKetThuc = ngayKetThuc;
         this.giamGia = giamGia;
         this.trangThai = trangThai;
+        this.loaiKhuyenMai = loaiKhuyenMai;
     }
 
     public String getMaKhuyenMai() {
@@ -60,11 +65,11 @@ public class KhuyenMai {
         this.ngayBatDau = ngayBatDau;
     }
 
-    public String getNgayKetThuc() {
+    public LocalDate getNgayKetThuc() {
         return ngayKetThuc;
     }
 
-    public void setNgayKetThuc(String ngayKetThuc) {
+    public void setNgayKetThuc(LocalDate ngayKetThuc) {
         this.ngayKetThuc = ngayKetThuc;
     }
 
@@ -84,14 +89,24 @@ public class KhuyenMai {
         this.trangThai = trangThai;
     }
 
-    @Override
-    public String toString() {
-        return "KhuyenMai{" + "maKhuyenMai=" + maKhuyenMai + ","
-                + " tenKhuyenMai=" + tenKhuyenMai + ","
-                + " ngayBatDau=" + ngayBatDau + ","
-                + " ngayKetThuc=" + ngayKetThuc + ","
-                + " giamGia=" + giamGia + ","
-                + " trangThai=" + trangThai + '}';
+    public LoaiKhuyenMai getLoaiKhuyenMai() {
+        return loaiKhuyenMai;
     }
 
+    public void setLoaiKhuyenMai(LoaiKhuyenMai loaiKhuyenMai) {
+        this.loaiKhuyenMai = loaiKhuyenMai;
+    }
+
+    @Override
+    public String toString() {
+        return "KhuyenMai{" +
+                "maKhuyenMai='" + maKhuyenMai + '\'' +
+                ", tenKhuyenMai='" + tenKhuyenMai + '\'' +
+                ", ngayBatDau=" + ngayBatDau +
+                ", ngayKetThuc=" + ngayKetThuc +
+                ", giamGia=" + giamGia +
+                ", trangThai=" + trangThai +
+                ", loaiKhuyenMai=" + loaiKhuyenMai +
+                '}';
+    }
 }

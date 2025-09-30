@@ -4,6 +4,8 @@
  */
 package vn.edu.iuh.fit.iuhpharmacitymanagement.entity;
 
+
+
 import java.util.Objects;
 
 /**
@@ -13,6 +15,7 @@ import java.util.Objects;
 public class TaiKhoan {
     private String tenDangNhap;
     private String matKhau;
+    private NhanVien nhanVien;
 
     public TaiKhoan() {
     }
@@ -22,52 +25,56 @@ public class TaiKhoan {
         this.matKhau = matKhau;
     }
 
-    public String getTenDangNhap() {
-        return tenDangNhap;
+    public TaiKhoan(String tenDangNhap, String matKhau, NhanVien nhanVien) {
+        this.tenDangNhap = tenDangNhap;
+        this.matKhau = matKhau;
+        this.nhanVien = nhanVien;
     }
 
-    public String getMatKhau() {
-        return matKhau;
+    public String getTenDangNhap() {
+        return tenDangNhap;
     }
 
     public void setTenDangNhap(String tenDangNhap) {
         this.tenDangNhap = tenDangNhap;
     }
 
+    public String getMatKhau() {
+        return matKhau;
+    }
+
     public void setMatKhau(String matKhau) {
         this.matKhau = matKhau;
     }
 
+    public NhanVien getNhanVien() {
+        return nhanVien;
+    }
+
+    public void setNhanVien(NhanVien nhanVien) {
+        this.nhanVien = nhanVien;
+    }
+
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 29 * hash + Objects.hashCode(this.tenDangNhap);
-        hash = 29 * hash + Objects.hashCode(this.matKhau);
-        return hash;
+        return Objects.hash(tenDangNhap, matKhau);
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final TaiKhoan other = (TaiKhoan) obj;
-        if (!Objects.equals(this.tenDangNhap, other.tenDangNhap)) {
-            return false;
-        }
-        return Objects.equals(this.matKhau, other.matKhau);
+        if (this == obj) return true;
+        if (!(obj instanceof TaiKhoan)) return false;
+        TaiKhoan other = (TaiKhoan) obj;
+        return Objects.equals(this.tenDangNhap, other.tenDangNhap)
+                && Objects.equals(this.matKhau, other.matKhau);
     }
 
     @Override
     public String toString() {
-        return "TaiKhoan{" + "tenDangNhap=" + tenDangNhap + ", matKhau=" + matKhau + '}';
+        return "TaiKhoan{" +
+                "tenDangNhap='" + tenDangNhap + '\'' +
+                ", matKhau='" + matKhau + '\'' +
+                ", nhanVien=" + (nhanVien != null ? nhanVien.getMaNhanVien() : "null") +
+                '}';
     }
-    
-    
 }

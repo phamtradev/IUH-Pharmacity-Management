@@ -7,9 +7,28 @@
     <persistence-unit name="IUHPharmacityManagement" transaction-type="RESOURCE_LOCAL">
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
 
+        <!-- Liệt kê tất cả các entity classes -->
+        <class>vn.edu.iuh.fit.iuhpharmacitymanagement.entity.TaiKhoan</class>
+        <class>vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham</class>
+        <class>vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhanVien</class>
+        <class>vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhachHang</class>
+        <class>vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonHang</class>
+        <class>vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonHang</class>
+        <class>vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonNhapHang</class>
+        <class>vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonNhapHang</class>
+        <class>vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonTraHang</class>
+        <class>vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonTraHang</class>
+        <class>vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhaCungCap</class>
+        <class>vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhuyenMai</class>
+        <class>vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietKhuyenMaiSanPham</class>
+        <class>vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonViTinh</class>
+        <class>vn.edu.iuh.fit.iuhpharmacitymanagement.entity.HangHong</class>
+        <class>vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietHangHong</class>
+        <class>vn.edu.iuh.fit.iuhpharmacitymanagement.entity.LoHang</class>
+
         <properties>
             <!-- Database Connection Settings -->
-            <property name="jakarta.persistence.jdbc.url" value="jdbc:sqlserver://localhost:1433;databaseName=IUHPharmacityManagement;encrypt=true;trustServerCertificate=true"/>
+            <property name="jakarta.persistence.jdbc.url" value="jdbc:sqlserver://localhost:1433;databaseName=IUHPharmacityManagementV5;encrypt=true;trustServerCertificate=true"/>
             <property name="jakarta.persistence.jdbc.user" value="sa"/>
             <property name="jakarta.persistence.jdbc.password" value="sapassword"/>
             <property name="jakarta.persistence.jdbc.driver" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>

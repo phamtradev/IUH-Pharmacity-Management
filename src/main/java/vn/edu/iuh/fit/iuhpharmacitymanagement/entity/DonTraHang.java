@@ -5,6 +5,7 @@
 package vn.edu.iuh.fit.iuhpharmacitymanagement.entity;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -12,63 +13,92 @@ import java.util.Objects;
  * @author User
  */
 public class DonTraHang {
-    private String maDonTra;
-    private LocalDate ngayTraHang;
+    private String maDonTraHang;
+    private LocalDate ngayDatHang;
+    private double thanhTien;
+    private NhanVien nhanVien;
+    private DonHang donHang;
+    private List<ChiTietDonTraHang> chiTietDonTraHang;
 
     public DonTraHang() {
     }
 
-    public DonTraHang(String maDonTra, LocalDate ngayTraHang) {
-        this.maDonTra = maDonTra;
-        this.ngayTraHang = ngayTraHang;
+    public DonTraHang(String maDonTra, LocalDate ngayDatHang) {
+        this.maDonTraHang = maDonTra;
+        this.ngayDatHang = ngayDatHang;
     }
 
-    public String getMaDonTra() {
-        return maDonTra;
+    public String getMaDonTraHang() {
+        return maDonTraHang;
     }
 
-    public void setMaDonTra(String maDonTra) {
-        this.maDonTra = maDonTra;
+    public void setMaDonTraHang(String maDonTra) {
+        this.maDonTraHang = maDonTra;
     }
 
-    public LocalDate getNgayTraHang() {
-        return ngayTraHang;
+    public LocalDate getNgayDatHang() {
+        return ngayDatHang;
     }
 
-    public void setNgayTraHang(LocalDate ngayTraHang) {
-        this.ngayTraHang = ngayTraHang;
+    public void setNgayDatHang(LocalDate ngayDatHang) {
+        this.ngayDatHang = ngayDatHang;
+    }
+
+    public double getThanhTien() {
+        return thanhTien;
+    }
+
+    public void setThanhTien(double thanhTien) {
+        this.thanhTien = thanhTien;
+    }
+
+    public NhanVien getNhanVien() {
+        return nhanVien;
+    }
+
+    public void setNhanVien(NhanVien nhanVien) {
+        this.nhanVien = nhanVien;
+    }
+
+    public DonHang getDonHang() {
+        return donHang;
+    }
+
+    public void setDonHang(DonHang donHang) {
+        this.donHang = donHang;
+    }
+
+    public List<ChiTietDonTraHang> getChiTietDonTraHang() {
+        return chiTietDonTraHang;
+    }
+
+    public void setChiTietDonTraHang(List<ChiTietDonTraHang> chiTietDonTraHang) {
+        this.chiTietDonTraHang = chiTietDonTraHang;
     }
 
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 13 * hash + Objects.hashCode(this.maDonTra);
-        hash = 13 * hash + Objects.hashCode(this.ngayTraHang);
-        return hash;
+        return Objects.hash(maDonTraHang, ngayDatHang);
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final DonTraHang other = (DonTraHang) obj;
-        if (!Objects.equals(this.maDonTra, other.maDonTra)) {
-            return false;
-        }
-        return Objects.equals(this.ngayTraHang, other.ngayTraHang);
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        DonTraHang other = (DonTraHang) obj;
+        return Objects.equals(maDonTraHang, other.maDonTraHang) &&
+                Objects.equals(ngayDatHang, other.ngayDatHang);
     }
 
     @Override
     public String toString() {
-        return "DonTraHang{" + "maDonTra=" + maDonTra + ", ngayTraHang=" + ngayTraHang + '}';
+        return "DonTraHang{" +
+                "maDonTra='" + maDonTraHang + '\'' +
+                ", ngayDatHang=" + ngayDatHang +
+                ", thanhTien=" + thanhTien +
+                ", nhanVien=" + (nhanVien != null ? nhanVien.getMaNhanVien() : null) +
+                ", donHang=" + (donHang != null ? donHang.getMaDonHang() : null) +
+                ", chiTietDonTraHang=" + (chiTietDonTraHang != null ? chiTietDonTraHang.size() : 0) +
+                '}';
     }
-    
-    
 }

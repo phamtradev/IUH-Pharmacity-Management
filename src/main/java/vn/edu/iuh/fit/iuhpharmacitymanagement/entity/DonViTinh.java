@@ -9,7 +9,6 @@ package vn.edu.iuh.fit.iuhpharmacitymanagement.entity;
  * @author PhamTra
  */
 public class DonViTinh {
-
     private String maDonVi;
     private String tenDonVi;
 
@@ -39,7 +38,9 @@ public class DonViTinh {
 
     @Override
     public String toString() {
-        return "DonViTinh{" + "maDonVi=" + maDonVi + ", tenDonVi=" + tenDonVi + '}';
+        return "DonViTinh{" +
+                "maDonVi='" + maDonVi + '\'' +
+                ", tenDonVi='" + tenDonVi + '\'' +
+                '}';
     }
-
 }
