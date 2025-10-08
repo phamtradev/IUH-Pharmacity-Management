@@ -150,7 +150,8 @@ public class Menu extends JPanel {
 //    }
     private void createMenu() {
         int index = 0;
-        if (type == 1) { //staff
+        //1 là Nhân viên, 2 là quản lý
+        if (type == 1) {
             for (int i = 0; i < menuItemsManager.length; i++) {
                 String menuName = menuItemsManager[i][0];
                 if (menuName.startsWith("~") && menuName.endsWith("~")) {

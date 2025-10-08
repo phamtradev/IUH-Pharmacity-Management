@@ -22,6 +22,7 @@ import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.menu.Menu;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.menu.MenuAction;
 
 /**
  *
@@ -62,6 +63,8 @@ public class MainForm extends JLayeredPane {
         add(menuButton);
         add(menu);
         add(panelBody);
+        initMenuEvent();
+
     }
 
     @Override
@@ -91,26 +94,20 @@ public class MainForm extends JLayeredPane {
         menuButton.setIcon(svgIcon);
     }
 
-//    private void initMenuEvent() {
-//        menu.addMenuEvent((int index, int subIndex, MenuAction action) -> {
-//            // Application.mainForm.showForm(new DefaultForm("Form : " + index + " " + subIndex));
-//            if (index == 0) {
-//                MenuForm.showForm(new FormDashboard());
-//            } else if (index == 1) {
-//                if (subIndex == 1) {
-//                    MenuForm.showForm(new FormInbox());
-//                } else if (subIndex == 2) {
-//                    MenuForm.showForm(new FormRead());
-//                } else {
-//                    action.cancel();
-//                }
-//            } else if (index == 9) {
-//                MenuForm.logout();
-//            } else {
-//                action.cancel();
-//            }
-//        });
-//    }
+private void initMenuEvent() {
+    menu.addMenuEvent((int index, int subIndex, MenuAction action) -> {
+//        System.out.println("Menu clicked: " + index + " - " + subIndex);
+        switch (index) {
+            case 25:
+                showForm(new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.form.other.QuanLyTraHangGUI());
+                break;
+            default:
+                action.cancel();
+                break;
+        }
+    });
+}
+
     private void setMenuFull(boolean full) {
         String icon;
         if (getComponentOrientation().isLeftToRight()) {
