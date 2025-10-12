@@ -1,7 +1,5 @@
 package vn.edu.iuh.fit.iuhpharmacitymanagement.entity;
 
-import java.io.Serializable;
-import java.util.Objects;
 /**
  *
  * @author PhamTra

@@ -21,15 +21,17 @@ import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.Application;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.menu.Menu;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.menu.MenuAction;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.banhang.GD_BanHang;
 
 /**
  *
  * @author PhamTra
  */
 public class MainForm extends JLayeredPane {
-
+    private int type = 2;
     public MainForm() {
         init();
     }
@@ -94,19 +96,73 @@ public class MainForm extends JLayeredPane {
         menuButton.setIcon(svgIcon);
     }
 
-private void initMenuEvent() {
-    menu.addMenuEvent((int index, int subIndex, MenuAction action) -> {
-//        System.out.println("Menu clicked: " + index + " - " + subIndex);
-        switch (index) {
-            case 25:
-                showForm(new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.form.other.QuanLyTraHangGUI());
-                break;
-            default:
-                action.cancel();
-                break;
-        }
-    });
-}
+    private void initMenuEvent() {
+        menu.addMenuEvent((int index, int subIndex, MenuAction action) -> {
+            // Application.mainForm.showForm(new DefaultForm("Form : " + index + " " + subIndex));
+            if (type == 1) {
+//                if (index == 0) {
+//                    showForm(new TABStats());
+//                } else if (index == 1) {
+//                    showForm(new TABReport());
+//                } else if (index == 2) {
+//                    showForm(new TABProduct());
+//                } else if (index == 3) {
+//                    showForm(new TABUnit());
+//                } else if (index == 4) {
+//                    showForm(new TABEmployee());
+//                } else if (index == 5) {
+//                    showForm(new TABCustomer());
+//                } else if (index == 6) {
+//                    showForm(new TABSupplier());
+//                } else if (index == 7) {
+//                    showForm(new TABPurchaseOrder());
+//                } else if (index == 8) {
+//                    showForm(new TABReturnOrder());
+//                } else if (index == 9) {
+//                    showForm(new TABDamageItem());
+//                } else if (index == 10) {
+//                    showForm(new TABOrder());
+//                } else if (index == 11) {
+//                    showForm(new TABPromotion());
+//                } else if (index == 12) {
+//                    showForm(new TABPersonalInformation());
+//                } else if (index == 13) {
+//                    showForm(new ViewPdfPanel(1));
+//                } else if ( index ==14 ){
+//                    Application.logout();
+//                }else {
+//                    action.cancel();
+//                }
+            } else if (type == 2) {
+                if (index == 20) {
+                    showForm(new GD_BanHang());
+//                } else if (index == 21) {
+//                    showForm(new TABProduct());
+//                } else if (index == 22) {
+//                    showForm(new TABCustomer());
+//                } else if (index == 23) {
+//                    showForm(new TABSupplier());
+//                } else if (index == 24) {
+//                    showForm(new TABPurchase());
+//                } else if (index == 25) {
+//                    showForm(new gui.staff.TABReturnOrder());
+//                } else if (index == 26) {
+//                    showForm(new TabDamageItem());
+//                } else if (index == 27) {
+//                    showForm(new TABIndividualReport());
+//                } else if (index == 28) {
+//                    showForm(new TABPersonalInformation());
+//                } else if (index == 29) {
+//                    showForm(new ViewPdfPanel(2));
+//                } else if (index == 30) {
+//                    Application.logout();
+                } else {
+                    action.cancel();
+                }
+            }
+
+        });
+    }
 
     private void setMenuFull(boolean full) {
         String icon;

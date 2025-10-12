@@ -17,7 +17,7 @@ public class ConnectDB {
     private static ConnectDB instance = null;
     private static Connection connection = null;
 
-    private static final String URL = "jdbc:sqlserver://localhost:1433;databaseName=IUHPharmacityManagement;encrypt=true;trustServerCertificate=true";
+    private static final String URL = "jdbc:sqlserver://localhost:1433;databaseName=IUHPharmacityManagement;encrypt=false;trustServerCertificate=true;integratedSecurity=false";
     private static final String USER = "sa";
     private static final String PASSWORD = "sapassword";
 
@@ -57,7 +57,7 @@ public class ConnectDB {
     // Test connection
     public static boolean testConnection() {
         try {
-            Connection testConn = getInstance().getConnection();
+            Connection testConn = ConnectDB.getConnection();
             return testConn != null && !testConn.isClosed();
         } catch (SQLException e) {
             e.printStackTrace();

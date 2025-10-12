@@ -40,6 +40,7 @@ public class MainApplication {
 
                 // Khởi tạo ứng dụng
                 new MenuForm().setVisible(true);
+
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(null,
                         "Đã xảy ra lỗi khi khởi động ứng dụng: " + e.getMessage(),

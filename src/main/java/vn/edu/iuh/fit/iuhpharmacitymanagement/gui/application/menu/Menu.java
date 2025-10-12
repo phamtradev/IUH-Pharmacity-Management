@@ -161,7 +161,7 @@ public class Menu extends JPanel {
                     panelMenu.add(menuItem);
                 }
             }
-        } else { // manager 
+        } else { // manager
             for (int i = 0; i < menuItemsStaff.length; i++) {
                 String menuName = menuItemsStaff[i][0];
                 if (menuName.startsWith("~") && menuName.endsWith("~")) {

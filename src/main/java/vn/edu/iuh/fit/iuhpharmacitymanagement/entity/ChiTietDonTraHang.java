@@ -1,7 +1,5 @@
 package vn.edu.iuh.fit.iuhpharmacitymanagement.entity;
 
-import java.io.Serializable;
-import java.util.Objects;
 /**
  *
  * @author PhamTra
@@ -18,7 +16,8 @@ public class ChiTietDonTraHang {
     public ChiTietDonTraHang() {
     }
 
-    public ChiTietDonTraHang(String maChiTietDonTraHang, int soLuong, double donGia, String lyDoTra, double thanhTien, SanPham sanPham, DonTraHang donTraHang) {
+    public ChiTietDonTraHang(String maChiTietDonTraHang, int soLuong, double donGia, String lyDoTra, double thanhTien,
+            SanPham sanPham, DonTraHang donTraHang) {
         this.maChiTietDonTraHang = maChiTietDonTraHang;
         this.soLuong = soLuong;
         this.donGia = donGia;
