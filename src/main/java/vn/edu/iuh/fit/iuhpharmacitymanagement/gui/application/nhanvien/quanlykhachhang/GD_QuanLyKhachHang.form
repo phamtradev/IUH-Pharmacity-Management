@@ -18,14 +18,14 @@
     <Property name="verticalGap" type="int" value="15"/>
   </Layout>
   <SubComponents>
-    <Component class="vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.qlKhachHang.Panel_ToolBar" name="panel_ToolBar1">
+    <Component class="vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlykhachhang.Panel_ToolBar" name="panel_ToolBar1">
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription">
           <BorderConstraints direction="First"/>
         </Constraint>
       </Constraints>
     </Component>
-    <Component class="vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.qlKhachHang.Panel_TableKhachHang" name="panel_TableKhachHang1">
+    <Component class="vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlykhachhang.Panel_TableKhachHang" name="panel_TableKhachHang1">
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription">
           <BorderConstraints direction="Center"/>

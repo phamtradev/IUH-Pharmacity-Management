@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JPanel.java to edit this template
  */
-package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.qlKhachHang;
+package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlykhachhang;
 
 /**
  *
@@ -48,8 +48,6 @@ public class Panel_TableKhachHang extends javax.swing.JPanel {
             }
         ));
         tblKhachHang.setShowGrid(true);
-        tblKhachHang.setShowHorizontalLines(true);
-        tblKhachHang.setShowVerticalLines(true);
         tblKhachHang.setSurrendersFocusOnKeystroke(true);
         jScrollPane1.setViewportView(tblKhachHang);
 

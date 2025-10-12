@@ -2,18 +2,18 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JPanel.java to edit this template
  */
-package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.qlKhachHang;
+package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlykhachhang;
 
 /**
  *
  * @author User
  */
-public class QLKhachHangGUI extends javax.swing.JPanel {
+public class GD_QuanLyKhachHang extends javax.swing.JPanel {
 
     /**
      * Creates new form QLKhachHangGUI
      */
-    public QLKhachHangGUI() {
+    public GD_QuanLyKhachHang() {
         initComponents();
     }
 
@@ -26,8 +26,8 @@ public class QLKhachHangGUI extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        panel_ToolBar1 = new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.qlKhachHang.Panel_ToolBar();
-        panel_TableKhachHang1 = new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.qlKhachHang.Panel_TableKhachHang();
+        panel_ToolBar1 = new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlykhachhang.Panel_ToolBar();
+        panel_TableKhachHang1 = new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlykhachhang.Panel_TableKhachHang();
 
         setLayout(new java.awt.BorderLayout(0, 15));
         add(panel_ToolBar1, java.awt.BorderLayout.PAGE_START);
@@ -36,7 +36,7 @@ public class QLKhachHangGUI extends javax.swing.JPanel {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.qlKhachHang.Panel_TableKhachHang panel_TableKhachHang1;
-    private vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.qlKhachHang.Panel_ToolBar panel_ToolBar1;
+    private vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlykhachhang.Panel_TableKhachHang panel_TableKhachHang1;
+    private vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlykhachhang.Panel_ToolBar panel_ToolBar1;
     // End of variables declaration//GEN-END:variables
 }
