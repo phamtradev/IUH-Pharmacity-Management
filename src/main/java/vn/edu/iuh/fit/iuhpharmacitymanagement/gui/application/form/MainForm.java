@@ -22,9 +22,11 @@ import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.Application;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.form.other.QuanLyTraHangGUI;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.menu.Menu;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.menu.MenuAction;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.banhang.GD_BanHang;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.qlKhachHang.QLKhachHangGUI;
 
 /**
  *
@@ -138,14 +140,14 @@ public class MainForm extends JLayeredPane {
                     showForm(new GD_BanHang());
 //                } else if (index == 21) {
 //                    showForm(new TABProduct());
-//                } else if (index == 22) {
-//                    showForm(new TABCustomer());
+                } else if (index == 22) {
+                    showForm(new QLKhachHangGUI());
 //                } else if (index == 23) {
 //                    showForm(new TABSupplier());
 //                } else if (index == 24) {
 //                    showForm(new TABPurchase());
-//                } else if (index == 25) {
-//                    showForm(new gui.staff.TABReturnOrder());
+                } else if (index == 25) {
+                    showForm(new QuanLyTraHangGUI());
 //                } else if (index == 26) {
 //                    showForm(new TabDamageItem());
 //                } else if (index == 27) {
