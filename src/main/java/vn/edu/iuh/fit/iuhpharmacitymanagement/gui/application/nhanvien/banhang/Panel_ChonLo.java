@@ -8,7 +8,7 @@ import java.time.format.DateTimeFormatter;
 
 /**
  *
- * @author daoducdanh
+ * @author PhamTra
  */
 public class Panel_ChonLo extends javax.swing.JPanel {
 

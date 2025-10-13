@@ -8,7 +8,7 @@ import java.awt.Container;
 
 /**
  *
- * @author Hoang
+ * @author PhamTra
  */
 public class Panel_ChiTietSanPham extends javax.swing.JPanel {
 

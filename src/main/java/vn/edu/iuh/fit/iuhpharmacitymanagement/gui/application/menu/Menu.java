@@ -33,7 +33,7 @@ public class Menu extends JPanel {
         {"Quản lý đơn hàng"},
         {"Quản lý khuyến mãi"},
         {"Thông tin cá nhân"},
-        {"Hướng dẫn sử dụng"},
+        {"Trợ giúp"},
         {"Đăng xuất"}
     };
 
@@ -47,7 +47,7 @@ public class Menu extends JPanel {
         {"Phiếu xuất hủy"},
         {"Thống kê cá nhân"},
         {"Thông tin cá nhân"},
-        {"Hướng dẫn sử dụng"},
+        {"Trợ giúp"},
         {"Đăng xuất"}
     };
 
@@ -152,7 +152,8 @@ public class Menu extends JPanel {
         int index = 0;
         //1 là Nhân viên, 2 là quản lý
         if (type == 1) {
-            for (int i = 0; i < menuItemsManager.length; i++) {
+            // Thêm các menu chính (trừ 2 menu cuối)
+            for (int i = 0; i < menuItemsManager.length - 2; i++) {
                 String menuName = menuItemsManager[i][0];
                 if (menuName.startsWith("~") && menuName.endsWith("~")) {
                     panelMenu.add(createTitle(menuName));
@@ -161,8 +162,21 @@ public class Menu extends JPanel {
                     panelMenu.add(menuItem);
                 }
             }
-        } else { // manager
-            for (int i = 0; i < menuItemsStaff.length; i++) {
+            
+            // Thêm glue để đẩy các menu xuống dưới
+            panelMenu.add(Box.createVerticalGlue());
+            
+            // Thêm separator
+            panelMenu.add(createSeparator());
+            
+            // Thêm 2 menu cuối (Trợ giúp và Đăng xuất)
+            for (int i = menuItemsManager.length - 2; i < menuItemsManager.length; i++) {
+                MenuItem menuItem = new MenuItem(this, menuItemsManager[i], index++, events);
+                panelMenu.add(menuItem);
+            }
+        } else { // staff
+            // Thêm các menu chính (trừ 2 menu cuối)
+            for (int i = 0; i < menuItemsStaff.length - 2; i++) {
                 String menuName = menuItemsStaff[i][0];
                 if (menuName.startsWith("~") && menuName.endsWith("~")) {
                     panelMenu.add(createTitle(menuName));
@@ -170,6 +184,18 @@ public class Menu extends JPanel {
                     MenuItem menuItem = new MenuItem(this, menuItemsStaff[i], 20 + index++, events);
                     panelMenu.add(menuItem);
                 }
+            }
+            
+            // Thêm glue để đẩy các menu xuống dưới
+            panelMenu.add(Box.createVerticalGlue());
+            
+            // Thêm separator
+            panelMenu.add(createSeparator());
+            
+            // Thêm 2 menu cuối (Trợ giúp và Đăng xuất)
+            for (int i = menuItemsStaff.length - 2; i < menuItemsStaff.length; i++) {
+                MenuItem menuItem = new MenuItem(this, menuItemsStaff[i], 20 + index++, events);
+                panelMenu.add(menuItem);
             }
         }
 
@@ -182,6 +208,13 @@ public class Menu extends JPanel {
                 "font:$Menu.label.font;"
                 + "foreground:$Menu.title.foreground");
         return lbTitle;
+    }
+
+    private JSeparator createSeparator() {
+        JSeparator separator = new JSeparator();
+        separator.putClientProperty(FlatClientProperties.STYLE,
+                "foreground:$Menu.title.foreground");
+        return separator;
     }
 
     public void setSelectedMenu(int index, int subIndex) {

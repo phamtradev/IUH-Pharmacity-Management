@@ -21,7 +21,7 @@ import javax.swing.UIManager;
 
 /**
  *
- * @author Hoang
+ * @author PhamTra
  */
 public class GD_BanHang extends javax.swing.JPanel {
 
@@ -52,8 +52,7 @@ public class GD_BanHang extends javax.swing.JPanel {
         remove(pnMi);
         add(wrapperPanel, java.awt.BorderLayout.CENTER);
     }
-    
-    
+
     private void addHeaderRow() {
         // Tạo panel header với GridBagLayout giống HỆT Panel_ChiTietSanPham
         javax.swing.JPanel headerPanel = new javax.swing.JPanel();
@@ -62,7 +61,7 @@ public class GD_BanHang extends javax.swing.JPanel {
         headerPanel.setMaximumSize(new java.awt.Dimension(32767, 50));
         headerPanel.setMinimumSize(new java.awt.Dimension(800, 50));
         headerPanel.setPreferredSize(new java.awt.Dimension(1000, 50));
-        
+
         // Sử dụng GridBagLayout với constraints giống Panel_ChiTietSanPham
         headerPanel.setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
@@ -71,7 +70,7 @@ public class GD_BanHang extends javax.swing.JPanel {
         gbc.insets = new java.awt.Insets(10, 8, 10, 8); // Giống Panel_ChiTietSanPham
         gbc.gridy = 0;
         gbc.weighty = 1.0;
-        
+
         // 1. Hình ảnh - 80x100px (giống lblHinh)
         javax.swing.JLabel lblHeaderImg = new javax.swing.JLabel("Hình ảnh");
         lblHeaderImg.setFont(new java.awt.Font("Segoe UI", 1, 13));
@@ -81,7 +80,7 @@ public class GD_BanHang extends javax.swing.JPanel {
         gbc.gridx = 0;
         gbc.weightx = 0.0;
         headerPanel.add(lblHeaderImg, gbc);
-        
+
         // 2. Tên sản phẩm - 180px (giống lblTenSP)
         javax.swing.JLabel lblHeaderName = new javax.swing.JLabel("Tên sản phẩm");
         lblHeaderName.setFont(new java.awt.Font("Segoe UI", 1, 13));
@@ -90,7 +89,7 @@ public class GD_BanHang extends javax.swing.JPanel {
         gbc.gridx = 1;
         gbc.weightx = 1.0;
         headerPanel.add(lblHeaderName, gbc);
-        
+
         // 3. Lô hàng - 100px (giống jLabel1)
         javax.swing.JLabel lblHeaderBatch = new javax.swing.JLabel("Lô hàng");
         lblHeaderBatch.setFont(new java.awt.Font("Segoe UI", 1, 13));
@@ -100,7 +99,7 @@ public class GD_BanHang extends javax.swing.JPanel {
         gbc.gridx = 2;
         gbc.weightx = 0.0;
         headerPanel.add(lblHeaderBatch, gbc);
-        
+
         // 4. Số lượng - 100px (giống pnSpinner)
         javax.swing.JLabel lblHeaderQty = new javax.swing.JLabel("Số lượng");
         lblHeaderQty.setFont(new java.awt.Font("Segoe UI", 1, 13));
@@ -110,7 +109,7 @@ public class GD_BanHang extends javax.swing.JPanel {
         gbc.gridx = 3;
         gbc.weightx = 0.0;
         headerPanel.add(lblHeaderQty, gbc);
-        
+
         // 5. Giảm giá - 70px (giống txtDiscount)
         javax.swing.JLabel lblHeaderDiscount = new javax.swing.JLabel("Giảm giá");
         lblHeaderDiscount.setFont(new java.awt.Font("Segoe UI", 1, 13));
@@ -120,7 +119,7 @@ public class GD_BanHang extends javax.swing.JPanel {
         gbc.gridx = 4;
         gbc.weightx = 0.0;
         headerPanel.add(lblHeaderDiscount, gbc);
-        
+
         // 6. Đơn giá - 100px (giống txtDonGia)
         javax.swing.JLabel lblHeaderPrice = new javax.swing.JLabel("Đơn giá");
         lblHeaderPrice.setFont(new java.awt.Font("Segoe UI", 1, 13));
@@ -130,7 +129,7 @@ public class GD_BanHang extends javax.swing.JPanel {
         gbc.gridx = 5;
         gbc.weightx = 0.0;
         headerPanel.add(lblHeaderPrice, gbc);
-        
+
         // 7. Tổng tiền - 120px (giống txtTongTien)
         javax.swing.JLabel lblHeaderTotal = new javax.swing.JLabel("Tổng tiền");
         lblHeaderTotal.setFont(new java.awt.Font("Segoe UI", 1, 13));
@@ -140,7 +139,7 @@ public class GD_BanHang extends javax.swing.JPanel {
         gbc.gridx = 6;
         gbc.weightx = 0.0;
         headerPanel.add(lblHeaderTotal, gbc);
-        
+
         // 8. Chức năng - 70px (giống pnXoa)
         javax.swing.JLabel lblHeaderAction = new javax.swing.JLabel("Chức năng");
         lblHeaderAction.setFont(new java.awt.Font("Segoe UI", 1, 13));
@@ -150,10 +149,10 @@ public class GD_BanHang extends javax.swing.JPanel {
         gbc.gridx = 7;
         gbc.weightx = 0.0;
         headerPanel.add(lblHeaderAction, gbc);
-        
+
         containerPanel.add(headerPanel);
     }
-    
+
     private void addSampleProduct() {
         // Thêm một panel chi tiết sản phẩm mẫu vào container
         Panel_ChiTietSanPham panelChiTiet = new Panel_ChiTietSanPham();
@@ -171,14 +170,14 @@ public class GD_BanHang extends javax.swing.JPanel {
                 + "borderWidth:1;"
                 + "borderColor:#CCCCCC"
         );
-        
+
         // Style cho button Thêm
         btnMa.putClientProperty(FlatClientProperties.STYLE,
                 "arc:8;"
                 + "borderWidth:0;"
                 + "focusWidth:0"
         );
-        
+
         // Style cho button Xóa trắng
         btnXoa.putClientProperty(FlatClientProperties.STYLE,
                 "arc:8;"

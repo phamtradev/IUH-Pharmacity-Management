@@ -65,9 +65,40 @@ public class MenuItemLayout implements LayoutManager {
             int x = insets.left;
             int y = insets.top;
             int width = parent.getWidth() - (insets.left + insets.right);
+            int height = parent.getHeight() - (insets.top + insets.bottom);
             int size = parent.getComponentCount();
+            
+            // Tìm vị trí của glue component (Box.Filler)
+            int glueIndex = -1;
             for (int i = 0; i < size; i++) {
                 Component com = parent.getComponent(i);
+                if (com instanceof javax.swing.Box.Filler) {
+                    glueIndex = i;
+                    break;
+                }
+            }
+            
+            // Nếu có glue, tính toán chiều cao của các component sau glue
+            int bottomComponentsHeight = 0;
+            if (glueIndex != -1) {
+                for (int i = glueIndex + 1; i < size; i++) {
+                    Component com = parent.getComponent(i);
+                    if (com.isVisible()) {
+                        bottomComponentsHeight += com.getPreferredSize().height;
+                    }
+                }
+            }
+            
+            // Layout các component
+            for (int i = 0; i < size; i++) {
+                Component com = parent.getComponent(i);
+                
+                // Nếu gặp glue, nhảy xuống vị trí bottom
+                if (i == glueIndex) {
+                    y = insets.top + height - bottomComponentsHeight;
+                    continue;
+                }
+                
                 if (com.isVisible()) {
                     int comHeight = com.getPreferredSize().height;
                     if (com instanceof JLabel) {

@@ -13,6 +13,7 @@ import java.util.List;
  * @author PhamTra
  */
 public class SanPham {
+
     private String maSanPham;
     private String tenSanPham;
     private String soDangKy;
@@ -31,12 +32,14 @@ public class SanPham {
     private List<LoHang> danhSachLoHang;
     private DonViTinh donViTinh;
 
+    public static final String MA_THUOC_RONG = "Mã thuốc không được rỗng";
+
     public SanPham() {
     }
 
     public SanPham(String maSanPham, String tenSanPham, String soDangKy, String hoatChat,
-                   String lieuDung, String cachDongGoi, String quocGiaSanXuat, String nhaSanXuat,
-                   double giaNhap, double giaBan, boolean hoatDong, String hinhAnh, LoaiSanPham loaiSanPham) {
+            String lieuDung, String cachDongGoi, String quocGiaSanXuat, String nhaSanXuat,
+            double giaNhap, double giaBan, boolean hoatDong, String hinhAnh, LoaiSanPham loaiSanPham) {
         this.maSanPham = maSanPham;
         this.tenSanPham = tenSanPham;
         this.soDangKy = soDangKy;
@@ -56,7 +59,10 @@ public class SanPham {
         return maSanPham;
     }
 
-    public void setMaSanPham(String maSanPham) {
+    public void setMaSanPham(String maSanPham) throws Exception {
+        if (maSanPham.isBlank()) {
+            throw new Exception(MA_THUOC_RONG);
+        }
         this.maSanPham = maSanPham;
     }
 
@@ -182,21 +188,21 @@ public class SanPham {
 
     @Override
     public String toString() {
-        return "SanPham{" +
-                "maSanPham='" + maSanPham + '\'' +
-                ", tenSanPham='" + tenSanPham + '\'' +
-                ", soDangKy='" + soDangKy + '\'' +
-                ", hoatChat='" + hoatChat + '\'' +
-                ", lieuDung='" + lieuDung + '\'' +
-                ", cachDongGoi='" + cachDongGoi + '\'' +
-                ", quocGiaSanXuat='" + quocGiaSanXuat + '\'' +
-                ", nhaSanXuat='" + nhaSanXuat + '\'' +
-                ", giaNhap=" + giaNhap +
-                ", giaBan=" + giaBan +
-                ", hoatDong=" + hoatDong +
-                ", thueVAT=" + thueVAT +
-                ", hinhAnh='" + hinhAnh + '\'' +
-                ", loaiSanPham=" + loaiSanPham +
-                '}';
+        return "SanPham{"
+                + "maSanPham='" + maSanPham + '\''
+                + ", tenSanPham='" + tenSanPham + '\''
+                + ", soDangKy='" + soDangKy + '\''
+                + ", hoatChat='" + hoatChat + '\''
+                + ", lieuDung='" + lieuDung + '\''
+                + ", cachDongGoi='" + cachDongGoi + '\''
+                + ", quocGiaSanXuat='" + quocGiaSanXuat + '\''
+                + ", nhaSanXuat='" + nhaSanXuat + '\''
+                + ", giaNhap=" + giaNhap
+                + ", giaBan=" + giaBan
+                + ", hoatDong=" + hoatDong
+                + ", thueVAT=" + thueVAT
+                + ", hinhAnh='" + hinhAnh + '\''
+                + ", loaiSanPham=" + loaiSanPham
+                + '}';
     }
 }
