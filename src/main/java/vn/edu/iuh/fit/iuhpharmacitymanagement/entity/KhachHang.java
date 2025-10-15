@@ -16,6 +16,16 @@ public class KhachHang {
     private String diaChi;
     private String email;
     private String gioiTinh;
+    
+    public static final String MA_KHACH_HANG_SAI = "Mã khách hàng phải có dạng KHxxxxx (5 chữ số dương)";
+    public static final String TEN_KHACH_HANG_RONG = "Tên khách hàng không được rỗng";
+    public static final String SO_DIEN_THOAI_SAI = "Số điện thoại phải bắt đầu bằng 0 và gồm đúng 10 chữ số";
+    public static final String DIA_CHI_RONG = "Địa chỉ không được rỗng";
+    public static final String EMAIL_SAI = "Email không đúng định dạng (phải chứa @ và dấu . hợp lệ)";
+    
+    public static final String MA_KHACH_HANG_REGEX = "^KH\\d{5}$";
+    public static final String SO_DIEN_THOAI_REGEX = "^0[0-9]{9}$";
+    public static final String EMAIL_REGEX = "^[^@]+@[^@]+\\.[a-zA-Z]{2,}$";
 
     public KhachHang() {
     }
@@ -34,7 +44,10 @@ public class KhachHang {
         return maKhachHang;
     }
 
-    public void setMaKhachHang(String maKhachHang) {
+    public void setMaKhachHang(String maKhachHang) throws Exception {
+        if (!maKhachHang.matches(MA_KHACH_HANG_REGEX)) {
+            throw new Exception(MA_KHACH_HANG_SAI);
+        }
         this.maKhachHang = maKhachHang;
     }
 
@@ -42,7 +55,10 @@ public class KhachHang {
         return tenKhachHang;
     }
 
-    public void setTenKhachHang(String tenKhachHang) {
+    public void setTenKhachHang(String tenKhachHang) throws Exception {
+        if (tenKhachHang.isBlank()) {
+            throw new Exception(TEN_KHACH_HANG_RONG);
+        }
         this.tenKhachHang = tenKhachHang;
     }
 
@@ -50,7 +66,10 @@ public class KhachHang {
         return soDienThoai;
     }
 
-    public void setSoDienThoai(String soDienThoai) {
+    public void setSoDienThoai(String soDienThoai) throws Exception {
+        if (!soDienThoai.matches(SO_DIEN_THOAI_REGEX)) {
+            throw new Exception(SO_DIEN_THOAI_SAI);
+        }
         this.soDienThoai = soDienThoai;
     }
 
@@ -58,7 +77,10 @@ public class KhachHang {
         return diaChi;
     }
 
-    public void setDiaChi(String diaChi) {
+    public void setDiaChi(String diaChi) throws Exception {
+        if (diaChi.isBlank()) {
+            throw new Exception(DIA_CHI_RONG);
+        }
         this.diaChi = diaChi;
     }
 
@@ -66,7 +88,10 @@ public class KhachHang {
         return email;
     }
 
-    public void setEmail(String email) {
+    public void setEmail(String email) throws Exception {
+        if (!email.matches(EMAIL_REGEX)) {
+            throw new Exception(EMAIL_SAI);
+        }
         this.email = email;
     }
 

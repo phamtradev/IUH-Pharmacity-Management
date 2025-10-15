@@ -11,6 +11,12 @@ public class ChiTietHangHong {
 
     private LoHang loHang;
     private HangHong hangHong;
+    
+    public static final String MA_CHI_TIET_RONG = "Mã chi tiết hàng hỏng không được để trống";
+    public static final String SO_LUONG_SAI = "Số lượng phải là số nguyên dương lớn hơn 0";
+    public static final String DON_GIA_SAI = "Đơn giá phải là số thực dương lớn hơn 0";
+    public static final String LO_HANG_RONG = "Lô hàng không được để trống";
+    public static final String HANG_HONG_RONG = "Hàng hỏng không được để trống";
 
     public ChiTietHangHong() {
     }
@@ -28,7 +34,10 @@ public class ChiTietHangHong {
         return maChiTietHangHong;
     }
 
-    public void setMaChiTietHangHong(String maChiTietHangHong) {
+    public void setMaChiTietHangHong(String maChiTietHangHong) throws Exception {
+        if (maChiTietHangHong.isBlank()) {
+            throw new Exception(MA_CHI_TIET_RONG);
+        }
         this.maChiTietHangHong = maChiTietHangHong;
     }
 
@@ -36,7 +45,10 @@ public class ChiTietHangHong {
         return soLuong;
     }
 
-    public void setSoLuong(int soLuong) {
+    public void setSoLuong(int soLuong) throws Exception {
+        if (soLuong <= 0) {
+            throw new Exception(SO_LUONG_SAI);
+        }
         this.soLuong = soLuong;
     }
 
@@ -44,7 +56,10 @@ public class ChiTietHangHong {
         return donGia;
     }
 
-    public void setDonGia(double donGia) {
+    public void setDonGia(double donGia) throws Exception {
+        if (donGia <= 0) {
+            throw new Exception(DON_GIA_SAI);
+        }
         this.donGia = donGia;
     }
 
@@ -53,14 +68,17 @@ public class ChiTietHangHong {
     }
 
     public void setThanhTien(double thanhTien) {
-        this.thanhTien = thanhTien;
+        this.thanhTien = this.soLuong * this.donGia;
     }
 
     public LoHang getLoHang() {
         return loHang;
     }
 
-    public void setLoHang(LoHang loHang) {
+    public void setLoHang(LoHang loHang) throws Exception {
+        if (loHang == null) {
+            throw new Exception(LO_HANG_RONG);
+        }
         this.loHang = loHang;
     }
 
@@ -68,7 +86,10 @@ public class ChiTietHangHong {
         return hangHong;
     }
 
-    public void setHangHong(HangHong hangHong) {
+    public void setHangHong(HangHong hangHong) throws Exception {
+        if (hangHong == null) {
+            throw new Exception(HANG_HONG_RONG);
+        }
         this.hangHong = hangHong;
     }
 }
