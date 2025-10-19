@@ -17,7 +17,19 @@ public class NhaCungCap {
     private String soDienThoai;
     private String email;
     private String maSoThue;
+    
+    public static final String MA_NHA_CUNG_CAP_SAI = "Mã nhà cung cấp phải có dạng NCCXXXX (XXXX là số nguyên dương từ 0001 đến 9999)";
+    public static final String TEN_NHA_CUNG_CAP_RONG = "Tên nhà cung cấp không được để trống";
+    public static final String DIA_CHI_RONG = "Địa chỉ không được để trống";
+    public static final String SO_DIEN_THOAI_SAI = "Số điện thoại phải bắt đầu bằng 0 và gồm đúng 10 chữ số";
+    public static final String EMAIL_SAI = "Email không đúng định dạng";
+    public static final String MA_SO_THUE_SAI = "Mã số thuế phải gồm 10 số hoặc 13 ký tự dạng 0123456789-001";
 
+    public static final String MA_NHA_CUNG_CAP_REGEX = "^NCC\\d{4}$";
+    public static final String SO_DIEN_THOAI_REGEX = "^0[0-9]{9}$";
+    public static final String EMAIL_REGEX = "^[^@]+@[^@]+\\.[a-zA-Z]{2,}$";
+    public static final String MA_SO_THUE_REGEX = "^[0-9]{10}(-[0-9]{3})?$";
+    
     public NhaCungCap() {
     }
 
@@ -34,7 +46,10 @@ public class NhaCungCap {
         return maNhaCungCap;
     }
 
-    public void setMaNhaCungCap(String maNhaCungCap) {
+    public void setMaNhaCungCap(String maNhaCungCap) throws Exception {
+        if (!maNhaCungCap.matches(MA_NHA_CUNG_CAP_REGEX)) {
+            throw new Exception(MA_NHA_CUNG_CAP_SAI);
+        }
         this.maNhaCungCap = maNhaCungCap;
     }
 
@@ -42,7 +57,10 @@ public class NhaCungCap {
         return tenNhaCungCap;
     }
 
-    public void setTenNhaCungCap(String tenNhaCungCap) {
+    public void setTenNhaCungCap(String tenNhaCungCap) throws Exception {
+        if (tenNhaCungCap.isBlank()) {
+            throw new Exception(TEN_NHA_CUNG_CAP_RONG);
+        }
         this.tenNhaCungCap = tenNhaCungCap;
     }
 
@@ -50,7 +68,10 @@ public class NhaCungCap {
         return diaChi;
     }
 
-    public void setDiaChi(String diaChi) {
+    public void setDiaChi(String diaChi) throws Exception {
+        if (diaChi.isBlank()) {
+            throw new Exception(DIA_CHI_RONG);
+        }
         this.diaChi = diaChi;
     }
 
@@ -58,7 +79,10 @@ public class NhaCungCap {
         return soDienThoai;
     }
 
-    public void setSoDienThoai(String soDienThoai) {
+    public void setSoDienThoai(String soDienThoai) throws Exception {
+        if (!soDienThoai.matches(SO_DIEN_THOAI_REGEX)) {
+            throw new Exception(SO_DIEN_THOAI_SAI);
+        }
         this.soDienThoai = soDienThoai;
     }
 
@@ -66,7 +90,10 @@ public class NhaCungCap {
         return email;
     }
 
-    public void setEmail(String email) {
+    public void setEmail(String email) throws Exception {
+        if (!email.matches(EMAIL_REGEX)) {
+            throw new Exception(EMAIL_SAI);
+        }
         this.email = email;
     }
 
@@ -74,7 +101,10 @@ public class NhaCungCap {
         return maSoThue;
     }
 
-    public void setMaSoThue(String maSoThue) {
+    public void setMaSoThue(String maSoThue) throws Exception {
+        if (!maSoThue.matches(MA_SO_THUE_REGEX)) {
+            throw new Exception(MA_SO_THUE_SAI);
+        }
         this.maSoThue = maSoThue;
     }
 
