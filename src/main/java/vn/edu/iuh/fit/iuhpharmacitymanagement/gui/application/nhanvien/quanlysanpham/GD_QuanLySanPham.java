@@ -34,9 +34,23 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
     }
 
     private void setUIManager() {
+        // Placeholder cho TextField tìm kiếm
         txtSearchNamePD.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập tên sản phẩm hoặc số đăng ký");
+        try {
+            // TextField txtSearchSDKPD có thể chưa được generate, kiểm tra trước
+            java.lang.reflect.Field field = this.getClass().getDeclaredField("txtSearchSDKPD");
+            field.setAccessible(true);
+            javax.swing.JTextField txtSearchSDKPD = (javax.swing.JTextField) field.get(this);
+            if (txtSearchSDKPD != null) {
+                txtSearchSDKPD.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập số đăng ký");
+                txtSearchSDKPD.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
+            }
+        } catch (Exception e) {
+            // Bỏ qua nếu field chưa tồn tại
+        }
+        
+        // Placeholder cho modal THÊM sản phẩm
         txtCountryOfOrigin.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập xuất xứ");
-//        txtProductActive.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập hoat động");
         txtProductActiveIngre.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập hoạt chất");
         txtProductDosage.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập liều lượng");
         txtProductManufacturer.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập tên nhà sản xuất");
@@ -45,6 +59,43 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         txtProductPurchasePrice.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập giá nhập vào");
         txtProductRegisNumber.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập số đăng kí");
         txtProductSellingPrice.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập giá bán");
+        
+        // Placeholder cho modal SỬA sản phẩm
+        txtCountryOfOrigin1.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập xuất xứ");
+        txtProductActiveIngre1.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập hoạt chất");
+        txtProductDosage1.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập liều lượng");
+        txtProductManufacturer1.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập tên nhà sản xuất");
+        txtProductName1.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập tên sản phẩm");
+        txtProductPakaging1.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập quy trình đóng gói");
+        txtProductPurchasePrice1.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập giá nhập vào");
+        txtProductRegisNumber1.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập số đăng kí");
+        txtProductSellingPrice1.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập giá bán");
+        
+        // Thêm viền cho TextField tìm kiếm
+        txtSearchNamePD.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
+        
+        // Thêm viền cho modal THÊM sản phẩm
+        txtCountryOfOrigin.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
+        txtProductActiveIngre.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
+        txtProductDosage.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
+        txtProductManufacturer.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
+        txtProductName.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
+        txtProductPakaging.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
+        txtProductPurchasePrice.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
+        txtProductRegisNumber.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
+        txtProductSellingPrice.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
+        
+        // Thêm viền cho modal SỬA sản phẩm
+        txtCountryOfOrigin1.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
+        txtProductActiveIngre1.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
+        txtProductDosage1.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
+        txtProductManufacturer1.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
+        txtProductName1.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
+        txtProductPakaging1.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
+        txtProductPurchasePrice1.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
+        txtProductRegisNumber1.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
+        txtProductSellingPrice1.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
+        
         UIManager.put("Button.arc", 10);
     }
 
@@ -805,21 +856,18 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         pnAll.add(headerPanel, java.awt.BorderLayout.NORTH);
 
         jPanel4.setBackground(new java.awt.Color(255, 255, 255));
+        jPanel4.setLayout(new java.awt.BorderLayout());
 
-        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
-        jPanel4.setLayout(jPanel4Layout);
-        jPanel4Layout.setHorizontalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 1226, Short.MAX_VALUE)
-            .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addComponent(ProductScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 1226, Short.MAX_VALUE))
-        );
-        jPanel4Layout.setVerticalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 174, Short.MAX_VALUE)
-            .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addComponent(ProductScrollPane, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 174, Short.MAX_VALUE))
-        );
+        // Thêm tiêu đề "Danh sách thông tin thuốc"
+        javax.swing.JPanel titlePanel = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 12));
+        titlePanel.setBackground(new java.awt.Color(23, 162, 184)); // Màu xanh cyan
+        javax.swing.JLabel lblTitle = new javax.swing.JLabel("DANH SÁCH THÔNG TIN THUỐC");
+        lblTitle.setFont(new java.awt.Font("Segoe UI", 1, 16));
+        lblTitle.setForeground(new java.awt.Color(255, 255, 255)); // Chữ màu trắng
+        titlePanel.add(lblTitle);
+        jPanel4.add(titlePanel, java.awt.BorderLayout.NORTH);
+
+        jPanel4.add(ProductScrollPane, java.awt.BorderLayout.CENTER);
 
         pnAll.add(jPanel4, java.awt.BorderLayout.CENTER);
 
