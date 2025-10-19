@@ -8,6 +8,7 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.connectDB.ConnectDB;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.form.MenuForm;
 
 import java.awt.*;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.login.LoginFrame;
 
 public class MainApplication {
 
@@ -26,7 +27,16 @@ public class MainApplication {
                 UIManager.put("Component.borderWidth", 0);
                 UIManager.put("PopupMenu.borderWidth", 0);
                 UIManager.put("ScrollPane.borderWidth", 0);
-
+                UIManager.put("Button.arc", 10); // bo tròn các JButton
+                UIManager.put("Component.arc", 10); // Bo tròn góc cho TẤT CẢ component
+                UIManager.put("TextComponent.arc", 10); // Cụ thể hơn cho JTextField, JPasswordField...
+                
+                // Khi người dùng click vào JTextField, đường viền màu xanh sẽ xuất hiện, báo hiệu rằng ô này đang hoạt động.
+                UIManager.put("Component.focusColor", UIManager.getColor("Component.accentColor"));
+                UIManager.put("Component.focusWidth", 2);
+                
+                // Thiết lập Look and Feel
+                FlatLightLaf.setup();
                 // Test kết nối database
                 if (!ConnectDB.testConnection()) {
                     JOptionPane.showMessageDialog(null,
@@ -39,7 +49,8 @@ public class MainApplication {
                 }
 
                 // Khởi tạo ứng dụng
-                new MenuForm().setVisible(true);
+//                new MenuForm().setVisible(true);
+                    new LoginFrame().setVisible(true);
 
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(null,
