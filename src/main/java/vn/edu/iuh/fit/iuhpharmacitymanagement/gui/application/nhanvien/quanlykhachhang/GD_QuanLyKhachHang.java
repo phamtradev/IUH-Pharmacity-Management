@@ -19,7 +19,6 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.util.ResizeImage;
  *
  * @author PhamTra
  */
-
 public class GD_QuanLyKhachHang extends javax.swing.JPanel {
 
     private TableDesign tableDesign;
@@ -40,6 +39,18 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
         txtCusPhoneAdd.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Số điện thoại");
         txtCusPhoneEdit.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Số điện thoại");
         txtSearchCus.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Tìm kiếm theo tên, số điện thoại, email");
+        
+        // Thêm viền cho các TextField
+        txtCusAddressAdd.putClientProperty(FlatClientProperties.STYLE, "arc:10");
+        txtCusAddressEdit.putClientProperty(FlatClientProperties.STYLE, "arc:10");
+        txtCusEmailAdd.putClientProperty(FlatClientProperties.STYLE, "arc:10");
+        txtCusEmailEdit.putClientProperty(FlatClientProperties.STYLE, "arc:10");
+        txtCusNameAdd.putClientProperty(FlatClientProperties.STYLE, "arc:10");
+        txtCusNameEdit.putClientProperty(FlatClientProperties.STYLE, "arc:10");
+        txtCusPhoneAdd.putClientProperty(FlatClientProperties.STYLE, "arc:10");
+        txtCusPhoneEdit.putClientProperty(FlatClientProperties.STYLE, "arc:10");
+        txtSearchCus.putClientProperty(FlatClientProperties.STYLE, "arc:10");
+        
         UIManager.put("Button.arc", 10);
     }
 
@@ -51,8 +62,6 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
         scrollTable.setBorder(BorderFactory.createEmptyBorder(15, 20, 20, 20));
 
     }
-
-
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -430,21 +439,18 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
         pnAll.add(headerPanel, java.awt.BorderLayout.PAGE_START);
 
         jPanel3.setBackground(new java.awt.Color(255, 255, 255));
+        jPanel3.setLayout(new java.awt.BorderLayout());
 
-        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
-        jPanel3.setLayout(jPanel3Layout);
-        jPanel3Layout.setHorizontalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 1226, Short.MAX_VALUE)
-            .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addComponent(scrollTable, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 1226, Short.MAX_VALUE))
-        );
-        jPanel3Layout.setVerticalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 369, Short.MAX_VALUE)
-            .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addComponent(scrollTable, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 369, Short.MAX_VALUE))
-        );
+        // Thêm tiêu đề "Danh sách thông tin khách hàng"
+        javax.swing.JPanel titlePanel = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 12));
+        titlePanel.setBackground(new java.awt.Color(23, 162, 184)); // Màu xanh cyan
+        javax.swing.JLabel lblTitle = new javax.swing.JLabel("DANH SÁCH THÔNG TIN KHÁCH HÀNG");
+        lblTitle.setFont(new java.awt.Font("Segoe UI", 1, 16));
+        lblTitle.setForeground(new java.awt.Color(255, 255, 255)); // Chữ màu trắng
+        titlePanel.add(lblTitle);
+        jPanel3.add(titlePanel, java.awt.BorderLayout.NORTH);
+
+        jPanel3.add(scrollTable, java.awt.BorderLayout.CENTER);
 
         pnAll.add(jPanel3, java.awt.BorderLayout.CENTER);
 
@@ -497,21 +503,21 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
             javax.swing.JOptionPane.showMessageDialog(this, "Vui lòng chọn khách hàng cần sửa!", "Thông báo", javax.swing.JOptionPane.WARNING_MESSAGE);
             return;
         }
-        
+
         // Lấy thông tin từ bảng
         String maKH = tableDesign.getTable().getValueAt(selectedRow, 0).toString();
         String tenKH = tableDesign.getTable().getValueAt(selectedRow, 1).toString();
         String sdt = tableDesign.getTable().getValueAt(selectedRow, 2).toString();
         String diaChi = tableDesign.getTable().getValueAt(selectedRow, 3).toString();
         String email = tableDesign.getTable().getValueAt(selectedRow, 4).toString();
-        
+
         // Hiển thị lên modal edit
         customerIdEdit = maKH;
         txtCusNameEdit.setText(tenKH);
         txtCusPhoneEdit.setText(sdt);
         txtCusAddressEdit.setText(diaChi);
         txtCusEmailEdit.setText(email);
-        
+
         modalEditCustomer.setLocationRelativeTo(this);
         modalEditCustomer.setVisible(true);
     }//GEN-LAST:event_btnUpdateActionPerformed
@@ -526,7 +532,6 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
             field.setText("");
         }
     }
-
 
     private String customerIdEdit;
     // Variables declaration - do not modify//GEN-BEGIN:variables
