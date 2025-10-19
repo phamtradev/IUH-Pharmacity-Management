@@ -27,6 +27,7 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.menu.Menu;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.menu.MenuAction;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.banhang.GD_BanHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlykhachhang.GD_QuanLyKhachHang;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlysanpham.GD_QuanLySanPham;
 
 /**
  *
@@ -138,8 +139,8 @@ public class MainForm extends JLayeredPane {
             } else if (type == 2) {
                 if (index == 20) {
                     showForm(new GD_BanHang());
-//                } else if (index == 21) {
-//                    showForm(new TABProduct());
+                } else if (index == 21) {
+                    showForm(new GD_QuanLySanPham());
                 } else if (index == 22) {
                     showForm(new GD_QuanLyKhachHang());
 //                } else if (index == 23) {

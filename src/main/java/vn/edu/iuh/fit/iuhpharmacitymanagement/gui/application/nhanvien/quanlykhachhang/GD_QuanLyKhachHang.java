@@ -19,7 +19,6 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.util.ResizeImage;
  *
  * @author PhamTra
  */
-
 public class GD_QuanLyKhachHang extends javax.swing.JPanel {
 
     private TableDesign tableDesign;
@@ -51,8 +50,6 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
         scrollTable.setBorder(BorderFactory.createEmptyBorder(15, 20, 20, 20));
 
     }
-
-
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -497,21 +494,21 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
             javax.swing.JOptionPane.showMessageDialog(this, "Vui lòng chọn khách hàng cần sửa!", "Thông báo", javax.swing.JOptionPane.WARNING_MESSAGE);
             return;
         }
-        
+
         // Lấy thông tin từ bảng
         String maKH = tableDesign.getTable().getValueAt(selectedRow, 0).toString();
         String tenKH = tableDesign.getTable().getValueAt(selectedRow, 1).toString();
         String sdt = tableDesign.getTable().getValueAt(selectedRow, 2).toString();
         String diaChi = tableDesign.getTable().getValueAt(selectedRow, 3).toString();
         String email = tableDesign.getTable().getValueAt(selectedRow, 4).toString();
-        
+
         // Hiển thị lên modal edit
         customerIdEdit = maKH;
         txtCusNameEdit.setText(tenKH);
         txtCusPhoneEdit.setText(sdt);
         txtCusAddressEdit.setText(diaChi);
         txtCusEmailEdit.setText(email);
-        
+
         modalEditCustomer.setLocationRelativeTo(this);
         modalEditCustomer.setVisible(true);
     }//GEN-LAST:event_btnUpdateActionPerformed
@@ -526,7 +523,6 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
             field.setText("");
         }
     }
-
 
     private String customerIdEdit;
     // Variables declaration - do not modify//GEN-BEGIN:variables
