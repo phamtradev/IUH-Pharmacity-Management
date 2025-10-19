@@ -41,15 +41,15 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
         txtSearchCus.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Tìm kiếm theo tên, số điện thoại, email");
         
         // Thêm viền cho các TextField
-        txtCusAddressAdd.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
-        txtCusAddressEdit.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
-        txtCusEmailAdd.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
-        txtCusEmailEdit.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
-        txtCusNameAdd.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
-        txtCusNameEdit.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
-        txtCusPhoneAdd.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
-        txtCusPhoneEdit.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
-        txtSearchCus.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
+        txtCusAddressAdd.putClientProperty(FlatClientProperties.STYLE, "arc:10");
+        txtCusAddressEdit.putClientProperty(FlatClientProperties.STYLE, "arc:10");
+        txtCusEmailAdd.putClientProperty(FlatClientProperties.STYLE, "arc:10");
+        txtCusEmailEdit.putClientProperty(FlatClientProperties.STYLE, "arc:10");
+        txtCusNameAdd.putClientProperty(FlatClientProperties.STYLE, "arc:10");
+        txtCusNameEdit.putClientProperty(FlatClientProperties.STYLE, "arc:10");
+        txtCusPhoneAdd.putClientProperty(FlatClientProperties.STYLE, "arc:10");
+        txtCusPhoneEdit.putClientProperty(FlatClientProperties.STYLE, "arc:10");
+        txtSearchCus.putClientProperty(FlatClientProperties.STYLE, "arc:10");
         
         UIManager.put("Button.arc", 10);
     }

@@ -34,19 +34,24 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
     }
 
     private void setUIManager() {
-        // Placeholder cho TextField tìm kiếm
-        txtSearchNamePD.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập tên sản phẩm hoặc số đăng ký");
         try {
-            // TextField txtSearchSDKPD có thể chưa được generate, kiểm tra trước
-            java.lang.reflect.Field field = this.getClass().getDeclaredField("txtSearchSDKPD");
-            field.setAccessible(true);
-            javax.swing.JTextField txtSearchSDKPD = (javax.swing.JTextField) field.get(this);
-            if (txtSearchSDKPD != null) {
-                txtSearchSDKPD.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập số đăng ký");
-                txtSearchSDKPD.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
+            // Placeholder cho TextField tìm kiếm
+            txtSearchNamePD.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập tên sản phẩm hoặc số đăng ký");
+            try {
+                // TextField txtSearchSDKPD có thể chưa được generate, kiểm tra trước
+                java.lang.reflect.Field field = this.getClass().getDeclaredField("txtSearchSDKPD");
+                field.setAccessible(true);
+                javax.swing.JTextField txtSearchSDKPD = (javax.swing.JTextField) field.get(this);
+                if (txtSearchSDKPD != null) {
+                    txtSearchSDKPD.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập số đăng ký");
+                }
+            } catch (Exception e) {
+                // Bỏ qua nếu field chưa tồn tại
             }
         } catch (Exception e) {
-            // Bỏ qua nếu field chưa tồn tại
+            System.err.println("Lỗi khi thiết lập UI Manager: " + e.getMessage());
+            e.printStackTrace();
+            return;
         }
         
         // Placeholder cho modal THÊM sản phẩm
@@ -70,31 +75,6 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         txtProductPurchasePrice1.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập giá nhập vào");
         txtProductRegisNumber1.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập số đăng kí");
         txtProductSellingPrice1.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập giá bán");
-        
-        // Thêm viền cho TextField tìm kiếm
-        txtSearchNamePD.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
-        
-        // Thêm viền cho modal THÊM sản phẩm
-        txtCountryOfOrigin.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
-        txtProductActiveIngre.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
-        txtProductDosage.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
-        txtProductManufacturer.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
-        txtProductName.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
-        txtProductPakaging.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
-        txtProductPurchasePrice.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
-        txtProductRegisNumber.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
-        txtProductSellingPrice.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
-        
-        // Thêm viền cho modal SỬA sản phẩm
-        txtCountryOfOrigin1.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
-        txtProductActiveIngre1.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
-        txtProductDosage1.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
-        txtProductManufacturer1.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
-        txtProductName1.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
-        txtProductPakaging1.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
-        txtProductPurchasePrice1.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
-        txtProductRegisNumber1.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
-        txtProductSellingPrice1.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
         
         UIManager.put("Button.arc", 10);
     }

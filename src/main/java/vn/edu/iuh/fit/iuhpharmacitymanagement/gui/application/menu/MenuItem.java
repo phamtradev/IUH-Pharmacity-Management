@@ -147,8 +147,8 @@ public class MenuItem extends JPanel {
         button.putClientProperty(FlatClientProperties.STYLE, ""
                 + "background:$Menu.background;"
                 + "foreground:$Menu.foreground;"
-                + "selectedBackground:$Menu.button.selectedBackground;"
-                + "selectedForeground:$Menu.button.selectedForeground;"
+                + "selectedBackground:rgb(23, 162, 184);"  // Màu xanh cyan giống title "Danh sách thông tin khách hàng"
+                + "selectedForeground:#FFFFFF;"  // Text màu trắng khi được chọn
                 + "borderWidth:0;"
                 + "focusWidth:0;"
                 + "innerFocusWidth:0;"

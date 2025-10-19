@@ -47,17 +47,17 @@ public class GD_QuanLyNhaCungCap extends javax.swing.JPanel {
         txtSupTaxCodeEdit.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập mã số thuế (10 hoặc 13 ký tự)");
 
         // Thêm viền cho các TextField
-        txtSearchSupplier.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
-        txtSupNameAdd.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
-        txtSupPhoneAdd.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
-        txtSupAddressAdd.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
-        txtSupEmailAdd.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
-        txtSupTaxCodeAdd.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
-        txtSupNameEdit.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
-        txtSupPhoneEdit.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
-        txtSupAddressEdit.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
-        txtSupEmailEdit.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
-        txtSupTaxCodeEdit.putClientProperty(FlatClientProperties.STYLE, "arc: 10");
+        txtSearchSupplier.putClientProperty(FlatClientProperties.STYLE, "arc:10");
+        txtSupNameAdd.putClientProperty(FlatClientProperties.STYLE, "arc:10");
+        txtSupPhoneAdd.putClientProperty(FlatClientProperties.STYLE, "arc:10");
+        txtSupAddressAdd.putClientProperty(FlatClientProperties.STYLE, "arc:10");
+        txtSupEmailAdd.putClientProperty(FlatClientProperties.STYLE, "arc:10");
+        txtSupTaxCodeAdd.putClientProperty(FlatClientProperties.STYLE, "arc:10");
+        txtSupNameEdit.putClientProperty(FlatClientProperties.STYLE, "arc:10");
+        txtSupPhoneEdit.putClientProperty(FlatClientProperties.STYLE, "arc:10");
+        txtSupAddressEdit.putClientProperty(FlatClientProperties.STYLE, "arc:10");
+        txtSupEmailEdit.putClientProperty(FlatClientProperties.STYLE, "arc:10");
+        txtSupTaxCodeEdit.putClientProperty(FlatClientProperties.STYLE, "arc:10");
 
         UIManager.put("Button.arc", 10);
     }
