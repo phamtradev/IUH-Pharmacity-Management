@@ -28,6 +28,7 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.banhang.G
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlykhachhang.GD_QuanLyKhachHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlynhacungcap.GD_QuanLyNhaCungCap;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlyphieunhaphang.GD_QuanLyPhieuNhapHang;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlyphieutrahang.GD_QuanLyPhieuTraHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlysanpham.GD_QuanLySanPham;
 
 /**
@@ -150,7 +151,7 @@ public class MainForm extends JLayeredPane {
                 } else if (index == 24) {
                     showForm(new GD_QuanLyPhieuNhapHang());
                 } else if (index == 25) {
-
+                    showForm(new GD_QuanLyPhieuTraHang());
 //                } else if (index == 26) {
 //                    showForm(new TabDamageItem());
 //                } else if (index == 27) {
@@ -159,7 +160,7 @@ public class MainForm extends JLayeredPane {
 //                    showForm(new TABPersonalInformation());
 //                } else if (index == 29) {
 //                    showForm(new ViewPdfPanel(2));
-//                } else if (index == 30) {
+//                } else if (index == 30) { 
 //                    Application.logout();
                 } else {
                     action.cancel();
