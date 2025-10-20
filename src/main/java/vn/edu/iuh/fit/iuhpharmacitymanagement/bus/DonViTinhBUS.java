@@ -34,11 +34,19 @@ public class DonViTinhBUS {
         return donViTinhDAO.findAll();
     }
     
-    public DonViTinh timDonViTinhTheoTen(String tenDonVi) {
-        return donViTinhDAO.findByName(tenDonVi);
+    public Optional<DonViTinh> timDonViTinhTheoTen(String tenDonVi) throws Exception {
+        return Optional.ofNullable(donViTinhDAO.findByName(tenDonVi));
     }
     
-    public List<DonViTinh> timDonViTinhTheoTenGanDung(String tenDonVi) {
+    public DonViTinh layDonViTinhTheoTen(String tenDonVi) throws Exception {
+        DonViTinh donViTinh = donViTinhDAO.findByName(tenDonVi);
+        if (donViTinh == null) {
+            throw new RuntimeException("Không tìm thấy đơn vị tính với tên = " + tenDonVi);
+        }
+        return donViTinh;
+    }
+    
+    public List<DonViTinh> timDonViTinhTheoTenGanDung(String tenDonVi) throws Exception {
         return donViTinhDAO.findByNameSearch(tenDonVi);
     }
     
@@ -46,7 +54,7 @@ public class DonViTinhBUS {
         return donViTinhDAO.exists(maDonVi);
     }
     
-    public boolean kiemTraTonTaiTheoTen(String tenDonVi) {
+    public boolean kiemTraTonTaiTheoTen(String tenDonVi) throws Exception {
         return donViTinhDAO.existsByName(tenDonVi);
     }
     
