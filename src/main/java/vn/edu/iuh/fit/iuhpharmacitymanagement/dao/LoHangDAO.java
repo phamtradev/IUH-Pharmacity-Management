@@ -1,0 +1,223 @@
+package vn.edu.iuh.fit.iuhpharmacitymanagement.dao;
+
+import vn.edu.iuh.fit.iuhpharmacitymanagement.connectDB.ConnectDB;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.LoHang;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham;
+
+import java.sql.*;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+public class LoHangDAO implements DAOInterface<LoHang, String> {
+
+    private final String SQL_THEM =
+            "INSERT INTO LoHang (maLoHang, tenLoHang, ngaySanXuat, hanSuDung, tonKho, trangThai, maSanPham) VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+    private final String SQL_CAP_NHAT =
+            "UPDATE LoHang SET tenLoHang = ?, ngaySanXuat = ?, hanSuDung = ?, tonKho = ?, trangThai = ?, maSanPham = ? WHERE maLoHang = ?";
+
+    private final String SQL_TIM_THEO_MA =
+            "SELECT * FROM LoHang WHERE maLoHang = ?";
+
+    private final String SQL_TIM_TAT_CA =
+            "SELECT * FROM LoHang";
+            
+    private final String SQL_TIM_THEO_MA_SP =
+            "SELECT * FROM LoHang WHERE maSanPham = ?";
+
+    private final String SQL_TIM_THEO_TEN_GAN_DUNG =
+            "SELECT * FROM LoHang WHERE tenLoHang LIKE ?";
+
+    private final String SQL_LAY_MA_CUOI =
+            "SELECT TOP 1 maLoHang FROM LoHang ORDER BY maLoHang DESC";
+
+    @Override
+    public boolean insert(LoHang loHang) {
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(SQL_THEM)) {
+
+            if (loHang.getMaLoHang() == null || loHang.getMaLoHang().trim().isEmpty()) {
+                loHang.setMaLoHang(taoMaLoHang());
+            }
+
+            stmt.setString(1, loHang.getMaLoHang());
+            stmt.setString(2, loHang.getTenLoHang());
+            stmt.setDate(3, Date.valueOf(loHang.getNgaySanXuat()));
+            stmt.setDate(4, Date.valueOf(loHang.getHanSuDung()));
+            stmt.setInt(5, loHang.getTonKho());
+            stmt.setBoolean(6, loHang.isTrangThai());
+            stmt.setString(7, loHang.getSanPham().getMaSanPham());
+
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        } catch (Exception ex) {
+            System.getLogger(LoHangDAO.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        }
+        return false;
+    }
+
+    @Override
+    public boolean update(LoHang loHang) {
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(SQL_CAP_NHAT)) {
+
+            stmt.setString(1, loHang.getTenLoHang());
+            stmt.setDate(2, Date.valueOf(loHang.getNgaySanXuat()));
+            stmt.setDate(3, Date.valueOf(loHang.getHanSuDung()));
+            stmt.setInt(4, loHang.getTonKho());
+            stmt.setBoolean(5, loHang.isTrangThai());
+            stmt.setString(6, loHang.getSanPham().getMaSanPham());
+            stmt.setString(7, loHang.getMaLoHang());
+
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    @Override
+    public Optional<LoHang> findById(String maLoHang) {
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(SQL_TIM_THEO_MA)) {
+
+            stmt.setString(1, maLoHang);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return Optional.of(mapResultSetToLoHang(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (Exception ex) {
+            System.getLogger(LoHangDAO.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        }
+        return Optional.empty();
+    }
+
+    @Override
+    public List<LoHang> findAll() {
+        List<LoHang> danhSachLoHang = new ArrayList<>();
+
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(SQL_TIM_TAT_CA);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                danhSachLoHang.add(mapResultSetToLoHang(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (Exception ex) {
+            System.getLogger(LoHangDAO.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        }
+        return danhSachLoHang;
+    }
+
+    private LoHang mapResultSetToLoHang(ResultSet rs) throws Exception {
+        LoHang loHang = new LoHang();
+
+        loHang.setMaLoHang(rs.getString("maLoHang"));
+        loHang.setTenLoHang(rs.getString("tenLoHang"));
+        loHang.setNgaySanXuat(rs.getDate("ngaySanXuat").toLocalDate());
+        loHang.setHanSuDung(rs.getDate("hanSuDung").toLocalDate());
+        loHang.setTonKho(rs.getInt("tonKho"));
+        loHang.setTrangThai(rs.getBoolean("trangThai"));
+
+        //lấy mã sản phẩm từ CSDL và dùng SanPhamDAO để tìm đối tượng SanPham tương ứng
+        String maSanPham = rs.getString("maSanPham");
+        SanPhamDAO sanPhamDAO = new SanPhamDAO(); // Giả định SanPhamDAO đã tồn tại
+        Optional<SanPham> sanPhamOpt = sanPhamDAO.findById(maSanPham);
+        loHang.setSanPham(sanPhamOpt.orElse(null)); // Nếu không tìm thấy, gán null
+
+        return loHang;
+    }
+    
+    public List<LoHang> findByMaSanPham(String maSanPham) {
+        List<LoHang> danhSachLoHang = new ArrayList<>();
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(SQL_TIM_THEO_MA_SP)) {
+
+            stmt.setString(1, maSanPham);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                danhSachLoHang.add(mapResultSetToLoHang(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (Exception ex) {
+            System.getLogger(LoHangDAO.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        }
+        return danhSachLoHang;
+    }
+
+    public List<LoHang> findByNameSearch(String tenLoHang) throws Exception {
+        List<LoHang> danhSachLoHang = new ArrayList<>();
+
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(SQL_TIM_THEO_TEN_GAN_DUNG)) {
+
+            stmt.setString(1, "%" + tenLoHang + "%");
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                danhSachLoHang.add(mapResultSetToLoHang(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return danhSachLoHang;
+    }
+
+    private String taoMaLoHang() {
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(SQL_LAY_MA_CUOI);
+             ResultSet rs = stmt.executeQuery()) {
+
+            if (rs.next()) {
+                String maCuoi = rs.getString("maLoHang");
+                String phanSo = maCuoi.substring(2); // Bỏ qua "LH"
+                int soTiepTheo = Integer.parseInt(phanSo) + 1;
+                return String.format("LH%05d", soTiepTheo);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return "LH00001";
+    }
+
+    public String getLastMaLoHang() {
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(SQL_LAY_MA_CUOI);
+             ResultSet rs = stmt.executeQuery()) {
+
+            if (rs.next()) {
+                return rs.getString("maLoHang");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    
+    public int count() {
+        String sql = "SELECT COUNT(*) as total FROM LoHang";
+
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            if (rs.next()) {
+                return rs.getInt("total");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+}
