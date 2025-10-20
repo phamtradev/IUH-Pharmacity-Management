@@ -47,7 +47,10 @@ public class DonViTinhDAO implements DAOInterface<DonViTinh, String> {
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
+        } catch (Exception ex) {
+            System.getLogger(DonViTinhDAO.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
         }
+        return false;
     }
 
     @Override
@@ -78,6 +81,8 @@ public class DonViTinhDAO implements DAOInterface<DonViTinh, String> {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+        } catch (Exception ex) {
+            System.getLogger(DonViTinhDAO.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
         }
         return Optional.empty();
     }
@@ -95,11 +100,13 @@ public class DonViTinhDAO implements DAOInterface<DonViTinh, String> {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+        } catch (Exception ex) {
+            System.getLogger(DonViTinhDAO.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
         }
         return danhSachDonVi;
     }
 
-    private DonViTinh mapResultSetToDonViTinh(ResultSet rs) throws SQLException {
+    private DonViTinh mapResultSetToDonViTinh(ResultSet rs) throws SQLException, Exception {
         DonViTinh donViTinh = new DonViTinh();
         
         donViTinh.setMaDonVi(rs.getString("maDonVi"));
@@ -108,7 +115,7 @@ public class DonViTinhDAO implements DAOInterface<DonViTinh, String> {
         return donViTinh;
     }
 
-    public DonViTinh findByName(String tenDonVi) {
+    public DonViTinh findByName(String tenDonVi) throws Exception {
         try (Connection con = ConnectDB.getConnection();
              PreparedStatement stmt = con.prepareStatement(SQL_TIM_THEO_TEN)) {
             
@@ -124,7 +131,7 @@ public class DonViTinhDAO implements DAOInterface<DonViTinh, String> {
         return null;
     }
 
-    public List<DonViTinh> findByNameSearch(String tenDonVi) {
+    public List<DonViTinh> findByNameSearch(String tenDonVi) throws Exception {
         List<DonViTinh> danhSachDonVi = new ArrayList<>();
         
         try (Connection con = ConnectDB.getConnection();
@@ -177,7 +184,7 @@ public class DonViTinhDAO implements DAOInterface<DonViTinh, String> {
         return findById(maDonVi).isPresent();
     }
 
-    public boolean existsByName(String tenDonVi) {
+    public boolean existsByName(String tenDonVi) throws Exception {
         return findByName(tenDonVi) != null;
     }
 

@@ -54,6 +54,8 @@ public class DonHangDAO implements DAOInterface<DonHang, String> {
 
         } catch (SQLException e) {
             e.printStackTrace();
+        } catch (Exception ex) {
+            System.getLogger(DonHangDAO.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
         }
         return false;
     }
