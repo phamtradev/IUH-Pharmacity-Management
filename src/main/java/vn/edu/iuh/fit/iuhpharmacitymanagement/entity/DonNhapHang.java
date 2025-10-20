@@ -20,7 +20,9 @@ public class DonNhapHang {
     private NhanVien nhanVien;
     private NhaCungCap nhaCungCap;
     private List<ChiTietDonNhapHang> chiTietDonNhapHang;
-
+    public static final String MA_DON_NHAP_HANG_SAI ="Mã đơn nhập hàng phải bắt đầu bằng DNHddmmyyyy (dd là ngày nhập, mm là tháng nhập, yyyy là năm nhập)";
+    public static final String NGAY_NHAP_HANG_SAI ="Ngày nhập hàng phải nhỏ hơn hoặc bằng ngày hiện tại";
+    public static final String NGAY_NHAP_HANG_NULL ="Ngày nhập hàng không được rỗng";
     public DonNhapHang() {
     }
 
@@ -33,18 +35,27 @@ public class DonNhapHang {
         return maDonNhapHang;
     }
 
-    public void setMaDonNhapHang(String maDonNhapHang) {
-        this.maDonNhapHang = maDonNhapHang;
+    public void setMaDonNhapHang(String maDonNhapHang) throws Exception {
+        if(maDonNhapHang.isBlank()){
+            throw new Exception(MA_DON_NHAP_HANG_SAI);
+        }
+        this.maDonNhapHang=maDonNhapHang;
     }
 
     public LocalDate getNgayNhap() {
         return ngayNhap;
     }
 
-    public void setNgayNhap(LocalDate ngayNhap) {
+    public void setNgayNhap(LocalDate ngayNhap) throws Exception {
+        if(ngayNhap==null){
+            throw new Exception(NGAY_NHAP_HANG_NULL);
+        }
+        LocalDate hientai=LocalDate.now();
+        if(ngayNhap.isAfter(hientai)){
+            throw new Exception(NGAY_NHAP_HANG_SAI);
+        }
         this.ngayNhap = ngayNhap;
     }
-
     public double getThanhTien() {
         return thanhTien;
     }
@@ -84,7 +95,7 @@ public class DonNhapHang {
                 ", ngayNhap=" + ngayNhap +
                 ", thanhTien=" + thanhTien +
                 ", nhanVien=" + (nhanVien != null ? nhanVien.getMaNhanVien() : null) +
-                ", nhaCungCap=" + (nhaCungCap != null ? nhaCungCap.getMaNhaCungCap() : null) +
+", nhaCungCap=" + (nhaCungCap != null ? nhaCungCap.getMaNhaCungCap() : null) +
                 ", chiTietDonNhapHang=" + (chiTietDonNhapHang != null ? chiTietDonNhapHang.size() : 0) +
                 '}';
     }

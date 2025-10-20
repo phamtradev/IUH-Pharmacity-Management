@@ -17,7 +17,9 @@ public class HangHong {
     private double thanhTien;
     private NhanVien nhanVien;
     private List<ChiTietHangHong> chiTietHangHong;
-
+    public static final String MA_HANG_HONG_SAI ="Mã hàng hỏng phải bắt đầu bằng HHddmmyyyyxxx (dd là ngày phát hiện hàng hỏng, mm là tháng phát hiện hàng hỏng, yyyy là năm phát hiện hàng hỏng, xxx  là 3 số dương)";
+    public static final String NGAY_NHAP_HANG_SAI ="Ngày nhập hàng hỏng phải nhỏ hơn hoặc bằng ngày hiện tại";
+    public static final String NGAY_NHAP_HANG_NULL ="Ngày nhập hàng hỏng không được rỗng";
     public HangHong() {
     }
 
@@ -34,7 +36,10 @@ public class HangHong {
         return maHangHong;
     }
 
-    public void setMaHangHong(String maHangHong) {
+    public void setMaHangHong(String maHangHong) throws Exception {
+        if(maHangHong.isBlank()){
+            throw new Exception(MA_HANG_HONG_SAI);
+        }
         this.maHangHong = maHangHong;
     }
 
@@ -42,7 +47,14 @@ public class HangHong {
         return ngayNhap;
     }
 
-    public void setNgayNhap(LocalDate ngayNhap) {
+    public void setNgayNhap(LocalDate ngayNhap) throws Exception {
+        if(ngayNhap==null){
+            throw new Exception(NGAY_NHAP_HANG_NULL);
+        }
+        LocalDate hientai =LocalDate.now();
+        if(ngayNhap.isAfter(hientai)){
+            throw new Exception(NGAY_NHAP_HANG_SAI);
+        }
         this.ngayNhap = ngayNhap;
     }
 

@@ -14,34 +14,46 @@ import java.util.Objects;
  */
 public class DonTraHang {
     private String maDonTraHang;
-    private LocalDate ngayDatHang;
+    private LocalDate ngayTraHang;
     private double thanhTien;
     private NhanVien nhanVien;
     private DonHang donHang;
     private List<ChiTietDonTraHang> chiTietDonTraHang;
-
+    public static final String MA_DON_TRA_HANG_SAI ="Mã đơn trả hàng phải bắt đầu bằng DTddmmyyyyxxx (dd là ngày trả, mm là tháng trả, yyyy là năm trả, xxx  là 3 số dương)";
+    public static final String NGAY_TRA_HANG_SAI ="Ngày trả hàng phải nhỏ hơn hoặc bằng ngày hiện tại";
+    public static final String NGAY_TRA_HANG_NULL ="Ngày trả hàng không được rỗng";
     public DonTraHang() {
     }
 
-    public DonTraHang(String maDonTra, LocalDate ngayDatHang) {
+    public DonTraHang(String maDonTra, LocalDate ngayTraHang) {
         this.maDonTraHang = maDonTra;
-        this.ngayDatHang = ngayDatHang;
+        this.ngayTraHang = ngayTraHang;
     }
 
     public String getMaDonTraHang() {
         return maDonTraHang;
     }
 
-    public void setMaDonTraHang(String maDonTra) {
+    public void setMaDonTraHang(String maDonTra) throws Exception {
+        if(maDonTra.isBlank()){
+            throw new Exception(MA_DON_TRA_HANG_SAI);
+        }   
         this.maDonTraHang = maDonTra;
     }
 
-    public LocalDate getNgayDatHang() {
-        return ngayDatHang;
+    public LocalDate getngayTraHang() {
+        return ngayTraHang;
     }
 
-    public void setNgayDatHang(LocalDate ngayDatHang) {
-        this.ngayDatHang = ngayDatHang;
+    public void setngayTraHang(LocalDate ngayTraHang) throws Exception {
+        if(ngayTraHang==null){
+            throw new Exception(NGAY_TRA_HANG_NULL);
+        }
+        LocalDate hientai=LocalDate.now();
+        if(ngayTraHang.isAfter(hientai)){
+            throw new Exception (NGAY_TRA_HANG_SAI);
+        }
+        this.ngayTraHang = ngayTraHang;
     }
 
     public double getThanhTien() {
@@ -78,7 +90,7 @@ public class DonTraHang {
 
     @Override
     public int hashCode() {
-        return Objects.hash(maDonTraHang, ngayDatHang);
+        return Objects.hash(maDonTraHang, ngayTraHang);
     }
 
     @Override
@@ -86,15 +98,15 @@ public class DonTraHang {
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
         DonTraHang other = (DonTraHang) obj;
-        return Objects.equals(maDonTraHang, other.maDonTraHang) &&
-                Objects.equals(ngayDatHang, other.ngayDatHang);
+return Objects.equals(maDonTraHang, other.maDonTraHang) &&
+                Objects.equals(ngayTraHang, other.ngayTraHang);
     }
 
     @Override
     public String toString() {
         return "DonTraHang{" +
                 "maDonTra='" + maDonTraHang + '\'' +
-                ", ngayDatHang=" + ngayDatHang +
+                ", ngayTraHang=" + ngayTraHang +
                 ", thanhTien=" + thanhTien +
                 ", nhanVien=" + (nhanVien != null ? nhanVien.getMaNhanVien() : null) +
                 ", donHang=" + (donHang != null ? donHang.getMaDonHang() : null) +
