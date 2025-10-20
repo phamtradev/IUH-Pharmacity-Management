@@ -9,7 +9,7 @@ package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.login;
  * @author User
  */
 public class LoginFrame extends javax.swing.JFrame {
-    
+
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(LoginFrame.class.getName());
 
     /**

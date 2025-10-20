@@ -12,19 +12,21 @@ import java.awt.FlowLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.management.Notification;
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.UIManager;
+import raven.toast.Notifications;
 
 /**
  *
  * @author PhamTra
  */
 public class GD_BanHang extends javax.swing.JPanel {
-
+    
     static int transactionNumber = 1;
 
     /**
@@ -38,12 +40,12 @@ public class GD_BanHang extends javax.swing.JPanel {
         addHeaderRow();
         addSampleProduct();
     }
-
+    
     private void addPanelThanhToan() {
         // Tạo panel wrapper để panel thanh toán chỉ nằm ngang với phần giữa
         javax.swing.JPanel wrapperPanel = new javax.swing.JPanel(new java.awt.BorderLayout());
         wrapperPanel.setBackground(java.awt.Color.WHITE);
-
+        
         Panel_DonHang panelThanhToan = new Panel_DonHang();
         wrapperPanel.add(pnMi, java.awt.BorderLayout.CENTER);
         wrapperPanel.add(panelThanhToan, java.awt.BorderLayout.EAST);
@@ -52,7 +54,7 @@ public class GD_BanHang extends javax.swing.JPanel {
         remove(pnMi);
         add(wrapperPanel, java.awt.BorderLayout.CENTER);
     }
-
+    
     private void addHeaderRow() {
         // Tạo panel header với GridBagLayout giống HỆT Panel_ChiTietSanPham
         javax.swing.JPanel headerPanel = new javax.swing.JPanel();
@@ -149,10 +151,10 @@ public class GD_BanHang extends javax.swing.JPanel {
         gbc.gridx = 7;
         gbc.weightx = 0.0;
         headerPanel.add(lblHeaderAction, gbc);
-
+        
         containerPanel.add(headerPanel);
     }
-
+    
     private void addSampleProduct() {
         // Thêm một panel chi tiết sản phẩm mẫu vào container
         Panel_ChiTietSanPham panelChiTiet = new Panel_ChiTietSanPham();
@@ -160,7 +162,7 @@ public class GD_BanHang extends javax.swing.JPanel {
         containerPanel.revalidate();
         containerPanel.repaint();
     }
-
+    
     private void customUI() {
         txtTimSanPham.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Vui lòng quét mã vạch hoặc nhập số đăng ký");
         // Thêm viền cho text field
@@ -185,7 +187,7 @@ public class GD_BanHang extends javax.swing.JPanel {
                 + "focusWidth:0"
         );
     }
-
+    
     private void lookAndFeelSet() {
         UIManager.put("TextComponent.arc", 8);
         UIManager.put("Component.arc", 8);
@@ -195,7 +197,7 @@ public class GD_BanHang extends javax.swing.JPanel {
         UIManager.put("ToggleButton.selectedBackground", new Color(81, 154, 244));
         UIManager.put("ToggleButton.selectedForeground", Color.WHITE);
     }
-
+    
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -304,7 +306,7 @@ public class GD_BanHang extends javax.swing.JPanel {
 //        String sdk = txtTimSanPham.getText().trim();
 //        searchProduct(sdk);
     }//GEN-LAST:event_btnMaActionPerformed
-
+    
     private void txtTimSanPhamKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtTimSanPhamKeyPressed
 //        // TODO add your handling code here:
 //        if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
@@ -313,7 +315,7 @@ public class GD_BanHang extends javax.swing.JPanel {
 //            txtTimSanPham.requestFocus();
 //        }
     }//GEN-LAST:event_txtTimSanPhamKeyPressed
-
+    
     private JPanel createTabTitle(JTabbedPane tabbedPane, String title, Component tabComponent) {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         panel.setOpaque(false);
@@ -337,17 +339,18 @@ public class GD_BanHang extends javax.swing.JPanel {
                 }
             }
         });
-
+        
         panel.add(Box.createRigidArea(new Dimension(5, 0)));
         panel.add(closeButton);
-
+        
         return panel;
     }
-
+    
     private void btnXoaActionPerformed(java.awt.event.ActionEvent evt) {
         // Xóa nội dung text field và đặt focus
         txtTimSanPham.setText("");
         txtTimSanPham.requestFocus();
+        Notifications.getInstance().show(Notifications.Type.SUCCESS, "Đã xóa trắng thành công !");
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

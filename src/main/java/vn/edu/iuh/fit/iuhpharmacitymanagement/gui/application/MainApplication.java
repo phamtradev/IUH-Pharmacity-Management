@@ -49,8 +49,8 @@ public class MainApplication {
                 }
 
                 // Khởi tạo ứng dụng
-//                new MenuForm().setVisible(true);
-                    new LoginFrame().setVisible(true);
+                new MenuForm().setVisible(true);
+//                    new LoginFrame().setVisible(true);
 
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(null,
