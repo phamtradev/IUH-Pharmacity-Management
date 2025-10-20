@@ -119,6 +119,8 @@ public class TableDesign {
         table.setShowHorizontalLines(false);
         table.setShowVerticalLines(true);
         table.setGridColor(new Color(0xE9E9E9));
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+        table.setFillsViewportHeight(true);
     }
 
     public JTable getTable() {

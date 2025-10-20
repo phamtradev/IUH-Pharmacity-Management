@@ -22,12 +22,12 @@ import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.Application;
-import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.form.other.QuanLyTraHangGUI;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.menu.Menu;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.menu.MenuAction;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.banhang.GD_BanHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlykhachhang.GD_QuanLyKhachHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlynhacungcap.GD_QuanLyNhaCungCap;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlyphieunhaphang.GD_QuanLyPhieuNhapHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlysanpham.GD_QuanLySanPham;
 
 /**
@@ -35,7 +35,9 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlysan
  * @author PhamTra
  */
 public class MainForm extends JLayeredPane {
+
     private int type = 2;
+
     public MainForm() {
         init();
     }
@@ -79,7 +81,6 @@ public class MainForm extends JLayeredPane {
         initMenuArrowIcon();
     }
 
-    
     private void initMenuArrowIcon() {
         if (menuButton == null) {
             menuButton = new JButton();
@@ -92,7 +93,7 @@ public class MainForm extends JLayeredPane {
         // Load từ resources/img/
         URL iconUrl = getClass().getResource("/img/" + iconFile);
         FlatSVGIcon svgIcon = new FlatSVGIcon(iconUrl);
-            
+
         // Icon màu đen
         FlatSVGIcon.ColorFilter colorFilter = new FlatSVGIcon.ColorFilter();
         colorFilter.add(java.awt.Color.decode("#969696"), java.awt.Color.BLACK);
@@ -146,10 +147,10 @@ public class MainForm extends JLayeredPane {
                     showForm(new GD_QuanLyKhachHang());
                 } else if (index == 23) {
                     showForm(new GD_QuanLyNhaCungCap());
-//                } else if (index == 24) {
-//                    showForm(new TABPurchase());
+                } else if (index == 24) {
+                    showForm(new GD_QuanLyPhieuNhapHang());
                 } else if (index == 25) {
-                    showForm(new QuanLyTraHangGUI());
+
 //                } else if (index == 26) {
 //                    showForm(new TabDamageItem());
 //                } else if (index == 27) {
@@ -182,7 +183,7 @@ public class MainForm extends JLayeredPane {
         // tạo scaled thay cho FlatSVGIcon svgIcon = new FlatSVGIcon(iconPath, 0.8f); để bt tải icon thành công hay k
         FlatSVGIcon scaledIcon = svgIcon.derive(0.8f);
 
-    // ok
+        // ok
         FlatSVGIcon.ColorFilter colorFilter = new FlatSVGIcon.ColorFilter();
         colorFilter.add(java.awt.Color.decode("#969696"), java.awt.Color.BLACK);
         scaledIcon.setColorFilter(colorFilter);
@@ -191,7 +192,7 @@ public class MainForm extends JLayeredPane {
         menu.setMenuFull(full);
         revalidate();
     }
-    
+
 //    private void setMenuFull(boolean full) {
 //    String icon;
 //    if (getComponentOrientation().isLeftToRight()) {
@@ -222,7 +223,6 @@ public class MainForm extends JLayeredPane {
 //    menu.setMenuFull(full);
 //    revalidate();
 //}
-
     public void hideMenu() {
         menu.hideMenuItem();
     }
