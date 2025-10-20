@@ -12,6 +12,14 @@ public class ChiTietDonTraHang {
     private double thanhTien;
     private SanPham sanPham;
     private DonTraHang donTraHang;
+    
+    public static final String MA_CHI_TIET_DON_TRA_HANG_RONG = "Mã chi tiết đơn trả hàng không được rỗng";
+    public static final String SO_LUONG_SAI = "Số lượng phải lớn hơn 0";
+    public static final String DON_GIA_SAI = "Đơn giá phải lớn hơn 0";
+    public static final String LY_DO_TRA_RONG = "Lý do trả không được rỗng";
+    public static final String THANH_TIEN_SAI = "Thành tiền không hợp lệ";
+    public static final String SAN_PHAM_SAI = "Sản phẩm không hợp lệ";
+    public static final String DON_TRA_HANG_SAI = "Đơn trả hàng không được rỗng";
 
     public ChiTietDonTraHang() {
     }
@@ -31,7 +39,10 @@ public class ChiTietDonTraHang {
         return maChiTietDonTraHang;
     }
 
-    public void setMaChiTietDonTraHang(String maChiTietDonTraHang) {
+    public void setMaChiTietDonTraHang(String maChiTietDonTraHang) throws Exception{
+        if(maChiTietDonTraHang == null){
+            throw new Exception(MA_CHI_TIET_DON_TRA_HANG_RONG);
+        }
         this.maChiTietDonTraHang = maChiTietDonTraHang;
     }
 
@@ -39,7 +50,10 @@ public class ChiTietDonTraHang {
         return soLuong;
     }
 
-    public void setSoLuong(int soLuong) {
+    public void setSoLuong(int soLuong) throws Exception{
+        if(soLuong <= 0){
+            throw new Exception(SO_LUONG_SAI);
+        }
         this.soLuong = soLuong;
     }
 
@@ -47,7 +61,10 @@ public class ChiTietDonTraHang {
         return donGia;
     }
 
-    public void setDonGia(double donGia) {
+    public void setDonGia(double donGia) throws Exception{
+        if(donGia <= 0){
+            throw new Exception(DON_GIA_SAI);
+        }
         this.donGia = donGia;
     }
 
@@ -55,7 +72,10 @@ public class ChiTietDonTraHang {
         return lyDoTra;
     }
 
-    public void setLyDoTra(String lyDoTra) {
+    public void setLyDoTra(String lyDoTra) throws Exception{
+        if(lyDoTra == null){
+            throw new Exception(LY_DO_TRA_RONG);
+        }
         this.lyDoTra = lyDoTra;
     }
 
@@ -63,7 +83,10 @@ public class ChiTietDonTraHang {
         return thanhTien;
     }
 
-    public void setThanhTien(double thanhTien) {
+    public void setThanhTien(double thanhTien) throws Exception{
+        if(thanhTien <= 0){
+            throw new Exception(THANH_TIEN_SAI);
+        }
         this.thanhTien = thanhTien;
     }
 
@@ -71,7 +94,10 @@ public class ChiTietDonTraHang {
         return sanPham;
     }
 
-    public void setSanPham(SanPham sanPham) {
+    public void setSanPham(SanPham sanPham) throws Exception{
+        if(sanPham == null){
+            throw new Exception(SAN_PHAM_SAI);
+        }
         this.sanPham = sanPham;
     }
 
@@ -79,7 +105,10 @@ public class ChiTietDonTraHang {
         return donTraHang;
     }
 
-    public void setDonTraHang(DonTraHang donTraHang) {
+    public void setDonTraHang(DonTraHang donTraHang) throws Exception{
+        if(donTraHang == null){
+            throw new Exception(DON_TRA_HANG_SAI);
+        }
         this.donTraHang = donTraHang;
     }
 

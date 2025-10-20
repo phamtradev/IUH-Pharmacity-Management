@@ -11,6 +11,11 @@ package vn.edu.iuh.fit.iuhpharmacitymanagement.entity;
 public class DonViTinh {
     private String maDonVi;
     private String tenDonVi;
+    
+    public static final String MA_DON_VI_SAI = "Mã đơn vị không hợp lệ. Mã phải có dạng DVxxxxx, với xxxxx là 5 chữ số (ví dụ: DV00001)";
+    public static final String TEN_DON_VI_RONG = "Tên đơn vị không được để trống";
+    
+    public static final String MA_DON_VI_REGEX = "^DV\\d{5}$";
 
     public DonViTinh() {
     }
@@ -24,7 +29,10 @@ public class DonViTinh {
         return maDonVi;
     }
 
-    public void setMaDonVi(String maDonVi) {
+    public void setMaDonVi(String maDonVi) throws Exception{
+        if (maDonVi == null || !maDonVi.matches(MA_DON_VI_REGEX)) {
+            throw new Exception(MA_DON_VI_SAI);
+        }
         this.maDonVi = maDonVi;
     }
 
@@ -32,7 +40,10 @@ public class DonViTinh {
         return tenDonVi;
     }
 
-    public void setTenDonVi(String tenDonVi) {
+    public void setTenDonVi(String tenDonVi) throws Exception{
+        if (tenDonVi == null || tenDonVi.trim().isEmpty()) {
+            throw new Exception(TEN_DON_VI_RONG);
+        }
         this.tenDonVi = tenDonVi;
     }
 

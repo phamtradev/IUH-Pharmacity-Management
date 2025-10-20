@@ -78,20 +78,6 @@ public class DonNhapHang {
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(maDonNhapHang, ngayNhap);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        DonNhapHang other = (DonNhapHang) obj;
-        return Objects.equals(this.maDonNhapHang, other.maDonNhapHang) &&
-                Objects.equals(this.ngayNhap, other.ngayNhap);
-    }
-
-    @Override
     public String toString() {
         return "DonNhapHang{" +
                 "maDonNhapHang='" + maDonNhapHang + '\'' +

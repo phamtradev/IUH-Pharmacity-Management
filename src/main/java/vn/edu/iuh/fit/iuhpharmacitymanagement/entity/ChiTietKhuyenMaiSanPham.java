@@ -9,9 +9,14 @@ package vn.edu.iuh.fit.iuhpharmacitymanagement.entity;
  * @author PhamTra
  */
 public class ChiTietKhuyenMaiSanPham {
+
     private String maChiTietKhuyenMaiSanPham;
     private SanPham sanPham;
     private KhuyenMai khuyenMai;
+
+    public static final String MA_CHI_TIET_KHUYEN_MAI_SAN_PHAM_SAI = "Mã chi tiết khuyến mãi sản phẩm không hợp lệ";
+    public static final String SAN_PHAM_SAI = "Sản phẩm không hợp lệ";
+    public static final String KHUYEN_MAI_SAI = "Khuyến mãi không hợp lệ";
 
     public ChiTietKhuyenMaiSanPham() {
     }
@@ -26,7 +31,10 @@ public class ChiTietKhuyenMaiSanPham {
         return maChiTietKhuyenMaiSanPham;
     }
 
-    public void setMaChiTietKhuyenMaiSanPham(String maChiTietKhuyenMaiSanPham) {
+    public void setMaChiTietKhuyenMaiSanPham(String maChiTietKhuyenMaiSanPham) throws Exception{
+        if(maChiTietKhuyenMaiSanPham == null){
+            throw new Exception(MA_CHI_TIET_KHUYEN_MAI_SAN_PHAM_SAI);
+        }
         this.maChiTietKhuyenMaiSanPham = maChiTietKhuyenMaiSanPham;
     }
 
@@ -34,7 +42,10 @@ public class ChiTietKhuyenMaiSanPham {
         return sanPham;
     }
 
-    public void setSanPham(SanPham sanPham) {
+    public void setSanPham(SanPham sanPham) throws Exception{
+        if(sanPham == null){
+            throw new Exception(SAN_PHAM_SAI);
+        }
         this.sanPham = sanPham;
     }
 
@@ -42,16 +53,19 @@ public class ChiTietKhuyenMaiSanPham {
         return khuyenMai;
     }
 
-    public void setKhuyenMai(KhuyenMai khuyenMai) {
+    public void setKhuyenMai(KhuyenMai khuyenMai) throws Exception{
+        if(khuyenMai == null){
+            throw new Exception(KHUYEN_MAI_SAI);
+        }
         this.khuyenMai = khuyenMai;
     }
 
     @Override
     public String toString() {
-        return "ChiTietKhuyenMaiSanPham{" +
-                "maChiTietKhuyenMaiSanPham='" + maChiTietKhuyenMaiSanPham + '\'' +
-                ", sanPham=" + (sanPham != null ? sanPham.getMaSanPham() : null) +
-                ", khuyenMai=" + (khuyenMai != null ? khuyenMai.getMaKhuyenMai() : null) +
-                '}';
+        return "ChiTietKhuyenMaiSanPham{"
+                + "maChiTietKhuyenMaiSanPham='" + maChiTietKhuyenMaiSanPham + '\''
+                + ", sanPham=" + (sanPham != null ? sanPham.getMaSanPham() : null)
+                + ", khuyenMai=" + (khuyenMai != null ? khuyenMai.getMaKhuyenMai() : null)
+                + '}';
     }
 }
