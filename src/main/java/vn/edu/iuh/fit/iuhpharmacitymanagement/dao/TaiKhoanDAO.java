@@ -1,0 +1,223 @@
+package vn.edu.iuh.fit.iuhpharmacitymanagement.dao;
+
+import vn.edu.iuh.fit.iuhpharmacitymanagement.connectDB.ConnectDB;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.TaiKhoan;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhanVien;
+
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+public class TaiKhoanDAO implements DAOInterface<TaiKhoan, String> {
+    
+    private final String SQL_THEM = 
+            "INSERT INTO TaiKhoan (tenDangNhap, matKhau, maNhanVien) VALUES (?, ?, ?)";
+    
+    private final String SQL_CAP_NHAT = 
+            "UPDATE TaiKhoan SET matKhau = ?, maNhanVien = ? WHERE tenDangNhap = ?";
+    
+    private final String SQL_TIM_THEO_TEN_DANG_NHAP = 
+            "SELECT tk.tenDangNhap, tk.matKhau, tk.maNhanVien, " +
+            "nv.tenNhanVien, nv.diaChi, nv.soDienThoai, nv.email, nv.vaiTro " +
+            "FROM TaiKhoan tk " +
+            "LEFT JOIN NhanVien nv ON tk.maNhanVien = nv.maNhanVien " +
+            "WHERE tk.tenDangNhap = ?";
+    
+    private final String SQL_TIM_TAT_CA = 
+            "SELECT tk.tenDangNhap, tk.matKhau, tk.maNhanVien, " +
+            "nv.tenNhanVien, nv.diaChi, nv.soDienThoai, nv.email, nv.vaiTro " +
+            "FROM TaiKhoan tk " +
+            "LEFT JOIN NhanVien nv ON tk.maNhanVien = nv.maNhanVien";
+    
+    private final String SQL_DANG_NHAP = 
+            "SELECT tk.tenDangNhap, tk.matKhau, tk.maNhanVien, " +
+            "nv.tenNhanVien, nv.diaChi, nv.soDienThoai, nv.email, nv.vaiTro " +
+            "FROM TaiKhoan tk " +
+            "LEFT JOIN NhanVien nv ON tk.maNhanVien = nv.maNhanVien " +
+            "WHERE tk.maNhanVien = ?";
+    
+    private final String SQL_TIM_THEO_MA_NHAN_VIEN = 
+            "SELECT tk.tenDangNhap, tk.matKhau, tk.maNhanVien, " +
+            "nv.tenNhanVien, nv.diaChi, nv.soDienThoai, nv.email, nv.vaiTro " +
+            "FROM TaiKhoan tk " +
+            "LEFT JOIN NhanVien nv ON tk.maNhanVien = nv.maNhanVien " +
+            "WHERE tk.maNhanVien = ?";
+    
+    private final String SQL_LAY_MA_CUOI = 
+            "SELECT TOP 1 tenDangNhap FROM TaiKhoan ORDER BY tenDangNhap DESC";
+
+    @Override
+    public boolean insert(TaiKhoan taiKhoan) {
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(SQL_THEM)) {
+            
+            if (taiKhoan.getTenDangNhap() == null || taiKhoan.getTenDangNhap().trim().isEmpty()) {
+                try {
+                    taiKhoan.setTenDangNhap(taoMaTaiKhoan());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return false;
+                }
+            }
+            
+            stmt.setString(1, taiKhoan.getTenDangNhap());
+            stmt.setString(2, taiKhoan.getMatKhau());
+            stmt.setString(3, taiKhoan.getNhanVien() != null ? taiKhoan.getNhanVien().getMaNhanVien() : null);
+            
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    @Override
+    public boolean update(TaiKhoan taiKhoan) {
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(SQL_CAP_NHAT)) {
+            
+            stmt.setString(1, taiKhoan.getMatKhau());
+            stmt.setString(2, taiKhoan.getNhanVien() != null ? taiKhoan.getNhanVien().getMaNhanVien() : null);
+            stmt.setString(3, taiKhoan.getTenDangNhap());
+            
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    @Override
+    public Optional<TaiKhoan> findById(String tenDangNhap) {
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(SQL_TIM_THEO_TEN_DANG_NHAP)) {
+            
+            stmt.setString(1, tenDangNhap);
+            ResultSet rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                return Optional.of(mapResultSetToTaiKhoan(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return Optional.empty();
+    }
+
+    @Override
+    public List<TaiKhoan> findAll() {
+        List<TaiKhoan> danhSachTaiKhoan = new ArrayList<>();
+        
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(SQL_TIM_TAT_CA);
+             ResultSet rs = stmt.executeQuery()) {
+            
+            while (rs.next()) {
+                danhSachTaiKhoan.add(mapResultSetToTaiKhoan(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return danhSachTaiKhoan;
+    }
+
+    public TaiKhoan dangNhap(String maNhanVien) {
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(SQL_DANG_NHAP)) {
+            
+            stmt.setString(1, maNhanVien);
+            ResultSet rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                return mapResultSetToTaiKhoan(rs);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public Optional<TaiKhoan> timTheoMaNhanVien(String maNhanVien) {
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(SQL_TIM_THEO_MA_NHAN_VIEN)) {
+            
+            stmt.setString(1, maNhanVien);
+            ResultSet rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                return Optional.of(mapResultSetToTaiKhoan(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return Optional.empty();
+    }
+
+    private TaiKhoan mapResultSetToTaiKhoan(ResultSet rs) throws SQLException {
+        try {
+            TaiKhoan taiKhoan = new TaiKhoan();
+            
+            taiKhoan.setTenDangNhap(rs.getString("tenDangNhap"));
+            taiKhoan.setMatKhau(rs.getString("matKhau"));
+            
+            String maNhanVien = rs.getString("maNhanVien");
+            if (maNhanVien != null) {
+                NhanVien nhanVien = new NhanVien();
+                nhanVien.setMaNhanVien(maNhanVien);
+                nhanVien.setTenNhanVien(rs.getString("tenNhanVien"));
+                nhanVien.setDiaChi(rs.getString("diaChi"));
+                nhanVien.setSoDienThoai(rs.getString("soDienThoai"));
+                nhanVien.setEmail(rs.getString("email"));
+                nhanVien.setVaiTro(rs.getString("vaiTro"));
+                
+                taiKhoan.setNhanVien(nhanVien);
+            }
+            
+            return taiKhoan;
+        } catch (Exception e) {
+            throw new SQLException("Lỗi khi map dữ liệu từ ResultSet: " + e.getMessage(), e);
+        }
+    }
+
+    private String taoMaTaiKhoan() {
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(SQL_LAY_MA_CUOI);
+             ResultSet rs = stmt.executeQuery()) {
+            
+            if (rs.next()) {
+                String maCuoi = rs.getString("tenDangNhap");
+                String phanSo = maCuoi.substring(3); // Bỏ "TDN"
+                int soTiepTheo = Integer.parseInt(phanSo) + 1;
+                return String.format("TDN%05d", soTiepTheo);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return "TDN00001";
+    }
+
+    public boolean tonTai(String tenDangNhap) {
+        return findById(tenDangNhap).isPresent();
+    }
+
+    public boolean tonTaiTheoMaNhanVien(String maNhanVien) {
+        return timTheoMaNhanVien(maNhanVien).isPresent();
+    }
+
+    public int dem() {
+        String sql = "SELECT COUNT(*) as total FROM TaiKhoan";
+        
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            
+            if (rs.next()) {
+                return rs.getInt("total");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+}
