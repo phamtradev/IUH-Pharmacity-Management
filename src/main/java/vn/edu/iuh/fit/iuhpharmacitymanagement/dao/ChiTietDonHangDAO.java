@@ -25,16 +25,17 @@ public class ChiTietDonHangDAO implements DAOInterface<ChiTietDonHang, String> {
     @Override
     public boolean insert(ChiTietDonHang t) {
         String sql = "insert into chitietdonhang(donGia, giamGia, soLuong, thanhTien, maLoHang, maDonHang) values(?, ?, ?, ?, ?, ?)";
-        try {
-            Connection con = ConnectDB.getInstance().getConnection();
-            PreparedStatement pre = con.prepareCall(sql);
+        try (Connection con = ConnectDB.getInstance().getConnection();
+             PreparedStatement pre = con.prepareStatement(sql)) {
+            
             pre.setDouble(1, t.getDonGia());
             pre.setDouble(2, t.getGiamGia());
             pre.setInt(3, t.getSoLuong());
             pre.setDouble(4, t.getThanhTien());
             pre.setString(5, t.getLoHang().getMaLoHang());
             pre.setString(6, t.getDonHang().getMaDonHang());
-            if(pre.executeUpdate() > 0) return true;
+            
+            return pre.executeUpdate() > 0;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -43,22 +44,61 @@ public class ChiTietDonHangDAO implements DAOInterface<ChiTietDonHang, String> {
 
     @Override
     public boolean update(ChiTietDonHang t) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        String sql = "update chitietdonhang "
+                + "set donGia = ?, giamGia = ?, soLuong = ?, thanhTien = ? "
+                + "where maLoHang like ? and maDonHang like ?";
+                
+        try {
+            Connection con = ConnectDB.getInstance().getConnection();
+            PreparedStatement pre = con.prepareStatement(sql);
+            pre.setDouble(1, t.getDonGia());
+            pre.setDouble(2, t.getGiamGia());
+            pre.setInt(3, t.getSoLuong());
+            pre.setDouble(4, t.getThanhTien());
+            pre.setString(5, t.getLoHang().getMaLoHang());
+            pre.setString(6, t.getDonHang().getMaDonHang());
+            return pre.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+        
     }
 
     @Override
-    public Optional<ChiTietDonHang> findById(String id) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
-
-
-    public ArrayList<ChiTietDonHang> findByIdList(String id) {
-        ArrayList<ChiTietDonHang> dsCtdh = null;
+    public Optional<ChiTietDonHang> findById(String id) {        
         try {
             Connection con = ConnectDB.getInstance().getConnection();
             PreparedStatement pre = con.prepareStatement("select * from chitietdonhang where maDonHang = ?");
             pre.setString(1, id);
             ResultSet rs = pre.executeQuery();
+            if(rs.next()){
+             double donGia = rs.getDouble("donGia");
+                double giamGia = rs.getDouble("giamGia");
+                int soLuong = rs.getInt("soLuong");
+                double thanhTien = rs.getDouble("thanhTien");
+                String maLo = rs.getString("maLoHang");
+                String maDonHang = rs.getString("maDonHang");
+                
+                ChiTietDonHang ctdh = new ChiTietDonHang(soLuong, donGia, thanhTien, giamGia, 
+                        new LoHang(maLo), new DonHang(maDonHang));
+                return Optional.of(ctdh);            
+            }
+        } catch (Exception e) {
+            e.printStackTrace();      
+            
+        }
+        return Optional.empty();
+    }
+
+    public ArrayList<ChiTietDonHang> findByIdList(String id) {
+        ArrayList<ChiTietDonHang> dsCtdh = new ArrayList<>();
+        try (Connection con = ConnectDB.getInstance().getConnection();
+             PreparedStatement pre = con.prepareStatement("select * from chitietdonhang where maDonHang = ?")) {
+            
+            pre.setString(1, id);
+            ResultSet rs = pre.executeQuery();
+            
             while (rs.next()) {
                 double donGia = rs.getDouble("donGia");
                 double giamGia = rs.getDouble("giamGia");
@@ -66,7 +106,9 @@ public class ChiTietDonHangDAO implements DAOInterface<ChiTietDonHang, String> {
                 double thanhTien = rs.getDouble("thanhTien");
                 String maLo = rs.getString("maLoHang");
                 String maDonHang = rs.getString("maDonHang");
-                ChiTietDonHang ctdh = new ChiTietDonHang(soLuong, donGia, thanhTien, giamGia, new LoHang(maLo), new DonHang(maDonHang));
+                
+                ChiTietDonHang ctdh = new ChiTietDonHang(soLuong, donGia, thanhTien, giamGia, 
+                        new LoHang(maLo), new DonHang(maDonHang));
                 dsCtdh.add(ctdh);
             }
         } catch (Exception e) {
@@ -77,35 +119,28 @@ public class ChiTietDonHangDAO implements DAOInterface<ChiTietDonHang, String> {
 
     @Override
     public List<ChiTietDonHang> findAll() {
-        List<ChiTietDonHang> dsCtdh = null;
-        try {
-            Connection con = ConnectDB.getInstance().getConnection();
-            Statement stm = con.createStatement();
-            ResultSet rs = stm.executeQuery("select * from chitietdonhang");
+        List<ChiTietDonHang> dsCtdh = new ArrayList<>(); 
+        try (Connection con = ConnectDB.getInstance().getConnection();
+             Statement stm = con.createStatement();
+             ResultSet rs = stm.executeQuery("select * from chitietdonhang")) {
+            
             while (rs.next()) {
                 double donGia = rs.getDouble("donGia");
                 double giamGia = rs.getDouble("giamGia");
                 int soLuong = rs.getInt("soLuong");
                 double thanhTien = rs.getDouble("thanhTien");
                 String maLo = rs.getString("maLoHang");
-//                try {
-//                    PreparedStatement pre = con.prepareStatement("select * from lohang where maLoHang = ?");
-//                    pre.setString(1, maLo);
-//                    ResultSet rs1 = pre.executeQuery();
-//                   if(rs1.next()){
-//                      lh  = new LoHang(rs1.getString("maLoHang"), rs1.getString("tenLoHang"),rs.getDate("hanSuDung").toLocalDate(), rs.getInt("tonKho"), rs.getInt("trangThai")==1? true: false);
-//                   }
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
                 String maDonHang = rs.getString("maDonHang");
-                ChiTietDonHang ctdh = new ChiTietDonHang(soLuong, donGia, thanhTien, giamGia, new LoHang(maLo), new DonHang(maDonHang));
+                
+                ChiTietDonHang ctdh = new ChiTietDonHang(soLuong, donGia, thanhTien, giamGia, 
+                        new LoHang(maLo), new DonHang(maDonHang));
                 dsCtdh.add(ctdh);
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
         return dsCtdh;
-
     }
+
+    
 }
