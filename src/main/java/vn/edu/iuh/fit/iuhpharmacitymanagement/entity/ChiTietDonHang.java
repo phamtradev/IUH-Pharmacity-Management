@@ -2,7 +2,7 @@ package vn.edu.iuh.fit.iuhpharmacitymanagement.entity;
 
 public class ChiTietDonHang {
 
-    private String maChiTietDonHang;
+    //private String maChiTietDonHang;
     private int soLuong;
     private double donGia;
     private double thanhTien;
@@ -21,14 +21,14 @@ public class ChiTietDonHang {
     public ChiTietDonHang() {
     }
 
-    public ChiTietDonHang(String maChiTietDonHang,
+    public ChiTietDonHang(
                           int soLuong,
                           double donGia,
                           double thanhTien,
                           double giamGia,
                           LoHang loHang,
                           DonHang donHang) throws Exception {
-        this.maChiTietDonHang = maChiTietDonHang;
+        //this.maChiTietDonHang = maChiTietDonHang;
         setSoLuong(soLuong);
         setDonGia(donGia);
         setThanhTien(thanhTien);
@@ -37,16 +37,16 @@ public class ChiTietDonHang {
         setDonHang(donHang);
     }
 
-    public String getMaChiTietDonHang() {
-        return maChiTietDonHang;
-    }
-
-    public void setMaChiTietDonHang(String maChiTietDonHang) throws Exception{
-        if(maChiTietDonHang == null){
-            throw new Exception(MA_CHI_TIET_DON_HANG_RONG);
-        }
-        this.maChiTietDonHang = maChiTietDonHang;
-    }
+//    public String getMaChiTietDonHang() {
+//        return maChiTietDonHang;
+//    }
+//
+//    public void setMaChiTietDonHang(String maChiTietDonHang) throws Exception{
+//        if(maChiTietDonHang == null){
+//            throw new Exception(MA_CHI_TIET_DON_HANG_RONG);
+//        }
+//        this.maChiTietDonHang = maChiTietDonHang;
+//    }
 
     public int getSoLuong() {
         return soLuong;
@@ -117,7 +117,7 @@ public class ChiTietDonHang {
     @Override
     public String toString() {
         return "ChiTietDonHang{" +
-                "maChiTietDonHang='" + maChiTietDonHang + '\'' +
+//                "maChiTietDonHang='" + maChiTietDonHang + '\'' +
                 ", soLuong=" + soLuong +
                 ", donGia=" + donGia +
                 ", thanhTien=" + thanhTien +
