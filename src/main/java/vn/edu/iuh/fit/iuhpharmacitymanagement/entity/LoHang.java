@@ -22,6 +22,10 @@ public class LoHang {
     public LoHang() {
     }
 
+    public LoHang(String maLoHang) {
+        this.maLoHang = maLoHang;
+    }
+    
     public LoHang(String maLoHang,
                   String tenLoHang,
                   LocalDate ngaySanXuat,

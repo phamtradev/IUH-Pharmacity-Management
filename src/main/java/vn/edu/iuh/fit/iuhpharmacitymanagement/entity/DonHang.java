@@ -41,6 +41,10 @@ public class DonHang {
     public DonHang() {
     }
 
+    public DonHang(String maDonHang) {
+        this.maDonHang = maDonHang;
+    }
+    
     public DonHang(String maDonHang, LocalDate ngayDatHang) {
         this.maDonHang = maDonHang;
         this.ngayDatHang = ngayDatHang;
