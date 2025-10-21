@@ -160,4 +160,54 @@ public class KhachHangDAO implements DAOInterface<KhachHang, String> {
         }
         return "KH00001";
     }
+    
+    // Tìm KH by Sđt
+    public Optional<KhachHang> findBySoDienThoai(String soDienThoai) {
+        String sql = "SELECT * FROM KhachHang WHERE soDienThoai = ?";
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(sql)) {
+
+            stmt.setString(1, soDienThoai);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return Optional.of(mapResultSetToKhachHang(rs));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return Optional.empty();
+    }
+
+    //TÌm KH by Email
+    public Optional<KhachHang> findByEmail(String email) {
+        String sql = "SELECT * FROM KhachHang WHERE email = ?";
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(sql)) {
+
+            stmt.setString(1, email);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return Optional.of(mapResultSetToKhachHang(rs));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return Optional.empty();
+    }
+    
+    // Xoas 1 kH dựa trên mã KH
+    public boolean delete(String maKhachHang) {
+        String sql = "DELETE FROM KhachHang WHERE maKhachHang = ?";
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(sql)) {
+
+            stmt.setString(1, maKhachHang);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

@@ -185,4 +185,23 @@ public class DonHangDAO implements DAOInterface<DonHang, String> {
         }
         return 0;
     }
+    
+    // Đếm số lượng khách hàng theo hóa đơn
+    public long countByKhachHang(String maKhachHang) {
+        String sql = "SELECT COUNT(*) as total FROM DonHang WHERE maKhachHang = ?";
+        
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(sql)) {
+            
+            stmt.setString(1, maKhachHang);
+            ResultSet rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                return rs.getLong("total");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
 }
