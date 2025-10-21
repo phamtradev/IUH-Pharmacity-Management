@@ -67,6 +67,11 @@ public class SanPham {
         this.loaiSanPham = loaiSanPham;
     }
 
+    public SanPham(String maSanPham) {
+        this.maSanPham = maSanPham;
+    }
+    
+    
     public String getMaSanPham() {
         return maSanPham;
     }

@@ -26,6 +26,11 @@ public class DonNhapHang {
     public DonNhapHang() {
     }
 
+    public DonNhapHang(String maDonNhapHang) {
+        this.maDonNhapHang = maDonNhapHang;
+    }
+    
+    
     public DonNhapHang(String maDonNhapHang, LocalDate ngayNhap) {
         this.maDonNhapHang = maDonNhapHang;
         this.ngayNhap = ngayNhap;

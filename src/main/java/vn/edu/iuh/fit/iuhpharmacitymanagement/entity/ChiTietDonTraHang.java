@@ -5,7 +5,7 @@ package vn.edu.iuh.fit.iuhpharmacitymanagement.entity;
  * @author PhamTra
  */
 public class ChiTietDonTraHang {
-    private String maChiTietDonTraHang;
+   // private String maChiTietDonTraHang;
     private int soLuong;
     private double donGia;
     private String lyDoTra;
@@ -24,9 +24,9 @@ public class ChiTietDonTraHang {
     public ChiTietDonTraHang() {
     }
 
-    public ChiTietDonTraHang(String maChiTietDonTraHang, int soLuong, double donGia, String lyDoTra, double thanhTien,
+    public ChiTietDonTraHang(int soLuong, double donGia, String lyDoTra, double thanhTien,
             SanPham sanPham, DonTraHang donTraHang) {
-        this.maChiTietDonTraHang = maChiTietDonTraHang;
+        //this.maChiTietDonTraHang = maChiTietDonTraHang;
         this.soLuong = soLuong;
         this.donGia = donGia;
         this.lyDoTra = lyDoTra;
@@ -35,16 +35,16 @@ public class ChiTietDonTraHang {
         this.donTraHang = donTraHang;
     }
 
-    public String getMaChiTietDonTraHang() {
-        return maChiTietDonTraHang;
-    }
-
-    public void setMaChiTietDonTraHang(String maChiTietDonTraHang) throws Exception{
-        if(maChiTietDonTraHang == null){
-            throw new Exception(MA_CHI_TIET_DON_TRA_HANG_RONG);
-        }
-        this.maChiTietDonTraHang = maChiTietDonTraHang;
-    }
+//    public String getMaChiTietDonTraHang() {
+//        return maChiTietDonTraHang;
+//    }
+//
+//    public void setMaChiTietDonTraHang(String maChiTietDonTraHang) throws Exception{
+//        if(maChiTietDonTraHang == null){
+//            throw new Exception(MA_CHI_TIET_DON_TRA_HANG_RONG);
+//        }
+//        this.maChiTietDonTraHang = maChiTietDonTraHang;
+//    }
 
     public int getSoLuong() {
         return soLuong;
@@ -115,7 +115,7 @@ public class ChiTietDonTraHang {
     @Override
     public String toString() {
         return "ChiTietDonTraHang{" +
-                "maChiTietDonTraHang='" + maChiTietDonTraHang + '\'' +
+                //"maChiTietDonTraHang='" + maChiTietDonTraHang + '\'' +
                 ", soLuong=" + soLuong +
                 ", donGia=" + donGia +
                 ", lyDoTra='" + lyDoTra + '\'' +

@@ -5,7 +5,7 @@ package vn.edu.iuh.fit.iuhpharmacitymanagement.entity;
  * @author PhamTra
  */
 public class ChiTietDonNhapHang {
-    private String maChiTietDonNhapHang;
+    //private String maChiTietDonNhapHang;
     private int soLuong;
     private double donGia;
     private double thanhTien;
@@ -22,8 +22,8 @@ public class ChiTietDonNhapHang {
     public ChiTietDonNhapHang() {
     }
 
-    public ChiTietDonNhapHang(String maChiTietDonNhapHang, int soLuong, double donGia, double thanhTien, DonNhapHang donNhapHang, LoHang loHang) {
-        this.maChiTietDonNhapHang = maChiTietDonNhapHang;
+    public ChiTietDonNhapHang(int soLuong, double donGia, double thanhTien, DonNhapHang donNhapHang, LoHang loHang) {
+       // this.maChiTietDonNhapHang = maChiTietDonNhapHang;
         this.soLuong = soLuong;
         this.donGia = donGia;
         this.thanhTien = thanhTien;
@@ -31,16 +31,16 @@ public class ChiTietDonNhapHang {
         this.loHang = loHang;
     }
 
-    public String getMaChiTietDonNhapHang() {
-        return maChiTietDonNhapHang;
-    }
-
-    public void setMaChiTietDonNhapHang(String maChiTietDonNhapHang) throws Exception{
-        if(maChiTietDonNhapHang == null){
-            throw new Exception(MA_CHI_TIET_DON_NHAP_HANG_RONG);
-        }
-        this.maChiTietDonNhapHang = maChiTietDonNhapHang;
-    }
+//    public String getMaChiTietDonNhapHang() {
+//        return maChiTietDonNhapHang;
+//    }
+//
+//    public void setMaChiTietDonNhapHang(String maChiTietDonNhapHang) throws Exception{
+//        if(maChiTietDonNhapHang == null){
+//            throw new Exception(MA_CHI_TIET_DON_NHAP_HANG_RONG);
+//        }
+//        this.maChiTietDonNhapHang = maChiTietDonNhapHang;
+//    }
 
     public int getSoLuong() {
         return soLuong;
@@ -100,7 +100,7 @@ public class ChiTietDonNhapHang {
     @Override
     public String toString() {
         return "ChiTietDonNhapHang{" +
-                "maChiTietDonNhapHang='" + maChiTietDonNhapHang + '\'' +
+                //"maChiTietDonNhapHang='" + maChiTietDonNhapHang + '\'' +
                 ", soLuong=" + soLuong +
                 ", donGia=" + donGia +
                 ", thanhTien=" + thanhTien +

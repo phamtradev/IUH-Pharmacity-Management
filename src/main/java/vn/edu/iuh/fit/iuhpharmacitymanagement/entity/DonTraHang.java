@@ -30,6 +30,11 @@ public class DonTraHang {
         this.ngayTraHang = ngayTraHang;
     }
 
+    public DonTraHang(String maDonTraHang) {
+        this.maDonTraHang = maDonTraHang;
+    }
+    
+
     public String getMaDonTraHang() {
         return maDonTraHang;
     }

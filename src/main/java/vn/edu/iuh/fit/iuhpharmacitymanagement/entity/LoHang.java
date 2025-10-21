@@ -21,7 +21,8 @@ public class LoHang {
 
     public LoHang() {
     }
-
+    
+    
     public LoHang(String maLoHang) {
         this.maLoHang = maLoHang;
     }
