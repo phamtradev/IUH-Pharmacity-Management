@@ -4,12 +4,14 @@
  */
 package vn.edu.iuh.fit.iuhpharmacitymanagement.dao;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.connectDB.ConnectDB;
-import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.*;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietHangHong;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.HangHong;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.LoHang;
 
 /**
  *
