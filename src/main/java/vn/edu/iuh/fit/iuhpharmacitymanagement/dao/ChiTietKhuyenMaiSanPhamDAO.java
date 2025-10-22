@@ -38,18 +38,18 @@ public class ChiTietKhuyenMaiSanPhamDAO implements DAOInterface<ChiTietKhuyenMai
 
 
     @Override
-    public boolean insert(ChiTietKhuyenMaiSanPham ctkmsp) {
+    public boolean insert(ChiTietKhuyenMaiSanPham chiTietKhuyenMaiSanPham) {
         try (Connection con = ConnectDB.getConnection();
              PreparedStatement stmt = con.prepareStatement(SQL_THEM)) {
 
          
-            if (ctkmsp.getMaChiTietKhuyenMaiSanPham() == null || ctkmsp.getMaChiTietKhuyenMaiSanPham().trim().isEmpty()) {
-                ctkmsp.setMaChiTietKhuyenMaiSanPham(taoMaMoi());
+            if (chiTietKhuyenMaiSanPham.getMaChiTietKhuyenMaiSanPham() == null || chiTietKhuyenMaiSanPham.getMaChiTietKhuyenMaiSanPham().trim().isEmpty()) {
+                chiTietKhuyenMaiSanPham.setMaChiTietKhuyenMaiSanPham(taoMaMoi());
             }
 
-            stmt.setString(1, ctkmsp.getMaChiTietKhuyenMaiSanPham());
-            stmt.setString(2, ctkmsp.getSanPham() != null ? ctkmsp.getSanPham().getMaSanPham() : null);
-            stmt.setString(3, ctkmsp.getKhuyenMai() != null ? ctkmsp.getKhuyenMai().getMaKhuyenMai() : null);
+            stmt.setString(1, chiTietKhuyenMaiSanPham.getMaChiTietKhuyenMaiSanPham());
+            stmt.setString(2, chiTietKhuyenMaiSanPham.getSanPham() != null ? chiTietKhuyenMaiSanPham.getSanPham().getMaSanPham() : null);
+            stmt.setString(3, chiTietKhuyenMaiSanPham.getKhuyenMai() != null ? chiTietKhuyenMaiSanPham.getKhuyenMai().getMaKhuyenMai() : null);
 
             return stmt.executeUpdate() > 0;
 
@@ -64,13 +64,13 @@ public class ChiTietKhuyenMaiSanPhamDAO implements DAOInterface<ChiTietKhuyenMai
 
 
     @Override
-    public boolean update(ChiTietKhuyenMaiSanPham ctkmsp) {
+    public boolean update(ChiTietKhuyenMaiSanPham chiTietKhuyenMaiSanPham) {
         try (Connection con = ConnectDB.getConnection();
              PreparedStatement stmt = con.prepareStatement(SQL_CAP_NHAT)) {
 
-            stmt.setString(1, ctkmsp.getSanPham() != null ? ctkmsp.getSanPham().getMaSanPham() : null);
-            stmt.setString(2, ctkmsp.getKhuyenMai() != null ? ctkmsp.getKhuyenMai().getMaKhuyenMai() : null);
-            stmt.setString(3, ctkmsp.getMaChiTietKhuyenMaiSanPham());
+            stmt.setString(1, chiTietKhuyenMaiSanPham.getSanPham() != null ? chiTietKhuyenMaiSanPham.getSanPham().getMaSanPham() : null);
+            stmt.setString(2, chiTietKhuyenMaiSanPham.getKhuyenMai() != null ? chiTietKhuyenMaiSanPham.getKhuyenMai().getMaKhuyenMai() : null);
+            stmt.setString(3, chiTietKhuyenMaiSanPham.getMaChiTietKhuyenMaiSanPham());
 
             return stmt.executeUpdate() > 0;
 
@@ -126,19 +126,19 @@ public class ChiTietKhuyenMaiSanPhamDAO implements DAOInterface<ChiTietKhuyenMai
 
 
     private ChiTietKhuyenMaiSanPham mapResultSetToChiTietKhuyenMaiSanPham(ResultSet rs) throws SQLException, Exception {
-        ChiTietKhuyenMaiSanPham ctkmsp = new ChiTietKhuyenMaiSanPham();
+        ChiTietKhuyenMaiSanPham chiTietKhuyenMaiSanPham = new ChiTietKhuyenMaiSanPham();
 
-        ctkmsp.setMaChiTietKhuyenMaiSanPham(rs.getString("maChiTietKhuyenMaiSanPham"));
+        chiTietKhuyenMaiSanPham.setMaChiTietKhuyenMaiSanPham(rs.getString("maChiTietKhuyenMaiSanPham"));
 
         SanPham sp = new SanPham();
         sp.setMaSanPham(rs.getString("maSanPham"));
-        ctkmsp.setSanPham(sp);
+        chiTietKhuyenMaiSanPham.setSanPham(sp);
 
         KhuyenMai km = new KhuyenMai();
         km.setMaKhuyenMai(rs.getString("maKhuyenMai"));
-        ctkmsp.setKhuyenMai(km);
+        chiTietKhuyenMaiSanPham.setKhuyenMai(km);
 
-        return ctkmsp;
+        return chiTietKhuyenMaiSanPham;
     }
 
 

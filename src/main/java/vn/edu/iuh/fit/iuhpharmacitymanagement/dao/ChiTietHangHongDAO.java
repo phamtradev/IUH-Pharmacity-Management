@@ -124,22 +124,22 @@ public class ChiTietHangHongDAO implements DAOInterface<ChiTietHangHong, String>
 
 
     private ChiTietHangHong mapResultSetToChiTietHangHong(ResultSet rs) throws SQLException, Exception {
-        ChiTietHangHong cthh = new ChiTietHangHong();
+        ChiTietHangHong chiTietHangHong = new ChiTietHangHong();
 
-        cthh.setMaChiTietHangHong(rs.getString("maChiTietHangHong"));
-        cthh.setSoLuong(rs.getInt("soLuong"));
-        cthh.setDonGia(rs.getDouble("donGia"));
-        cthh.setThanhTien(rs.getDouble("thanhTien"));
+        chiTietHangHong.setMaChiTietHangHong(rs.getString("maChiTietHangHong"));
+        chiTietHangHong.setSoLuong(rs.getInt("soLuong"));
+        chiTietHangHong.setDonGia(rs.getDouble("donGia"));
+        chiTietHangHong.setThanhTien(rs.getDouble("thanhTien"));
 
         LoHang loHang = new LoHang();
         loHang.setMaLoHang(rs.getString("maLoHang"));
-        cthh.setLoHang(loHang);
+        chiTietHangHong.setLoHang(loHang);
 
         HangHong hangHong = new HangHong();
         hangHong.setMaHangHong(rs.getString("maHangHong"));
-        cthh.setHangHong(hangHong);
+        chiTietHangHong.setHangHong(hangHong);
 
-        return cthh;
+        return chiTietHangHong;
     }
 
 
