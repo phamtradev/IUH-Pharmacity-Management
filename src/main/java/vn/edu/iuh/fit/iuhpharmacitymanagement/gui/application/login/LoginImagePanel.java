@@ -15,16 +15,38 @@ public class LoginImagePanel extends javax.swing.JPanel {
     /**
      * Creates new form LoginImagePanel
      */
-
+private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(LoginImagePanel.class.getName());
     /**
      * Creates new form LoginImagePanel
      */
     public LoginImagePanel() {
         initComponents();
  
+        new Thread(() -> {
+            setImageToLabel(lblCenter, "/img/LoginImage.png");
+        }).start();
     }
 
+private void setImageToLabel(javax.swing.JLabel label, String imagePath) {
+        try {
+            java.net.URL imgURL = getClass().getResource(imagePath);
+            System.out.println("Đường dẫn ảnh: " + imgURL);
 
+            if (imgURL != null) {
+                ImageIcon originalIcon = new ImageIcon(imgURL);
+                Image scaledImage = originalIcon.getImage().getScaledInstance(
+                        label.getWidth(),
+                        label.getHeight(),
+                        Image.SCALE_SMOOTH
+                );
+                label.setIcon(new ImageIcon(scaledImage));
+            } else {
+                logger.warning("Không tìm thấy ảnh ở đường dẫn: " + imagePath);
+            }
+        } catch (Exception e) {
+            logger.log(java.util.logging.Level.SEVERE, "Lỗi khi load hình ảnh", e);
+        }
+    }
 
     /**
      * This method is called from within the constructor to initialize the form.

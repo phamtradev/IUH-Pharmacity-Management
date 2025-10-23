@@ -5,6 +5,9 @@
 package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.login;
 
 import com.formdev.flatlaf.FlatClientProperties;
+import java.awt.Graphics;
+import java.awt.Image;
+import javax.swing.ImageIcon;
 
 /**
  *
@@ -15,12 +18,33 @@ public class LoginFormPanel extends javax.swing.JPanel {
     /**
      * Creates new form LoginFormPanel
      */
+    private Image backgroundImage;
+
     public LoginFormPanel() {
         initComponents();
+        backgroundImage = new ImageIcon(getClass().getResource("/img/LoginImage.png")).getImage();
+        setOpaque(false); // Đảm bảo panel cho phép hiển thị ảnh nền
+        contentPanel.setOpaque(true);
+        contentPanel.setBackground(new java.awt.Color(255, 255, 255, 180));
+contentPanel.putClientProperty(FlatClientProperties.STYLE, 
+        "background:rgba(255,255,255,0.7); border:20, #FFFFFFAA;");
+contentPanel.setBorder(javax.swing.BorderFactory.createCompoundBorder(
+    javax.swing.BorderFactory.createLineBorder(new java.awt.Color(200,200,200), 1, true),
+    javax.swing.BorderFactory.createEmptyBorder(20, 20, 20, 20)
+));
+
+
         btnDangNhap.putClientProperty("JButton.buttonType", "primary"); // không hoạt động nhưng mà đừng xóa :v
-        
+
         txtTenDangNhap.putClientProperty(FlatClientProperties.TEXT_FIELD_LEADING_ICON, new com.formdev.flatlaf.extras.FlatSVGIcon("img/user_icon.svg"));
-         txtMatKhau.putClientProperty(FlatClientProperties.TEXT_FIELD_LEADING_ICON, new com.formdev.flatlaf.extras.FlatSVGIcon("img/password_icon.svg"));
+        txtMatKhau.putClientProperty(FlatClientProperties.TEXT_FIELD_LEADING_ICON, new com.formdev.flatlaf.extras.FlatSVGIcon("img/password_icon.svg"));
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        // Vẽ ảnh phủ toàn bộ panel
+        g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
     }
 
     /**
@@ -33,7 +57,7 @@ public class LoginFormPanel extends javax.swing.JPanel {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        lblFormContentPanel = new javax.swing.JPanel();
+        contentPanel = new javax.swing.JPanel();
         lblTieuDe = new javax.swing.JLabel();
         txtTenDangNhap = new javax.swing.JTextField();
         txtMatKhau = new javax.swing.JTextField();
@@ -44,8 +68,9 @@ public class LoginFormPanel extends javax.swing.JPanel {
         setBackground(javax.swing.UIManager.getDefaults().getColor("Component.success.borderColor"));
         setLayout(new java.awt.GridBagLayout());
 
-        lblFormContentPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("Component.success.borderColor"));
-        lblFormContentPanel.setLayout(new java.awt.GridBagLayout());
+        contentPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("Component.success.borderColor"));
+        contentPanel.setOpaque(false);
+        contentPanel.setLayout(new java.awt.GridBagLayout());
 
         lblTieuDe.setFont(new java.awt.Font("Segoe UI", 3, 36)); // NOI18N
         lblTieuDe.setForeground(javax.swing.UIManager.getDefaults().getColor("Actions.Green"));
@@ -54,7 +79,7 @@ public class LoginFormPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = 2;
-        lblFormContentPanel.add(lblTieuDe, gridBagConstraints);
+        contentPanel.add(lblTieuDe, gridBagConstraints);
 
         txtTenDangNhap.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         txtTenDangNhap.setPreferredSize(new java.awt.Dimension(300, 45));
@@ -63,7 +88,7 @@ public class LoginFormPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.insets = new java.awt.Insets(20, 310, 10, 0);
-        lblFormContentPanel.add(txtTenDangNhap, gridBagConstraints);
+        contentPanel.add(txtTenDangNhap, gridBagConstraints);
         txtTenDangNhap.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Tên đăng nhập");
 
         txtMatKhau.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
@@ -73,10 +98,11 @@ public class LoginFormPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.insets = new java.awt.Insets(0, 310, 10, 0);
-        lblFormContentPanel.add(txtMatKhau, gridBagConstraints);
+        contentPanel.add(txtMatKhau, gridBagConstraints);
         txtMatKhau.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Mật khẩu");
 
         pnlDangNhap.setBackground(javax.swing.UIManager.getDefaults().getColor("Component.success.borderColor"));
+        pnlDangNhap.setOpaque(false);
         pnlDangNhap.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT));
 
         btnDangNhap.setBackground(javax.swing.UIManager.getDefaults().getColor("Actions.Blue"));
@@ -92,7 +118,7 @@ public class LoginFormPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        lblFormContentPanel.add(pnlDangNhap, gridBagConstraints);
+        contentPanel.add(pnlDangNhap, gridBagConstraints);
 
         lblQuenMatKhau.setFont(new java.awt.Font("Segoe UI", 2, 12)); // NOI18N
         lblQuenMatKhau.setForeground(new java.awt.Color(255, 51, 51));
@@ -103,18 +129,18 @@ public class LoginFormPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        lblFormContentPanel.add(lblQuenMatKhau, gridBagConstraints);
+        contentPanel.add(lblQuenMatKhau, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        add(lblFormContentPanel, gridBagConstraints);
+        add(contentPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnDangNhap;
-    private javax.swing.JPanel lblFormContentPanel;
+    private javax.swing.JPanel contentPanel;
     private javax.swing.JLabel lblQuenMatKhau;
     private javax.swing.JLabel lblTieuDe;
     private javax.swing.JPanel pnlDangNhap;

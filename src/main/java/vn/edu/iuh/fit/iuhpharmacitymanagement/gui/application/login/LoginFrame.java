@@ -4,6 +4,8 @@
  */
 package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.login;
 
+import java.awt.Dimension;
+
 /**
  *
  * @author User
@@ -17,6 +19,10 @@ public class LoginFrame extends javax.swing.JFrame {
      */
     public LoginFrame() {
         initComponents();
+    setExtendedState(javax.swing.JFrame.MAXIMIZED_BOTH);
+
+    setResizable(true); // Nên để true để người dùng có thể thu nhỏ lại cửa sổ
+
     }
 
     /**
@@ -28,12 +34,11 @@ public class LoginFrame extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        loginImagePanel1 = new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.login.LoginImagePanel();
         loginFormPanel1 = new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.login.LoginFormPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        getContentPane().setLayout(new java.awt.GridLayout(1, 2));
-        getContentPane().add(loginImagePanel1);
+        setPreferredSize(new java.awt.Dimension(1220, 600));
+        getContentPane().setLayout(new java.awt.GridLayout());
         getContentPane().add(loginFormPanel1);
 
         pack();
@@ -66,6 +71,5 @@ public class LoginFrame extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.login.LoginFormPanel loginFormPanel1;
-    private vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.login.LoginImagePanel loginImagePanel1;
     // End of variables declaration//GEN-END:variables
 }
