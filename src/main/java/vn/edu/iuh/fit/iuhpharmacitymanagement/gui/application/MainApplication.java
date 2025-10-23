@@ -31,6 +31,12 @@ public class MainApplication {
                 UIManager.put("Component.arc", 10); // Bo tròn góc cho TẤT CẢ component
                 UIManager.put("TextComponent.arc", 10); // Cụ thể hơn cho JTextField, JPasswordField...
                 
+                //Thay đổi cho process bar
+                UIManager.put("ProgressBar.arc", 10);
+                UIManager.put("ProgressBar.height", 12);
+                UIManager.put("ProgressBar.foreground", new java.awt.Color(0, 153, 255));
+                UIManager.put("ProgressBar.background", new java.awt.Color(220, 220, 220)); 
+                
                 // Khi người dùng click vào JTextField, đường viền màu xanh sẽ xuất hiện, báo hiệu rằng ô này đang hoạt động.
                 UIManager.put("Component.focusColor", UIManager.getColor("Component.accentColor"));
                 UIManager.put("Component.focusWidth", 2);
@@ -49,8 +55,9 @@ public class MainApplication {
                 }
 
                 // Khởi tạo ứng dụng
-                new MenuForm().setVisible(true);
+                //new MenuForm().setVisible(true);
 //                    new LoginFrame().setVisible(true);
+            new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.loading.SplashScreen().setVisible(true);
 
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(null,
