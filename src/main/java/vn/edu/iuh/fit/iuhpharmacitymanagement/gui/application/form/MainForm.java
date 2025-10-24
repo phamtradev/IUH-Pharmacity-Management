@@ -21,7 +21,6 @@ import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
-import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.Application;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.menu.Menu;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.menu.MenuAction;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.banhang.GD_BanHang;
@@ -30,6 +29,7 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlynha
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlyphieunhaphang.GD_QuanLyPhieuNhapHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlyphieutrahang.GD_QuanLyPhieuTraHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlysanpham.GD_QuanLySanPham;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlyxuathuy.GD_QuanLyXuatHuy;
 
 /**
  *
@@ -152,8 +152,8 @@ public class MainForm extends JLayeredPane {
                     showForm(new GD_QuanLyPhieuNhapHang());
                 } else if (index == 25) {
                     showForm(new GD_QuanLyPhieuTraHang());
-//                } else if (index == 26) {
-//                    showForm(new TabDamageItem());
+                } else if (index == 26) {
+                    showForm(new GD_QuanLyXuatHuy());
 //                } else if (index == 27) {
 //                    showForm(new TABIndividualReport());
 //                } else if (index == 28) {
