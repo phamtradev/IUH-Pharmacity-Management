@@ -24,6 +24,7 @@ import javax.swing.border.EmptyBorder;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.menu.Menu;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.menu.MenuAction;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.banhang.GD_BanHang;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.dashboard.GD_DashBoard;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlykhachhang.GD_QuanLyKhachHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlynhacungcap.GD_QuanLyNhaCungCap;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlyphieunhaphang.GD_QuanLyPhieuNhapHang;
@@ -73,7 +74,9 @@ public class MainForm extends JLayeredPane {
         add(menu);
         add(panelBody);
         initMenuEvent();
-
+        
+        // Hiển thị Dashboard (Thống kê cá nhân) khi khởi động
+        showForm(new GD_DashBoard());
     }
 
     @Override
@@ -154,8 +157,8 @@ public class MainForm extends JLayeredPane {
                     showForm(new GD_QuanLyPhieuTraHang());
                 } else if (index == 26) {
                     showForm(new GD_QuanLyXuatHuy());
-//                } else if (index == 27) {
-//                    showForm(new TABIndividualReport());
+                } else if (index == 27) {
+                    showForm(new GD_DashBoard());
 //                } else if (index == 28) {
 //                    showForm(new TABPersonalInformation());
 //                } else if (index == 29) {
