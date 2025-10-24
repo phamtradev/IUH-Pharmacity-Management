@@ -46,10 +46,7 @@ public class NhanVien {
         return maNhanVien;
     }
 
-    public void setMaNhanVien(String maNhanVien) throws Exception  {
-        if (!maNhanVien.matches(MA_NHAN_VIEN_REGEX)) {
-            throw new Exception(MA_NHAN_VIEN_SAI);
-        }
+    public void setMaNhanVien(String maNhanVien) {
         this.maNhanVien = maNhanVien;
     }
 
@@ -57,10 +54,7 @@ public class NhanVien {
         return tenNhanVien;
     }
 
-    public void setTenNhanVien(String tenNhanVien) throws Exception {
-        if (tenNhanVien.isBlank()) {
-            throw new Exception(TEN_NHAN_VIEN_RONG);
-        }
+    public void setTenNhanVien(String tenNhanVien) {
         this.tenNhanVien = tenNhanVien;
     }
 
@@ -68,10 +62,7 @@ public class NhanVien {
         return diaChi;
     }
 
-    public void setDiaChi(String diaChi) throws Exception {
-        if (diaChi.isBlank()) {
-            throw new Exception(DIA_CHI_RONG);
-        }
+    public void setDiaChi(String diaChi) {
         this.diaChi = diaChi;
     }
 
@@ -79,10 +70,7 @@ public class NhanVien {
         return soDienThoai;
     }
 
-    public void setSoDienThoai(String soDienThoai) throws Exception {
-        if (!soDienThoai.matches(SO_DIEN_THOAI_REGEX)) {
-            throw new Exception(SO_DIEN_THOAI_SAI);
-        }
+    public void setSoDienThoai(String soDienThoai) {
         this.soDienThoai = soDienThoai;
     }
 
@@ -90,10 +78,7 @@ public class NhanVien {
         return email;
     }
 
-    public void setEmail(String email) throws Exception {
-        if (!email.matches(EMAIL_REGEX)) {
-            throw new Exception(EMAIL_SAI);
-        }
+    public void setEmail(String email) {
         this.email = email;
     }
 
@@ -101,10 +86,7 @@ public class NhanVien {
         return vaiTro;
     }
 
-    public void setVaiTro(String vaiTro) throws Exception{
-        if (!vaiTro.equalsIgnoreCase("Nhân viên") && !vaiTro.equalsIgnoreCase("Quản lý")) {
-            throw new Exception(VAI_TRO_SAI);
-        }
+    public void setVaiTro(String vaiTro) {
         this.vaiTro = vaiTro;
     }
 

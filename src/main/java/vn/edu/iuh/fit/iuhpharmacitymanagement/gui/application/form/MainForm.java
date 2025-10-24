@@ -152,8 +152,9 @@ public class MainForm extends JLayeredPane {
 //                    showForm(new TABProduct());
 //                } else if (index == 3) {
 //                    showForm(new TABUnit());
-//                } else if (index == 4) {
-//                    showForm(new TABEmployee());
+                } else if (index == 4) {
+                    // Quản lý nhân viên
+                    showForm(new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlynhanvien.GD_QuanLyNhanVien());
 //                } else if (index == 5) {
 //                    showForm(new TABCustomer());
 //                } else if (index == 6) {

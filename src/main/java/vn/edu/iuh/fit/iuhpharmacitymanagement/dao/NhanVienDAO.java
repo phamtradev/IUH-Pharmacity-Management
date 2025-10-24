@@ -132,20 +132,16 @@ public class NhanVienDAO implements DAOInterface<NhanVien, String> {
     }
 
     private NhanVien mapResultSetToNhanVien(ResultSet rs) throws SQLException {
-        try {
-            NhanVien nhanVien = new NhanVien();
-            
-            nhanVien.setMaNhanVien(rs.getString("maNhanVien"));
-            nhanVien.setTenNhanVien(rs.getString("tenNhanVien"));
-            nhanVien.setDiaChi(rs.getString("diaChi"));
-            nhanVien.setSoDienThoai(rs.getString("soDienThoai"));
-            nhanVien.setEmail(rs.getString("email"));
-            nhanVien.setVaiTro(rs.getString("vaiTro"));
-            
-            return nhanVien;
-        } catch (Exception e) {
-            throw new SQLException("Lỗi khi map dữ liệu từ ResultSet: " + e.getMessage(), e);
-        }
+        NhanVien nhanVien = new NhanVien();
+        
+        nhanVien.setMaNhanVien(rs.getString("maNhanVien"));
+        nhanVien.setTenNhanVien(rs.getString("tenNhanVien"));
+        nhanVien.setDiaChi(rs.getString("diaChi"));
+        nhanVien.setSoDienThoai(rs.getString("soDienThoai"));
+        nhanVien.setEmail(rs.getString("email"));
+        nhanVien.setVaiTro(rs.getString("vaiTro"));
+        
+        return nhanVien;
     }
 
     private String taoMaNhanVien() {

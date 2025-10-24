@@ -27,9 +27,8 @@ public class ChiTietDonNhapHangDAO implements DAOInterface<ChiTietDonNhapHang, S
     @Override
     public boolean insert(ChiTietDonNhapHang t) {
         String sql = "INSERT into chitietdonnhaphang(donGia, soLuong, thanhTien, maDonNhapHang, maLoHang) VALUES(?, ?, ?, ?, ?)";
-        try {
-            Connection con = ConnectDB.getInstance().getConnection();
-            PreparedStatement pre = con.prepareStatement(sql);
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement pre = con.prepareStatement(sql)) {
             pre.setDouble(1, t.getDonGia());
             pre.setInt(2, t.getSoLuong());
             pre.setDouble(3, t.getThanhTien());
@@ -47,9 +46,8 @@ public class ChiTietDonNhapHangDAO implements DAOInterface<ChiTietDonNhapHang, S
         String sql = "UPDATE chitietdonnhaphang "
                 + "SET donGia = ?, soLuong = ?, thanhTien = ? "
                 + "WHERE maDonNhapHang = ? AND maLoHang = ?";
-        try {
-            Connection con = ConnectDB.getInstance().getConnection();
-            PreparedStatement pre = con.prepareStatement(sql);
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement pre = con.prepareStatement(sql)) {
             pre.setDouble(1, t.getDonGia());
             pre.setInt(2, t.getSoLuong());
             pre.setDouble(3, t.getThanhTien());
@@ -66,9 +64,8 @@ public class ChiTietDonNhapHangDAO implements DAOInterface<ChiTietDonNhapHang, S
     public Optional<ChiTietDonNhapHang> findById(String id) {
         ChiTietDonNhapHang ct = new ChiTietDonNhapHang();
         String sql = "select * from chitietdonnhaphang where maDonNhapHang = ? ";
-        try {
-            Connection con = ConnectDB.getInstance().getConnection();
-            PreparedStatement pre = con.prepareCall(sql);
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement pre = con.prepareCall(sql)) {
             pre.setString(1, id);
             ResultSet rs = pre.executeQuery();
             while (rs.next()) {
@@ -88,10 +85,9 @@ public class ChiTietDonNhapHangDAO implements DAOInterface<ChiTietDonNhapHang, S
     @Override
     public List<ChiTietDonNhapHang> findAll() {
         List<ChiTietDonNhapHang> dsCt = new ArrayList<>();
-        try {
-            Connection con = ConnectDB.getInstance().getConnection();
-            Statement stm = con.createStatement();
-            ResultSet rs = stm.executeQuery("select * from chitietdonnhaphang");
+        try (Connection con = ConnectDB.getConnection();
+             Statement stm = con.createStatement();
+             ResultSet rs = stm.executeQuery("select * from chitietdonnhaphang")) {
             while (rs.next()) {
                 double donGia = rs.getDouble("donGia");
                 int sl = rs.getInt("soLuong");

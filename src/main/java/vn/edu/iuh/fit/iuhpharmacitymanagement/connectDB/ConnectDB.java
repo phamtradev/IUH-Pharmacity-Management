@@ -14,50 +14,30 @@ import java.sql.SQLException;
  */
 public class ConnectDB {
 
-    private static ConnectDB instance = null;
-    private static Connection connection = null;
-
     private static final String URL = "jdbc:sqlserver://localhost:1433;databaseName=IUHPharmacityManagement;encrypt=false;trustServerCertificate=true;integratedSecurity=false";
     private static final String USER = "sa";
     private static final String PASSWORD = "sapassword";
 
-    private ConnectDB() {
+    static {
         try {
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-            connection = DriverManager.getConnection(URL, USER, PASSWORD);
-        } catch (ClassNotFoundException | SQLException e) {
+        } catch (ClassNotFoundException e) {
             e.printStackTrace();
+            throw new RuntimeException("Không thể load SQL Server JDBC Driver", e);
         }
     }
 
-    public static ConnectDB getInstance() {
-        if (instance == null) {
-            instance = new ConnectDB();
-        }
-        return instance;
-    }
-
-    public static Connection getConnection() {
-        if (connection == null) {
-            getInstance();
-        }
-        return connection;
-    }
-
-    public static void closeConnection() {
-        if (connection != null) {
-            try {
-                connection.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
+    /**
+     * Tạo và trả về một connection MỚI mỗi lần gọi.
+     * Người gọi chịu trách nhiệm đóng connection sau khi dùng xong (dùng try-with-resources).
+     */
+    public static Connection getConnection() throws SQLException {
+        return DriverManager.getConnection(URL, USER, PASSWORD);
     }
 
     // Test connection
     public static boolean testConnection() {
-        try {
-            Connection testConn = ConnectDB.getConnection();
+        try (Connection testConn = getConnection()) {
             return testConn != null && !testConn.isClosed();
         } catch (SQLException e) {
             e.printStackTrace();

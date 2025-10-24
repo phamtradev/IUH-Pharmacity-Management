@@ -25,7 +25,7 @@ public class ChiTietDonHangDAO implements DAOInterface<ChiTietDonHang, String> {
     @Override
     public boolean insert(ChiTietDonHang t) {
         String sql = "insert into chitietdonhang(donGia, giamGia, soLuong, thanhTien, maLoHang, maDonHang) values(?, ?, ?, ?, ?, ?)";
-        try (Connection con = ConnectDB.getInstance().getConnection();
+        try (Connection con = ConnectDB.getConnection();
              PreparedStatement pre = con.prepareStatement(sql)) {
             
             pre.setDouble(1, t.getDonGia());
@@ -48,9 +48,8 @@ public class ChiTietDonHangDAO implements DAOInterface<ChiTietDonHang, String> {
                 + "set donGia = ?, giamGia = ?, soLuong = ?, thanhTien = ? "
                 + "where maLoHang like ? and maDonHang like ?";
                 
-        try {
-            Connection con = ConnectDB.getInstance().getConnection();
-            PreparedStatement pre = con.prepareStatement(sql);
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement pre = con.prepareStatement(sql)) {
             pre.setDouble(1, t.getDonGia());
             pre.setDouble(2, t.getGiamGia());
             pre.setInt(3, t.getSoLuong());
@@ -67,9 +66,8 @@ public class ChiTietDonHangDAO implements DAOInterface<ChiTietDonHang, String> {
 
     @Override
     public Optional<ChiTietDonHang> findById(String id) {        
-        try {
-            Connection con = ConnectDB.getInstance().getConnection();
-            PreparedStatement pre = con.prepareStatement("select * from chitietdonhang where maDonHang = ?");
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement pre = con.prepareStatement("select * from chitietdonhang where maDonHang = ?")) {
             pre.setString(1, id);
             ResultSet rs = pre.executeQuery();
             if(rs.next()){
@@ -93,7 +91,7 @@ public class ChiTietDonHangDAO implements DAOInterface<ChiTietDonHang, String> {
 
     public ArrayList<ChiTietDonHang> findByIdList(String id) {
         ArrayList<ChiTietDonHang> dsCtdh = new ArrayList<>();
-        try (Connection con = ConnectDB.getInstance().getConnection();
+        try (Connection con = ConnectDB.getConnection();
              PreparedStatement pre = con.prepareStatement("select * from chitietdonhang where maDonHang = ?")) {
             
             pre.setString(1, id);
@@ -120,7 +118,7 @@ public class ChiTietDonHangDAO implements DAOInterface<ChiTietDonHang, String> {
     @Override
     public List<ChiTietDonHang> findAll() {
         List<ChiTietDonHang> dsCtdh = new ArrayList<>(); 
-        try (Connection con = ConnectDB.getInstance().getConnection();
+        try (Connection con = ConnectDB.getConnection();
              Statement stm = con.createStatement();
              ResultSet rs = stm.executeQuery("select * from chitietdonhang")) {
             
