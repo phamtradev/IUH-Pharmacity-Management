@@ -24,7 +24,6 @@ import javax.swing.border.EmptyBorder;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.menu.Menu;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.menu.MenuAction;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.banhang.GD_BanHang;
-import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.dashboard.GD_DashBoard;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlykhachhang.GD_QuanLyKhachHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlynhacungcap.GD_QuanLyNhaCungCap;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlyphieunhaphang.GD_QuanLyPhieuNhapHang;
@@ -51,7 +50,7 @@ public class MainForm extends JLayeredPane {
         putClientProperty(FlatClientProperties.STYLE, ""
                 + "background:#FFFFFF;"
                 + "border:0,0,0,0");
-        menu = new Menu(2);
+        menu = new Menu(type); // Sử dụng type thực tế thay vì hard-code
         panelBody = new JPanel(new BorderLayout());
         panelBody.setBackground(java.awt.Color.WHITE);
         // Loại bỏ viền xám
@@ -75,8 +74,14 @@ public class MainForm extends JLayeredPane {
         add(panelBody);
         initMenuEvent();
         
-        // Hiển thị Dashboard (Thống kê cá nhân) khi khởi động
-        showForm(new GD_DashBoard());
+        // Hiển thị giao diện chào mừng tương ứng với type khi khởi động
+        if (type == 1) {
+            // Nhân viên - Hiển thị giao diện chào mừng
+            showForm(new WelcomeFormNhanVien());
+        } else {
+            // Quản lý - Hiển thị giao diện chào mừng
+            showForm(new WelcomeFormQuanLy());
+        }
     }
 
     @Override
@@ -109,8 +114,38 @@ public class MainForm extends JLayeredPane {
         menu.addMenuEvent((int index, int subIndex, MenuAction action) -> {
             // Application.mainForm.showForm(new DefaultForm("Form : " + index + " " + subIndex));
             if (type == 1) {
-//                if (index == 0) {
-//                    showForm(new TABStats());
+                // Type 1 = Nhân viên (index từ 20-30)
+                if (index == 20) {
+                    showForm(new GD_BanHang());
+                } else if (index == 21) {
+                    showForm(new GD_QuanLySanPham());
+                } else if (index == 22) {
+                    showForm(new GD_QuanLyKhachHang());
+                } else if (index == 23) {
+                    showForm(new GD_QuanLyNhaCungCap());
+                } else if (index == 24) {
+                    showForm(new GD_QuanLyPhieuNhapHang());
+                } else if (index == 25) {
+                    showForm(new GD_QuanLyPhieuTraHang());
+                } else if (index == 26) {
+                    showForm(new GD_QuanLyXuatHuy());
+                } else if (index == 27) {
+                    // Thống kê cá nhân (Dashboard nhân viên)
+                    showForm(new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.dashboard.GD_DashBoard());
+//                } else if (index == 28) {
+//                    showForm(new TABPersonalInformation());
+//                } else if (index == 29) {
+//                    showForm(new ViewPdfPanel(1));
+//                } else if (index == 30) { 
+//                    Application.logout();
+                } else {
+                    action.cancel();
+                }
+            } else if (type == 2) {
+                // Type 2 = Quản lý (index từ 0-14)
+                if (index == 0) {
+                    // Thống kê (Dashboard quản lý)
+                    showForm(new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.dashboard.GD_DashBoardQuanLy());
 //                } else if (index == 1) {
 //                    showForm(new TABReport());
 //                } else if (index == 2) {
@@ -136,34 +171,8 @@ public class MainForm extends JLayeredPane {
 //                } else if (index == 12) {
 //                    showForm(new TABPersonalInformation());
 //                } else if (index == 13) {
-//                    showForm(new ViewPdfPanel(1));
-//                } else if ( index ==14 ){
-//                    Application.logout();
-//                }else {
-//                    action.cancel();
-//                }
-            } else if (type == 2) {
-                if (index == 20) {
-                    showForm(new GD_BanHang());
-                } else if (index == 21) {
-                    showForm(new GD_QuanLySanPham());
-                } else if (index == 22) {
-                    showForm(new GD_QuanLyKhachHang());
-                } else if (index == 23) {
-                    showForm(new GD_QuanLyNhaCungCap());
-                } else if (index == 24) {
-                    showForm(new GD_QuanLyPhieuNhapHang());
-                } else if (index == 25) {
-                    showForm(new GD_QuanLyPhieuTraHang());
-                } else if (index == 26) {
-                    showForm(new GD_QuanLyXuatHuy());
-                } else if (index == 27) {
-                    showForm(new GD_DashBoard());
-//                } else if (index == 28) {
-//                    showForm(new TABPersonalInformation());
-//                } else if (index == 29) {
 //                    showForm(new ViewPdfPanel(2));
-//                } else if (index == 30) { 
+//                } else if (index == 14) { 
 //                    Application.logout();
                 } else {
                     action.cancel();
