@@ -15,8 +15,8 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.TaiKhoanBUS;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.common.TableDesign;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhanVien;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.TaiKhoan;
-import vn.edu.iuh.fit.iuhpharmacitymanagement.util.MessageDialog;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.util.PasswordUtil;
+import raven.toast.Notifications;
 
 /**
  * Giao diện quản lý nhân viên - sử dụng JDBC thuần
@@ -144,6 +144,7 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
         actionPanel = new javax.swing.JPanel();
         btnAdd = new javax.swing.JButton();
         btnUpdate = new javax.swing.JButton();
+        btnDelete = new javax.swing.JButton();
         panelMain = new javax.swing.JPanel();
         scrollEmployee = new javax.swing.JScrollPane();
 
@@ -571,7 +572,7 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
         headerPanel.add(panelSearch, java.awt.BorderLayout.CENTER);
 
         actionPanel.setBackground(new java.awt.Color(255, 255, 255));
-        actionPanel.setPreferredSize(new java.awt.Dimension(220, 60));
+        actionPanel.setPreferredSize(new java.awt.Dimension(320, 60));
         actionPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 10, 25));
 
         btnAdd.setBackground(new java.awt.Color(115, 165, 71));
@@ -602,26 +603,37 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
         });
         actionPanel.add(btnUpdate);
 
+        btnDelete.setBackground(new java.awt.Color(220, 60, 60));
+        btnDelete.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        btnDelete.setForeground(new java.awt.Color(255, 255, 255));
+        btnDelete.setText("Xóa");
+        btnDelete.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnDelete.setFocusPainted(false);
+        btnDelete.setPreferredSize(new java.awt.Dimension(95, 40));
+        btnDelete.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDeleteActionPerformed(evt);
+            }
+        });
+        actionPanel.add(btnDelete);
+
         headerPanel.add(actionPanel, java.awt.BorderLayout.WEST);
 
         pnAll.add(headerPanel, java.awt.BorderLayout.NORTH);
 
         panelMain.setBackground(new java.awt.Color(255, 255, 255));
+        panelMain.setLayout(new java.awt.BorderLayout());
 
-        javax.swing.GroupLayout panelMainLayout = new javax.swing.GroupLayout(panelMain);
-        panelMain.setLayout(panelMainLayout);
-        panelMainLayout.setHorizontalGroup(
-            panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 1470, Short.MAX_VALUE)
-            .addGroup(panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addComponent(scrollEmployee, javax.swing.GroupLayout.DEFAULT_SIZE, 1470, Short.MAX_VALUE))
-        );
-        panelMainLayout.setVerticalGroup(
-            panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 174, Short.MAX_VALUE)
-            .addGroup(panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addComponent(scrollEmployee, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 174, Short.MAX_VALUE))
-        );
+        // Thêm tiêu đề "DANH SÁCH THÔNG TIN NHÂN VIÊN"
+        javax.swing.JPanel titlePanel = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 12));
+        titlePanel.setBackground(new java.awt.Color(23, 162, 184)); // Màu xanh cyan
+        javax.swing.JLabel lblTitle = new javax.swing.JLabel("DANH SÁCH THÔNG TIN NHÂN VIÊN");
+        lblTitle.setFont(new java.awt.Font("Segoe UI", 1, 16));
+        lblTitle.setForeground(new java.awt.Color(255, 255, 255)); // Chữ màu trắng
+        titlePanel.add(lblTitle);
+        panelMain.add(titlePanel, java.awt.BorderLayout.NORTH);
+
+        panelMain.add(scrollEmployee, java.awt.BorderLayout.CENTER);
 
         pnAll.add(panelMain, java.awt.BorderLayout.CENTER);
 
@@ -642,7 +654,7 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
         
         List<NhanVien> employees = nhanVienBUS.timNhanVienTheoTuKhoa(keyword);
         if (employees.size() < 1) {
-            MessageDialog.warning(null, "Không tìm thấy nhân viên phù hợp");
+            Notifications.getInstance().show(Notifications.Type.WARNING, "Không tìm thấy nhân viên phù hợp");
         } else {
             fillContent(employees);
         }
@@ -653,7 +665,7 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
         int selectedRow = table.getSelectedRow();
         
         if (selectedRow < 0) {
-            MessageDialog.warning(null, "Hãy chọn nhân viên muốn cập nhật thông tin");
+            Notifications.getInstance().show(Notifications.Type.WARNING, "Hãy chọn nhân viên muốn cập nhật thông tin");
         } else {
             employeeIdUpdate = (String) table.getValueAt(selectedRow, 0);
             
@@ -675,6 +687,41 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
         modalAddEmployee.setLocationRelativeTo(null);
         modalAddEmployee.setVisible(true);
     }//GEN-LAST:event_btnAddActionPerformed
+
+    private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteActionPerformed
+        JTable table = tableDesign.getTable();
+        int selectedRow = table.getSelectedRow();
+        
+        if (selectedRow == -1) {
+            Notifications.getInstance().show(Notifications.Type.WARNING, "Vui lòng chọn nhân viên cần xóa!");
+            return;
+        }
+        
+        String maNhanVien = (String) table.getValueAt(selectedRow, 0);
+        String tenNhanVien = (String) table.getValueAt(selectedRow, 1);
+        
+        int confirm = javax.swing.JOptionPane.showConfirmDialog(
+            this,
+            "Bạn có chắc chắn muốn xóa nhân viên \"" + tenNhanVien + "\" không?",
+            "Xác nhận xóa",
+            javax.swing.JOptionPane.YES_NO_OPTION,
+            javax.swing.JOptionPane.WARNING_MESSAGE
+        );
+        
+        if (confirm == javax.swing.JOptionPane.YES_OPTION) {
+            try {
+                boolean result = nhanVienBUS.xoaNhanVien(maNhanVien);
+                if (result) {
+                    Notifications.getInstance().show(Notifications.Type.SUCCESS, "Xóa nhân viên thành công!");
+                    fillTable();
+                } else {
+                    Notifications.getInstance().show(Notifications.Type.ERROR, "Xóa nhân viên thất bại!");
+                }
+            } catch (Exception e) {
+                Notifications.getInstance().show(Notifications.Type.ERROR, "Lỗi: " + e.getMessage());
+            }
+        }
+    }//GEN-LAST:event_btnDeleteActionPerformed
 
     private void txtAddEmployeeNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtAddEmployeeNameActionPerformed
         // TODO add your handling code here:
@@ -709,7 +756,7 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
             nhanVienBUS.taoNhanVien(emp);
             taiKhoanBUS.taoTaiKhoan(acc);
 
-            MessageDialog.info(null, "Thêm nhân viên mới thành công.");
+            Notifications.getInstance().show(Notifications.Type.SUCCESS, "Thêm nhân viên mới thành công.");
             txtAddEmployeeAddress.setText("");
             txtAddEmployeeEmail.setText("");
             txtAddEmployeeName.setText("");
@@ -719,7 +766,7 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
             modalAddEmployee.dispose();
             fillContent(nhanVienBUS.layTatCaNhanVien());
         } catch (Exception e) {
-            MessageDialog.error(null, e.getMessage());
+            Notifications.getInstance().show(Notifications.Type.ERROR, e.getMessage());
         }
     }//GEN-LAST:event_btnAddNewEmployeeActionPerformed
 
@@ -757,7 +804,7 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
             employee.setSoDienThoai(phone);
             nhanVienBUS.capNhatNhanVien(employee);
 
-            MessageDialog.info(null, "Cập nhật thông tin nhân viên thành công.");
+            Notifications.getInstance().show(Notifications.Type.SUCCESS, "Cập nhật thông tin nhân viên thành công.");
             txtEmployeeName.setText("");
             txtEmployeeEmail.setText("");
             txtEmployeeAddress.setText("");
@@ -766,7 +813,7 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
             modalUpdateEmployee.dispose();
             fillContent(nhanVienBUS.layTatCaNhanVien());
         } catch (Exception e) {
-            MessageDialog.error(null, e.getMessage());
+            Notifications.getInstance().show(Notifications.Type.ERROR, e.getMessage());
         }
     }//GEN-LAST:event_btnUpdateEmployeeActionPerformed
 
@@ -787,7 +834,7 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
         int selectedRow = table.getSelectedRow();
         
         if (selectedRow < 0) {
-            MessageDialog.warning(null, "Hãy chọn nhân viên muốn đặt lại mật khẩu.");
+            Notifications.getInstance().show(Notifications.Type.WARNING, "Hãy chọn nhân viên muốn đặt lại mật khẩu.");
         } else {
             employeeIdUpdate = (String) table.getValueAt(selectedRow, 0);
         
@@ -803,7 +850,7 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
         String newPass = new String(txtResetPassword.getPassword());
         
         if (newPass.equals("")) {
-            MessageDialog.warning(null, "Mật khẩu mới không được rỗng.");
+            Notifications.getInstance().show(Notifications.Type.WARNING, "Mật khẩu mới không được rỗng.");
             txtResetPassword.requestFocus();
             return;
         }
@@ -814,13 +861,13 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
             acc.setMatKhau(newPass);
             taiKhoanBUS.capNhatTaiKhoan(acc);
             
-            MessageDialog.info(null, "Đặt lại mật khẩu thành công.");
+            Notifications.getInstance().show(Notifications.Type.SUCCESS, "Đặt lại mật khẩu thành công.");
             txtResetPassword.setText("");
             txtSearchEmployee.setText("");
             modalResetPassword.dispose();
             fillContent(nhanVienBUS.layTatCaNhanVien());
         } catch (Exception e) {
-            MessageDialog.error(null, "Lỗi: " + e.getMessage());
+            Notifications.getInstance().show(Notifications.Type.ERROR, "Lỗi: " + e.getMessage());
         }
     }//GEN-LAST:event_btnCofirmResetPasswordActionPerformed
 
@@ -835,6 +882,7 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
     private javax.swing.JButton btnResetPassword;
     private javax.swing.JButton btnSearchEmployee;
     private javax.swing.JButton btnUpdate;
+    private javax.swing.JButton btnDelete;
     private javax.swing.JButton btnUpdateEmployee;
     private javax.swing.JPanel headerPanel;
     private javax.swing.JLabel lblAddEmployeeAddress;

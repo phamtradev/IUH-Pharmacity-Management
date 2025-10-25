@@ -158,12 +158,12 @@ public class DonViTinhDAO implements DAOInterface<DonViTinh, String> {
                 String maCuoi = rs.getString("maDonVi");
                 String phanSo = maCuoi.substring(3);
                 int soTiepTheo = Integer.parseInt(phanSo) + 1;
-                return String.format("DVT%06d", soTiepTheo);
+                return String.format("DVT%05d", soTiepTheo);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return "DVT000001";
+        return "DVT00001";
     }
 
     public String getLastMaDonVi() {
@@ -202,5 +202,19 @@ public class DonViTinhDAO implements DAOInterface<DonViTinh, String> {
             e.printStackTrace();
         }
         return 0;
+    }
+
+    public boolean delete(String maDonVi) {
+        String sql = "DELETE FROM DonViTinh WHERE maDonVi = ?";
+        
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(sql)) {
+            
+            stmt.setString(1, maDonVi);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 }

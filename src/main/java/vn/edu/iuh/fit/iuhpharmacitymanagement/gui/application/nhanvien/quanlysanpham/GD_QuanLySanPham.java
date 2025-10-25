@@ -14,6 +14,7 @@ import java.util.List;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.common.TableDesign;
+import raven.toast.Notifications;
 
 /**
  *
@@ -25,12 +26,23 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
     private ImageIcon imageProductAdd;
     private ImageIcon imageProductEdit;
     private TableDesign tableDesign;
+    private boolean isManager = false;
 
     public GD_QuanLySanPham() {
+        this(false); // Mặc định là nhân viên
+    }
+    
+    public GD_QuanLySanPham(boolean isManager) {
+        this.isManager = isManager;
         initComponents();
         setUIManager();
         fillTable();
         addIconFeature();
+        
+        // Hiển thị button xóa chỉ khi là quản lý
+        if (isManager) {
+            btnDelete.setVisible(true);
+        }
     }
 
     private void setUIManager() {
@@ -174,6 +186,7 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         actionPanel = new javax.swing.JPanel();
         btnAdd = new javax.swing.JButton();
         btnUpdate = new javax.swing.JButton();
+        btnDelete = new javax.swing.JButton();
         jPanel4 = new javax.swing.JPanel();
         ProductScrollPane = new javax.swing.JScrollPane();
 
@@ -800,7 +813,7 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         headerPanel.add(jPanel5, java.awt.BorderLayout.CENTER);
 
         actionPanel.setBackground(new java.awt.Color(255, 255, 255));
-        actionPanel.setPreferredSize(new java.awt.Dimension(220, 60));
+        actionPanel.setPreferredSize(new java.awt.Dimension(320, 60));
         actionPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 10, 25));
 
         btnAdd.setBackground(new java.awt.Color(115, 165, 71));
@@ -830,6 +843,21 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
             }
         });
         actionPanel.add(btnUpdate);
+
+        btnDelete.setBackground(new java.awt.Color(220, 60, 60));
+        btnDelete.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        btnDelete.setForeground(new java.awt.Color(255, 255, 255));
+        btnDelete.setText("Xóa");
+        btnDelete.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnDelete.setFocusPainted(false);
+        btnDelete.setPreferredSize(new java.awt.Dimension(95, 40));
+        btnDelete.setVisible(false);
+        btnDelete.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDeleteActionPerformed(evt);
+            }
+        });
+        actionPanel.add(btnDelete);
 
         headerPanel.add(actionPanel, java.awt.BorderLayout.WEST);
 
@@ -874,7 +902,7 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
     private void btnUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateActionPerformed
         int selectedRow = tableDesign.getTable().getSelectedRow();
         if (selectedRow == -1) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn sản phẩm cần sửa!", "Thông báo", JOptionPane.WARNING_MESSAGE);
+            Notifications.getInstance().show(Notifications.Type.WARNING, "Vui lòng chọn sản phẩm cần sửa!");
             return;
         }
 
@@ -901,6 +929,30 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         modelEditProduct.setVisible(true);
 
     }//GEN-LAST:event_btnUpdateActionPerformed
+
+    private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteActionPerformed
+        int selectedRow = tableDesign.getTable().getSelectedRow();
+        if (selectedRow == -1) {
+            Notifications.getInstance().show(Notifications.Type.WARNING, "Vui lòng chọn sản phẩm cần xóa!");
+            return;
+        }
+        
+        String maSanPham = tableDesign.getTable().getValueAt(selectedRow, 0).toString();
+        String tenSanPham = tableDesign.getTable().getValueAt(selectedRow, 1).toString();
+        
+        int confirm = JOptionPane.showConfirmDialog(
+            this,
+            "Bạn có chắc chắn muốn xóa sản phẩm \"" + tenSanPham + "\" không?",
+            "Xác nhận xóa",
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.WARNING_MESSAGE
+        );
+        
+        if (confirm == JOptionPane.YES_OPTION) {
+            // TODO: Thêm logic xóa sản phẩm từ database
+            Notifications.getInstance().show(Notifications.Type.INFO, "Chức năng xóa sản phẩm đang được phát triển!");
+        }
+    }//GEN-LAST:event_btnDeleteActionPerformed
 
     private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddActionPerformed
         modelProductAdd.setLocationRelativeTo(this);
@@ -1093,6 +1145,7 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
     private javax.swing.JButton btnExitProductADD1;
     private javax.swing.JButton btnOpenModalAddSup;
     private javax.swing.JButton btnUpdate;
+    private javax.swing.JButton btnDelete;
     private javax.swing.JComboBox<String> cbbProductTypeAdd;
     private javax.swing.JComboBox<String> cbbProductTypeEdit;
     private javax.swing.JComboBox<String> comboUnitAdd;

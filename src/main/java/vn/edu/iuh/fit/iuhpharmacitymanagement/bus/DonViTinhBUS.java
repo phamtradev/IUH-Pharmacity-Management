@@ -61,5 +61,9 @@ public class DonViTinhBUS {
     public int demTongSoDonViTinh() {
         return donViTinhDAO.count();
     }
+    
+    public boolean xoaDonViTinh(String maDonVi) {
+        return donViTinhDAO.delete(maDonVi);
+    }
 }
 

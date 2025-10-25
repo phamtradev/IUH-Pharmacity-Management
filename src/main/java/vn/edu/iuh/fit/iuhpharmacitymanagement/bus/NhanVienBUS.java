@@ -79,4 +79,8 @@ public class NhanVienBUS {
     public boolean kiemTraSoDienThoaiTonTai(String soDienThoai) {
         return nhanVienDAO.existsByPhone(soDienThoai);
     }
+    
+    public boolean xoaNhanVien(String maNhanVien) {
+        return nhanVienDAO.delete(maNhanVien);
+    }
 }

@@ -28,8 +28,8 @@ public class ConnectDB {
     }
 
     /**
-     * Tạo và trả về một connection MỚI mỗi lần gọi.
-     * Người gọi chịu trách nhiệm đóng connection sau khi dùng xong (dùng try-with-resources).
+     * Tạo và trả về một connection MỚI mỗi lần gọi. Người gọi chịu trách nhiệm
+     * đóng connection sau khi dùng xong (dùng try-with-resources).
      */
     public static Connection getConnection() throws SQLException {
         return DriverManager.getConnection(URL, USER, PASSWORD);

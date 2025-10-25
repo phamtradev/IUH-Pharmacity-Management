@@ -230,4 +230,18 @@ public class NhanVienDAO implements DAOInterface<NhanVien, String> {
         }
         return 0;
     }
+
+    public boolean delete(String maNhanVien) {
+        String sql = "DELETE FROM NhanVien WHERE maNhanVien = ?";
+        
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(sql)) {
+            
+            stmt.setString(1, maNhanVien);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }
