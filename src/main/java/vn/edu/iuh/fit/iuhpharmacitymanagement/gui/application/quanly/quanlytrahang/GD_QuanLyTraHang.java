@@ -39,7 +39,7 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
     }
 
     private void setUIManager() {
-        txtOrder.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Mã hóa đơn");
+        txtOrder.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Mã phiếu trả");
         UIManager.put("Button.arc", 10);
         jDateFrom.setDate(Date.valueOf(LocalDate.now()));
         jDateTo.setDate(Date.valueOf(LocalDate.now()));
@@ -53,7 +53,7 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
                 + "arc:10;"
                 + "borderWidth:0");
     }
-    
+
     private void fillTable() {
         String[] headers = {"Mã phiếu trả", "Mã hóa đơn", "Ngày trả", "Nhân viên", "Tổng tiền"};
         List<Integer> tableWidths = Arrays.asList(200, 200, 200, 250, 200);
@@ -81,7 +81,7 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
         }
     }
     
-    private List<DonTraHang> searchDonTraHang(LocalDate dateFrom, LocalDate dateTo, String tenNV, String maDonHang) {
+    private List<DonTraHang> searchDonTraHang(LocalDate dateFrom, LocalDate dateTo, String tenNV, String maPhieuTra) {
         List<DonTraHang> all = donTraHangBUS.layTatCaDonTraHang();
         List<DonTraHang> result = new ArrayList<>();
         
@@ -101,10 +101,10 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
                 }
             }
             
-            // Lọc theo mã đơn hàng
-            if (!maDonHang.isEmpty()) {
-                if (dth.getDonHang() == null || 
-                    !dth.getDonHang().getMaDonHang().toLowerCase().contains(maDonHang.toLowerCase())) {
+            // Lọc theo mã phiếu trả
+            if (!maPhieuTra.isEmpty()) {
+                String maDonTraHang = dth.getMaDonTraHang() != null ? dth.getMaDonTraHang() : "";
+                if (!maDonTraHang.toLowerCase().contains(maPhieuTra.toLowerCase())) {
                     continue;
                 }
             }
@@ -257,10 +257,10 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
                 .addContainerGap()
                 .addComponent(btnView, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED, 115, Short.MAX_VALUE)
-                .addComponent(jDateFrom, javax.swing.GroupLayout.PREFERRED_SIZE, 210, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jDateFrom, javax.swing.GroupLayout.PREFERRED_SIZE, 210, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel2)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel2)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jDateTo, javax.swing.GroupLayout.PREFERRED_SIZE, 210, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(txtOrder, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -276,8 +276,8 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel5Layout.createSequentialGroup()
                         .addGap(29, 29, 29)
-                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jDateTo, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addComponent(jDateTo, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                 .addComponent(txtOrder, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addComponent(btnSearch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -325,10 +325,10 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
             return;
         }
         
-        String maDonHang = txtOrder.getText().trim();
+        String maPhieuTra = txtOrder.getText().trim();
         
-        // Tìm kiếm (không lọc theo nhân viên nữa)
-        List<DonTraHang> result = searchDonTraHang(dateFrom, dateTo, "", maDonHang);
+        // Tìm kiếm theo mã phiếu trả
+        List<DonTraHang> result = searchDonTraHang(dateFrom, dateTo, "", maPhieuTra);
         fillContent(result);
         
         if (result.isEmpty()) {
