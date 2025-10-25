@@ -80,6 +80,12 @@
             <artifactId>jcalendar</artifactId>
             <version>1.4</version>
         </dependency>
+        <!-- SendGrid for Email -->
+        <dependency>
+            <groupId>com.sendgrid</groupId>
+            <artifactId>sendgrid-java</artifactId>
+            <version>4.10.2</version>
+        </dependency>
     </dependencies>
 
     <build>
