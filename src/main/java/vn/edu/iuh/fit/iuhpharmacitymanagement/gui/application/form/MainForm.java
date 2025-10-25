@@ -31,6 +31,7 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlyphi
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlysanpham.GD_QuanLySanPham;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlyxuathuy.GD_QuanLyXuatHuy;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlynhaphang.GD_QuanLyNhapHang;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlytrahang.GD_QuanLyTraHang;
 
 /**
  *
@@ -167,8 +168,9 @@ public class MainForm extends JLayeredPane {
                 } else if (index == 7) {
                     // Quản lý nhập hàng
                     showForm(new GD_QuanLyNhapHang());
-//                } else if (index == 8) {
-//                    showForm(new TABReturnOrder());
+                } else if (index == 8) {
+                    // Quản lý trả hàng
+                    showForm(new GD_QuanLyTraHang());
 //                } else if (index == 9) {
 //                    showForm(new TABDamageItem());
 //                } else if (index == 10) {

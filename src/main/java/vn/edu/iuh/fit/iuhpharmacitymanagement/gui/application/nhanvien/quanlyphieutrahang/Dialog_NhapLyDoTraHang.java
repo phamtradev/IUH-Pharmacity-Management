@@ -5,6 +5,7 @@
 package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlyphieutrahang;
 
 import javax.swing.*;
+import raven.toast.Notifications;
 
 /**
  * Dialog để nhập lý do trả hàng
@@ -127,10 +128,7 @@ public class Dialog_NhapLyDoTraHang extends javax.swing.JDialog {
     private void btnXacNhanActionPerformed(java.awt.event.ActionEvent evt) {
         lyDo = txtLyDo.getText().trim();
         if (lyDo.isEmpty()) {
-            JOptionPane.showMessageDialog(this, 
-                "Vui lòng nhập lý do trả hàng!", 
-                "Thông báo", 
-                JOptionPane.WARNING_MESSAGE);
+            Notifications.getInstance().show(Notifications.Type.WARNING, "Vui lòng nhập lý do trả hàng!");
             txtLyDo.requestFocus();
             return;
         }
