@@ -149,10 +149,11 @@ public class MainForm extends JLayeredPane {
 //                } else if (index == 1) {
 //                    showForm(new TABReport());
                 } else if (index == 2) {
-                    // Quản lý sản phẩm
-                    showForm(new GD_QuanLySanPham());
-//                } else if (index == 3) {
-//                    showForm(new TABUnit());
+                    // Quản lý sản phẩm (quản lý có button xóa)
+                    showForm(new GD_QuanLySanPham(true));
+                } else if (index == 3) {
+                    // Quản lý đơn vị tính
+                    showForm(new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlydonvitinh.GD_QuanLyDonViTinh());
                 } else if (index == 4) {
                     // Quản lý nhân viên
                     showForm(new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlynhanvien.GD_QuanLyNhanVien());

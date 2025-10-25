@@ -91,4 +91,19 @@ public class MessageDialog {
         );
         return result == JOptionPane.YES_OPTION;
     }
+    
+    /**
+     * Hiển thị dialog thông báo thành công
+     * 
+     * @param parent Component cha
+     * @param message Nội dung thông báo thành công
+     */
+    public static void success(Component parent, String message) {
+        JOptionPane.showMessageDialog(
+            parent,
+            message,
+            "Thành công",
+            JOptionPane.INFORMATION_MESSAGE
+        );
+    }
 }
