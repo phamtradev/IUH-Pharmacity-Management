@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JPanel.java to edit this template
  */
-package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlykhachhang;
+package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlykhachhang;
 
 import com.formdev.flatlaf.FlatClientProperties;
 import java.util.Arrays;
@@ -23,7 +23,7 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhachHang;
  */
 public class GD_QuanLyKhachHang extends javax.swing.JPanel {
 
-    private final KhachHangBUS khachHangBUS; //ok
+    private final KhachHangBUS khachHangBUS;
     private TableDesign tableDesign;
 
     public GD_QuanLyKhachHang() {
@@ -744,7 +744,7 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
                 if (isDeleted) {
                     // Xóa khỏi bảng
                     tableDesign.getModelTable().removeRow(selectedRow);
-                    Notifications.getInstance().show(Notifications.Type.SUCCESS, "Đã xóa khách hàng thành công !");
+                    Notifications.getInstance().show(Notifications.Type.SUCCESS, "Đã xóa trắng thành công !");
                 } else {
                     Notifications.getInstance().show(Notifications.Type.ERROR, "Xóa khách hàng thất bại!");
                 }
