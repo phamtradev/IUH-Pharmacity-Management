@@ -210,4 +210,30 @@ public class KhachHangDAO implements DAOInterface<KhachHang, String> {
             return false;
         }
     }
+    
+    // Tìm kiếm khách hàng theo từ khóa (tên, sđt, email)
+    public List<KhachHang> searchByKeyword(String keyword) {
+        List<KhachHang> danhSach = new ArrayList<>();
+        String sql = "SELECT * FROM KhachHang WHERE " +
+                     "tenKhachHang LIKE ? OR " +
+                     "soDienThoai LIKE ? OR " +
+                     "email LIKE ?";
+        
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(sql)) {
+
+            String pattern = "%" + keyword + "%";
+            stmt.setString(1, pattern);
+            stmt.setString(2, pattern);
+            stmt.setString(3, pattern);
+            
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                danhSach.add(mapResultSetToKhachHang(rs));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return danhSach;
+    }
 }

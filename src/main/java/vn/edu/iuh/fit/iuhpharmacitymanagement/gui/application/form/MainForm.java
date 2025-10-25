@@ -160,8 +160,9 @@ public class MainForm extends JLayeredPane {
                 } else if (index == 5) {
                     // Quản lý khách hàng (quản lý có button xóa)
                     showForm(new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlykhachhang.GD_QuanLyKhachHang());
-//                } else if (index == 6) {
-//                    showForm(new TABSupplier());
+                } else if (index == 6) {
+                    // Quản lý nhà cung cấp (quản lý)
+                    showForm(new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlynhacungcap.GD_QuanLyNhaCungCap());
 //                } else if (index == 7) {
 //                    showForm(new TABPurchaseOrder());
 //                } else if (index == 8) {

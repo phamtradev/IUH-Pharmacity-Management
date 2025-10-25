@@ -49,4 +49,13 @@ public class NhaCungCapBUS {
     public List<NhaCungCap> timKiemTheoText(String text) {
         return nhaCungCapDAO.timTheoText(text);
     }
+    
+    public boolean xoaNhaCungCap(String maNhaCungCap) {
+        try {
+            return nhaCungCapDAO.delete(maNhaCungCap);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return false;
+        }
+    }
 }

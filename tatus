@@ -1,0 +1,383 @@
+warning: in the working copy of 'src/main/java/vn/edu/iuh/fit/iuhpharmacitymanagement/gui/application/quanly/quanlynhacungcap/GD_QuanLyNhaCungCap.java', LF will be replaced by CRLF the next time Git touches it
+[1mdiff --git a/src/main/java/vn/edu/iuh/fit/iuhpharmacitymanagement/gui/application/quanly/quanlynhacungcap/GD_QuanLyNhaCungCap.java b/src/main/java/vn/edu/iuh/fit/iuhpharmacitymanagement/gui/application/quanly/quanlynhacungcap/GD_QuanLyNhaCungCap.java[m
+[1mindex f87cda8..b44157e 100644[m
+[1m--- a/src/main/java/vn/edu/iuh/fit/iuhpharmacitymanagement/gui/application/quanly/quanlynhacungcap/GD_QuanLyNhaCungCap.java[m
+[1m+++ b/src/main/java/vn/edu/iuh/fit/iuhpharmacitymanagement/gui/application/quanly/quanlynhacungcap/GD_QuanLyNhaCungCap.java[m
+[36m@@ -2,17 +2,19 @@[m
+  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license[m
+  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JPanel.java to edit this template[m
+  */[m
+[31m-package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlynhacungcap;[m
+[32m+[m[32mpackage vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlynhacungcap;[m
+ [m
+ import com.formdev.flatlaf.FlatClientProperties;[m
+ import com.formdev.flatlaf.extras.FlatSVGIcon;[m
+ import java.util.Arrays;[m
+ import java.util.List;[m
+[32m+[m[32mimport raven.toast.Notifications;[m
+ import javax.swing.BorderFactory;[m
+ import javax.swing.JTextField;[m
+ import javax.swing.UIManager;[m
+ import javax.swing.table.DefaultTableModel;[m
+ import vn.edu.iuh.fit.iuhpharmacitymanagement.common.TableDesign;[m
+[32m+[m[32mimport vn.edu.iuh.fit.iuhpharmacitymanagement.bus.NhaCungCapBUS;[m
+ [m
+ /**[m
+  *[m
+[36m@@ -20,12 +22,53 @@[m [mimport vn.edu.iuh.fit.iuhpharmacitymanagement.common.TableDesign;[m
+  */[m
+ public class GD_QuanLyNhaCungCap extends javax.swing.JPanel {[m
+ [m
+[32m+[m[32m    private final NhaCungCapBUS nhaCungCapBUS;[m
+     private TableDesign tableDesign;[m
+ [m
+     public GD_QuanLyNhaCungCap() {[m
+[32m+[m[32m        this.nhaCungCapBUS = new NhaCungCapBUS();[m
+         initComponents();[m
+         setUIManager();[m
+         fillTable();[m
+[32m+[m[32m        setupModalSize();[m
+[32m+[m[32m    }[m
+[32m+[m[41m    [m
+[32m+[m[32m    private void setupModalSize() {[m
+[32m+[m[32m        // Tăng kích thước modal lên 900x800[m
+[32m+[m[32m        modelSupplierAdd.setSize(900, 800);[m
+[32m+[m[32m        modelSupplierEdit.setSize(900, 800);[m
+[32m+[m[41m        [m
+[32m+[m[32m        // Thêm tiêu đề đẹp cho modal[m
+[32m+[m[32m        modelSupplierAdd.setTitle("THÊM NHÀ CUNG CẤP MỚI");[m
+[32m+[m[32m        modelSupplierEdit.setTitle("CẬP NHẬT THÔNG TIN NHÀ CUNG CẤP");[m
+[32m+[m[41m        [m
+[32m+[m[32m        // Loại bỏ viền thừa của panel trong modal[m
+[32m+[m[32m        jPanel7.putClientProperty(FlatClientProperties.STYLE, "background:#F8F9FA;border:0,0,0,0");[m
+[32m+[m[32m        jPanel8.putClientProperty(FlatClientProperties.STYLE, "background:#F8F9FA;border:0,0,0,0");[m
+[32m+[m[41m        [m
+[32m+[m[32m        // Style cho buttons trong modal Add - giống modal Quản lý Khách hàng[m
+[32m+[m[32m        btnSupplierAdd.putClientProperty(FlatClientProperties.STYLE, ""[m
+[32m+[m[32m                + "arc:10");[m
+[32m+[m[41m        [m
+[32m+[m[32m        btnSupplierExit.putClientProperty(FlatClientProperties.STYLE, ""[m
+[32m+[m[32m                + "background:#5C6BC0;"[m
+[32m+[m[32m                + "foreground:#FFFFFF;"[m
+[32m+[m[32m                + "hoverBackground:#4A5AB3;"[m
+[32m+[m[32m                + "pressedBackground:#3949AB;"[m
+[32m+[m[32m                + "arc:10;"[m
+[32m+[m[32m                + "borderWidth:0");[m
+[32m+[m[41m        [m
+[32m+[m[32m        // Style cho buttons trong modal Edit - giống modal Quản lý Khách hàng[m
+[32m+[m[32m        btnSupplierEdit.putClientProperty(FlatClientProperties.STYLE, ""[m
+[32m+[m[32m                + "arc:10");[m
+[32m+[m[41m        [m
+[32m+[m[32m        btnSupplierExit2.putClientProperty(FlatClientProperties.STYLE, ""[m
+[32m+[m[32m                + "background:#5C6BC0;"[m
+[32m+[m[32m                + "foreground:#FFFFFF;"[m
+[32m+[m[32m                + "hoverBackground:#4A5AB3;"[m
+[32m+[m[32m                + "pressedBackground:#3949AB;"[m
+[32m+[m[32m                + "arc:10;"[m
+[32m+[m[32m                + "borderWidth:0");[m
+     }[m
+ [m
+     private void setUIManager() {[m
+[36m@@ -74,9 +117,24 @@[m [mpublic class GD_QuanLyNhaCungCap extends javax.swing.JPanel {[m
+     }[m
+ [m
+     private void loadSampleData() {[m
+[31m-        // Không load data, chỉ để trống[m
+         DefaultTableModel model = tableDesign.getModelTable();[m
+         model.setRowCount(0);[m
+[32m+[m[41m        [m
+[32m+[m[32m        try {[m
+[32m+[m[32m            List<vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhaCungCap> danhSachNCC = nhaCungCapBUS.layTatCaNhaCungCap();[m
+[32m+[m[32m            for (vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhaCungCap ncc : danhSachNCC) {[m
+[32m+[m[32m                model.addRow(new Object[]{[m
+[32m+[m[32m                    ncc.getMaNhaCungCap(),[m
+[32m+[m[32m                    ncc.getTenNhaCungCap(),[m
+[32m+[m[32m                    ncc.getDiaChi(),[m
+[32m+[m[32m                    ncc.getSoDienThoai(),[m
+[32m+[m[32m                    ncc.getEmail(),[m
+[32m+[m[32m                    ncc.getMaSoThue()[m
+[32m+[m[32m                });[m
+[32m+[m[32m            }[m
+[32m+[m[32m        } catch (Exception e) {[m
+[32m+[m[32m            Notifications.getInstance().show(Notifications.Type.ERROR, Notifications.Location.TOP_CENTER, 3000, "Lỗi khi load dữ liệu: " + e.getMessage());[m
+[32m+[m[32m        }[m
+     }[m
+ [m
+     // Helper method để clear nhiều text field cùng lúc[m
+[36m@@ -132,6 +190,7 @@[m [mpublic class GD_QuanLyNhaCungCap extends javax.swing.JPanel {[m
+         actionPanel = new javax.swing.JPanel();[m
+         btnAdd = new javax.swing.JButton();[m
+         btnUpdate = new javax.swing.JButton();[m
+[32m+[m[32m        btnDelete = new javax.swing.JButton();[m
+         jPanel4 = new javax.swing.JPanel();[m
+         SupplierScroll = new javax.swing.JScrollPane();[m
+ [m
+[36m@@ -528,6 +587,22 @@[m [mpublic class GD_QuanLyNhaCungCap extends javax.swing.JPanel {[m
+         });[m
+         actionPanel.add(btnUpdate);[m
+ [m
+[32m+[m[32m        btnDelete.setBackground(new java.awt.Color(220, 53, 69));[m
+[32m+[m[32m        btnDelete.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N[m
+[32m+[m[32m        btnDelete.setForeground(new java.awt.Color(255, 255, 255));[m
+[32m+[m[32m        btnDelete.setText("Xóa");[m
+[32m+[m[32m        btnDelete.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));[m
+[32m+[m[32m        btnDelete.setFocusPainted(false);[m
+[32m+[m[32m        btnDelete.setPreferredSize(new java.awt.Dimension(95, 40));[m
+[32m+[m[32m        btnDelete.setMinimumSize(new java.awt.Dimension(95, 40));[m
+[32m+[m[32m        btnDelete.setMaximumSize(new java.awt.Dimension(95, 40));[m
+[32m+[m[32m        btnDelete.addActionListener(new java.awt.event.ActionListener() {[m
+[32m+[m[32m            public void actionPerformed(java.awt.event.ActionEvent evt) {[m
+[32m+[m[32m                btnDeleteActionPerformed(evt);[m
+[32m+[m[32m            }[m
+[32m+[m[32m        });[m
+[32m+[m[32m        actionPanel.add(btnDelete);[m
+[32m+[m
+         headerPanel.add(actionPanel, java.awt.BorderLayout.WEST);[m
+ [m
+         pnAll.add(headerPanel, java.awt.BorderLayout.NORTH);[m
+[36m@@ -561,17 +636,55 @@[m [mpublic class GD_QuanLyNhaCungCap extends javax.swing.JPanel {[m
+     }// </editor-fold>//GEN-END:initComponents[m
+ [m
+     private void btnOpenModalAddSupActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOpenModalAddSupActionPerformed[m
+[31m-        // TODO: Implement search functionality[m
+[32m+[m[32m        performSearch();[m
+     }//GEN-LAST:event_btnOpenModalAddSupActionPerformed[m
+ [m
+     private void txtSearchSupplierActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtSearchSupplierActionPerformed[m
+[31m-[m
+[32m+[m[32m        performSearch();[m
+     }//GEN-LAST:event_txtSearchSupplierActionPerformed[m
+[32m+[m[41m    [m
+[32m+[m[32m    private void performSearch() {[m
+[32m+[m[32m        String keyword = txtSearchSupplier.getText().trim();[m
+[32m+[m[41m        [m
+[32m+[m[32m        // Xóa dữ liệu cũ trong bảng[m
+[32m+[m[32m        tableDesign.getModelTable().setRowCount(0);[m
+[32m+[m[41m        [m
+[32m+[m[32m        try {[m
+[32m+[m[32m            List<vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhaCungCap> danhSachNCC;[m
+[32m+[m[41m            [m
+[32m+[m[32m            // Nếu từ khóa rỗng, load tất cả[m
+[32m+[m[32m            if (keyword.isEmpty()) {[m
+[32m+[m[32m                danhSachNCC = nhaCungCapBUS.layTatCaNhaCungCap();[m
+[32m+[m[32m            } else {[m
+[32m+[m[32m                // Tìm kiếm theo tên, số điện thoại, email[m
+[32m+[m[32m                danhSachNCC = nhaCungCapBUS.timKiemTheoText(keyword);[m
+[32m+[m[32m            }[m
+[32m+[m[41m            [m
+[32m+[m[32m            // Thêm kết quả tìm kiếm vào bảng[m
+[32m+[m[32m            for (vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhaCungCap ncc : danhSachNCC) {[m
+[32m+[m[32m                tableDesign.getModelTable().addRow(new Object[]{[m
+[32m+[m[32m                    ncc.getMaNhaCungCap(),[m
+[32m+[m[32m                    ncc.getTenNhaCungCap(),[m
+[32m+[m[32m                    ncc.getDiaChi(),[m
+[32m+[m[32m                    ncc.getSoDienThoai(),[m
+[32m+[m[32m                    ncc.getEmail(),[m
+[32m+[m[32m                    ncc.getMaSoThue()[m
+[32m+[m[32m                });[m
+[32m+[m[32m            }[m
+[32m+[m[41m            [m
+[32m+[m[32m            // Hiển thị thông báo nếu không tìm thấy[m
+[32m+[m[32m            if (danhSachNCC.isEmpty() && !keyword.isEmpty()) {[m
+[32m+[m[32m                Notifications.getInstance().show(Notifications.Type.INFO, Notifications.Location.TOP_CENTER, 2000, "Không tìm thấy nhà cung cấp nào!");[m
+[32m+[m[32m            }[m
+[32m+[m[32m        } catch (Exception e) {[m
+[32m+[m[32m            Notifications.getInstance().show(Notifications.Type.ERROR, Notifications.Location.TOP_CENTER, 3000, "Lỗi khi tìm kiếm: " + e.getMessage());[m
+[32m+[m[32m        }[m
+[32m+[m[32m    }[m
+ [m
+     private void btnUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateActionPerformed[m
+         int selectedRow = tableDesign.getTable().getSelectedRow();[m
+         if (selectedRow == -1) {[m
+[31m-            javax.swing.JOptionPane.showMessageDialog(this, "Vui lòng chọn nhà cung cấp cần sửa!", "Thông báo", javax.swing.JOptionPane.WARNING_MESSAGE);[m
+[32m+[m[32m            Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER, 2500, "Vui lòng chọn nhà cung cấp cần sửa!");[m
+             return;[m
+         }[m
+ [m
+[36m@@ -628,7 +741,77 @@[m [mpublic class GD_QuanLyNhaCungCap extends javax.swing.JPanel {[m
+     }//GEN-LAST:event_txtSupEmailEditActionPerformed[m
+ [m
+     private void btnSupplierEditActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSupplierEditActionPerformed[m
+[31m-        // TODO add your handling code here:[m
+[32m+[m[32m        try {[m
+[32m+[m[32m            // Lấy dữ liệu từ form[m
+[32m+[m[32m            String tenNCC = txtSupNameEdit.getText().trim();[m
+[32m+[m[32m            String sdt = txtSupPhoneEdit.getText().trim();[m
+[32m+[m[32m            String diaChi = txtSupAddressEdit.getText().trim();[m
+[32m+[m[32m            String email = txtSupEmailEdit.getText().trim();[m
+[32m+[m[32m            String maSoThue = txtSupTaxCodeEdit.getText().trim();[m
+[32m+[m[41m            [m
+[32m+[m[32m            // Validation[m
+[32m+[m[32m            if (tenNCC.isEmpty()) {[m
+[32m+[m[32m                Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER, 2500, "Vui lòng nhập tên nhà cung cấp!");[m
+[32m+[m[32m                txtSupNameEdit.requestFocus();[m
+[32m+[m[32m                return;[m
+[32m+[m[32m            }[m
+[32m+[m[41m            [m
+[32m+[m[32m            if (sdt.isEmpty() || !sdt.matches("^0[0-9]{9}$")) {[m
+[32m+[m[32m                Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER, 2500, "Số điện thoại phải bắt đầu bằng 0 và gồm 10 chữ số!");[m
+[32m+[m[32m                txtSupPhoneEdit.requestFocus();[m
+[32m+[m[32m                return;[m
+[32m+[m[32m            }[m
+[32m+[m[41m            [m
+[32m+[m[32m            if (diaChi.isEmpty()) {[m
+[32m+[m[32m                Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER, 2500, "Vui lòng nhập địa chỉ!");[m
+[32m+[m[32m                txtSupAddressEdit.requestFocus();[m
+[32m+[m[32m                return;[m
+[32m+[m[32m            }[m
+[32m+[m[41m            [m
+[32m+[m[32m            if (email.isEmpty() || !email.matches("^[^@]+@[^@]+\\.[a-zA-Z]{2,}$")) {[m
+[32m+[m[32m                Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER, 2500, "Email không đúng định dạng!");[m
+[32m+[m[32m                txtSupEmailEdit.requestFocus();[m
+[32m+[m[32m                return;[m
+[32m+[m[32m            }[m
+[32m+[m[41m            [m
+[32m+[m[32m            if (maSoThue.isEmpty() || !maSoThue.matches("^[0-9]{10}(-[0-9]{3})?$")) {[m
+[32m+[m[32m                Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER, 2500, "Mã số thuế phải gồm 10 số hoặc 13 ký tự dạng 0123456789-001!");[m
+[32m+[m[32m                txtSupTaxCodeEdit.requestFocus();[m
+[32m+[m[32m                return;[m
+[32m+[m[32m            }[m
+[32m+[m[41m            [m
+[32m+[m[32m            // Tạo đối tượng NhaCungCap[m
+[32m+[m[32m            vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhaCungCap ncc = new vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhaCungCap();[m
+[32m+[m[32m            ncc.setMaNhaCungCap(supplierIdEdit);[m
+[32m+[m[32m            ncc.setTenNhaCungCap(tenNCC);[m
+[32m+[m[32m            ncc.setSoDienThoai(sdt);[m
+[32m+[m[32m            ncc.setDiaChi(diaChi);[m
+[32m+[m[32m            ncc.setEmail(email);[m
+[32m+[m[32m            ncc.setMaSoThue(maSoThue);[m
+[32m+[m[41m            [m
+[32m+[m[32m            // Cập nhật trong database[m
+[32m+[m[32m            boolean success = nhaCungCapBUS.capNhatNhaCungCap(ncc);[m
+[32m+[m[41m            [m
+[32m+[m[32m            if (success) {[m
+[32m+[m[32m                // Cập nhật trên bảng[m
+[32m+[m[32m                int selectedRow = tableDesign.getTable().getSelectedRow();[m
+[32m+[m[32m                tableDesign.getTable().setValueAt(ncc.getTenNhaCungCap(), selectedRow, 1);[m
+[32m+[m[32m                tableDesign.getTable().setValueAt(ncc.getDiaChi(), selectedRow, 2);[m
+[32m+[m[32m                tableDesign.getTable().setValueAt(ncc.getSoDienThoai(), selectedRow, 3);[m
+[32m+[m[32m                tableDesign.getTable().setValueAt(ncc.getEmail(), selectedRow, 4);[m
+[32m+[m[32m                tableDesign.getTable().setValueAt(ncc.getMaSoThue(), selectedRow, 5);[m
+[32m+[m[41m                [m
+[32m+[m[32m                // Clear form và đóng modal[m
+[32m+[m[32m                clearData(txtSupNameEdit, txtSupPhoneEdit, txtSupEmailEdit, txtSupAddressEdit, txtSupTaxCodeEdit);[m
+[32m+[m[32m                modelSupplierEdit.dispose();[m
+[32m+[m[41m                [m
+[32m+[m[32m                Notifications.getInstance().show(Notifications.Type.SUCCESS, Notifications.Location.TOP_CENTER, 2500, "Cập nhật nhà cung cấp thành công!");[m
+[32m+[m[32m            } else {[m
+[32m+[m[32m                Notifications.getInstance().show(Notifications.Type.ERROR, Notifications.Location.TOP_CENTER, 3000, "Cập nhật nhà cung cấp thất bại!");[m
+[32m+[m[32m            }[m
+[32m+[m[32m        } catch (Exception e) {[m
+[32m+[m[32m            Notifications.getInstance().show(Notifications.Type.ERROR, Notifications.Location.TOP_CENTER, 3000, "Lỗi: " + e.getMessage());[m
+[32m+[m[32m        }[m
+     }//GEN-LAST:event_btnSupplierEditActionPerformed[m
+ [m
+     private void modelSupplierEditKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_modelSupplierEditKeyReleased[m
+[36m@@ -646,7 +829,86 @@[m [mpublic class GD_QuanLyNhaCungCap extends javax.swing.JPanel {[m
+     }//GEN-LAST:event_btnSupplierExitActionPerformed[m
+ [m
+     private void btnSupplierAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSupplierAddActionPerformed[m
+[31m-        // TODO add your handling code here:[m
+[32m+[m[32m        try {[m
+[32m+[m[32m            // Lấy dữ liệu từ form[m
+[32m+[m[32m            String tenNCC = txtSupNameAdd.getText().trim();[m
+[32m+[m[32m            String sdt = txtSupPhoneAdd.getText().trim();[m
+[32m+[m[32m            String diaChi = txtSupAddressAdd.getText().trim();[m
+[32m+[m[32m            String email = txtSupEmailAdd.getText().trim();[m
+[32m+[m[32m            String maSoThue = txtSupTaxCodeAdd.getText().trim();[m
+[32m+[m[41m            [m
+[32m+[m[32m            // Validation[m
+[32m+[m[32m            if (tenNCC.isEmpty()) {[m
+[32m+[m[32m                Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER, 2500, "Vui lòng nhập tên nhà cung cấp!");[m
+[32m+[m[32m                txtSupNameAdd.requestFocus();[m
+[32m+[m[32m                return;[m
+[32m+[m[32m            }[m
+[32m+[m[41m            [m
+[32m+[m[32m            if (sdt.isEmpty() || !sdt.matches("^0[0-9]{9}$")) {[m
+[32m+[m[32m                Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER, 2500, "Số điện thoại phải bắt đầu bằng 0 và gồm 10 chữ số!");[m
+[32m+[m[32m                txtSupPhoneAdd.requestFocus();[m
+[32m+[m[32m                return;[m
+[32m+[m[32m            }[m
+[32m+[m[41m            [m
+[32m+[m[32m            if (diaChi.isEmpty()) {[m
+[32m+[m[32m                Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER, 2500, "Vui lòng nhập địa chỉ!");[m
+[32m+[m[32m                txtSupAddressAdd.requestFocus();[m
+[32m+[m[32m                return;[m
+[32m+[m[32m            }[m
+[32m+[m[41m            [m
+[32m+[m[32m            if (email.isEmpty() || !email.matches("^[^@]+@[^@]+\\.[a-zA-Z]{2,}$")) {[m
+[32m+[m[32m                Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER, 2500, "Email không đúng định dạng!");[m
+[32m+[m[32m                txtSupEmailAdd.requestFocus();[m
+[32m+[m[32m                return;[m
+[32m+[m[32m            }[m
+[32m+[m[41m            [m
+[32m+[m[32m            if (maSoThue.isEmpty() || !maSoThue.matches("^[0-9]{10}(-[0-9]{3})?$")) {[m
+[32m+[m[32m                Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER, 2500, "Mã số thuế phải gồm 10 số hoặc 13 ký tự dạng 0123456789-001!");[m
+[32m+[m[32m                txtSupTaxCodeAdd.requestFocus();[m
+[32m+[m[32m                return;[m
+[32m+[m[32m            }[m
+[32m+[m[41m            [m
+[32m+[m[32m            // Kiểm tra trùng số điện thoại[m
+[32m+[m[32m            vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhaCungCap nccTrungSDT = nhaCungCapBUS.layNhaCungCapTheoSoDienThoai(sdt);[m
+[32m+[m[32m            if (nccTrungSDT != null) {[m
+[32m+[m[32m                Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER, 2500, "Số điện thoại đã tồn tại!");[m
+[32m+[m[32m                txtSupPhoneAdd.requestFocus();[m
+[32m+[m[32m                return;[m
+[32m+[m[32m            }[m
+[32m+[m[41m            [m
+[32m+[m[32m            // Tạo đối tượng NhaCungCap[m
+[32m+[m[32m            vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhaCungCap ncc = new vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhaCungCap();[m
+[32m+[m[32m            ncc.setTenNhaCungCap(tenNCC);[m
+[32m+[m[32m            ncc.setSoDienThoai(sdt);[m
+[32m+[m[32m            ncc.setDiaChi(diaChi);[m
+[32m+[m[32m            ncc.setEmail(email);[m
+[32m+[m[32m            ncc.setMaSoThue(maSoThue);[m
+[32m+[m[41m            [m
+[32m+[m[32m            // Thêm vào database[m
+[32m+[m[32m            boolean success = nhaCungCapBUS.taoNhaCungCap(ncc);[m
+[32m+[m[41m            [m
+[32m+[m[32m            if (success) {[m
+[32m+[m[32m                // Thêm vào bảng[m
+[32m+[m[32m                tableDesign.getModelTable().addRow(new Object[]{[m
+[32m+[m[32m                    ncc.getMaNhaCungCap(),[m
+[32m+[m[32m                    ncc.getTenNhaCungCap(),[m
+[32m+[m[32m                    ncc.getDiaChi(),[m
+[32m+[m[32m                    ncc.getSoDienThoai(),[m
+[32m+[m[32m                    ncc.getEmail(),[m
+[32m+[m[32m                    ncc.getMaSoThue()[m
+[32m+[m[32m                });[m
+[32m+[m[41m                [m
+[32m+[m[32m                // Clear form và đóng modal[m
+[32m+[m[32m                clearData(txtSupNameAdd, txtSupPhoneAdd, txtSupEmailAdd, txtSupAddressAdd, txtSupTaxCodeAdd);[m
+[32m+[m[32m                modelSupplierAdd.dispose();[m
+[32m+[m[41m                [m
+[32m+[m[32m                Notifications.getInstance().show(Notifications.Type.SUCCESS, Notifications.Location.TOP_CENTER, 2500, "Thêm nhà cung cấp thành công!");[m
+[32m+[m[32m            } else {[m
+[32m+[m[32m                Notifications.getInstance().show(Notifications.Type.ERROR, Notifications.Location.TOP_CENTER, 3000, "Thêm nhà cung cấp thất bại!");[m
+[32m+[m[32m            }[m
+[32m+[m[32m        } catch (Exception e) {[m
+[32m+[m[32m            Notifications.getInstance().show(Notifications.Type.ERROR, Notifications.Location.TOP_CENTER, 3000, "Lỗi: " + e.getMessage());[m
+[32m+[m[32m        }[m
+     }//GEN-LAST:event_btnSupplierAddActionPerformed[m
+ [m
+     private void txtSupEmailAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtSupEmailAddActionPerformed[m
+[36m@@ -669,11 +931,46 @@[m [mpublic class GD_QuanLyNhaCungCap extends javax.swing.JPanel {[m
+         // TODO add your handling code here:[m
+     }//GEN-LAST:event_txtSupPhoneAddActionPerformed[m
+ [m
+[32m+[m[32m    private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteActionPerformed[m
+[32m+[m[32m        int selectedRow = tableDesign.getTable().getSelectedRow();[m
+[32m+[m[32m        if (selectedRow == -1) {[m
+[32m+[m[32m            Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER, 2500, "Vui lòng chọn nhà cung cấp cần xóa!");[m
+[32m+[m[32m            return;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        // Lấy thông tin từ bảng[m
+[32m+[m[32m        String maNCC = tableDesign.getTable().getValueAt(selectedRow, 0).toString();[m
+[32m+[m[32m        String tenNCC = tableDesign.getTable().getValueAt(selectedRow, 1).toString();[m
+[32m+[m
+[32m+[m[32m        // Hiển thị dialog xác nhận[m
+[32m+[m[32m        int confirm = javax.swing.JOptionPane.showConfirmDialog([m
+[32m+[m[32m            this,[m[41m [m
+[32m+[m[32m            "Bạn có chắc chắn muốn xóa nhà cung cấp \"" + tenNCC + "\" không?",[m[41m [m
+[32m+[m[32m            "Xác nhận xóa",[m

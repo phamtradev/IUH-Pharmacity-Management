@@ -27,14 +27,57 @@ public class GD_QuanLyDonViTinh extends javax.swing.JPanel {
         this.donViTinhBUS = new DonViTinhBUS(new DonViTinhDAO());
         initComponents();
         setUIManager();
+        setupModalStyle();
         fillTable();
+    }
+    
+    private void setupModalStyle() {
+        // Cấu hình Modal Add
+        modalAddUnit.setTitle("THÊM ĐƠN VỊ TÍNH MỚI");
+        modalAddUnit.setSize(750, 300);
+        
+        // Cấu hình Modal Edit
+        modalEditUnit.setTitle("CẬP NHẬT ĐƠN VỊ TÍNH");
+        modalEditUnit.setSize(750, 300);
+        
+        // Loại bỏ viền thừa của panel trong modal
+        jPanel2.putClientProperty(FlatClientProperties.STYLE, "background:#F8F9FA;border:0,0,0,0");
+        jPanel3.putClientProperty(FlatClientProperties.STYLE, "background:#F8F9FA;border:0,0,0,0");
+        
+        // Style cho text fields
+        txtNameUnitAdd.putClientProperty(FlatClientProperties.STYLE, "arc:10");
+        txtNameUnitEdit.putClientProperty(FlatClientProperties.STYLE, "arc:10");
+        txtSearchUnit.putClientProperty(FlatClientProperties.STYLE, "arc:10");
+        
+        // Style cho buttons trong modal Add - giống modal Quản lý Sản phẩm
+        btnAddUnit.putClientProperty(FlatClientProperties.STYLE, ""
+                + "background:#5C6BC0;"
+                + "foreground:#FFFFFF;"
+                + "hoverBackground:#4A5AB3;"
+                + "pressedBackground:#3949AB;"
+                + "arc:10;"
+                + "borderWidth:0");
+        
+        btnExitModalAdd.putClientProperty(FlatClientProperties.STYLE, ""
+                + "arc:10");
+        
+        // Style cho buttons trong modal Edit - giống modal Quản lý Sản phẩm
+        btnEditUnit.putClientProperty(FlatClientProperties.STYLE, ""
+                + "background:#5C6BC0;"
+                + "foreground:#FFFFFF;"
+                + "hoverBackground:#4A5AB3;"
+                + "pressedBackground:#3949AB;"
+                + "arc:10;"
+                + "borderWidth:0");
+        
+        btnExitModalEdit.putClientProperty(FlatClientProperties.STYLE, ""
+                + "arc:10");
     }
 
     private void setUIManager() {
         txtSearchUnit.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Tên đơn vị tính");
         txtNameUnitAdd.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập tên đơn vị tính");
         txtNameUnitEdit.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập tên đơn vị tính mới");
-
     }
 
     private void fillTable() {

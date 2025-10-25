@@ -81,5 +81,13 @@ public class KhachHangBUS {
         
         return khachHangDAO.delete(maKhachHang);
     }
+    
+    // Tìm kiếm khách hàng theo từ khóa
+    public List<KhachHang> timKiemKhachHang(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return getAllKhachHang();
+        }
+        return khachHangDAO.searchByKeyword(keyword.trim());
+    }
 }
 

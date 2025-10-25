@@ -33,6 +33,9 @@ public class NhaCungCapDAO implements DAOInterface<NhaCungCap, String> {
     
     private final String SQL_LAY_MA_CUOI = 
             "SELECT TOP 1 maNhaCungCap FROM NhaCungCap ORDER BY maNhaCungCap DESC";
+    
+    private final String SQL_XOA = 
+            "DELETE FROM NhaCungCap WHERE maNhaCungCap = ?";
 
     @Override
     public boolean insert(NhaCungCap nhaCungCap) {
@@ -167,6 +170,18 @@ public class NhaCungCapDAO implements DAOInterface<NhaCungCap, String> {
             e.printStackTrace();
         }
         return danhSachNhaCungCap;
+    }
+    
+    public boolean delete(String maNhaCungCap) {
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(SQL_XOA)) {
+            
+            stmt.setString(1, maNhaCungCap);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     private NhaCungCap mapResultSetToNhaCungCap(ResultSet rs) throws SQLException {
