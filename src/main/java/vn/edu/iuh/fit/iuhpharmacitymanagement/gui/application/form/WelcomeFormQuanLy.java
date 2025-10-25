@@ -41,50 +41,55 @@ public class WelcomeFormQuanLy extends JPanel {
 
         // Mô tả
         gbc.gridy = 2;
-        JLabel lblDescription = new JLabel("Chào mừng đến với hệ thống quản trị!");
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        JLabel lblDescription = new JLabel("Chào mừng đến với hệ thống quản trị!", SwingConstants.CENTER);
         lblDescription.setFont(new Font("Segoe UI", Font.ITALIC, 20));
         lblDescription.setForeground(new Color(127, 140, 141));
         add(lblDescription, gbc);
 
         // Hướng dẫn
-        gbc.gridy = 3;
-        gbc.insets = new Insets(40, 20, 20, 20);
-        JLabel lblGuide = new JLabel("<html><center>Sử dụng menu bên trái để quản lý hệ thống:<br/>" +
-                "Thống kê, Báo cáo, Quản lý nhân viên, và nhiều hơn nữa.</center></html>");
-        lblGuide.setFont(new Font("Segoe UI", Font.PLAIN, 16));
-        lblGuide.setForeground(new Color(149, 165, 166));
-        lblGuide.setHorizontalAlignment(SwingConstants.CENTER);
-        add(lblGuide, gbc);
+//        gbc.gridy = 3;
+//        gbc.fill = GridBagConstraints.HORIZONTAL;
+//        gbc.insets = new Insets(40, 20, 20, 20);
+//        JLabel lblGuide = new JLabel("<html><center>Sử dụng menu bên trái để quản lý hệ thống:<br/>" +
+//                "Thống kê, Báo cáo, Quản lý nhân viên, và nhiều hơn nữa.</center></html>");
+//        lblGuide.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+//        lblGuide.setForeground(new Color(149, 165, 166));
+//        lblGuide.setHorizontalAlignment(SwingConstants.CENTER);
+//        add(lblGuide, gbc);
+        
+        gbc.fill = GridBagConstraints.NONE; 
 
         // Panel với thông tin nhanh
-        gbc.gridy = 4;
-        gbc.insets = new Insets(30, 20, 20, 20);
-        add(createQuickInfoPanel(), gbc);
+//        gbc.gridy = 4;
+//        gbc.insets = new Insets(30, 20, 20, 20);
+//        add(createQuickInfoPanel(), gbc);
     }
 
     private JPanel createQuickInfoPanel() {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 30, 10));
+        //  JPanel panel = new JPanel(new GridLayout(2, 2, 30, 30));
         panel.setBackground(new Color(236, 240, 241));
         panel.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(189, 195, 199), 1),
                 BorderFactory.createEmptyBorder(20, 40, 20, 40)
         ));
 
-        // Thông tin nhanh 1
-        JPanel info1 = createInfoCard("📊", "Thống kê", "Tổng quan hệ thống");
-        panel.add(info1);
-
-        // Thông tin nhanh 2
-        JPanel info2 = createInfoCard("📈", "Báo cáo", "Phân tích dữ liệu");
-        panel.add(info2);
-
-        // Thông tin nhanh 3
-        JPanel info3 = createInfoCard("👥", "Nhân viên", "Quản lý nhân sự");
-        panel.add(info3);
-
-        // Thông tin nhanh 4
-        JPanel info4 = createInfoCard("🎁", "Khuyến mãi", "Quản lý ưu đãi");
-        panel.add(info4);
+//        // Thông tin nhanh 1
+//        JPanel info1 = createInfoCard("📊", "Thống kê", "Tổng quan hệ thống");
+//        panel.add(info1);
+//
+//        // Thông tin nhanh 2
+//        JPanel info2 = createInfoCard("📈", "Báo cáo", "Phân tích dữ liệu");
+//        panel.add(info2);
+//
+//        // Thông tin nhanh 3
+//        JPanel info3 = createInfoCard("👥", "Nhân viên", "Quản lý nhân sự");
+//        panel.add(info3);
+//
+//        // Thông tin nhanh 4
+//        JPanel info4 = createInfoCard("🎁", "Khuyến mãi", "Quản lý ưu đãi");
+//        panel.add(info4);
 
         return panel;
     }

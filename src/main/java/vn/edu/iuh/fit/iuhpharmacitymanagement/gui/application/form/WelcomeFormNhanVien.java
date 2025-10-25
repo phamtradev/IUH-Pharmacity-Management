@@ -47,19 +47,19 @@ public class WelcomeFormNhanVien extends JPanel {
         add(lblDescription, gbc);
 
         // Hướng dẫn
-        gbc.gridy = 3;
-        gbc.insets = new Insets(40, 20, 20, 20);
-        JLabel lblGuide = new JLabel("<html><center>Sử dụng menu bên trái để truy cập các chức năng:<br/>" +
-                "Bán hàng, Quản lý sản phẩm, Quản lý khách hàng, v.v.</center></html>");
-        lblGuide.setFont(new Font("Segoe UI", Font.PLAIN, 16));
-        lblGuide.setForeground(new Color(149, 165, 166));
-        lblGuide.setHorizontalAlignment(SwingConstants.CENTER);
-        add(lblGuide, gbc);
-
-        // Panel với thông tin nhanh
-        gbc.gridy = 4;
-        gbc.insets = new Insets(30, 20, 20, 20);
-        add(createQuickInfoPanel(), gbc);
+//        gbc.gridy = 3;
+//        gbc.insets = new Insets(40, 20, 20, 20);
+//        JLabel lblGuide = new JLabel("<html><center>Sử dụng menu bên trái để truy cập các chức năng:<br/>" +
+//                "Bán hàng, Quản lý sản phẩm, Quản lý khách hàng, v.v.</center></html>");
+//        lblGuide.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+//        lblGuide.setForeground(new Color(149, 165, 166));
+//        lblGuide.setHorizontalAlignment(SwingConstants.CENTER);
+//        add(lblGuide, gbc);
+//
+//        // Panel với thông tin nhanh
+//        gbc.gridy = 4;
+//        gbc.insets = new Insets(30, 20, 20, 20);
+//        add(createQuickInfoPanel(), gbc);
     }
 
     private JPanel createQuickInfoPanel() {

@@ -144,6 +144,7 @@ public class MenuItem extends JPanel {
 
     private JButton createButtonItem(String text) {
         JButton button = new JButton(text);
+        button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         button.putClientProperty(FlatClientProperties.STYLE, ""
                 + "background:$Menu.background;"
                 + "foreground:$Menu.foreground;"

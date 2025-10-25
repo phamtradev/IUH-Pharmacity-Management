@@ -26,13 +26,12 @@ public class LoginFormPanel extends javax.swing.JPanel {
         setOpaque(false); // Đảm bảo panel cho phép hiển thị ảnh nền
         contentPanel.setOpaque(true);
         contentPanel.setBackground(new java.awt.Color(255, 255, 255, 180));
-contentPanel.putClientProperty(FlatClientProperties.STYLE, 
-        "background:rgba(255,255,255,0.7); border:20, #FFFFFFAA;");
-contentPanel.setBorder(javax.swing.BorderFactory.createCompoundBorder(
-    javax.swing.BorderFactory.createLineBorder(new java.awt.Color(200,200,200), 1, true),
-    javax.swing.BorderFactory.createEmptyBorder(20, 20, 20, 20)
-));
-
+        contentPanel.putClientProperty(FlatClientProperties.STYLE,
+                "background:rgba(255,255,255,0.7); border:20, #FFFFFFAA;");
+        contentPanel.setBorder(javax.swing.BorderFactory.createCompoundBorder(
+                javax.swing.BorderFactory.createLineBorder(new java.awt.Color(200, 200, 200), 1, true),
+                javax.swing.BorderFactory.createEmptyBorder(20, 20, 20, 20)
+        ));
 
         btnDangNhap.putClientProperty("JButton.buttonType", "primary"); // không hoạt động nhưng mà đừng xóa :v
 

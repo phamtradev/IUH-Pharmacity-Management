@@ -121,6 +121,7 @@ public class SplashScreen extends javax.swing.JFrame {
         lblLoading = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setCursor(new java.awt.Cursor(java.awt.Cursor.WAIT_CURSOR));
         setUndecorated(true);
 
         BackgroundPanel.setBackground(new java.awt.Color(255, 255, 255));
