@@ -134,9 +134,7 @@
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="jDateTo" min="-2" pref="210" max="-2" attributes="0"/>
                           <EmptySpace type="separate" max="-2" attributes="0"/>
-                          <Component id="txtEmp" min="-2" pref="200" max="-2" attributes="0"/>
-                          <EmptySpace type="separate" max="-2" attributes="0"/>
-                          <Component id="txtCus" min="-2" pref="200" max="-2" attributes="0"/>
+                          <Component id="txtOrderId" min="-2" pref="200" max="-2" attributes="0"/>
                           <EmptySpace type="separate" max="-2" attributes="0"/>
                           <Component id="btnSearch" min="-2" max="-2" attributes="0"/>
                           <EmptySpace min="-2" pref="65" max="-2" attributes="0"/>
@@ -154,9 +152,8 @@
                                   <Group type="103" groupAlignment="1" attributes="0">
                                       <Component id="jDateTo" min="-2" pref="40" max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="3" attributes="0">
-                                          <Component id="txtCus" alignment="3" min="-2" max="-2" attributes="0"/>
+                                          <Component id="txtOrderId" alignment="3" min="-2" max="-2" attributes="0"/>
                                           <Component id="btnSearch" alignment="3" min="-2" max="-2" attributes="0"/>
-                                          <Component id="txtEmp" alignment="3" min="-2" max="-2" attributes="0"/>
                                           <Component id="txtOrder" alignment="3" min="-2" max="-2" attributes="0"/>
                                       </Group>
                                       <Component id="jDateFrom" alignment="1" min="-2" pref="40" max="-2" attributes="0"/>
@@ -167,7 +164,7 @@
                                   </Group>
                               </Group>
                               <Group type="102" alignment="0" attributes="0">
-                                  <EmptySpace max="-2" attributes="0"/>
+                                  <EmptySpace min="-2" pref="29" max="-2" attributes="0"/>
                                   <Component id="btnView" min="-2" max="-2" attributes="0"/>
                               </Group>
                           </Group>
@@ -177,7 +174,7 @@
                 </DimensionLayout>
               </Layout>
               <SubComponents>
-                <Component class="javax.swing.JTextField" name="txtCus">
+                <Component class="javax.swing.JTextField" name="txtOrderId">
                   <Properties>
                     <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                       <Font name="Segoe UI" size="14" style="0"/>
@@ -215,19 +212,6 @@
                   <Events>
                     <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnSearchActionPerformed"/>
                   </Events>
-                </Component>
-                <Component class="javax.swing.JTextField" name="txtEmp">
-                  <Properties>
-                    <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                      <Font name="Segoe UI" size="14" style="0"/>
-                    </Property>
-                    <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                      <Dimension value="[300, 40]"/>
-                    </Property>
-                    <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                      <Dimension value="[300, 40]"/>
-                    </Property>
-                  </Properties>
                 </Component>
                 <Component class="com.toedter.calendar.JDateChooser" name="jDateTo">
                   <Properties>
@@ -309,7 +293,7 @@
                     <Property name="focusPainted" type="boolean" value="false"/>
                     <Property name="horizontalTextPosition" type="int" value="0"/>
                     <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                      <Dimension value="[100, 90]"/>
+                      <Dimension value="[130, 40]"/>
                     </Property>
                     <Property name="verticalTextPosition" type="int" value="3"/>
                   </Properties>

@@ -6,7 +6,6 @@ package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlynhap
 
 import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.DonNhapHangBUS;
 import com.formdev.flatlaf.FlatClientProperties;
-import com.formdev.flatlaf.extras.FlatSVGIcon;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
@@ -22,7 +21,6 @@ import java.util.Locale;
 import javax.swing.JTable;
 import javax.swing.UIManager;
 import raven.toast.Notifications;
-import vn.edu.iuh.fit.iuhpharmacitymanagement.util.ResizeImage;
 
 /**
  *
@@ -42,8 +40,7 @@ public class GD_QuanLyNhapHang extends javax.swing.JPanel {
     }
 
     private void setUIManager() {
-        txtEmp.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhân viên");
-        txtCus.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhà cung cấp");
+        txtOrderId.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Mã đơn nhập");
         UIManager.put("Button.arc", 10);
         jDateFrom.setDate(Date.valueOf(LocalDate.now()));
         jDateTo.setDate(Date.valueOf(LocalDate.now()));
@@ -85,7 +82,7 @@ public class GD_QuanLyNhapHang extends javax.swing.JPanel {
         }
     }
     
-    private List<DonNhapHang> searchDonNhapHang(LocalDate dateFrom, LocalDate dateTo, String tenNCC, String tenNV) {
+    private List<DonNhapHang> searchDonNhapHang(LocalDate dateFrom, LocalDate dateTo, String maDonNhap) {
         List<DonNhapHang> all = donNhapHangBUS.layTatCaDonNhapHang();
         List<DonNhapHang> result = new ArrayList<>();
         
@@ -97,18 +94,10 @@ public class GD_QuanLyNhapHang extends javax.swing.JPanel {
                 continue;
             }
             
-            // Lọc theo nhà cung cấp
-            if (!tenNCC.isEmpty()) {
-                String maNCC = dnh.getNhaCungCap() != null ? dnh.getNhaCungCap().getMaNhaCungCap() : "";
-                if (!maNCC.toLowerCase().contains(tenNCC.toLowerCase())) {
-                    continue;
-                }
-            }
-            
-            // Lọc theo nhân viên
-            if (!tenNV.isEmpty()) {
-                String maNV = dnh.getNhanVien() != null ? dnh.getNhanVien().getMaNhanVien() : "";
-                if (!maNV.toLowerCase().contains(tenNV.toLowerCase())) {
+            // Lọc theo mã đơn nhập
+            if (!maDonNhap.isEmpty()) {
+                String maDN = dnh.getMaDonNhapHang() != null ? dnh.getMaDonNhapHang() : "";
+                if (!maDN.toLowerCase().contains(maDonNhap.toLowerCase())) {
                     continue;
                 }
             }
@@ -149,9 +138,8 @@ public class GD_QuanLyNhapHang extends javax.swing.JPanel {
         pnAll = new javax.swing.JPanel();
         headerPanel = new javax.swing.JPanel();
         jPanel5 = new javax.swing.JPanel();
-        txtCus = new javax.swing.JTextField();
+        txtOrderId = new javax.swing.JTextField();
         btnSearch = new javax.swing.JButton();
-        txtEmp = new javax.swing.JTextField();
         jDateTo = new com.toedter.calendar.JDateChooser();
         jDateFrom = new com.toedter.calendar.JDateChooser();
         jLabel2 = new javax.swing.JLabel();
@@ -198,9 +186,9 @@ public class GD_QuanLyNhapHang extends javax.swing.JPanel {
         jPanel5.setBackground(new java.awt.Color(255, 255, 255));
         jPanel5.setPreferredSize(new java.awt.Dimension(590, 100));
 
-        txtCus.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        txtCus.setMinimumSize(new java.awt.Dimension(300, 40));
-        txtCus.setPreferredSize(new java.awt.Dimension(300, 40));
+        txtOrderId.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        txtOrderId.setMinimumSize(new java.awt.Dimension(300, 40));
+        txtOrderId.setPreferredSize(new java.awt.Dimension(300, 40));
 
         btnSearch.setBackground(new java.awt.Color(115, 165, 71));
         btnSearch.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
@@ -214,10 +202,6 @@ public class GD_QuanLyNhapHang extends javax.swing.JPanel {
                 btnSearchActionPerformed(evt);
             }
         });
-
-        txtEmp.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        txtEmp.setMinimumSize(new java.awt.Dimension(300, 40));
-        txtEmp.setPreferredSize(new java.awt.Dimension(300, 40));
 
         jDateTo.setBackground(new java.awt.Color(255, 255, 255));
         jDateTo.setDateFormatString("dd/MM/yyyy");
@@ -276,9 +260,7 @@ public class GD_QuanLyNhapHang extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jDateTo, javax.swing.GroupLayout.PREFERRED_SIZE, 210, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
-                .addComponent(txtEmp, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(txtCus, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(txtOrderId, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(btnSearch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(65, 65, 65)
@@ -294,9 +276,8 @@ public class GD_QuanLyNhapHang extends javax.swing.JPanel {
                         .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(jDateTo, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                .addComponent(txtCus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(txtOrderId, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addComponent(btnSearch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(txtEmp, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addComponent(txtOrder, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addComponent(jDateFrom, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(jPanel5Layout.createSequentialGroup()
@@ -340,10 +321,9 @@ public class GD_QuanLyNhapHang extends javax.swing.JPanel {
             return;
         }
         
-        String txtSupplier = txtCus.getText().trim();
-        String txtEmployee = txtEmp.getText().trim();
+        String maDonNhap = txtOrderId.getText().trim();
 
-        List<DonNhapHang> danhSach = searchDonNhapHang(localDateStart, localDateEnd, txtSupplier, txtEmployee);
+        List<DonNhapHang> danhSach = searchDonNhapHang(localDateStart, localDateEnd, maDonNhap);
         fillContent(danhSach);
     }//GEN-LAST:event_btnSearchActionPerformed
 
@@ -409,8 +389,7 @@ public class GD_QuanLyNhapHang extends javax.swing.JPanel {
     private javax.swing.JPanel pnAll;
     private javax.swing.JScrollPane scrollTable;
     private javax.swing.JScrollPane scrollTableDetail;
-    private javax.swing.JTextField txtCus;
-    private javax.swing.JTextField txtEmp;
+    private javax.swing.JTextField txtOrderId;
     private javax.swing.JButton txtOrder;
     // End of variables declaration//GEN-END:variables
 
