@@ -37,6 +37,10 @@ public class MainApplication {
                 UIManager.put("ProgressBar.foreground", new java.awt.Color(0, 153, 255));
                 UIManager.put("ProgressBar.background", new java.awt.Color(220, 220, 220)); 
                 
+                //Thay đổi cho JtextField
+                UIManager.put("Component.borderWidth", 1);
+                UIManager.put("Component.borderColor", new java.awt.Color(150, 180, 255));
+                
                 // Khi người dùng click vào JTextField, đường viền màu xanh sẽ xuất hiện, báo hiệu rằng ô này đang hoạt động.
                 UIManager.put("Component.focusColor", UIManager.getColor("Component.accentColor"));
                 UIManager.put("Component.focusWidth", 2);

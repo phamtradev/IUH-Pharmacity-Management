@@ -79,6 +79,19 @@ public class LoHangDAO implements DAOInterface<LoHang, String> {
             return false;
         }
     }
+    
+    public boolean delete(String maLoHang) {
+        String sql = "DELETE FROM LoHang WHERE maLoHang = ?";
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(sql)) {
+
+            stmt.setString(1, maLoHang);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 
     @Override
     public Optional<LoHang> findById(String maLoHang) {

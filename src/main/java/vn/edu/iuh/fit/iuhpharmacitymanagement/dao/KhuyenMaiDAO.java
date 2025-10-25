@@ -2,7 +2,6 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-
 package vn.edu.iuh.fit.iuhpharmacitymanagement.dao;
 
 /**
@@ -21,31 +20,30 @@ import java.util.Optional;
 
 public class KhuyenMaiDAO implements DAOInterface<KhuyenMai, String> {
 
-    private final String SQL_THEM =
-            "INSERT INTO KhuyenMai (maKhuyenMai, tenKhuyenMai, ngayBatDau, ngayKetThuc, giamGia, trangThai, loaiKhuyenMai) VALUES (?, ?, ?, ?, ?, ?, ?)";
+    private final String SQL_THEM
+            = "INSERT INTO KhuyenMai (maKhuyenMai, tenKhuyenMai, ngayBatDau, ngayKetThuc, giamGia, trangThai, loaiKhuyenMai) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
-    private final String SQL_CAP_NHAT =
-            "UPDATE KhuyenMai SET tenKhuyenMai = ?, ngayBatDau = ?, ngayKetThuc = ?, giamGia = ?, trangThai = ?, loaiKhuyenMai = ? WHERE maKhuyenMai = ?";
+    private final String SQL_CAP_NHAT
+            = "UPDATE KhuyenMai SET tenKhuyenMai = ?, ngayBatDau = ?, ngayKetThuc = ?, giamGia = ?, trangThai = ?, loaiKhuyenMai = ? WHERE maKhuyenMai = ?";
 
-    private final String SQL_TIM_THEO_MA =
-            "SELECT * FROM KhuyenMai WHERE maKhuyenMai = ?";
+    private final String SQL_TIM_THEO_MA
+            = "SELECT * FROM KhuyenMai WHERE maKhuyenMai = ?";
 
-    private final String SQL_TIM_TAT_CA =
-            "SELECT * FROM KhuyenMai";
+    private final String SQL_TIM_TAT_CA
+            = "SELECT * FROM KhuyenMai";
 
-    private final String SQL_TIM_THEO_TEN =
-            "SELECT * FROM KhuyenMai WHERE tenKhuyenMai = ?";
+    private final String SQL_TIM_THEO_TEN
+            = "SELECT * FROM KhuyenMai WHERE tenKhuyenMai = ?";
 
-    private final String SQL_TIM_THEO_TEN_GAN_DUNG =
-            "SELECT * FROM KhuyenMai WHERE tenKhuyenMai LIKE ?";
+    private final String SQL_TIM_THEO_TEN_GAN_DUNG
+            = "SELECT * FROM KhuyenMai WHERE tenKhuyenMai LIKE ?";
 
-    private final String SQL_LAY_MA_CUOI =
-            "SELECT TOP 1 maKhuyenMai FROM KhuyenMai ORDER BY maKhuyenMai DESC";
+    private final String SQL_LAY_MA_CUOI
+            = "SELECT TOP 1 maKhuyenMai FROM KhuyenMai ORDER BY maKhuyenMai DESC";
 
     @Override
     public boolean insert(KhuyenMai khuyenMai) {
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement stmt = con.prepareStatement(SQL_THEM)) {
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(SQL_THEM)) {
 
             if (khuyenMai.getMaKhuyenMai() == null || khuyenMai.getMaKhuyenMai().trim().isEmpty()) {
                 khuyenMai.setMaKhuyenMai(taoMaKhuyenMai());
@@ -71,8 +69,7 @@ public class KhuyenMaiDAO implements DAOInterface<KhuyenMai, String> {
 
     @Override
     public boolean update(KhuyenMai khuyenMai) {
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement stmt = con.prepareStatement(SQL_CAP_NHAT)) {
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(SQL_CAP_NHAT)) {
 
             stmt.setString(1, khuyenMai.getTenKhuyenMai());
             stmt.setDate(2, Date.valueOf(khuyenMai.getNgayBatDau()));
@@ -88,11 +85,23 @@ public class KhuyenMaiDAO implements DAOInterface<KhuyenMai, String> {
             return false;
         }
     }
+    
+    //Xóa một khuyến mãi khỏi cơ sở dữ liệu dựa vào mã
+    public boolean delete(String maKhuyenMai) {
+        String sql = "DELETE FROM KhuyenMai WHERE maKhuyenMai = ?";
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(sql)) {
+
+            stmt.setString(1, maKhuyenMai);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 
     @Override
     public Optional<KhuyenMai> findById(String maKhuyenMai) {
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement stmt = con.prepareStatement(SQL_TIM_THEO_MA)) {
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(SQL_TIM_THEO_MA)) {
 
             stmt.setString(1, maKhuyenMai);
             ResultSet rs = stmt.executeQuery();
@@ -112,9 +121,7 @@ public class KhuyenMaiDAO implements DAOInterface<KhuyenMai, String> {
     public List<KhuyenMai> findAll() {
         List<KhuyenMai> danhSachKhuyenMai = new ArrayList<>();
 
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement stmt = con.prepareStatement(SQL_TIM_TAT_CA);
-             ResultSet rs = stmt.executeQuery()) {
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(SQL_TIM_TAT_CA); ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
                 danhSachKhuyenMai.add(mapResultSetToKhuyenMai(rs));
@@ -142,8 +149,7 @@ public class KhuyenMaiDAO implements DAOInterface<KhuyenMai, String> {
     }
 
     public KhuyenMai findByName(String tenKhuyenMai) throws Exception {
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement stmt = con.prepareStatement(SQL_TIM_THEO_TEN)) {
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(SQL_TIM_THEO_TEN)) {
 
             stmt.setString(1, tenKhuyenMai);
             ResultSet rs = stmt.executeQuery();
@@ -160,8 +166,7 @@ public class KhuyenMaiDAO implements DAOInterface<KhuyenMai, String> {
     public List<KhuyenMai> findByNameSearch(String tenKhuyenMai) throws Exception {
         List<KhuyenMai> danhSachKhuyenMai = new ArrayList<>();
 
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement stmt = con.prepareStatement(SQL_TIM_THEO_TEN_GAN_DUNG)) {
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(SQL_TIM_THEO_TEN_GAN_DUNG)) {
 
             stmt.setString(1, "%" + tenKhuyenMai + "%");
             ResultSet rs = stmt.executeQuery();
@@ -176,9 +181,7 @@ public class KhuyenMaiDAO implements DAOInterface<KhuyenMai, String> {
     }
 
     private String taoMaKhuyenMai() {
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement stmt = con.prepareStatement(SQL_LAY_MA_CUOI);
-             ResultSet rs = stmt.executeQuery()) {
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(SQL_LAY_MA_CUOI); ResultSet rs = stmt.executeQuery()) {
 
             if (rs.next()) {
                 String maCuoi = rs.getString("maKhuyenMai");
@@ -193,9 +196,7 @@ public class KhuyenMaiDAO implements DAOInterface<KhuyenMai, String> {
     }
 
     public String getLastMaKhuyenMai() {
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement stmt = con.prepareStatement(SQL_LAY_MA_CUOI);
-             ResultSet rs = stmt.executeQuery()) {
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(SQL_LAY_MA_CUOI); ResultSet rs = stmt.executeQuery()) {
 
             if (rs.next()) {
                 return rs.getString("maKhuyenMai");
@@ -217,9 +218,7 @@ public class KhuyenMaiDAO implements DAOInterface<KhuyenMai, String> {
     public int count() {
         String sql = "SELECT COUNT(*) as total FROM KhuyenMai";
 
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement stmt = con.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
 
             if (rs.next()) {
                 return rs.getInt("total");

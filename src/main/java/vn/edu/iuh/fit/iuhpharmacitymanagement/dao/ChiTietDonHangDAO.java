@@ -140,5 +140,22 @@ public class ChiTietDonHangDAO implements DAOInterface<ChiTietDonHang, String> {
         return dsCtdh;
     }
 
-    
+    //Đếm số lượng chi tiết đơn hàng (số lần bán) của một lô hàng cụ thể
+    public long countByLoHang(String maLoHang) {
+        String sql = "SELECT COUNT(*) as total FROM ChiTietDonHang WHERE maLoHang = ?";
+        
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(sql)) {
+            
+            stmt.setString(1, maLoHang);
+            ResultSet rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                return rs.getLong("total");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
 }

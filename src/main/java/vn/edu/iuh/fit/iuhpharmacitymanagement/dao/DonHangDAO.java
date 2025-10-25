@@ -14,33 +14,31 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhachHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhuyenMai;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhanVien;
 
-/**n
- * 
+/**
+ * n
+ *
  * @author LAPTOP ASUS
  */
 public class DonHangDAO implements DAOInterface<DonHang, String> {
 
-    private final String SQL_THEM =
-            "INSERT INTO DonHang (maDonHang, ngayDatHang, thanhTien, phuongThucThanhToan, maNhanVien, maKhachHang, maKhuyenMai) VALUES (?, ?, ?, ?, ?, ?, ?)";
-    
-    private final String SQL_CAP_NHAT =
-            "UPDATE DonHang SET ngayDatHang = ?, thanhTien = ?, phuongThucThanhToan = ?, maNhanVien = ?, maKhachHang = ?, maKhuyenMai = ? WHERE maDonHang = ?";
-            
-    private final String SQL_TIM_THEO_MA =
-            "SELECT * FROM DonHang WHERE maDonHang = ?";
-    
-    private final String SQL_TIM_TAT_CA =
-            "SELECT * FROM DonHang";
-    
-    private final String SQL_LAY_MA_CUOI =
-            "SELECT TOP 1 maDonHang FROM DonHang ORDER BY maDonHang DESC";
+    private final String SQL_THEM
+            = "INSERT INTO DonHang (maDonHang, ngayDatHang, thanhTien, phuongThucThanhToan, maNhanVien, maKhachHang, maKhuyenMai) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
+    private final String SQL_CAP_NHAT
+            = "UPDATE DonHang SET ngayDatHang = ?, thanhTien = ?, phuongThucThanhToan = ?, maNhanVien = ?, maKhachHang = ?, maKhuyenMai = ? WHERE maDonHang = ?";
+
+    private final String SQL_TIM_THEO_MA
+            = "SELECT * FROM DonHang WHERE maDonHang = ?";
+
+    private final String SQL_TIM_TAT_CA
+            = "SELECT * FROM DonHang";
+
+    private final String SQL_LAY_MA_CUOI
+            = "SELECT TOP 1 maDonHang FROM DonHang ORDER BY maDonHang DESC";
 
     @Override
     public boolean insert(DonHang donHang) {
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement stmt = con.prepareStatement(SQL_THEM)) {
-
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(SQL_THEM)) {
 
             if (donHang.getMaDonHang() == null || donHang.getMaDonHang().trim().isEmpty()) {
                 donHang.setMaDonHang(taoMaDonHangMoi());
@@ -64,11 +62,9 @@ public class DonHangDAO implements DAOInterface<DonHang, String> {
         return false;
     }
 
-
     @Override
     public boolean update(DonHang donHang) {
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement stmt = con.prepareStatement(SQL_CAP_NHAT)) {
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(SQL_CAP_NHAT)) {
 
             stmt.setDate(1, Date.valueOf(donHang.getNgayDatHang()));
             stmt.setDouble(2, donHang.getThanhTien());
@@ -85,12 +81,30 @@ public class DonHangDAO implements DAOInterface<DonHang, String> {
         }
         return false;
     }
-
-
+    
+    
+    //Đếm số lượng đơn hàng đã áp dụng một mã khuyến mãi cụ thể
+    public long countByKhuyenMai(String maKhuyenMai) {
+        String sql = "SELECT COUNT(*) as total FROM DonHang WHERE maKhuyenMai = ?";
+        
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(sql)) {
+            
+            stmt.setString(1, maKhuyenMai);
+            ResultSet rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                return rs.getLong("total");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+    
     @Override
     public Optional<DonHang> findById(String maDonHang) {
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement stmt = con.prepareStatement(SQL_TIM_THEO_MA)) {
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(SQL_TIM_THEO_MA)) {
 
             stmt.setString(1, maDonHang);
             ResultSet rs = stmt.executeQuery();
@@ -107,14 +121,11 @@ public class DonHangDAO implements DAOInterface<DonHang, String> {
         return Optional.empty();
     }
 
-
     @Override
     public List<DonHang> findAll() {
         List<DonHang> danhSachDonHang = new ArrayList<>();
 
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement stmt = con.prepareStatement(SQL_TIM_TAT_CA);
-             ResultSet rs = stmt.executeQuery()) {
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(SQL_TIM_TAT_CA); ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
                 danhSachDonHang.add(mapResultSetToDonHang(rs));
@@ -122,12 +133,11 @@ public class DonHangDAO implements DAOInterface<DonHang, String> {
 
         } catch (SQLException e) {
             e.printStackTrace();
-        } catch (Exception ex) { 
+        } catch (Exception ex) {
             System.getLogger(DonHangDAO.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
         }
         return danhSachDonHang;
     }
-
 
     private DonHang mapResultSetToDonHang(ResultSet rs) throws SQLException, Exception {
         DonHang donHang = new DonHang();
@@ -136,7 +146,6 @@ public class DonHangDAO implements DAOInterface<DonHang, String> {
         donHang.setNgayDatHang(rs.getDate("ngayDatHang").toLocalDate());
         donHang.setThanhTien(rs.getDouble("thanhTien"));
         donHang.setPhuongThucThanhToan(PhuongThucThanhToan.valueOf(rs.getString("phuongThucThanhToan")));
-
 
         NhanVien nv = new NhanVien();
         nv.setMaNhanVien(rs.getString("maNhanVien"));
@@ -153,14 +162,11 @@ public class DonHangDAO implements DAOInterface<DonHang, String> {
         return donHang;
     }
 
-
     private String taoMaDonHangMoi() {
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement stmt = con.prepareStatement(SQL_LAY_MA_CUOI);
-             ResultSet rs = stmt.executeQuery()) {
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(SQL_LAY_MA_CUOI); ResultSet rs = stmt.executeQuery()) {
 
             if (rs.next()) {
-                String maCuoi = rs.getString("maDonHang"); 
+                String maCuoi = rs.getString("maDonHang");
                 int so = Integer.parseInt(maCuoi.substring(2)) + 1;
                 return String.format("DH%05d", so);
             }
@@ -171,35 +177,33 @@ public class DonHangDAO implements DAOInterface<DonHang, String> {
         return "DH00001";
     }
 
-
     public boolean exists(String maDonHang) {
         return findById(maDonHang).isPresent();
     }
 
     public int count() {
         String sql = "SELECT COUNT(*) AS total FROM DonHang";
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement stmt = con.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
 
-            if (rs.next()) return rs.getInt("total");
+            if (rs.next()) {
+                return rs.getInt("total");
+            }
 
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return 0;
     }
-    
+
     // Đếm số lượng khách hàng theo hóa đơn
     public long countByKhachHang(String maKhachHang) {
         String sql = "SELECT COUNT(*) as total FROM DonHang WHERE maKhachHang = ?";
-        
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement stmt = con.prepareStatement(sql)) {
-            
+
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(sql)) {
+
             stmt.setString(1, maKhachHang);
             ResultSet rs = stmt.executeQuery();
-            
+
             if (rs.next()) {
                 return rs.getLong("total");
             }
