@@ -2,48 +2,49 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JPanel.java to edit this template
  */
-package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlytrahang;
+package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlydonhang;
 
-import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.DonTraHangBUS;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.DonHangBUS;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.ChiTietDonHangBUS;
 import com.formdev.flatlaf.FlatClientProperties;
 import java.util.Arrays;
 import java.util.List;
-import java.util.ArrayList;
 import javax.swing.BorderFactory;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.common.TableDesign;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.*;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.constant.PhuongThucThanhToan;
 import java.sql.Date;
-import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.Locale;
 import javax.swing.JTable;
 import javax.swing.UIManager;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.util.*;
 import raven.toast.Notifications;
 
 /**
  *
  * @author PhamTra
  */
-public class GD_QuanLyTraHang extends javax.swing.JPanel {
+public class GD_QuanLyDonHang extends javax.swing.JPanel {
 
-    private final DonTraHangBUS donTraHangBUS;
+    private final DonHangBUS donHangBUS;
+    private final ChiTietDonHangBUS chiTietDonHangBUS;
     private TableDesign tableDesign;
 
-    public GD_QuanLyTraHang() {
-        donTraHangBUS = new DonTraHangBUS();
+    public GD_QuanLyDonHang() {
+        donHangBUS = new DonHangBUS();
+        chiTietDonHangBUS = new ChiTietDonHangBUS();
         initComponents();
         setUIManager();
         fillTable();
     }
 
     private void setUIManager() {
-        txtOrder.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Mã phiếu trả");
+        txtOrderCode.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Mã hóa đơn");
         UIManager.put("Button.arc", 10);
         jDateFrom.setDate(Date.valueOf(LocalDate.now()));
         jDateTo.setDate(Date.valueOf(LocalDate.now()));
-        
+
         // Style cho button Xem chi tiết - màu xanh nước biển, kích thước nhỏ
         btnView.putClientProperty(FlatClientProperties.STYLE, ""
                 + "background:#17A2B8;"
@@ -55,76 +56,36 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
     }
 
     private void fillTable() {
-        String[] headers = {"Mã phiếu trả", "Mã hóa đơn", "Ngày trả", "Nhân viên", "Tổng tiền"};
-        List<Integer> tableWidths = Arrays.asList(200, 200, 200, 250, 200);
+        String[] headers = {"Mã hóa đơn", "Ngày tạo", "Khuyến mãi", "Tổng tiền", "Thanh toán", "Khách hàng", "Nhân viên"};
+        List<Integer> tableWidths = Arrays.asList(200, 200, 200, 200, 200, 200, 200);
         tableDesign = new TableDesign(headers, tableWidths);
         scrollTable.setViewportView(tableDesign.getTable());
         scrollTable.setBorder(BorderFactory.createEmptyBorder(15, 20, 20, 20));
-        List<DonTraHang> danhSach = donTraHangBUS.layTatCaDonTraHang();
-        fillContent(danhSach);
+        List<DonHang> donHangs = donHangBUS.layDonHangTheoKhoangThoiGian(LocalDate.now(), LocalDate.now());
+        fillContent(donHangs);
     }
 
-    
-    private void fillContent(List<DonTraHang> danhSach) {
+    private void fillContent(List<DonHang> donHangs) {
         tableDesign.getModelTable().setRowCount(0);
-        for (DonTraHang dth : danhSach) {
-            String maDonHang = dth.getDonHang() != null ? dth.getDonHang().getMaDonHang() : "N/A";
-            String tenNV = dth.getNhanVien() != null ? dth.getNhanVien().getMaNhanVien() : "N/A";
-            
+        for (DonHang donHang : donHangs) {
+            String khachHang = "Khách vãng lai";
+            if (donHang.getKhachHang() != null) {
+                khachHang = donHang.getKhachHang().getMaKhachHang();
+            }
+            String khuyenMai = "Không có";
+            if (donHang.getKhuyenMai() != null) {
+                khuyenMai = donHang.getKhuyenMai().getMaKhuyenMai();
+            }
             tableDesign.getModelTable().addRow(new Object[]{
-                dth.getMaDonTraHang(), 
-                maDonHang,
-                formatDate(dth.getngayTraHang()),
-                tenNV,
-                formatToVND(dth.getThanhTien())
+                donHang.getMaDonHang(),
+                DinhDangNgay.dinhDangNgay(donHang.getNgayDatHang()),
+                khuyenMai,
+                DinhDangSo.dinhDangTien(donHang.getThanhTien()),
+                donHang.getPhuongThucThanhToan() == PhuongThucThanhToan.CHUYEN_KHOAN_NGAN_HANG ? "Ngân hàng" : "Tiền mặt",
+                khachHang,
+                donHang.getNhanVien() != null ? donHang.getNhanVien().getMaNhanVien() : ""
             });
         }
-    }
-    
-    private List<DonTraHang> searchDonTraHang(LocalDate dateFrom, LocalDate dateTo, String tenNV, String maPhieuTra) {
-        List<DonTraHang> all = donTraHangBUS.layTatCaDonTraHang();
-        List<DonTraHang> result = new ArrayList<>();
-        
-        for (DonTraHang dth : all) {
-            LocalDate ngayTra = dth.getngayTraHang();
-            
-            // Lọc theo ngày
-            if (ngayTra.isBefore(dateFrom) || ngayTra.isAfter(dateTo)) {
-                continue;
-            }
-            
-            // Lọc theo nhân viên
-            if (!tenNV.isEmpty()) {
-                if (dth.getNhanVien() == null || 
-                    !dth.getNhanVien().getMaNhanVien().toLowerCase().contains(tenNV.toLowerCase())) {
-                    continue;
-                }
-            }
-            
-            // Lọc theo mã phiếu trả
-            if (!maPhieuTra.isEmpty()) {
-                String maDonTraHang = dth.getMaDonTraHang() != null ? dth.getMaDonTraHang() : "";
-                if (!maDonTraHang.toLowerCase().contains(maPhieuTra.toLowerCase())) {
-                    continue;
-                }
-            }
-            
-            result.add(dth);
-        }
-        
-        return result;
-    }
-    
-    private String formatDate(LocalDate date) {
-        if (date == null) return "N/A";
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        return date.format(formatter);
-    }
-    
-    @SuppressWarnings("deprecation")
-    private String formatToVND(double amount) {
-        NumberFormat formatter = NumberFormat.getCurrencyInstance(new Locale("vi", "VN"));
-        return formatter.format(amount);
     }
 
     /**
@@ -132,6 +93,7 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
      * WARNING: Do NOT modify this code. The content of this method is always
      * regenerated by the Form Editor.
      */
+    @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
@@ -141,18 +103,18 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
         pnAll = new javax.swing.JPanel();
         headerPanel = new javax.swing.JPanel();
         jPanel5 = new javax.swing.JPanel();
-        txtOrder = new javax.swing.JTextField();
+        txtOrderCode = new javax.swing.JTextField();
         btnSearch = new javax.swing.JButton();
         jDateTo = new com.toedter.calendar.JDateChooser();
         jDateFrom = new com.toedter.calendar.JDateChooser();
         jLabel2 = new javax.swing.JLabel();
-        txtExport = new javax.swing.JButton();
+        txtOrder = new javax.swing.JButton();
         btnView = new javax.swing.JButton();
         jPanel4 = new javax.swing.JPanel();
         scrollTable = new javax.swing.JScrollPane();
 
         modalOrderDetail.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        modalOrderDetail.setTitle("Chi tiết phiếu trả hàng");
+        modalOrderDetail.setTitle("Chi tiết hóa đơn");
         modalOrderDetail.setMinimumSize(new java.awt.Dimension(960, 512));
         modalOrderDetail.setModal(true);
         modalOrderDetail.setResizable(false);
@@ -189,9 +151,9 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
         jPanel5.setBackground(new java.awt.Color(255, 255, 255));
         jPanel5.setPreferredSize(new java.awt.Dimension(590, 100));
 
-        txtOrder.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        txtOrder.setMinimumSize(new java.awt.Dimension(300, 40));
-        txtOrder.setPreferredSize(new java.awt.Dimension(300, 40));
+        txtOrderCode.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        txtOrderCode.setMinimumSize(new java.awt.Dimension(300, 40));
+        txtOrderCode.setPreferredSize(new java.awt.Dimension(300, 40));
 
         btnSearch.setBackground(new java.awt.Color(115, 165, 71));
         btnSearch.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
@@ -221,16 +183,16 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
         jLabel2.setFont(new java.awt.Font("Segoe UI", 0, 20)); // NOI18N
         jLabel2.setText("-->");
 
-        txtExport.setBackground(new java.awt.Color(115, 165, 71));
-        txtExport.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
-        txtExport.setForeground(new java.awt.Color(255, 255, 255));
-        txtExport.setText("Xuất excel");
-        txtExport.setMaximumSize(new java.awt.Dimension(150, 40));
-        txtExport.setMinimumSize(new java.awt.Dimension(150, 40));
-        txtExport.setPreferredSize(new java.awt.Dimension(150, 40));
-        txtExport.addActionListener(new java.awt.event.ActionListener() {
+        txtOrder.setBackground(new java.awt.Color(115, 165, 71));
+        txtOrder.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
+        txtOrder.setForeground(new java.awt.Color(255, 255, 255));
+        txtOrder.setText("Xuất excel");
+        txtOrder.setMaximumSize(new java.awt.Dimension(150, 40));
+        txtOrder.setMinimumSize(new java.awt.Dimension(150, 40));
+        txtOrder.setPreferredSize(new java.awt.Dimension(150, 40));
+        txtOrder.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txtExportActionPerformed(evt);
+                txtOrderActionPerformed(evt);
             }
         });
 
@@ -257,17 +219,17 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
                 .addContainerGap()
                 .addComponent(btnView, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED, 115, Short.MAX_VALUE)
-                    .addComponent(jDateFrom, javax.swing.GroupLayout.PREFERRED_SIZE, 210, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jDateFrom, javax.swing.GroupLayout.PREFERRED_SIZE, 210, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel2)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jDateTo, javax.swing.GroupLayout.PREFERRED_SIZE, 210, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
-                .addComponent(txtOrder, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(txtOrderCode, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(btnSearch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 65, Short.MAX_VALUE)
-                .addComponent(txtExport, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(txtOrder, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(21, 21, 21))
         );
         jPanel5Layout.setVerticalGroup(
@@ -276,12 +238,12 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel5Layout.createSequentialGroup()
                         .addGap(29, 29, 29)
-                                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addComponent(jDateTo, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jDateTo, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                .addComponent(txtOrder, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(txtOrderCode, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addComponent(btnSearch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(txtExport, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(txtOrder, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addComponent(jDateFrom, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(jPanel5Layout.createSequentialGroup()
                                 .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -294,17 +256,17 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
 
         headerPanel.add(jPanel5, java.awt.BorderLayout.CENTER);
 
-        pnAll.add(headerPanel, java.awt.BorderLayout.PAGE_START);
+        pnAll.add(headerPanel, java.awt.BorderLayout.NORTH);
 
         jPanel4.setBackground(new java.awt.Color(255, 255, 255));
         jPanel4.setMinimumSize(new java.awt.Dimension(1226, 174));
         jPanel4.setPreferredSize(new java.awt.Dimension(1226, 174));
         jPanel4.setLayout(new java.awt.BorderLayout());
 
-        // Thêm tiêu đề "DANH SÁCH THÔNG TIN ĐƠN TRẢ HÀNG"
+        // Thêm tiêu đề "DANH SÁCH THÔNG TIN ĐƠN HÀNG"
         javax.swing.JPanel titlePanel = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 12));
         titlePanel.setBackground(new java.awt.Color(23, 162, 184)); // Màu xanh cyan
-        javax.swing.JLabel lblTitle = new javax.swing.JLabel("DANH SÁCH THÔNG TIN ĐƠN TRẢ HÀNG");
+        javax.swing.JLabel lblTitle = new javax.swing.JLabel("DANH SÁCH THÔNG TIN ĐƠN HÀNG");
         lblTitle.setFont(new java.awt.Font("Segoe UI", 1, 16));
         lblTitle.setForeground(new java.awt.Color(255, 255, 255)); // Chữ màu trắng
         titlePanel.add(lblTitle);
@@ -321,65 +283,94 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
         // Lấy thông tin từ form
         java.util.Date date1 = jDateFrom.getDate();
         java.util.Date date2 = jDateTo.getDate();
-        
+
         if (date1 == null || date2 == null) {
             Notifications.getInstance().show(Notifications.Type.WARNING, "Vui lòng chọn khoảng thời gian!");
             return;
         }
-        
-        LocalDate dateFrom = date1.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-        LocalDate dateTo = date2.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-        
-        if (dateFrom.isAfter(dateTo)) {
+
+        LocalDate localDateStart = date1.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate localDateEnd = date2.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+
+        if (localDateStart.isAfter(localDateEnd)) {
             Notifications.getInstance().show(Notifications.Type.WARNING, "Ngày bắt đầu phải trước ngày kết thúc!");
             return;
         }
-        
-        String maPhieuTra = txtOrder.getText().trim();
-        
-        // Tìm kiếm theo mã phiếu trả
-        List<DonTraHang> result = searchDonTraHang(dateFrom, dateTo, "", maPhieuTra);
-        fillContent(result);
-        
-        if (result.isEmpty()) {
-            Notifications.getInstance().show(Notifications.Type.INFO, "Không tìm thấy phiếu trả hàng nào!");
+        String maHoaDon = txtOrderCode.getText().trim();
+
+        // Tìm kiếm đơn hàng
+        List<DonHang> donHangs = donHangBUS.layDonHangTheoKhoangThoiGian(localDateStart, localDateEnd);
+
+        // Lọc theo mã hóa đơn nếu có
+        if (!maHoaDon.isEmpty()) {
+            donHangs = donHangs.stream()
+                    .filter(dh -> dh.getMaDonHang() != null
+                    && dh.getMaDonHang().toLowerCase().contains(maHoaDon.toLowerCase()))
+                    .toList();
+        }
+
+        fillContent(donHangs);
+
+        if (donHangs.isEmpty()) {
+            Notifications.getInstance().show(Notifications.Type.INFO, "Không tìm thấy đơn hàng nào!");
         } else {
-            Notifications.getInstance().show(Notifications.Type.SUCCESS, "Tìm thấy " + result.size() + " phiếu trả hàng!");
+            Notifications.getInstance().show(Notifications.Type.SUCCESS, "Tìm thấy " + donHangs.size() + " đơn hàng!");
         }
     }//GEN-LAST:event_btnSearchActionPerformed
 
-    private void txtExportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtExportActionPerformed
-        boolean success = vn.edu.iuh.fit.iuhpharmacitymanagement.util.XuatFileExcel.xuatExcelVoiDialogVaTieuDe(
-            tableDesign.getTable(), 
-            "DanhSachTraHang",
-            "Trả Hàng", 
-            "DANH SÁCH THÔNG TIN TRẢ HÀNG"
+    private void txtOrderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtOrderActionPerformed
+        // Xuất file Excel với tiêu đề
+        boolean success = XuatFileExcel.xuatExcelVoiDialogVaTieuDe(
+                tableDesign.getTable(),
+                "DanhSachDonHang",
+                "Đơn Hàng",
+                "DANH SÁCH THÔNG TIN ĐƠN HÀNG"
         );
         if (success) {
             Notifications.getInstance().show(Notifications.Type.SUCCESS, "Xuất file Excel thành công!");
         } else {
             Notifications.getInstance().show(Notifications.Type.ERROR, "Xuất file Excel thất bại!");
         }
-    }//GEN-LAST:event_txtExportActionPerformed
+    }//GEN-LAST:event_txtOrderActionPerformed
 
     private void btnViewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnViewActionPerformed
         JTable table = tableDesign.getTable();
         int selectedRow = table.getSelectedRow();
-        
-        if(selectedRow < 0) {
-            Notifications.getInstance().show(Notifications.Type.WARNING, "Hãy chọn phiếu trả hàng cần xem chi tiết!");
+        if (selectedRow < 0) {
+            Notifications.getInstance().show(Notifications.Type.WARNING, "Hãy chọn hóa đơn cần xem chi tiết!");
         } else {
-            String maDTH = (String) table.getValueAt(selectedRow, 0);
-            
-            // TODO: Hiển thị chi tiết phiếu trả hàng
-            Notifications.getInstance().show(Notifications.Type.INFO, "Xem chi tiết phiếu: " + maDTH);
-            
-            // Có thể mở modal ở đây sau khi implement đầy đủ
-            // modalOrderDetail.setLocationRelativeTo(null);
-            // modalOrderDetail.setVisible(true);
+            String maDonHang = (String) table.getValueAt(selectedRow, 0);
+
+            String[] headers = {"Mã lô hàng", "Tên sản phẩm", "Số lượng", "Đơn giá", "Giảm giá", "Thành tiền"};
+            List<Integer> tableWidths = Arrays.asList(150, 300, 100, 150, 100, 150);
+            TableDesign tableDetail = new TableDesign(headers, tableWidths);
+            scrollTableDetail.setViewportView(tableDetail.getTable());
+            scrollTableDetail.setBorder(BorderFactory.createEmptyBorder(15, 20, 20, 20));
+
+            List<ChiTietDonHang> chiTietDonHangs = chiTietDonHangBUS.layDanhSachChiTietTheoMaDonHang(maDonHang);
+
+            // Xóa dữ liệu cũ trong bảng
+            tableDetail.getModelTable().setRowCount(0);
+
+            // Thêm chi tiết đơn hàng vào bảng
+            for (ChiTietDonHang ct : chiTietDonHangs) {
+                String maLoHang = ct.getLoHang() != null ? ct.getLoHang().getMaLoHang() : "";
+                String tenSanPham = "N/A"; // Cần lấy từ LoHang nếu có relationship
+
+                tableDetail.getModelTable().addRow(new Object[]{
+                    maLoHang,
+                    tenSanPham,
+                    ct.getSoLuong(),
+                    DinhDangSo.dinhDangTien(ct.getDonGia()),
+                    DinhDangSo.dinhDangPhanTramTrucTiep(ct.getGiamGia() * 100),
+                    DinhDangSo.dinhDangTien(ct.getThanhTien())
+                });
+            }
+
+            modalOrderDetail.setLocationRelativeTo(null);
+            modalOrderDetail.setVisible(true);
         }
     }//GEN-LAST:event_btnViewActionPerformed
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnSearch;
@@ -395,8 +386,8 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
     private javax.swing.JPanel pnAll;
     private javax.swing.JScrollPane scrollTable;
     private javax.swing.JScrollPane scrollTableDetail;
-    private javax.swing.JButton txtExport;
-    private javax.swing.JTextField txtOrder;
+    private javax.swing.JTextField txtOrderCode;
+    private javax.swing.JButton txtOrder;
     // End of variables declaration//GEN-END:variables
 
 }

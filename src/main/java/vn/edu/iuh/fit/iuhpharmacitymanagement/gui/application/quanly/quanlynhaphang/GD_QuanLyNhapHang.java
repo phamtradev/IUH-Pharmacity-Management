@@ -121,7 +121,17 @@ public class GD_QuanLyNhapHang extends javax.swing.JPanel {
     }
     
     private void exportToExcel() {
-        Notifications.getInstance().show(Notifications.Type.INFO, "Chức năng xuất Excel đang được phát triển");
+        boolean success = vn.edu.iuh.fit.iuhpharmacitymanagement.util.XuatFileExcel.xuatExcelVoiDialogVaTieuDe(
+            tableDesign.getTable(), 
+            "DanhSachNhapHang",
+            "Nhập Hàng", 
+            "DANH SÁCH THÔNG TIN NHẬP HÀNG"
+        );
+        if (success) {
+            Notifications.getInstance().show(Notifications.Type.SUCCESS, "Xuất file Excel thành công!");
+        } else {
+            Notifications.getInstance().show(Notifications.Type.ERROR, "Xuất file Excel thất bại!");
+        }
     }
     /**
      * This method is called from within the constructor to initialize the form.
@@ -296,8 +306,18 @@ public class GD_QuanLyNhapHang extends javax.swing.JPanel {
         jPanel4.setBackground(new java.awt.Color(255, 255, 255));
         jPanel4.setMinimumSize(new java.awt.Dimension(1226, 174));
         jPanel4.setPreferredSize(new java.awt.Dimension(1226, 174));
-        jPanel4.setLayout(new javax.swing.BoxLayout(jPanel4, javax.swing.BoxLayout.LINE_AXIS));
-        jPanel4.add(scrollTable);
+        jPanel4.setLayout(new java.awt.BorderLayout());
+
+        // Thêm tiêu đề "DANH SÁCH THÔNG TIN ĐƠN NHẬP HÀNG"
+        javax.swing.JPanel titlePanel = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 12));
+        titlePanel.setBackground(new java.awt.Color(23, 162, 184)); // Màu xanh cyan
+        javax.swing.JLabel lblTitle = new javax.swing.JLabel("DANH SÁCH THÔNG TIN ĐƠN NHẬP HÀNG");
+        lblTitle.setFont(new java.awt.Font("Segoe UI", 1, 16));
+        lblTitle.setForeground(new java.awt.Color(255, 255, 255)); // Chữ màu trắng
+        titlePanel.add(lblTitle);
+        jPanel4.add(titlePanel, java.awt.BorderLayout.NORTH);
+
+        jPanel4.add(scrollTable, java.awt.BorderLayout.CENTER);
 
         pnAll.add(jPanel4, java.awt.BorderLayout.CENTER);
 

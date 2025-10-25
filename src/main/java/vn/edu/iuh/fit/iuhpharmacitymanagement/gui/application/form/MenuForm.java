@@ -43,8 +43,8 @@ public class MenuForm extends javax.swing.JFrame {
         // Set window title
         setTitle("IUH Pharmacity Management");
 
-        // Set window size and center it
-        setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
+        // Thiết lập full màn hình
+        setExtendedState(javax.swing.JFrame.MAXIMIZED_BOTH);
         setLocationRelativeTo(null);
     }
 
