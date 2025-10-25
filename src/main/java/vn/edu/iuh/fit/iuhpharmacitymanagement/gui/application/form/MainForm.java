@@ -73,7 +73,7 @@ public class MainForm extends JLayeredPane {
         add(menu);
         add(panelBody);
         initMenuEvent();
-        
+
         // Hiển thị giao diện chào mừng tương ứng với type khi khởi động
         if (type == 1) {
             // Nhân viên - Hiển thị giao diện chào mừng
@@ -148,8 +148,9 @@ public class MainForm extends JLayeredPane {
                     showForm(new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.dashboard.GD_DashBoardQuanLy());
 //                } else if (index == 1) {
 //                    showForm(new TABReport());
-//                } else if (index == 2) {
-//                    showForm(new TABProduct());
+                } else if (index == 2) {
+                    // Quản lý sản phẩm
+                    showForm(new GD_QuanLySanPham());
 //                } else if (index == 3) {
 //                    showForm(new TABUnit());
                 } else if (index == 4) {

@@ -57,6 +57,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         jPanel8 = new javax.swing.JPanel();
         jLabel5 = new javax.swing.JLabel();
         txtEmpName = new javax.swing.JTextField();
+        headerPanel = new javax.swing.JPanel();
 
         setLayout(new java.awt.BorderLayout());
 
@@ -187,6 +188,11 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         );
 
         add(pnLeft, java.awt.BorderLayout.EAST);
+
+        headerPanel.setBackground(new java.awt.Color(255, 255, 255));
+        headerPanel.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(232, 232, 232), 2, true));
+        headerPanel.setLayout(new java.awt.BorderLayout());
+        add(headerPanel, java.awt.BorderLayout.PAGE_START);
     }// </editor-fold>//GEN-END:initComponents
 
     private void fillContent() {
@@ -197,7 +203,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         // Tự động load sản phẩm hết hạn khi mở màn hình
         loadSanPhamHetHan();
     }
-    
+
     private void createTitleHeader() {
         // Tạo panel với FlowLayout giống DANH SÁCH THÔNG TIN THUỐC
         javax.swing.JPanel titlePanel = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 12));
@@ -205,16 +211,16 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         titlePanel.setPreferredSize(new java.awt.Dimension(1200, 50));
         titlePanel.setMinimumSize(new java.awt.Dimension(800, 50));
         titlePanel.setMaximumSize(new java.awt.Dimension(32767, 50));
-        
+
         javax.swing.JLabel lblTitle = new javax.swing.JLabel("DANH SÁCH THÔNG TIN XUẤT HỦY");
         lblTitle.setFont(new java.awt.Font("Segoe UI", 1, 16)); // Bold, size 16
         lblTitle.setForeground(new java.awt.Color(255, 255, 255)); // Chữ màu trắng
-        
+
         titlePanel.add(lblTitle);
-        
+
         pnContent.add(titlePanel);
     }
-    
+
     private void createProductListHeader() {
         javax.swing.JPanel headerProductPanel = new javax.swing.JPanel();
         headerProductPanel.setBackground(new java.awt.Color(240, 248, 255));
@@ -222,7 +228,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         headerProductPanel.setPreferredSize(new java.awt.Dimension(1200, 50));
         headerProductPanel.setMinimumSize(new java.awt.Dimension(800, 50));
         headerProductPanel.setMaximumSize(new java.awt.Dimension(32767, 50));
-        
+
         // Sử dụng GridBagLayout giống Panel_ChiTietSanPhamXuatHuy
         headerProductPanel.setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
@@ -231,51 +237,51 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         gbc.insets = new java.awt.Insets(10, 8, 10, 8);
         gbc.gridy = 0;
         gbc.weighty = 1.0;
-        
+
         // 1. Hình ảnh
         gbc.gridx = 0;
         gbc.weightx = 0.0;
         headerProductPanel.add(createHeaderLabel("Hình", 80, javax.swing.SwingConstants.CENTER), gbc);
-        
+
         // 2. Tên sản phẩm + Thông tin lô
         gbc.gridx = 1;
         gbc.weightx = 0.25;
         headerProductPanel.add(createHeaderLabel("Tên sản phẩm / Lô hàng", 250, javax.swing.SwingConstants.LEFT), gbc);
-        
+
         // 3. Lý do
         gbc.gridx = 2;
         gbc.weightx = 0.08;
         headerProductPanel.add(createHeaderLabel("Lý do", 90, javax.swing.SwingConstants.LEFT), gbc);
-        
+
         // 4. Đơn vị
         gbc.gridx = 3;
         gbc.weightx = 0.0;
         headerProductPanel.add(createHeaderLabel("Đơn vị", 60, javax.swing.SwingConstants.CENTER), gbc);
-        
+
         // 5. Số lượng
         gbc.gridx = 4;
         gbc.weightx = 0.0;
         headerProductPanel.add(createHeaderLabel("SL", 70, javax.swing.SwingConstants.CENTER), gbc);
-        
+
         // 6. Đơn giá
         gbc.gridx = 5;
         gbc.weightx = 0.0;
         headerProductPanel.add(createHeaderLabel("Đơn giá", 85, javax.swing.SwingConstants.RIGHT), gbc);
-        
+
         // 7. Tổng tiền
         gbc.gridx = 6;
         gbc.weightx = 0.0;
         headerProductPanel.add(createHeaderLabel("Tổng tiền", 95, javax.swing.SwingConstants.RIGHT), gbc);
-        
+
         // 8. Thao tác
         gbc.gridx = 7;
         gbc.weightx = 0.0;
         headerProductPanel.add(createHeaderLabel("Thao tác", 60, javax.swing.SwingConstants.CENTER), gbc);
-        
+
         // Thêm header vào pnContent
         pnContent.add(headerProductPanel);
     }
-    
+
     private javax.swing.JLabel createHeaderLabel(String text, int width, int alignment) {
         javax.swing.JLabel label = new javax.swing.JLabel(text);
         label.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 14));
@@ -286,8 +292,6 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         label.setVerticalAlignment(javax.swing.SwingConstants.CENTER);
         return label;
     }
-    
-   
 
     private static CellStyle createStyleForHeader(Sheet sheet) {
         // Tạo font chữ
@@ -306,12 +310,12 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
 
     private void btnTaoPhieuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTaoPhieuActionPerformed
         // TODO: Logic lưu phiếu xuất hủy vào database (làm sau)
-        JOptionPane.showMessageDialog(this, 
-            "Chức năng lưu phiếu xuất hủy sẽ được thực hiện sau!", 
-            "Thông báo", 
-            JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(this,
+                "Chức năng lưu phiếu xuất hủy sẽ được thực hiện sau!",
+                "Thông báo",
+                JOptionPane.INFORMATION_MESSAGE);
     }//GEN-LAST:event_btnTaoPhieuActionPerformed
-    
+
     /**
      * Load tự động các sản phẩm hết hạn khi mở màn hình
      */
@@ -320,7 +324,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         // Tạm thời dùng dữ liệu mẫu
         themSanPhamMau();
     }
-    
+
     /**
      * Thêm sản phẩm mẫu (test)
      */
@@ -334,7 +338,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         panel1.setSoLuongHuy(10);
         panel1.setLyDoXuatHuy("Hết hạn sử dụng");
         pnContent.add(panel1);
-        
+
         // Sản phẩm 2
         Panel_ChiTietSanPhamXuatHuy panel2 = new Panel_ChiTietSanPhamXuatHuy();
         panel2.setTenSanPham("Vitamin C 1000mg");
@@ -344,7 +348,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         panel2.setSoLuongHuy(5);
         panel2.setLyDoXuatHuy("Hết hạn sử dụng");
         pnContent.add(panel2);
-        
+
         // Sản phẩm 3
         Panel_ChiTietSanPhamXuatHuy panel3 = new Panel_ChiTietSanPhamXuatHuy();
         panel3.setTenSanPham("Amoxicillin 500mg");
@@ -354,14 +358,14 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         panel3.setSoLuongHuy(15);
         panel3.setLyDoXuatHuy("Hết hạn sử dụng");
         pnContent.add(panel3);
-        
+
         pnContent.revalidate();
         pnContent.repaint();
-        
+
         // Cập nhật tổng tiền
         updateTongTien();
     }
-    
+
     /**
      * Cập nhật tổng tiền xuất hủy
      */
@@ -375,7 +379,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         }
         txtTongTien.setText(String.format("%,.0f ₫", tongTien));
     }
-    
+
     /**
      * Lấy panel chứa danh sách sản phẩm xuất hủy
      */
@@ -403,6 +407,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnTaoPhieu;
+    private javax.swing.JPanel headerPanel;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JPanel jPanel6;
