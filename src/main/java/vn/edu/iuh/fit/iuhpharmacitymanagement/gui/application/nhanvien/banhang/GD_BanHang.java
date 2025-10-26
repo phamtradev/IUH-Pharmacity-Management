@@ -110,11 +110,11 @@ public class GD_BanHang extends javax.swing.JPanel {
         gbc.weightx = 0.0;
         headerPanel.add(lblHeaderBatch, gbc);
 
-        // 4. Số lượng - 100px (giống pnSpinner)
+        // 4. Số lượng - 150px (giống pnSpinner với nút +/-)
         javax.swing.JLabel lblHeaderQty = new javax.swing.JLabel("Số lượng");
         lblHeaderQty.setFont(new java.awt.Font("Segoe UI", 1, 13));
-        lblHeaderQty.setPreferredSize(new java.awt.Dimension(100, 30));
-        lblHeaderQty.setMinimumSize(new java.awt.Dimension(100, 30));
+        lblHeaderQty.setPreferredSize(new java.awt.Dimension(150, 30));
+        lblHeaderQty.setMinimumSize(new java.awt.Dimension(150, 30));
         lblHeaderQty.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         gbc.gridx = 3;
         gbc.weightx = 0.0;

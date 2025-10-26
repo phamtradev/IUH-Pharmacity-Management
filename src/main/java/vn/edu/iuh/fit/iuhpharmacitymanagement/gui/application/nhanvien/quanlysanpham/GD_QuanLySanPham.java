@@ -7,9 +7,10 @@ package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlysa
 import com.formdev.flatlaf.FlatClientProperties;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 
-import java.awt.Image;
+import java.awt.*;
 import java.io.File;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -19,9 +20,11 @@ import javax.swing.table.DefaultTableModel;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.common.TableDesign;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.constant.LoaiSanPham;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.DonViTinhDAO;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.LoHangDAO;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.SanPhamDAO;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.SanPhamBUS;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonViTinh;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.LoHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham;
 import raven.toast.Notifications;
 
@@ -41,7 +44,9 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
     private SanPhamBUS sanPhamBUS;
     private SanPhamDAO sanPhamDAO;
     private DonViTinhDAO donViTinhDAO;
+    private LoHangDAO loHangDAO;
     private DecimalFormat currencyFormat;
+    private SimpleDateFormat dateFormat;
 
     public GD_QuanLySanPham() {
         this(false); // Mặc định là nhân viên
@@ -53,8 +58,10 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         // Khởi tạo DAO và BUS
         sanPhamDAO = new SanPhamDAO();
         donViTinhDAO = new DonViTinhDAO();
+        loHangDAO = new LoHangDAO();
         sanPhamBUS = new SanPhamBUS(sanPhamDAO);
         currencyFormat = new DecimalFormat("#,###");
+        dateFormat = new SimpleDateFormat("dd/MM/yyyy");
         
         initComponents();
         setUIManager();
@@ -214,8 +221,252 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         }
     }
 
+    private JTextField txtTotalQuantity; // TextField hiển thị tổng tồn kho
+    
     private void updateTabQuantity() {
-
+        if (productEdit == null || productEdit.isEmpty()) {
+            return;
+        }
+        
+        // Lấy danh sách lô hàng của sản phẩm
+        List<LoHang> danhSachLoHang = loHangDAO.findByMaSanPham(productEdit);
+        
+        // Tính tổng tồn kho
+        int tongTonKho = danhSachLoHang.stream()
+            .mapToInt(LoHang::getTonKho)
+            .sum();
+        
+        // Tạo panel chính chứa tất cả
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+        mainPanel.setBackground(Color.WHITE);
+        
+        // Tạo panel hiển thị tổng tồn kho ở đầu
+        JPanel totalPanel = createTotalQuantityPanel(tongTonKho);
+        mainPanel.add(totalPanel);
+        mainPanel.add(Box.createVerticalStrut(20));
+        
+        // Tạo panel chứa danh sách lô hàng
+        if (danhSachLoHang.isEmpty()) {
+            JLabel lblEmpty = new JLabel("Chưa có lô hàng nào cho sản phẩm này");
+            lblEmpty.setFont(new Font("Segoe UI", Font.ITALIC, 14));
+            lblEmpty.setForeground(Color.GRAY);
+            lblEmpty.setAlignmentX(Component.CENTER_ALIGNMENT);
+            mainPanel.add(Box.createVerticalStrut(50));
+            mainPanel.add(lblEmpty);
+        } else {
+            // Thêm header
+            JPanel headerPanel = createBatchHeaderPanel();
+            mainPanel.add(headerPanel);
+            mainPanel.add(Box.createVerticalStrut(10));
+            
+            // Thêm từng lô hàng
+            for (LoHang loHang : danhSachLoHang) {
+                JPanel batchPanel = createBatchPanel(loHang);
+                mainPanel.add(batchPanel);
+                mainPanel.add(Box.createVerticalStrut(5));
+            }
+        }
+        
+        // Set panel vào ScrollPane
+        ScrollPaneTab3.setViewportView(mainPanel);
+        ScrollPaneTab3.revalidate();
+        ScrollPaneTab3.repaint();
+    }
+    
+    private JPanel createTotalQuantityPanel(int tongTonKho) {
+        JPanel panel = new JPanel();
+        panel.setLayout(new FlowLayout(FlowLayout.CENTER, 20, 15));
+        panel.setBackground(new Color(240, 248, 255)); // Alice Blue
+        panel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(70, 130, 180), 2),
+            BorderFactory.createEmptyBorder(15, 20, 15, 20)
+        ));
+        panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 80));
+        
+        // Label "Tổng tồn kho:"
+        JLabel lblTitle = new JLabel("Tổng tồn kho:");
+        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        lblTitle.setForeground(new Color(25, 25, 112)); // Midnight Blue
+        panel.add(lblTitle);
+        
+        // TextField hiển thị tổng - Tạo mới hoặc cập nhật
+        if (txtTotalQuantity == null) {
+            txtTotalQuantity = new JTextField(String.valueOf(tongTonKho));
+            txtTotalQuantity.setFont(new Font("Segoe UI", Font.BOLD, 20));
+            txtTotalQuantity.setForeground(new Color(0, 100, 0)); // Dark Green
+            txtTotalQuantity.setHorizontalAlignment(JTextField.CENTER);
+            txtTotalQuantity.setEditable(false);
+            txtTotalQuantity.setPreferredSize(new Dimension(150, 40));
+            txtTotalQuantity.setBackground(Color.WHITE);
+            txtTotalQuantity.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(70, 130, 180), 1),
+                BorderFactory.createEmptyBorder(5, 10, 5, 10)
+            ));
+        } else {
+            // Cập nhật giá trị nếu đã tồn tại
+            txtTotalQuantity.setText(String.valueOf(tongTonKho));
+        }
+        panel.add(txtTotalQuantity);
+        
+        // Label đơn vị
+        JLabel lblUnit = new JLabel("(sản phẩm)");
+        lblUnit.setFont(new Font("Segoe UI", Font.ITALIC, 14));
+        lblUnit.setForeground(Color.GRAY);
+        panel.add(lblUnit);
+        
+        return panel;
+    }
+    
+    private JPanel createBatchHeaderPanel() {
+        JPanel headerPanel = new JPanel();
+        headerPanel.setLayout(new GridLayout(1, 6, 10, 0));
+        headerPanel.setBackground(new Color(240, 240, 240));
+        headerPanel.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 15));
+        headerPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
+        
+        String[] headers = {"Mã lô", "Tên lô", "Hạn sử dụng", "Tồn kho", "Trạng thái", "Thao tác"};
+        for (String header : headers) {
+            JLabel lblHeader = new JLabel(header);
+            lblHeader.setFont(new Font("Segoe UI", Font.BOLD, 13));
+            lblHeader.setHorizontalAlignment(SwingConstants.CENTER);
+            headerPanel.add(lblHeader);
+        }
+        
+        return headerPanel;
+    }
+    
+    private JPanel createBatchPanel(LoHang loHang) {
+        JPanel batchPanel = new JPanel();
+        batchPanel.setLayout(new GridLayout(1, 6, 10, 0));
+        batchPanel.setBackground(Color.WHITE);
+        batchPanel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(220, 220, 220)),
+            BorderFactory.createEmptyBorder(10, 15, 10, 15)
+        ));
+        batchPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 60));
+        
+        // Mã lô
+        JLabel lblMaLo = new JLabel(loHang.getMaLoHang());
+        lblMaLo.setHorizontalAlignment(SwingConstants.CENTER);
+        batchPanel.add(lblMaLo);
+        
+        // Tên lô
+        JLabel lblTenLo = new JLabel(loHang.getTenLoHang());
+        lblTenLo.setHorizontalAlignment(SwingConstants.CENTER);
+        batchPanel.add(lblTenLo);
+        
+        // Hạn sử dụng
+        String hanSuDung = loHang.getHanSuDung() != null ? 
+            dateFormat.format(java.sql.Date.valueOf(loHang.getHanSuDung())) : "N/A";
+        JLabel lblHanSuDung = new JLabel(hanSuDung);
+        lblHanSuDung.setHorizontalAlignment(SwingConstants.CENTER);
+        batchPanel.add(lblHanSuDung);
+        
+        // Tồn kho
+        JLabel lblTonKho = new JLabel(String.valueOf(loHang.getTonKho()));
+        lblTonKho.setHorizontalAlignment(SwingConstants.CENTER);
+        lblTonKho.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        batchPanel.add(lblTonKho);
+        
+        // Trạng thái
+        JLabel lblTrangThai = new JLabel(loHang.isTrangThai() ? "Hoạt động" : "Ngừng");
+        lblTrangThai.setHorizontalAlignment(SwingConstants.CENTER);
+        lblTrangThai.setForeground(loHang.isTrangThai() ? new Color(34, 139, 34) : Color.RED);
+        batchPanel.add(lblTrangThai);
+        
+        // Panel thao tác (tăng/giảm)
+        JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
+        actionPanel.setBackground(Color.WHITE);
+        
+        JButton btnDecrease = new JButton("-");
+        btnDecrease.setPreferredSize(new Dimension(40, 30));
+        btnDecrease.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        btnDecrease.addActionListener(e -> updateBatchQuantity(loHang, -1, lblTonKho));
+        
+        JButton btnIncrease = new JButton("+");
+        btnIncrease.setPreferredSize(new Dimension(40, 30));
+        btnIncrease.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        btnIncrease.addActionListener(e -> updateBatchQuantity(loHang, 1, lblTonKho));
+        
+        actionPanel.add(btnDecrease);
+        actionPanel.add(btnIncrease);
+        
+        batchPanel.add(actionPanel);
+        
+        return batchPanel;
+    }
+    
+    private void updateBatchQuantity(LoHang loHang, int delta, JLabel lblTonKho) {
+        try {
+            int currentQuantity = loHang.getTonKho();
+            int newQuantity = currentQuantity + delta;
+            
+            // Kiểm tra số lượng không được âm
+            if (newQuantity < 0) {
+                Notifications.getInstance().show(Notifications.Type.WARNING, 
+                    Notifications.Location.TOP_CENTER,
+                    "Số lượng tồn kho không thể nhỏ hơn 0");
+                return;
+            }
+            
+            // Cập nhật vào database
+            loHang.setTonKho(newQuantity);
+            boolean success = loHangDAO.update(loHang);
+            
+            if (success) {
+                // Cập nhật label hiển thị trong panel lô hàng
+                lblTonKho.setText(String.valueOf(newQuantity));
+                
+                // Cập nhật tổng tồn kho trong TextField
+                updateTotalQuantityTextField(loHang.getSanPham().getMaSanPham());
+                
+                // Cập nhật tổng tồn kho trong bảng sản phẩm
+                updateProductTotalQuantityInTable(loHang.getSanPham().getMaSanPham());
+                
+                Notifications.getInstance().show(Notifications.Type.SUCCESS, 
+                    Notifications.Location.TOP_CENTER,
+                    "Cập nhật số lượng thành công: " + loHang.getTenLoHang());
+            } else {
+                Notifications.getInstance().show(Notifications.Type.ERROR, 
+                    Notifications.Location.TOP_CENTER,
+                    "Lỗi khi cập nhật số lượng");
+            }
+        } catch (Exception e) {
+            Notifications.getInstance().show(Notifications.Type.ERROR, 
+                Notifications.Location.TOP_CENTER,
+                "Lỗi: " + e.getMessage());
+        }
+    }
+    
+    private void updateTotalQuantityTextField(String maSanPham) {
+        // Tính tổng tồn kho từ tất cả các lô hàng
+        List<LoHang> danhSachLoHang = loHangDAO.findByMaSanPham(maSanPham);
+        int tongTonKho = danhSachLoHang.stream()
+            .mapToInt(LoHang::getTonKho)
+            .sum();
+        
+        // Cập nhật vào TextField
+        if (txtTotalQuantity != null) {
+            txtTotalQuantity.setText(String.valueOf(tongTonKho));
+        }
+    }
+    
+    private void updateProductTotalQuantityInTable(String maSanPham) {
+        // Tính tổng tồn kho từ tất cả các lô hàng
+        List<LoHang> danhSachLoHang = loHangDAO.findByMaSanPham(maSanPham);
+        int tongTonKho = danhSachLoHang.stream()
+            .mapToInt(LoHang::getTonKho)
+            .sum();
+        
+        // Cập nhật vào bảng
+        DefaultTableModel model = (DefaultTableModel) tableDesign.getTable().getModel();
+        for (int i = 0; i < model.getRowCount(); i++) {
+            if (model.getValueAt(i, 0).toString().equals(maSanPham)) {
+                model.setValueAt(tongTonKho, i, 6); // Cột số 6 là cột tồn kho
+                break;
+            }
+        }
     }
 
     private void addIconFeature() {}
@@ -1079,6 +1330,9 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         
         SanPham sp = spOpt.get();
         productEdit = maSP;
+        
+        // Reset TextField tổng tồn kho để tạo mới
+        txtTotalQuantity = null;
         
         // Hiển thị thông tin lên form
         txtProductName1.setText(sp.getTenSanPham());

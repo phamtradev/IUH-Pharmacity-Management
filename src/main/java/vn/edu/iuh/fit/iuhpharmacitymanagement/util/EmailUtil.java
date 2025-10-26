@@ -163,7 +163,7 @@ public class EmailUtil {
         
         // Header
         html.append("<div class='header'>");
-        html.append("<h1>🎉 PHARMACITY 🎉</h1>");
+        html.append("<h1>🎉 IUH PHARMACITY 🎉</h1>");
         html.append("<p style='margin: 10px 0 0 0; font-size: 16px;'>Chương trình khuyến mãi đặc biệt</p>");
         html.append("</div>");
         

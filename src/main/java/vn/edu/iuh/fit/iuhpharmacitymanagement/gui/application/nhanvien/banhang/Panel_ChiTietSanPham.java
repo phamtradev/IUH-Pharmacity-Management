@@ -278,21 +278,66 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
         gbc.weightx = 0.0;
         add(panelChonLo, gbc);
 
-        // 4. Số lượng (Spinner) - Cột riêng
+        // 4. Số lượng với nút +/- - Cột riêng
         javax.swing.JPanel pnSpinner = new javax.swing.JPanel();
         pnSpinner.setBackground(java.awt.Color.WHITE);
-        pnSpinner.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 22));
-        spinnerSoLuong.setFont(new java.awt.Font("Segoe UI", 0, 14));
-        spinnerSoLuong.setModel(new javax.swing.SpinnerNumberModel(1, 1, 1000, 1));
-        spinnerSoLuong.setPreferredSize(new java.awt.Dimension(60, 35));
-        spinnerSoLuong.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                spinnerSoLuongStateChanged(evt);
+        pnSpinner.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 3, 22));
+        
+        // Nút giảm
+        javax.swing.JButton btnGiam = new javax.swing.JButton("-");
+        btnGiam.setFont(new java.awt.Font("Segoe UI", 1, 16));
+        btnGiam.setPreferredSize(new java.awt.Dimension(35, 35));
+        btnGiam.setFocusPainted(false);
+        btnGiam.setBackground(new java.awt.Color(220, 53, 69));
+        btnGiam.setForeground(java.awt.Color.WHITE);
+        btnGiam.setBorderPainted(false);
+        btnGiam.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnGiam.addActionListener(evt -> {
+            int currentValue = (int) spinnerSoLuong.getValue();
+            if (currentValue > 1) {
+                spinnerSoLuong.setValue(currentValue - 1);
+                spinnerSoLuongStateChanged(null);
             }
         });
-        pnSpinner.add(spinnerSoLuong);
-        pnSpinner.setPreferredSize(new java.awt.Dimension(80, 100));
-        pnSpinner.setMinimumSize(new java.awt.Dimension(80, 100));
+        
+        // Label hiển thị số lượng
+        javax.swing.JLabel lblSoLuong = new javax.swing.JLabel("1");
+        lblSoLuong.setFont(new java.awt.Font("Segoe UI", 1, 16));
+        lblSoLuong.setPreferredSize(new java.awt.Dimension(60, 35));
+        lblSoLuong.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        lblSoLuong.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(200, 200, 200), 1));
+        
+        // Cập nhật spinner để đồng bộ với label (ẩn spinner)
+        spinnerSoLuong.setModel(new javax.swing.SpinnerNumberModel(1, 1, 1000, 1));
+        spinnerSoLuong.setVisible(false); // Ẩn spinner, chỉ dùng để lưu giá trị
+        
+        // Listener để cập nhật label khi spinner thay đổi
+        spinnerSoLuong.addChangeListener(evt -> {
+            lblSoLuong.setText(String.valueOf(spinnerSoLuong.getValue()));
+        });
+        
+        // Nút tăng
+        javax.swing.JButton btnTang = new javax.swing.JButton("+");
+        btnTang.setFont(new java.awt.Font("Segoe UI", 1, 16));
+        btnTang.setPreferredSize(new java.awt.Dimension(35, 35));
+        btnTang.setFocusPainted(false);
+        btnTang.setBackground(new java.awt.Color(40, 167, 69));
+        btnTang.setForeground(java.awt.Color.WHITE);
+        btnTang.setBorderPainted(false);
+        btnTang.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnTang.addActionListener(evt -> {
+            int currentValue = (int) spinnerSoLuong.getValue();
+            if (currentValue < 1000) {
+                spinnerSoLuong.setValue(currentValue + 1);
+                spinnerSoLuongStateChanged(null);
+            }
+        });
+        
+        pnSpinner.add(btnGiam);
+        pnSpinner.add(lblSoLuong);
+        pnSpinner.add(btnTang);
+        pnSpinner.setPreferredSize(new java.awt.Dimension(150, 100));
+        pnSpinner.setMinimumSize(new java.awt.Dimension(150, 100));
         gbc.gridx = 3;
         gbc.weightx = 0.0;
         add(pnSpinner, gbc);
