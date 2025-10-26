@@ -95,7 +95,14 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
             
             // Cập nhật thông tin HSD và Tồn kho trên thẻ lô
             if (loHangDaChon != null) {
+                // Lô đã tồn tại - hiển thị thông tin từ DB
                 updateTheLo(loHangDaChon);
+            } else {
+                // Lô chưa tồn tại - hiển thị HSD từ Excel, tồn = 0
+                if (lblTheLo_HSD != null && lblTheLo_TonKho != null) {
+                    lblTheLo_HSD.setText("HSD: " + dateFormat.format(hanDung));
+                    lblTheLo_TonKho.setText("Tồn: 0");
+                }
             }
         }
         
