@@ -537,7 +537,7 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
             
             // Tìm index của các cột theo header (sản phẩm + nhà cung cấp)
             int colMaSP = -1, colTenSP = -1, colSoLuong = -1, colDonGia = -1, 
-                colHanDung = -1, colSoLo = -1;
+                colHanDung = -1;
             int colMaNCC = -1, colTenNCC = -1, colDiaChi = -1, 
                 colSDT = -1, colEmail = -1, colMaSoThue = -1;
             
@@ -557,8 +557,6 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
                     colDonGia = i;
                 } else if (header.contains("hạn") && (header.contains("dùng") || header.contains("sử dụng"))) {
                     colHanDung = i;
-                } else if (header.contains("số lô") || header.contains("lô hàng")) {
-                    colSoLo = i;
                 }
                 // Các cột nhà cung cấp
                 else if (header.contains("mã") && header.contains("ncc")) {
@@ -640,12 +638,6 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
                         hanDung = cal.getTime();
                     }
                     
-                    String soLo = null;
-                    if (colSoLo != -1) {
-                        soLo = getCellValueAsString(row.getCell(colSoLo));
-                        System.out.println("→ DEBUG dòng " + (i+1) + ": maSP=" + maSP + ", soLo=" + soLo + ", hanDung=" + dateFormat.format(hanDung));
-                    }
-                    
                     // Tìm sản phẩm
                     SanPham sanPham = null;
                     try {
@@ -664,13 +656,8 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
                         continue;
                     }
                     
-                    // Chỉ lưu thông tin số lô - sẽ tạo lô khi bấm "Nhập hàng"
-                    if (soLo != null && !soLo.trim().isEmpty()) {
-                        System.out.println("→ Lưu thông tin số lô: " + soLo.trim() + " (sẽ kiểm tra/tạo khi nhập)");
-                    }
-                    
-                    // Thêm sản phẩm vào panel
-                    themSanPhamVaoPanelNhap(sanPham, soLuong, donGiaNhap, hanDung, soLo);
+                    // Thêm sản phẩm vào panel (người dùng sẽ chọn lô sau)
+                    themSanPhamVaoPanelNhap(sanPham, soLuong, donGiaNhap, hanDung, null);
                     successCount++;
                     
                 } catch (Exception e) {
@@ -979,12 +966,40 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
                 // Xác định lô hàng
                 LoHang loHang = null;
                 
-                // Case 1: Đã chọn lô có sẵn
+                // Case 1: Đã chọn lô có sẵn (từ dialog "Chọn lô có sẵn")
                 if (panel.getLoHangDaChon() != null) {
                     loHang = panel.getLoHangDaChon();
                     System.out.println("→ Sử dụng lô đã chọn: " + loHang.getTenLoHang());
                 }
-                // Case 2: Có tên lô từ Excel
+                // Case 2: Tạo lô mới (từ dialog "Tạo lô mới")
+                else if (panel.getTenLoMoi() != null && !panel.getTenLoMoi().trim().isEmpty()) {
+                    String tenLo = panel.getTenLoMoi();
+                    Date hanDung = panel.getHanDung();
+                    
+                    System.out.println("→ Tạo lô mới từ dialog: " + tenLo);
+                    
+                    LoHang loMoi = new LoHang();
+                    loMoi.setTenLoHang(tenLo);
+                    loMoi.setHanSuDung(hanDung.toInstant()
+                            .atZone(java.time.ZoneId.systemDefault())
+                            .toLocalDate());
+                    loMoi.setTonKho(0);  // Bắt đầu từ 0, sẽ cập nhật khi lưu chi tiết
+                    loMoi.setTrangThai(true);
+                    loMoi.setSanPham(sanPham);
+                    
+                    boolean loSaved = loHangBUS.themLoHang(loMoi);
+                    if (loSaved) {
+                        // Đọc lại từ DB
+                        loHang = loHangBUS.getLoHangBySanPham(sanPham).stream()
+                                .filter(lo -> lo.getTenLoHang().equalsIgnoreCase(tenLo))
+                                .findFirst()
+                                .orElse(null);
+                        System.out.println("✓ Đã tạo lô hàng mới: " + tenLo);
+                    } else {
+                        System.out.println("✗ Lỗi tạo lô hàng: " + tenLo);
+                    }
+                }
+                // Case 3: Có tên lô từ Excel
                 else if (panel.getTenLoHangTuExcel() != null && !panel.getTenLoHangTuExcel().trim().isEmpty()) {
                     String tenLo = panel.getTenLoHangTuExcel();
                     
@@ -1004,7 +1019,7 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
                         loMoi.setHanSuDung(hanDung.toInstant()
                                 .atZone(java.time.ZoneId.systemDefault())
                                 .toLocalDate());
-                        loMoi.setTonKho(soLuong);
+                        loMoi.setTonKho(0);  // Bắt đầu từ 0, sẽ cập nhật khi lưu chi tiết
                         loMoi.setTrangThai(true);
                         loMoi.setSanPham(sanPham);
                         
@@ -1023,31 +1038,14 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
                         System.out.println("→ Sử dụng lô có sẵn: " + tenLo);
                     }
                 }
-                // Case 3: Không có tên lô -> Tạo lô mới với tên tự động
+                // Case 4: Không có lô nào được chọn -> Hiển thị cảnh báo
                 else {
-                    Date hanDung = panel.getHanDung();
-                    String tenLoMoi = "LO" + new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
-                    
-                    System.out.println("→ Tạo lô tự động: " + tenLoMoi);
-                    
-                    LoHang loMoi = new LoHang();
-                    loMoi.setTenLoHang(tenLoMoi);
-                    loMoi.setHanSuDung(hanDung.toInstant()
-                            .atZone(java.time.ZoneId.systemDefault())
-                            .toLocalDate());
-                    loMoi.setTonKho(soLuong);
-                    loMoi.setTrangThai(true);
-                    loMoi.setSanPham(sanPham);
-                    
-                    boolean loSaved = loHangBUS.themLoHang(loMoi);
-                    if (loSaved) {
-                        // Đọc lại từ DB
-                        loHang = loHangBUS.getLoHangBySanPham(sanPham).stream()
-                                .filter(lo -> lo.getTenLoHang().equalsIgnoreCase(tenLoMoi))
-                                .findFirst()
-                                .orElse(null);
-                        System.out.println("✓ Đã tạo lô hàng mới: " + tenLoMoi);
-                    }
+                    System.out.println("✗ Chưa chọn lô cho sản phẩm: " + sanPham.getTenSanPham());
+                    Notifications.getInstance().show(Notifications.Type.WARNING, 
+                        Notifications.Location.TOP_CENTER,
+                        "Vui lòng chọn lô cho sản phẩm: " + sanPham.getTenSanPham());
+                    allDetailsSaved = false;
+                    continue;
                 }
                 
                 if (loHang == null) {

@@ -30,20 +30,26 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
     private SimpleDateFormat dateFormat;
     private javax.swing.JLabel lblHinh;
     private javax.swing.JLabel lblTenSP;
-    private JSpinner spinnerHanDung;
     private javax.swing.JButton btnChonLo;
-    private javax.swing.JPanel pnLo; // Panel chứa spinner HSD + button chọn lô HOẶC thẻ lô
+    private javax.swing.JPanel pnLo; // Panel chứa button chọn lô HOẶC thẻ lô
     
-    // Các label cho thẻ lô (giống giao diện bán hàng)
+    // Các label cho thẻ lô (hiển thị sau khi chọn)
+    private javax.swing.JPanel pnTheLo;
     private javax.swing.JLabel lblTheLo_TenLo;
     private javax.swing.JLabel lblTheLo_HSD;
     private javax.swing.JLabel lblTheLo_TonKho;
+    
     private double cachedTongTien = 0; // Cache giá trị tổng tiền để detect thay đổi
     private LoHangBUS loHangBUS;
     private List<LoHang> danhSachLoHang;
     private LoHang loHangDaChon = null;
-    private ButtonGroup buttonGroup;
     private String tenLoHangTuExcel = null; // Lưu tên lô từ Excel
+    
+    // Thông tin lô mới sẽ tạo
+    private String tenLoMoi = null;
+    private Date hsdLoMoi = null;
+    private int soLuongLoMoi = 1;
+    private double giaNhapLoMoi = 0.0;
 
     public Panel_ChiTietSanPhamNhap() {
         this.currencyFormat = new DecimalFormat("#,###");
@@ -69,7 +75,7 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
     
     /**
      * Constructor khi CÓ thông tin lô từ Excel
-     * Hiển thị label tên lô, ẩn Spinner HSD và Button "Chọn lô"
+     * Tự động chọn lô nếu đã tồn tại, hoặc chuẩn bị tạo lô mới
      */
     public Panel_ChiTietSanPhamNhap(SanPham sanPham, int soLuong, double donGiaNhap, Date hanDung, String tenLoHang) {
         this.sanPham = sanPham;
@@ -84,7 +90,6 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
         // Set các giá trị từ Excel
         spinnerSoLuong.setValue(soLuong);
         txtDonGia.setText(currencyFormat.format(donGiaNhap) + " đ");
-        spinnerHanDung.setValue(hanDung);
         
         // Tìm lô hàng theo tên (nếu đã tồn tại)
         if (tenLoHang != null && !tenLoHang.trim().isEmpty()) {
@@ -93,16 +98,14 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
                     .findFirst()
                     .orElse(null);
             
-            // Cập nhật thông tin HSD và Tồn kho trên thẻ lô
             if (loHangDaChon != null) {
-                // Lô đã tồn tại - hiển thị thông tin từ DB
-                updateTheLo(loHangDaChon);
+                // Lô đã tồn tại - hiển thị thông tin
+                updateLoInfo();
             } else {
-                // Lô chưa tồn tại - hiển thị HSD từ Excel, tồn = 0
-                if (lblTheLo_HSD != null && lblTheLo_TonKho != null) {
-                    lblTheLo_HSD.setText("HSD: " + dateFormat.format(hanDung));
-                    lblTheLo_TonKho.setText("Tồn: 0");
-                }
+                // Lô chưa tồn tại - chuẩn bị tạo mới
+                tenLoMoi = tenLoHang;
+                hsdLoMoi = hanDung;
+                updateLoInfo();
             }
         }
         
@@ -111,21 +114,80 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
     }
     
     /**
-     * Cập nhật thông tin HSD và Tồn kho lên thẻ lô
+     * Cập nhật hiển thị: Nút "Chọn lô" → Thẻ lô đẹp
      */
-    private void updateTheLo(LoHang loHang) {
-        if (loHang != null && lblTheLo_HSD != null && lblTheLo_TonKho != null) {
-            // Cập nhật HSD
-            lblTheLo_HSD.setText("HSD: " + loHang.getHanSuDung().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+    private void updateLoInfo() {
+        // Clear panel lô
+        pnLo.removeAll();
+        
+        if (loHangDaChon != null || (tenLoMoi != null && hsdLoMoi != null)) {
+            // Đã chọn lô → Hiển thị THẺ LÔ đẹp
+            pnTheLo = new javax.swing.JPanel();
+            pnTheLo.setBackground(java.awt.Color.WHITE);
+            pnTheLo.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204)));
+            // Chiều cao cố định cho tất cả lô (3 dòng: Tên + HSD + Tồn)
+            pnTheLo.setPreferredSize(new java.awt.Dimension(160, 95));
+            pnTheLo.setLayout(new javax.swing.BoxLayout(pnTheLo, javax.swing.BoxLayout.Y_AXIS));
             
-            // Cập nhật tồn kho
-            lblTheLo_TonKho.setText("Tồn: " + loHang.getTonKho());
+            String tenLo, hsd;
+            int tonKho = 0;
             
-            // Đổi màu nếu hết hạn hoặc sắp hết hạn
-            if (!loHang.isTrangThai()) {
-                lblTheLo_HSD.setForeground(new java.awt.Color(220, 53, 69)); // Đỏ nếu hết hạn
+            if (loHangDaChon != null) {
+                // Lô cũ: hiển thị tồn kho của lô đó
+                tenLo = loHangDaChon.getTenLoHang();
+                hsd = loHangDaChon.getHanSuDung().format(
+                    java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+                tonKho = loHangDaChon.getTonKho(); // Tồn kho của lô này
+            } else {
+                // Lô mới: hiển thị tồn kho = 0
+                tenLo = tenLoMoi + " (mới)";
+                hsd = dateFormat.format(hsdLoMoi);
+                tonKho = 0; // Lô mới chưa có tồn
             }
+            
+            // Tên lô
+            lblTheLo_TenLo = new javax.swing.JLabel("Lô: " + tenLo);
+            lblTheLo_TenLo.setFont(new java.awt.Font("Segoe UI", 1, 13));
+            lblTheLo_TenLo.setForeground(new java.awt.Color(51, 51, 51));
+            lblTheLo_TenLo.setAlignmentX(Component.LEFT_ALIGNMENT);
+            lblTheLo_TenLo.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 4, 8));
+            
+            // HSD
+            lblTheLo_HSD = new javax.swing.JLabel("HSD: " + hsd);
+            lblTheLo_HSD.setFont(new java.awt.Font("Segoe UI", 0, 12));
+            lblTheLo_HSD.setForeground(new java.awt.Color(102, 102, 102));
+            lblTheLo_HSD.setAlignmentX(Component.LEFT_ALIGNMENT);
+            lblTheLo_HSD.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 8, 8, 8)); // Tăng padding bottom
+            
+            pnTheLo.add(lblTheLo_TenLo);
+            pnTheLo.add(lblTheLo_HSD);
+            
+            // Tồn kho (luôn hiển thị)
+            lblTheLo_TonKho = new javax.swing.JLabel("Tồn: " + tonKho);
+            lblTheLo_TonKho.setFont(new java.awt.Font("Segoe UI", 0, 12));
+            lblTheLo_TonKho.setForeground(new java.awt.Color(34, 139, 34));
+            lblTheLo_TonKho.setAlignmentX(Component.LEFT_ALIGNMENT);
+            lblTheLo_TonKho.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 8, 8, 8));
+            pnTheLo.add(lblTheLo_TonKho);
+            
+            pnLo.add(pnTheLo);
+        } else {
+            // Chưa chọn → Hiển thị NÚT "Chọn lô"
+            btnChonLo = new javax.swing.JButton("Chọn lô");
+            btnChonLo.setFont(new java.awt.Font("Segoe UI", 0, 13));
+            btnChonLo.setPreferredSize(new java.awt.Dimension(120, 40));
+            btnChonLo.setFocusPainted(false);
+            btnChonLo.setBackground(new java.awt.Color(0, 120, 215));
+            btnChonLo.setForeground(java.awt.Color.WHITE);
+            btnChonLo.setBorderPainted(false);
+            btnChonLo.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+            btnChonLo.addActionListener(evt -> showDialogChonLo());
+            
+            pnLo.add(btnChonLo);
         }
+        
+        pnLo.revalidate();
+        pnLo.repaint();
     }
     
     private void loadSanPhamData() {
@@ -228,7 +290,13 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
     }
     
     public Date getHanDung() {
-        return (Date) spinnerHanDung.getValue();
+        if (loHangDaChon != null) {
+            // Chuyển LocalDate sang Date
+            return java.sql.Date.valueOf(loHangDaChon.getHanSuDung());
+        } else if (hsdLoMoi != null) {
+            return hsdLoMoi;
+        }
+        return null;
     }
     
     /**
@@ -252,127 +320,297 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
         return tenLoHangTuExcel;
     }
     
+    public String getTenLoMoi() {
+        return tenLoMoi;
+    }
+    
+    public int getSoLuongLoMoi() {
+        return soLuongLoMoi;
+    }
+    
+    public double getGiaNhapLoMoi() {
+        return giaNhapLoMoi;
+    }
+    
     /**
-     * Hiển thị dialog chọn lô hàng
+     * Hiển thị dialog chọn lô hàng với 2 tab: Lô cũ & Tạo lô mới
      */
     private void showDialogChonLo() {
-        if (danhSachLoHang == null || danhSachLoHang.isEmpty()) {
-            javax.swing.JOptionPane.showMessageDialog(this,
-                "Sản phẩm chưa có lô hàng nào!",
-                "Thông báo",
-                javax.swing.JOptionPane.INFORMATION_MESSAGE);
-            return;
+        // Tạo dialog
+        javax.swing.JDialog dialog = new javax.swing.JDialog();
+        dialog.setTitle("Chọn lô hàng");
+        dialog.setModal(true);
+        dialog.setSize(700, 500);
+        dialog.setLocationRelativeTo(this);
+        
+        // Tạo tabbed pane
+        javax.swing.JTabbedPane tabbedPane = new javax.swing.JTabbedPane();
+        
+        // === TAB 1: Chọn lô cũ ===
+        javax.swing.JPanel tabChonLoCu = new javax.swing.JPanel(new java.awt.BorderLayout());
+        tabChonLoCu.setBackground(java.awt.Color.WHITE);
+        
+        javax.swing.JPanel pnChuaLoCu = new javax.swing.JPanel();
+        pnChuaLoCu.setLayout(new javax.swing.BoxLayout(pnChuaLoCu, javax.swing.BoxLayout.Y_AXIS));
+        pnChuaLoCu.setBackground(java.awt.Color.WHITE);
+        
+        ButtonGroup bgLoCu = new ButtonGroup();
+        
+        if (danhSachLoHang != null && !danhSachLoHang.isEmpty()) {
+            for (LoHang loHang : danhSachLoHang) {
+                javax.swing.JPanel pnLoItem = new javax.swing.JPanel();
+                pnLoItem.setBackground(java.awt.Color.WHITE);
+                pnLoItem.setLayout(new java.awt.BorderLayout());
+                pnLoItem.setBorder(javax.swing.BorderFactory.createMatteBorder(0, 0, 1, 0, new java.awt.Color(230, 230, 230)));
+                pnLoItem.setMaximumSize(new java.awt.Dimension(32767, 60));
+                pnLoItem.setPreferredSize(new java.awt.Dimension(600, 60));
+                
+                JToggleButton btnLo = new JToggleButton();
+                btnLo.setText(String.format("<html><b>%s</b> - HSD: %s - Tồn: %d</html>", 
+                    loHang.getTenLoHang(),
+                    loHang.getHanSuDung().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")),
+                    loHang.getTonKho()));
+                btnLo.setFont(new java.awt.Font("Segoe UI", 0, 13));
+                btnLo.setFocusPainted(false);
+                btnLo.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+                btnLo.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+                btnLo.putClientProperty("loHang", loHang);
+                
+                bgLoCu.add(btnLo);
+                pnLoItem.add(btnLo, java.awt.BorderLayout.CENTER);
+                pnChuaLoCu.add(pnLoItem);
+            }
+        } else {
+            javax.swing.JLabel lblEmpty = new javax.swing.JLabel("Chưa có lô hàng nào cho sản phẩm này");
+            lblEmpty.setFont(new java.awt.Font("Segoe UI", 2, 14));
+            lblEmpty.setForeground(java.awt.Color.GRAY);
+            lblEmpty.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+            pnChuaLoCu.add(lblEmpty);
         }
         
-        // Clear panel chứa lô
-        pnChuaLo.removeAll();
-        buttonGroup = new ButtonGroup();
+        javax.swing.JScrollPane scrollLoCu = new javax.swing.JScrollPane(pnChuaLoCu);
+        scrollLoCu.setBorder(null);
+        tabChonLoCu.add(scrollLoCu, java.awt.BorderLayout.CENTER);
         
-        // Add các lô hàng vào panel
-        for (LoHang loHang : danhSachLoHang) {
-            javax.swing.JPanel pnLoItem = new javax.swing.JPanel();
-            pnLoItem.setBackground(java.awt.Color.WHITE);
-            pnLoItem.setLayout(new java.awt.BorderLayout());
-            pnLoItem.setBorder(javax.swing.BorderFactory.createMatteBorder(0, 0, 1, 0, new java.awt.Color(230, 230, 230)));
-            pnLoItem.setMaximumSize(new java.awt.Dimension(32767, 60));
-            pnLoItem.setPreferredSize(new java.awt.Dimension(500, 60));
+        // === TAB 2: Tạo lô mới ===
+        javax.swing.JPanel tabTaoLoMoi = new javax.swing.JPanel();
+        tabTaoLoMoi.setBackground(java.awt.Color.WHITE);
+        tabTaoLoMoi.setLayout(new java.awt.GridBagLayout());
+        java.awt.GridBagConstraints gbcTab2 = new java.awt.GridBagConstraints();
+        gbcTab2.insets = new java.awt.Insets(15, 20, 15, 20);
+        gbcTab2.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gbcTab2.anchor = java.awt.GridBagConstraints.WEST;
+        
+        // Tên lô mới
+        javax.swing.JLabel lblTenLo = new javax.swing.JLabel("Tên lô:");
+        lblTenLo.setFont(new java.awt.Font("Segoe UI", 0, 14));
+        gbcTab2.gridx = 0;
+        gbcTab2.gridy = 0;
+        gbcTab2.weightx = 0.0;
+        tabTaoLoMoi.add(lblTenLo, gbcTab2);
+        
+        javax.swing.JTextField txtTenLoMoi = new javax.swing.JTextField(20);
+        txtTenLoMoi.setFont(new java.awt.Font("Segoe UI", 0, 14));
+        txtTenLoMoi.setPreferredSize(new java.awt.Dimension(300, 35));
+        gbcTab2.gridx = 1;
+        gbcTab2.weightx = 1.0;
+        tabTaoLoMoi.add(txtTenLoMoi, gbcTab2);
+        
+        // HSD
+        javax.swing.JLabel lblHSD = new javax.swing.JLabel("Hạn sử dụng:");
+        lblHSD.setFont(new java.awt.Font("Segoe UI", 0, 14));
+        gbcTab2.gridx = 0;
+        gbcTab2.gridy = 1;
+        gbcTab2.weightx = 0.0;
+        tabTaoLoMoi.add(lblHSD, gbcTab2);
+        
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.MONTH, 6);
+        Date initDate = calendar.getTime();
+        calendar.add(Calendar.YEAR, -1);
+        Date earliestDate = calendar.getTime();
+        calendar.add(Calendar.YEAR, 10);
+        Date latestDate = calendar.getTime();
+        
+        JSpinner spinnerHSDMoi = new JSpinner(new SpinnerDateModel(initDate, earliestDate, latestDate, Calendar.DAY_OF_MONTH));
+        JSpinner.DateEditor editor = new JSpinner.DateEditor(spinnerHSDMoi, "dd/MM/yyyy");
+        spinnerHSDMoi.setEditor(editor);
+        spinnerHSDMoi.setFont(new java.awt.Font("Segoe UI", 0, 14));
+        spinnerHSDMoi.setPreferredSize(new java.awt.Dimension(300, 35));
+        gbcTab2.gridx = 1;
+        gbcTab2.weightx = 1.0;
+        tabTaoLoMoi.add(spinnerHSDMoi, gbcTab2);
+        
+        // Số lượng
+        javax.swing.JLabel lblSoLuongMoi = new javax.swing.JLabel("Số lượng:");
+        lblSoLuongMoi.setFont(new java.awt.Font("Segoe UI", 0, 14));
+        gbcTab2.gridx = 0;
+        gbcTab2.gridy = 2;
+        gbcTab2.weightx = 0.0;
+        gbcTab2.weighty = 0.0;
+        tabTaoLoMoi.add(lblSoLuongMoi, gbcTab2);
+        
+        javax.swing.JSpinner spinnerSoLuongMoi = new javax.swing.JSpinner(new javax.swing.SpinnerNumberModel(1, 1, 999999, 1));
+        spinnerSoLuongMoi.setFont(new java.awt.Font("Segoe UI", 0, 14));
+        spinnerSoLuongMoi.setPreferredSize(new java.awt.Dimension(300, 35));
+        gbcTab2.gridx = 1;
+        gbcTab2.weightx = 1.0;
+        tabTaoLoMoi.add(spinnerSoLuongMoi, gbcTab2);
+        
+        // Giá nhập
+        javax.swing.JLabel lblGiaNhapMoi = new javax.swing.JLabel("Giá nhập:");
+        lblGiaNhapMoi.setFont(new java.awt.Font("Segoe UI", 0, 14));
+        gbcTab2.gridx = 0;
+        gbcTab2.gridy = 3;
+        gbcTab2.weightx = 0.0;
+        tabTaoLoMoi.add(lblGiaNhapMoi, gbcTab2);
+        
+        javax.swing.JTextField txtGiaNhapMoi = new javax.swing.JTextField(20);
+        txtGiaNhapMoi.setFont(new java.awt.Font("Segoe UI", 0, 14));
+        txtGiaNhapMoi.setPreferredSize(new java.awt.Dimension(300, 35));
+        gbcTab2.gridx = 1;
+        gbcTab2.weightx = 1.0;
+        tabTaoLoMoi.add(txtGiaNhapMoi, gbcTab2);
+        
+        // Spacer
+        gbcTab2.gridx = 0;
+        gbcTab2.gridy = 4;
+        gbcTab2.weighty = 1.0;
+        tabTaoLoMoi.add(new javax.swing.JLabel(), gbcTab2);
+        
+        // Thêm tab vào tabbed pane
+        tabbedPane.addTab("Chọn lô có sẵn", tabChonLoCu);
+        tabbedPane.addTab("Tạo lô mới", tabTaoLoMoi);
+        
+        // === Nút Xác nhận ===
+        javax.swing.JPanel pnBottom = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT));
+        pnBottom.setBackground(java.awt.Color.WHITE);
+        
+        javax.swing.JButton btnXacNhan = new javax.swing.JButton("Xác nhận");
+        btnXacNhan.setFont(new java.awt.Font("Segoe UI", 0, 14));
+        btnXacNhan.setPreferredSize(new java.awt.Dimension(120, 40));
+        btnXacNhan.setBackground(new java.awt.Color(40, 167, 69));
+        btnXacNhan.setForeground(java.awt.Color.WHITE);
+        btnXacNhan.setFocusPainted(false);
+        btnXacNhan.setBorderPainted(false);
+        btnXacNhan.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        
+        btnXacNhan.addActionListener(evt -> {
+            int selectedTab = tabbedPane.getSelectedIndex();
             
-            // Toggle button cho lô
-            JToggleButton btnLo = new JToggleButton();
-            btnLo.setText(String.format("<html>%s - HSD: %s - Tồn: %d</html>", 
-                loHang.getMaLoHang(),
-                dateFormat.format(loHang.getHanSuDung()),
-                loHang.getTonKho()));
-            btnLo.setFont(new java.awt.Font("Segoe UI", 0, 13));
-            btnLo.setFocusPainted(false);
-            btnLo.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-            btnLo.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-            btnLo.putClientProperty("loHang", loHang);
-            
-            buttonGroup.add(btnLo);
-            pnLoItem.add(btnLo, java.awt.BorderLayout.CENTER);
-            pnChuaLo.add(pnLoItem);
-        }
+            if (selectedTab == 0) {
+                // Tab "Chọn lô cũ"
+                if (bgLoCu.getSelection() != null) {
+                    Component[] components = pnChuaLoCu.getComponents();
+                    for (Component comp : components) {
+                        if (comp instanceof javax.swing.JPanel) {
+                            javax.swing.JPanel panel = (javax.swing.JPanel) comp;
+                            Component[] children = panel.getComponents();
+                            for (Component child : children) {
+                                if (child instanceof JToggleButton) {
+                                    JToggleButton btn = (JToggleButton) child;
+                                    if (btn.isSelected()) {
+                                        loHangDaChon = (LoHang) btn.getClientProperty("loHang");
+                                        tenLoMoi = null;
+                                        hsdLoMoi = null;
+                                        updateLoInfo();
+                                        dialog.dispose();
+                                        return;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    javax.swing.JOptionPane.showMessageDialog(dialog,
+                        "Vui lòng chọn một lô hàng!",
+                        "Thông báo",
+                        javax.swing.JOptionPane.WARNING_MESSAGE);
+                }
+            } else {
+                // Tab "Tạo lô mới"
+                String tenLo = txtTenLoMoi.getText().trim();
+                if (tenLo.isEmpty()) {
+                    javax.swing.JOptionPane.showMessageDialog(dialog,
+                        "Vui lòng nhập tên lô!",
+                        "Thông báo",
+                        javax.swing.JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+                
+                // Lấy số lượng
+                int soLuong = (Integer) spinnerSoLuongMoi.getValue();
+                if (soLuong <= 0) {
+                    javax.swing.JOptionPane.showMessageDialog(dialog,
+                        "Số lượng phải lớn hơn 0!",
+                        "Thông báo",
+                        javax.swing.JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+                
+                // Lấy giá nhập
+                String giaNhapStr = txtGiaNhapMoi.getText().trim();
+                if (giaNhapStr.isEmpty()) {
+                    javax.swing.JOptionPane.showMessageDialog(dialog,
+                        "Vui lòng nhập giá nhập!",
+                        "Thiếu thông tin",
+                        javax.swing.JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+                
+                double giaNhap = 0.0;
+                try {
+                    // Loại bỏ dấu phẩy nếu có
+                    giaNhapStr = giaNhapStr.replaceAll(",", "");
+                    giaNhap = Double.parseDouble(giaNhapStr);
+                    if (giaNhap <= 0) {
+                        javax.swing.JOptionPane.showMessageDialog(dialog,
+                            "Giá nhập phải lớn hơn 0!",
+                            "Dữ liệu không hợp lệ",
+                            javax.swing.JOptionPane.WARNING_MESSAGE);
+                        return;
+                    }
+                } catch (NumberFormatException e) {
+                    javax.swing.JOptionPane.showMessageDialog(dialog,
+                        "Giá nhập không hợp lệ!",
+                        "Dữ liệu không hợp lệ",
+                        javax.swing.JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                
+                // Lưu thông tin lô mới
+                tenLoMoi = tenLo;
+                hsdLoMoi = (Date) spinnerHSDMoi.getValue();
+                soLuongLoMoi = soLuong;
+                giaNhapLoMoi = giaNhap;
+                loHangDaChon = null; // Clear lô cũ nếu có
+                
+                // Cập nhật số lượng và giá nhập lên panel chính
+                spinnerSoLuong.setValue(soLuong);
+                txtDonGia.setText(currencyFormat.format(giaNhap) + " đ");
+                updateTongTien(); // Cập nhật tổng tiền
+                
+                updateLoInfo();
+                dialog.dispose();
+            }
+        });
         
-        pnChuaLo.revalidate();
-        pnChuaLo.repaint();
+        pnBottom.add(btnXacNhan);
         
-        // Hiển thị dialog
-        dialogChonLo.pack();
-        dialogChonLo.setLocationRelativeTo(this);
-        dialogChonLo.setVisible(true);
+        // Layout dialog
+        dialog.setLayout(new java.awt.BorderLayout());
+        dialog.add(tabbedPane, java.awt.BorderLayout.CENTER);
+        dialog.add(pnBottom, java.awt.BorderLayout.SOUTH);
+        
+        dialog.setVisible(true);
     }
 
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        dialogChonLo = new javax.swing.JDialog();
-        jPanel1 = new javax.swing.JPanel();
-        btnXacNhan = new javax.swing.JButton();
-        scrollPane = new javax.swing.JScrollPane();
-        pnChuaLo = new javax.swing.JPanel();
         spinnerSoLuong = new javax.swing.JSpinner();
         txtDonGia = new javax.swing.JLabel();
         txtTongTien = new javax.swing.JLabel();
-
-        dialogChonLo.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        dialogChonLo.setTitle("Chọn lô");
-        dialogChonLo.setType(java.awt.Window.Type.POPUP);
-
-        jPanel1.setBackground(new java.awt.Color(255, 255, 255));
-        jPanel1.setMinimumSize(new java.awt.Dimension(651, 285));
-
-        btnXacNhan.setText("Xác nhận");
-        btnXacNhan.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnXacNhanActionPerformed(evt);
-            }
-        });
-
-        scrollPane.setBorder(null);
-
-        pnChuaLo.setBackground(new java.awt.Color(255, 255, 255));
-        pnChuaLo.setLayout(new javax.swing.BoxLayout(pnChuaLo, javax.swing.BoxLayout.Y_AXIS));
-        scrollPane.setViewportView(pnChuaLo);
-
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(501, 501, 501)
-                        .addComponent(btnXacNhan, javax.swing.GroupLayout.PREFERRED_SIZE, 94, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(41, 41, 41)
-                        .addComponent(scrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 554, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(56, Short.MAX_VALUE))
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(37, 37, 37)
-                .addComponent(scrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 174, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 40, Short.MAX_VALUE)
-                .addComponent(btnXacNhan, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(16, 16, 16))
-        );
-
-        javax.swing.GroupLayout dialogChonLoLayout = new javax.swing.GroupLayout(dialogChonLo.getContentPane());
-        dialogChonLo.getContentPane().setLayout(dialogChonLoLayout);
-        dialogChonLoLayout.setHorizontalGroup(
-            dialogChonLoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(dialogChonLoLayout.createSequentialGroup()
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
-        );
-        dialogChonLoLayout.setVerticalGroup(
-            dialogChonLoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(dialogChonLoLayout.createSequentialGroup()
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
-        );
 
         setBackground(new java.awt.Color(255, 255, 255));
         setBorder(javax.swing.BorderFactory.createMatteBorder(0, 0, 1, 0, new java.awt.Color(232, 232, 232)));
@@ -416,104 +654,25 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
         gbc.weightx = 1.0;
         add(lblTenSP, gbc);
 
-        // 3. Cột "Lô hàng" - Hiển thị tùy theo nguồn dữ liệu
+        // 3. Cột "Lô hàng" - Ban đầu hiển thị nút "Chọn lô"
         pnLo = new javax.swing.JPanel();
         pnLo.setBackground(java.awt.Color.WHITE);
-        pnLo.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 5, 10));
+        pnLo.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 5, 30));
         pnLo.setPreferredSize(new java.awt.Dimension(180, 100));
         pnLo.setMinimumSize(new java.awt.Dimension(180, 100));
         
-        // Kiểm tra có lô từ Excel không
-        if (tenLoHangTuExcel != null && !tenLoHangTuExcel.trim().isEmpty()) {
-            // CÓ lô từ Excel → hiển thị THẺ LÔ đẹp (giống giao diện bán hàng)
-            javax.swing.JPanel pnTheLo = new javax.swing.JPanel();
-            pnTheLo.setBackground(java.awt.Color.WHITE);
-            pnTheLo.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204)));
-            pnTheLo.setPreferredSize(new java.awt.Dimension(160, 80));
-            pnTheLo.setLayout(new javax.swing.BoxLayout(pnTheLo, javax.swing.BoxLayout.Y_AXIS));
-            
-            // Tên lô
-            lblTheLo_TenLo = new javax.swing.JLabel("Lô: " + tenLoHangTuExcel);
-            lblTheLo_TenLo.setFont(new java.awt.Font("Segoe UI", 1, 13));
-            lblTheLo_TenLo.setForeground(new java.awt.Color(51, 51, 51));
-            lblTheLo_TenLo.setAlignmentX(Component.LEFT_ALIGNMENT);
-            lblTheLo_TenLo.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 4, 8));
-            
-            // HSD (sẽ cập nhật sau khi tìm lô)
-            lblTheLo_HSD = new javax.swing.JLabel("HSD: --/--/----");
-            lblTheLo_HSD.setFont(new java.awt.Font("Segoe UI", 0, 12));
-            lblTheLo_HSD.setForeground(new java.awt.Color(102, 102, 102));
-            lblTheLo_HSD.setAlignmentX(Component.LEFT_ALIGNMENT);
-            lblTheLo_HSD.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 8, 2, 8));
-            
-            // Tồn kho (sẽ cập nhật sau khi tìm lô)
-            lblTheLo_TonKho = new javax.swing.JLabel("Tồn: --");
-            lblTheLo_TonKho.setFont(new java.awt.Font("Segoe UI", 0, 12));
-            lblTheLo_TonKho.setForeground(new java.awt.Color(34, 139, 34));
-            lblTheLo_TonKho.setAlignmentX(Component.LEFT_ALIGNMENT);
-            lblTheLo_TonKho.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 8, 8, 8));
-            
-            pnTheLo.add(lblTheLo_TenLo);
-            pnTheLo.add(lblTheLo_HSD);
-            pnTheLo.add(lblTheLo_TonKho);
-            
-            pnLo.add(pnTheLo);
-            
-            // Khởi tạo spinner và button nhưng ẩn đi (để không bị null)
-            Calendar calendar = Calendar.getInstance();
-            calendar.add(Calendar.MONTH, 6);
-            Date initDate = calendar.getTime();
-            calendar.add(Calendar.YEAR, -1);
-            Date earliestDate = calendar.getTime();
-            calendar.add(Calendar.YEAR, 10);
-            Date latestDate = calendar.getTime();
-            
-            spinnerHanDung = new JSpinner(new SpinnerDateModel(initDate, earliestDate, latestDate, Calendar.DAY_OF_MONTH));
-            JSpinner.DateEditor editor = new JSpinner.DateEditor(spinnerHanDung, "dd/MM/yyyy");
-            spinnerHanDung.setEditor(editor);
-            spinnerHanDung.setVisible(false);
-            
-            btnChonLo = new javax.swing.JButton("Chọn lô");
-            btnChonLo.setVisible(false);
-            
-        } else {
-            // KHÔNG có lô từ Excel → hiển thị Spinner HSD + Button "Chọn lô"
-            javax.swing.JLabel lblHSD = new javax.swing.JLabel("HSD:");
-            lblHSD.setFont(new java.awt.Font("Segoe UI", 0, 13));
-            
-            Calendar calendar = Calendar.getInstance();
-            calendar.add(Calendar.MONTH, 6); // Mặc định 6 tháng sau
-            Date initDate = calendar.getTime();
-            calendar.add(Calendar.YEAR, -1); // Min: 1 năm trước
-            Date earliestDate = calendar.getTime();
-            calendar.add(Calendar.YEAR, 10); // Max: 10 năm sau
-            Date latestDate = calendar.getTime();
-            
-            spinnerHanDung = new JSpinner(new SpinnerDateModel(initDate, earliestDate, latestDate, Calendar.DAY_OF_MONTH));
-            JSpinner.DateEditor editor = new JSpinner.DateEditor(spinnerHanDung, "dd/MM/yyyy");
-            spinnerHanDung.setEditor(editor);
-            spinnerHanDung.setPreferredSize(new java.awt.Dimension(120, 35));
-            spinnerHanDung.setFont(new java.awt.Font("Segoe UI", 0, 13));
-            
-            btnChonLo = new javax.swing.JButton("Chọn lô");
-            btnChonLo.setFont(new java.awt.Font("Segoe UI", 0, 13));
-            btnChonLo.setPreferredSize(new java.awt.Dimension(100, 35));
-            btnChonLo.setFocusPainted(false);
-            btnChonLo.setBackground(new java.awt.Color(0, 120, 215));
-            btnChonLo.setForeground(java.awt.Color.WHITE);
-            btnChonLo.setBorderPainted(false);
-            btnChonLo.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-            btnChonLo.addActionListener(evt -> showDialogChonLo());
-            
-            pnLo.add(lblHSD);
-            pnLo.add(spinnerHanDung);
-            pnLo.add(btnChonLo);
-            
-            // Khởi tạo các label thẻ lô nhưng không dùng
-            lblTheLo_TenLo = new javax.swing.JLabel();
-            lblTheLo_HSD = new javax.swing.JLabel();
-            lblTheLo_TonKho = new javax.swing.JLabel();
-        }
+        // Luôn tạo nút "Chọn lô" ban đầu
+        btnChonLo = new javax.swing.JButton("Chọn lô");
+        btnChonLo.setFont(new java.awt.Font("Segoe UI", 0, 13));
+        btnChonLo.setPreferredSize(new java.awt.Dimension(120, 40));
+        btnChonLo.setFocusPainted(false);
+        btnChonLo.setBackground(new java.awt.Color(0, 120, 215));
+        btnChonLo.setForeground(java.awt.Color.WHITE);
+        btnChonLo.setBorderPainted(false);
+        btnChonLo.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnChonLo.addActionListener(evt -> showDialogChonLo());
+        
+        pnLo.add(btnChonLo);
         
         gbc.gridx = 2;
         gbc.weightx = 0.0;
@@ -662,41 +821,6 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
         updateTongTien();
     }//GEN-LAST:event_spinnerSoLuongStateChanged
 
-    private void btnXacNhanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnXacNhanActionPerformed
-        // Lấy lô đã chọn
-        if (buttonGroup != null && buttonGroup.getSelection() != null) {
-            Component[] components = pnChuaLo.getComponents();
-            for (Component comp : components) {
-                if (comp instanceof javax.swing.JPanel) {
-                    javax.swing.JPanel panel = (javax.swing.JPanel) comp;
-                    Component[] children = panel.getComponents();
-                    for (Component child : children) {
-                        if (child instanceof JToggleButton) {
-                            JToggleButton btn = (JToggleButton) child;
-                            if (btn.isSelected()) {
-                                loHangDaChon = (LoHang) btn.getClientProperty("loHang");
-                                
-                                // Cập nhật hạn dùng từ lô đã chọn
-                                if (loHangDaChon != null) {
-                                    spinnerHanDung.setValue(loHangDaChon.getHanSuDung());
-                                }
-                                
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-            
-            dialogChonLo.dispose();
-        } else {
-            javax.swing.JOptionPane.showMessageDialog(this,
-                "Vui lòng chọn một lô hàng!",
-                "Thông báo",
-                javax.swing.JOptionPane.WARNING_MESSAGE);
-        }
-    }//GEN-LAST:event_btnXacNhanActionPerformed
-
     private void txtDonGiaMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_txtDonGiaMouseClicked
         String input = javax.swing.JOptionPane.showInputDialog(this,
             "Nhập đơn giá nhập:",
@@ -725,11 +849,6 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
     }//GEN-LAST:event_txtDonGiaMouseClicked
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton btnXacNhan;
-    private javax.swing.JDialog dialogChonLo;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel pnChuaLo;
-    private javax.swing.JScrollPane scrollPane;
     private javax.swing.JSpinner spinnerSoLuong;
     private javax.swing.JLabel txtDonGia;
     private javax.swing.JLabel txtTongTien;

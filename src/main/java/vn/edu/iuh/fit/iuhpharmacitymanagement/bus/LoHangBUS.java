@@ -47,27 +47,14 @@ public class LoHangBUS {
 
     //Thêm một lô hàng mới, kiểm tra các quy tắc nghiệp vụ
     public boolean themLoHang(LoHang loHang) throws Exception {
-        //Tên lô hàng phải là duy nhất trong phạm vi một sản phẩm (1 sản phẩm chỉ thuộc 1 lô)
-        List<LoHang> danhSachLoHangCuaSP = loHangDAO.findByMaSanPham(loHang.getSanPham().getMaSanPham());
-        for (LoHang lh : danhSachLoHangCuaSP) {
-            if (lh.getTenLoHang().equalsIgnoreCase(loHang.getTenLoHang())) {
-                throw new Exception("Tên lô hàng '" + loHang.getTenLoHang() + "' đã tồn tại cho sản phẩm này.");
-            }
-        }
+        // Cho phép tạo nhiều lô cùng tên nhưng HSD khác nhau
+        // (Ví dụ: Lô "A" HSD 01/2025 và Lô "A" HSD 06/2025 là 2 lô khác nhau)
         return loHangDAO.insert(loHang);
     }
 
     //Cập nhật thông tin một lô hàng
     public boolean capNhatLoHang(LoHang loHang) throws Exception {
-        //Tên mới không được trùng với một lô hàng khác của cùng sản phẩm
-        List<LoHang> danhSachLoHangCuaSP = loHangDAO.findByMaSanPham(loHang.getSanPham().getMaSanPham());
-        for (LoHang lh : danhSachLoHangCuaSP) {
-            //Nếu tìm thấy một lô hàng có cùng tên, nhưng khác mã -> báo lỗi
-            if (lh.getTenLoHang().equalsIgnoreCase(loHang.getTenLoHang()) && !lh.getMaLoHang().equals(loHang.getMaLoHang())) {
-                throw new Exception("Tên lô hàng '" + loHang.getTenLoHang() + "' đã tồn tại cho sản phẩm này.");
-            }
-        }
-        
+        // Cho phép cập nhật tên lô (có thể trùng với lô khác vì HSD khác nhau)
         return loHangDAO.update(loHang);
     }
 

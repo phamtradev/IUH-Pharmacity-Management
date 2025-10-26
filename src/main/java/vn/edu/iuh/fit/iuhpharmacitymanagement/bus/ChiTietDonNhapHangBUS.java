@@ -1,7 +1,9 @@
 package vn.edu.iuh.fit.iuhpharmacitymanagement.bus;
 
 import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.ChiTietDonNhapHangDAO;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.LoHangDAO;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonNhapHang;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.LoHang;
 
 import java.util.List;
 
@@ -11,21 +13,50 @@ import java.util.List;
  */
 public class ChiTietDonNhapHangBUS {
     private ChiTietDonNhapHangDAO chiTietDonNhapHangDAO;
+    private LoHangDAO loHangDAO;
 
     public ChiTietDonNhapHangBUS() {
         this.chiTietDonNhapHangDAO = new ChiTietDonNhapHangDAO();
+        this.loHangDAO = new LoHangDAO();
     }
 
     /**
-     * Thêm chi tiết đơn nhập hàng mới
+     * Thêm chi tiết đơn nhập hàng mới và cập nhật tồn kho
      * @param chiTietDonNhapHang Chi tiết đơn nhập hàng cần thêm
      * @return true nếu thêm thành công, false nếu thất bại
      */
     public boolean themChiTietDonNhapHang(ChiTietDonNhapHang chiTietDonNhapHang) {
         try {
-            return chiTietDonNhapHangDAO.insert(chiTietDonNhapHang);
+            // 1. Lưu chi tiết đơn nhập hàng vào CSDL
+            boolean insertSuccess = chiTietDonNhapHangDAO.insert(chiTietDonNhapHang);
+            
+            if (!insertSuccess) {
+                System.out.println("✗ Lỗi khi lưu chi tiết đơn nhập hàng");
+                return false;
+            }
+            
+            // 2. Cập nhật tồn kho của lô hàng
+            LoHang loHang = chiTietDonNhapHang.getLoHang();
+            int soLuongNhap = chiTietDonNhapHang.getSoLuong();
+            int tonKhoHienTai = loHang.getTonKho();
+            int tonKhoMoi = tonKhoHienTai + soLuongNhap;
+            
+            loHang.setTonKho(tonKhoMoi);
+            boolean updateStockSuccess = loHangDAO.update(loHang);
+            
+            if (updateStockSuccess) {
+                System.out.println("✓ Đã cập nhật tồn kho lô '" + loHang.getTenLoHang() + 
+                                   "' từ " + tonKhoHienTai + " → " + tonKhoMoi);
+                return true;
+            } else {
+                System.out.println("✗ Lỗi khi cập nhật tồn kho lô '" + loHang.getTenLoHang() + "'");
+                // Chi tiết đã lưu nhưng tồn kho chưa update → Cần rollback hoặc thông báo
+                return false;
+            }
+            
         } catch (Exception e) {
-            System.out.println("Lỗi khi thêm chi tiết đơn nhập hàng: " + e.getMessage());
+            System.out.println("✗ Lỗi khi thêm chi tiết đơn nhập hàng: " + e.getMessage());
+            e.printStackTrace();
             return false;
         }
     }
