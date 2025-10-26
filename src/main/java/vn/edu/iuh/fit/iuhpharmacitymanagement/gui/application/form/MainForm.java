@@ -34,6 +34,7 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlynhaph
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlytrahang.GD_QuanLyTraHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlydonhang.GD_QuanLyDonHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlykhuyenmai.GD_QuanLyKhuyenMai;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlythuchi.GD_BaoCaoThuChi;
 
 /**
  *
@@ -150,8 +151,9 @@ public class MainForm extends JLayeredPane {
                 if (index == 0) {
                     // Thống kê (Dashboard quản lý)
                     showForm(new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.dashboard.GD_DashBoardQuanLy());
-//                } else if (index == 1) {
-//                    showForm(new TABReport());
+                } else if (index == 1) {
+                    // Báo cáo thu chi
+                    showForm(new GD_BaoCaoThuChi());
                 } else if (index == 2) {
                     // Quản lý sản phẩm (quản lý có button xóa)
                     showForm(new GD_QuanLySanPham(true));

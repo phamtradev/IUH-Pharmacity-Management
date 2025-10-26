@@ -27,7 +27,7 @@ import raven.toast.Notifications;
 
 /**
  *
- * @author daoducdanh
+ * @author PhamTra
  */
 public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
 
@@ -48,7 +48,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         UIManager.put("Button.arc", 10);
         jDateFrom.setDate(Date.valueOf(LocalDate.now()));
         jDateTo.setDate(Date.valueOf(LocalDate.now()));
-        
+
         // Style cho button Xem chi tiết - màu xanh nước biển, kích thước nhỏ
         btnView.putClientProperty(FlatClientProperties.STYLE, ""
                 + "background:#17A2B8;"
@@ -73,7 +73,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         tableDesign.getModelTable().setRowCount(0);
         for (HangHong hangHong : hangHongs) {
             String tenNV = hangHong.getNhanVien() != null ? hangHong.getNhanVien().getMaNhanVien() : "N/A";
-            
+
             tableDesign.getModelTable().addRow(new Object[]{
                 hangHong.getMaHangHong(),
                 formatDate(hangHong.getNgayNhap()),
@@ -82,39 +82,41 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
             });
         }
     }
-    
+
     private List<HangHong> searchHangHong(LocalDate dateFrom, LocalDate dateTo, String maPhieu) {
         List<HangHong> all = hangHongBUS.layTatCaHangHong();
         List<HangHong> result = new ArrayList<>();
-        
+
         for (HangHong hh : all) {
             LocalDate ngayNhap = hh.getNgayNhap();
-            
+
             // Lọc theo ngày
             if (ngayNhap.isBefore(dateFrom) || ngayNhap.isAfter(dateTo)) {
                 continue;
             }
-            
+
             // Lọc theo mã phiếu xuất hủy
             if (!maPhieu.isEmpty()) {
-                if (hh.getMaHangHong() == null || 
-                    !hh.getMaHangHong().toLowerCase().contains(maPhieu.toLowerCase())) {
+                if (hh.getMaHangHong() == null
+                        || !hh.getMaHangHong().toLowerCase().contains(maPhieu.toLowerCase())) {
                     continue;
                 }
             }
-            
+
             result.add(hh);
         }
-        
+
         return result;
     }
-    
+
     private String formatDate(LocalDate date) {
-        if (date == null) return "N/A";
+        if (date == null) {
+            return "N/A";
+        }
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         return date.format(formatter);
     }
-    
+
     @SuppressWarnings("deprecation")
     private String formatToVND(double amount) {
         NumberFormat formatter = NumberFormat.getCurrencyInstance(new Locale("vi", "VN"));
@@ -328,11 +330,11 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
             Notifications.getInstance().show(Notifications.Type.WARNING, "Ngày bắt đầu phải trước ngày kết thúc!");
             return;
         }
-        
+
         String maPhieu = txtEmp.getText().trim();
         List<HangHong> hangHongs = searchHangHong(localDateStart, localDateEnd, maPhieu);
         fillContent(hangHongs);
-        
+
         if (hangHongs.isEmpty()) {
             Notifications.getInstance().show(Notifications.Type.INFO, "Không tìm thấy phiếu xuất hủy nào!");
         } else {
@@ -342,10 +344,10 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
 
     private void txtOrderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtOrderActionPerformed
         boolean success = vn.edu.iuh.fit.iuhpharmacitymanagement.util.XuatFileExcel.xuatExcelVoiDialogVaTieuDe(
-            tableDesign.getTable(), 
-            "DanhSachXuatHuy",
-            "Xuất Hủy", 
-            "DANH SÁCH THÔNG TIN XUẤT HỦY"
+                tableDesign.getTable(),
+                "DanhSachXuatHuy",
+                "Xuất Hủy",
+                "DANH SÁCH THÔNG TIN XUẤT HỦY"
         );
         if (success) {
             Notifications.getInstance().show(Notifications.Type.SUCCESS, "Xuất file Excel thành công!");
@@ -357,8 +359,8 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
     private void btnViewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnViewActionPerformed
         JTable table = tableDesign.getTable();
         int selectedRow = table.getSelectedRow();
-        
-        if(selectedRow < 0) {
+
+        if (selectedRow < 0) {
             Notifications.getInstance().show(Notifications.Type.WARNING, "Hãy chọn phiếu xuất hủy cần xem chi tiết!");
         } else {
             String maHH = (String) table.getValueAt(selectedRow, 0);
@@ -379,7 +381,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
                 String maLoHang = chiTiet.getLoHang() != null ? chiTiet.getLoHang().getMaLoHang() : "N/A";
                 String tenSanPham = "N/A";
                 String donViTinh = "N/A";
-                
+
                 // Lấy thông tin sản phẩm từ lô hàng nếu có
                 if (chiTiet.getLoHang() != null && chiTiet.getLoHang().getSanPham() != null) {
                     tenSanPham = chiTiet.getLoHang().getSanPham().getTenSanPham();
@@ -387,13 +389,13 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
                         donViTinh = chiTiet.getLoHang().getSanPham().getDonViTinh().getTenDonVi();
                     }
                 }
-                
+
                 int soLuong = chiTiet.getSoLuong();
                 double donGia = chiTiet.getDonGia();
                 double thanhTien = chiTiet.getThanhTien();
 
                 String productKey = maLoHang + "_" + tenSanPham; // Key duy nhất cho mỗi sản phẩm
-                
+
                 if (productMap.containsKey(productKey)) {
                     // Nếu sản phẩm đã tồn tại trong Map, cộng dồn số lượng và thành tiền
                     Object[] existingData = productMap.get(productKey);
@@ -420,7 +422,6 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_btnViewActionPerformed
 
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnSearch;
     private javax.swing.JButton btnView;
@@ -440,4 +441,3 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
 }
-
