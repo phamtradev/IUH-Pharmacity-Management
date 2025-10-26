@@ -173,9 +173,9 @@ public class MainForm extends JLayeredPane {
                 } else if (index == 8) {
                     // Quản lý trả hàng
                     showForm(new GD_QuanLyTraHang());
-//                } else if (index == 9) {
-//                    // Quản lý xuất hủy (chưa implement)
-//                    showForm(new GD_QuanLyXuatHuy());
+                } else if (index == 9) {
+                    // Quản lý xuất hủy
+                    showForm(new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlyxuathuy.GD_QuanLyXuatHuy());
                 } else if (index == 10) {
                     // Quản lý đơn hàng
                     showForm(new GD_QuanLyDonHang());
