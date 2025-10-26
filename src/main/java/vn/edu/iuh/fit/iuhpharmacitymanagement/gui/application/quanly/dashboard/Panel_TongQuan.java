@@ -4,7 +4,25 @@
  */
 package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.dashboard;
 
+import com.formdev.flatlaf.extras.FlatSVGIcon;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.ChiTietDonHangBUS;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.DonHangBUS;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.DonNhapHangBUS;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.DonTraHangBUS;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonHang;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonHang;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonNhapHang;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonTraHang;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.barchart.ModelChart;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.util.DinhDangSo;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.util.ResizeImage;
+
 import java.awt.Color;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.TemporalAdjusters;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -12,27 +30,245 @@ import java.awt.Color;
  */
 public class Panel_TongQuan extends javax.swing.JPanel {
 
+    private final DonHangBUS donHangBUS;
+    private final DonNhapHangBUS donNhapHangBUS;
+    private final DonTraHangBUS donTraHangBUS;
+    private final ChiTietDonHangBUS chiTietDonHangBUS;
+    
+    private String currentChartType = "Doanh thu"; // "Doanh thu" hoặc "Sản phẩm"
+
     public Panel_TongQuan() {
+        donHangBUS = new DonHangBUS();
+        donTraHangBUS = new DonTraHangBUS();
+        donNhapHangBUS = new DonNhapHangBUS();
+        chiTietDonHangBUS = new ChiTietDonHangBUS();
         initComponents();
-        initSimpleUI();
+        initChart();
+        initHeader();
+        chart.start();
     }
     
-    private void initSimpleUI() {
-        // Hiển thị dữ liệu mẫu đơn giản
-        txtQuantityOrder.setText("0 đơn hàng");
-        txtSumPriceOrder.setText("0 đ");
-        txtQuantityReturn.setText("0 đơn trả hàng");
-        txtSumPriceReturn.setText("0 đ");
-        txtQuantityPurchase.setText("0 đơn nhập hàng");
-        txtSumPricePurchase.setText("0 đ");
+    private void initHeader() {
+        try {
+            lblIconReturn.setIcon(ResizeImage.resizeImage(new FlatSVGIcon(getClass().getResource("/img/8.svg")), 55, 55));
+            lblIconOrder.setIcon(ResizeImage.resizeImage(new FlatSVGIcon(getClass().getResource("/img/10.svg")), 55, 55));
+            lblIconCompare.setIcon(ResizeImage.resizeImage(new FlatSVGIcon(getClass().getResource("/img/7.svg")), 55, 55));
+        } catch (Exception e) {
+            System.out.println("Không thể tải icon: " + e.getMessage());
+        }
+        
+        LocalDate today = LocalDate.now();
+        
+        // Lấy dữ liệu đơn hàng
+        List<DonHang> danhSachDonHang = donHangBUS.layTatCaDonHang().stream()
+                .filter(dh -> dh.getNgayDatHang() != null && dh.getNgayDatHang().equals(today))
+                .collect(Collectors.toList());
+        
+        int soLuongDonHang = danhSachDonHang.size();
+        double tongTienDonHang = danhSachDonHang.stream()
+                .mapToDouble(DonHang::getThanhTien)
+                .sum();
+
+        // Lấy dữ liệu đơn trả hàng
+        List<DonTraHang> danhSachTraHang = donTraHangBUS.layTatCaDonTraHang().stream()
+                .filter(dth -> dth.getngayTraHang() != null && dth.getngayTraHang().equals(today))
+                .collect(Collectors.toList());
+        
+        int soLuongTraHang = danhSachTraHang.size();
+        double tongTienTraHang = danhSachTraHang.stream()
+                .mapToDouble(DonTraHang::getThanhTien)
+                .sum();
+
+        // Lấy dữ liệu đơn nhập hàng
+        List<DonNhapHang> danhSachNhapHang = donNhapHangBUS.layTatCaDonNhapHang().stream()
+                .filter(dnh -> dnh.getNgayNhap() != null && dnh.getNgayNhap().equals(today))
+                .collect(Collectors.toList());
+        
+        int soLuongNhapHang = danhSachNhapHang.size();
+        double tongTienNhapHang = danhSachNhapHang.stream()
+                .mapToDouble(DonNhapHang::getThanhTien)
+                .sum();
+
+        txtQuantityOrder.setText(soLuongDonHang + " đơn hàng");
+        txtSumPriceOrder.setText(DinhDangSo.dinhDangTien(tongTienDonHang));
+
+        txtQuantityReturn.setText(soLuongTraHang + " đơn trả hàng");
+        txtSumPriceReturn.setText(DinhDangSo.dinhDangTien(tongTienTraHang));
+
+        txtQuantityPurchase.setText(soLuongNhapHang + " đơn nhập hàng");
+        txtSumPricePurchase.setText(DinhDangSo.dinhDangTien(tongTienNhapHang));
+    }
+
+    private void initChart() {
+        lblChart.setText("THỐNG KÊ DOANH THU 7 NGÀY GẦN NHẤT ( THEO NGÀY )");
+        updateChartLegend();
+        loadDataChart7Days();
+    }
+    
+    private void updateChartLegend() {
+        chart.clearLegends();
+        if (currentChartType.equals("Doanh thu")) {
+            chart.addLegend("Doanh thu", new Color(135, 189, 245));
+        } else {
+            chart.addLegend("Số lượng sản phẩm", new Color(245, 189, 135));
+        }
+    }
+
+    private void loadDataChart7Days() {
+        chart.clear();
+        LocalDate today = LocalDate.now();
+        List<DonHang> allOrders = donHangBUS.layTatCaDonHang();
+        
+        for (int i = 6; i >= 0; i--) {
+            LocalDate date = today.minusDays(i);
+            
+            double sumPrice = allOrders.stream()
+                    .filter(dh -> dh.getNgayDatHang() != null && dh.getNgayDatHang().equals(date))
+                    .mapToDouble(DonHang::getThanhTien)
+                    .sum();
+            
+            chart.addData(new ModelChart(date.getDayOfMonth() + "/" + date.getMonthValue(),
+                    new double[]{sumPrice}));
+        }
+        chart.start();
+    }
+
+    private void loadDataChartToday() {
+        chart.clear();
+        LocalDate today = LocalDate.now();
+        List<DonHang> todayOrders = donHangBUS.layTatCaDonHang().stream()
+                .filter(dh -> dh.getNgayDatHang() != null && dh.getNgayDatHang().equals(today))
+                .collect(Collectors.toList());
+        
+        // Nhóm theo giờ (giả sử dữ liệu chỉ có ngày, hiển thị tổng cho mỗi giờ)
+        for (int hour = 0; hour < 24; hour++) {
+            // Vì không có giờ trong entity, hiển thị 0 hoặc phân bổ đều
+            double avgPrice = todayOrders.isEmpty() ? 0 : 
+                todayOrders.stream().mapToDouble(DonHang::getThanhTien).sum() / 24.0;
+            chart.addData(new ModelChart(hour + "h", new double[]{avgPrice}));
+        }
+        chart.start();
+    }
+
+    private void loadDataChartYesterday() {
+        chart.clear();
+        LocalDate yesterday = LocalDate.now().minusDays(1);
+        List<DonHang> yesterdayOrders = donHangBUS.layTatCaDonHang().stream()
+                .filter(dh -> dh.getNgayDatHang() != null && dh.getNgayDatHang().equals(yesterday))
+                .collect(Collectors.toList());
+        
+        // Nhóm theo giờ (giả sử dữ liệu chỉ có ngày, hiển thị tổng cho mỗi giờ)
+        for (int hour = 0; hour < 24; hour++) {
+            double avgPrice = yesterdayOrders.isEmpty() ? 0 : 
+                yesterdayOrders.stream().mapToDouble(DonHang::getThanhTien).sum() / 24.0;
+            chart.addData(new ModelChart(hour + "h", new double[]{avgPrice}));
+        }
+        chart.start();
+    }
+
+    private void loadDataChartThisMonth() {
+        chart.clear();
+        LocalDate today = LocalDate.now();
+        LocalDate lastDay = today.with(TemporalAdjusters.lastDayOfMonth());
+        List<DonHang> allOrders = donHangBUS.layTatCaDonHang();
+        
+        for (int day = 1; day <= lastDay.getDayOfMonth(); day++) {
+            LocalDate date = LocalDate.of(today.getYear(), today.getMonth(), day);
+            
+            double sumPrice = allOrders.stream()
+                    .filter(dh -> dh.getNgayDatHang() != null && dh.getNgayDatHang().equals(date))
+                    .mapToDouble(DonHang::getThanhTien)
+                    .sum();
+            
+            chart.addData(new ModelChart(day + "", new double[]{sumPrice}));
+        }
+        chart.start();
+    }
+
+    private void loadDataChartLastMonth() {
+        chart.clear();
+        LocalDate today = LocalDate.now();
+        LocalDate firstDayLastMonth = today.minusMonths(1).with(TemporalAdjusters.firstDayOfMonth());
+        LocalDate lastDayLastMonth = today.minusMonths(1).with(TemporalAdjusters.lastDayOfMonth());
+        List<DonHang> allOrders = donHangBUS.layTatCaDonHang();
+        
+        for (int day = 1; day <= lastDayLastMonth.getDayOfMonth(); day++) {
+            LocalDate date = LocalDate.of(firstDayLastMonth.getYear(), firstDayLastMonth.getMonth(), day);
+            
+            double sumPrice = allOrders.stream()
+                    .filter(dh -> dh.getNgayDatHang() != null && dh.getNgayDatHang().equals(date))
+                    .mapToDouble(DonHang::getThanhTien)
+                    .sum();
+            
+            chart.addData(new ModelChart(day + "", new double[]{sumPrice}));
+        }
+        chart.start();
+    }
+    
+    private void changeDateSelect() {
+        LocalDateTime now = LocalDateTime.now();
+        String typeLabel = currentChartType.equals("Doanh thu") ? "DOANH THU" : "SẢN PHẨM BÁN CHẠY";
+        updateChartLegend(); // Cập nhật legend khi thay đổi
+        
+        switch (comboDate.getSelectedIndex()) {
+            case 0 -> {
+                lblChart.setText("THỐNG KÊ " + typeLabel + " 7 NGÀY GẦN NHẤT ( THEO NGÀY )");
+                if (currentChartType.equals("Doanh thu")) {
+                    loadDataChart7Days();
+                } else {
+                    loadProductChart7Days();
+                }
+            }
+            case 1 -> {
+                if (currentChartType.equals("Doanh thu")) {
+                    lblChart.setText("THỐNG KÊ " + typeLabel + " HÔM NAY ( THEO GIỜ )");
+                    loadDataChartToday();
+                } else {
+                    lblChart.setText("THỐNG KÊ " + typeLabel + " HÔM NAY");
+                    loadProductChartToday();
+                }
+            }
+            case 2 -> {
+                if (currentChartType.equals("Doanh thu")) {
+                    lblChart.setText("THỐNG KÊ " + typeLabel + " HÔM QUA ( THEO GIỜ )");
+                    loadDataChartYesterday();
+                } else {
+                    lblChart.setText("THỐNG KÊ " + typeLabel + " HÔM QUA");
+                    loadProductChartYesterday();
+                }
+            }
+            case 3 -> {
+                lblChart.setText("THỐNG KÊ " + typeLabel + " THÁNG " + now.getMonthValue() + " ( THEO NGÀY )");
+                if (currentChartType.equals("Doanh thu")) {
+                    loadDataChartThisMonth();
+                } else {
+                    loadProductChartThisMonth();
+                }
+            }
+            case 4 -> {
+                lblChart.setText("THỐNG KÊ " + typeLabel + " THÁNG " + now.minusMonths(1).getMonthValue() + " ( THEO NGÀY )");
+                if (currentChartType.equals("Doanh thu")) {
+                    loadDataChartLastMonth();
+                } else {
+                    loadProductChartLastMonth();
+                }
+            }
+            default -> {
+                lblChart.setText("THỐNG KÊ " + typeLabel + " 7 NGÀY GẦN NHẤT ( THEO NGÀY )");
+                if (currentChartType.equals("Doanh thu")) {
+                    loadDataChart7Days();
+                } else {
+                    loadProductChart7Days();
+                }
+            }
+        }
     }
 
     /**
      * This method is called from within the constructor to initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is always
+     * WARNING: DO NOT modify this code. The content of this method is always
      * regenerated by the Form Editor.
      */
-    @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
@@ -296,6 +532,24 @@ public class Panel_TongQuan extends javax.swing.JPanel {
         lblChart.setPreferredSize(new java.awt.Dimension(600, 40));
         jPanel15.add(lblChart, java.awt.BorderLayout.WEST);
 
+        // Panel chứa 2 combobox
+        javax.swing.JPanel comboPanel = new javax.swing.JPanel();
+        comboPanel.setBackground(new java.awt.Color(255, 255, 255));
+        comboPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 10, 0));
+
+        comboChartType = new javax.swing.JComboBox<>();
+        comboChartType.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        comboChartType.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Doanh thu", "Sản phẩm" }));
+        comboChartType.setMinimumSize(new java.awt.Dimension(140, 26));
+        comboChartType.setPreferredSize(new java.awt.Dimension(140, 22));
+        comboChartType.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                comboChartTypeItemStateChanged(evt);
+            }
+        });
+        comboPanel.add(comboChartType);
+
+        comboDate = new javax.swing.JComboBox<>();
         comboDate.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         comboDate.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "7 ngày qua", "Hôm nay", "Hôm qua", "Tháng này", "Tháng trước" }));
         comboDate.setMinimumSize(new java.awt.Dimension(140, 26));
@@ -305,19 +559,14 @@ public class Panel_TongQuan extends javax.swing.JPanel {
                 comboDateItemStateChanged(evt);
             }
         });
-        jPanel15.add(comboDate, java.awt.BorderLayout.EAST);
+        comboPanel.add(comboDate);
+
+        jPanel15.add(comboPanel, java.awt.BorderLayout.EAST);
 
         jPanel5.add(jPanel15, java.awt.BorderLayout.PAGE_START);
         
-        // Tạo panel placeholder cho chart
-        javax.swing.JPanel chartPlaceholder = new javax.swing.JPanel();
-        chartPlaceholder.setBackground(new java.awt.Color(255, 255, 255));
-        javax.swing.JLabel placeholderLabel = new javax.swing.JLabel("Biểu đồ thống kê sẽ được hiển thị tại đây");
-        placeholderLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        placeholderLabel.setFont(new java.awt.Font("Segoe UI", 0, 16));
-        chartPlaceholder.setLayout(new java.awt.BorderLayout());
-        chartPlaceholder.add(placeholderLabel, java.awt.BorderLayout.CENTER);
-        jPanel5.add(chartPlaceholder, java.awt.BorderLayout.CENTER);
+        chart = new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.barchart.Chart();
+        jPanel5.add(chart, java.awt.BorderLayout.CENTER);
 
         pnContent.add(jPanel5, java.awt.BorderLayout.CENTER);
 
@@ -327,10 +576,115 @@ public class Panel_TongQuan extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void comboDateItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_comboDateItemStateChanged
-        // TODO: Tính năng thống kê sẽ được triển khai sau
+        changeDateSelect();
     }//GEN-LAST:event_comboDateItemStateChanged
 
+    private void comboChartTypeItemStateChanged(java.awt.event.ItemEvent evt) {
+        if (evt.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
+            currentChartType = (String) comboChartType.getSelectedItem();
+            changeDateSelect(); // Reload chart với loại mới
+        }
+    }
+
+    // ==================== THỐNG KÊ SẢN PHẨM ====================
+    
+    private void loadProductChart7Days() {
+        chart.clear();
+        LocalDate today = LocalDate.now();
+        List<ChiTietDonHang> allDetails = chiTietDonHangBUS.layTatCaChiTietDonHang();
+        
+        for (int i = 6; i >= 0; i--) {
+            LocalDate date = today.minusDays(i);
+            
+            int totalQuantity = allDetails.stream()
+                    .filter(ct -> ct.getDonHang() != null && ct.getDonHang().getNgayDatHang() != null 
+                            && ct.getDonHang().getNgayDatHang().equals(date))
+                    .mapToInt(ChiTietDonHang::getSoLuong)
+                    .sum();
+            
+            String label = date.getDayOfMonth() + "/" + date.getMonthValue();
+            chart.addData(new ModelChart(label, new double[]{totalQuantity}));
+        }
+        chart.start();
+    }
+    
+    private void loadProductChartToday() {
+        chart.clear();
+        LocalDate today = LocalDate.now();
+        List<ChiTietDonHang> allDetails = chiTietDonHangBUS.layTatCaChiTietDonHang();
+        
+        // Lấy tổng số lượng sản phẩm trong ngày hôm nay
+        int totalQuantity = allDetails.stream()
+                .filter(ct -> ct.getDonHang() != null && ct.getDonHang().getNgayDatHang() != null 
+                        && ct.getDonHang().getNgayDatHang().equals(today))
+                .mapToInt(ChiTietDonHang::getSoLuong)
+                .sum();
+        
+        // Hiển thị tổng số lượng trong 1 cột duy nhất
+        chart.addData(new ModelChart("Hôm nay", new double[]{totalQuantity}));
+        chart.start();
+    }
+    
+    private void loadProductChartYesterday() {
+        chart.clear();
+        LocalDate yesterday = LocalDate.now().minusDays(1);
+        List<ChiTietDonHang> allDetails = chiTietDonHangBUS.layTatCaChiTietDonHang();
+        
+        // Lấy tổng số lượng sản phẩm trong ngày hôm qua
+        int totalQuantity = allDetails.stream()
+                .filter(ct -> ct.getDonHang() != null && ct.getDonHang().getNgayDatHang() != null 
+                        && ct.getDonHang().getNgayDatHang().equals(yesterday))
+                .mapToInt(ChiTietDonHang::getSoLuong)
+                .sum();
+        
+        // Hiển thị tổng số lượng trong 1 cột duy nhất
+        chart.addData(new ModelChart("Hôm qua", new double[]{totalQuantity}));
+        chart.start();
+    }
+    
+    private void loadProductChartThisMonth() {
+        chart.clear();
+        LocalDate today = LocalDate.now();
+        LocalDate lastDay = today.with(TemporalAdjusters.lastDayOfMonth());
+        List<ChiTietDonHang> allDetails = chiTietDonHangBUS.layTatCaChiTietDonHang();
+        
+        for (int day = 1; day <= lastDay.getDayOfMonth(); day++) {
+            LocalDate date = LocalDate.of(today.getYear(), today.getMonth(), day);
+            
+            int totalQuantity = allDetails.stream()
+                    .filter(ct -> ct.getDonHang() != null && ct.getDonHang().getNgayDatHang() != null 
+                            && ct.getDonHang().getNgayDatHang().equals(date))
+                    .mapToInt(ChiTietDonHang::getSoLuong)
+                    .sum();
+            
+            chart.addData(new ModelChart(day + "", new double[]{totalQuantity}));
+        }
+        chart.start();
+    }
+    
+    private void loadProductChartLastMonth() {
+        chart.clear();
+        LocalDate lastMonth = LocalDate.now().minusMonths(1);
+        LocalDate lastDay = lastMonth.with(TemporalAdjusters.lastDayOfMonth());
+        List<ChiTietDonHang> allDetails = chiTietDonHangBUS.layTatCaChiTietDonHang();
+        
+        for (int day = 1; day <= lastDay.getDayOfMonth(); day++) {
+            LocalDate date = LocalDate.of(lastMonth.getYear(), lastMonth.getMonth(), day);
+            
+            int totalQuantity = allDetails.stream()
+                    .filter(ct -> ct.getDonHang() != null && ct.getDonHang().getNgayDatHang() != null 
+                            && ct.getDonHang().getNgayDatHang().equals(date))
+                    .mapToInt(ChiTietDonHang::getSoLuong)
+                    .sum();
+            
+            chart.addData(new ModelChart(day + "", new double[]{totalQuantity}));
+        }
+        chart.start();
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.barchart.Chart chart;
+    private javax.swing.JComboBox<String> comboChartType;
     private javax.swing.JComboBox<String> comboDate;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel3;
