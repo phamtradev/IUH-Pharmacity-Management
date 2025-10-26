@@ -6,6 +6,12 @@ package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.banhang;
 
 import com.formdev.flatlaf.FlatClientProperties;
 import java.awt.event.KeyEvent;
+import java.util.Optional;
+import raven.toast.Notifications;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.KhachHangBUS;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.DonHangDAO;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.KhachHangDAO;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhachHang;
 
 /**
  *
@@ -13,11 +19,16 @@ import java.awt.event.KeyEvent;
  */
 public class Panel_DonHang extends javax.swing.JPanel {
 
+    private KhachHangBUS khachHangBUS;
+    private KhachHang khachHangHienTai;
+
     /**
      * Creates new form TabHoaDon
      */
     public Panel_DonHang() {
-
+        // Khởi tạo BUS
+        khachHangBUS = new KhachHangBUS(new KhachHangDAO(), new DonHangDAO());
+        
         initComponents();
         customizeTextFields();
     }
@@ -418,21 +429,66 @@ public class Panel_DonHang extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void txtTimKhachHangActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtTimKhachHangActionPerformed
-//        String txtTim = txtTimKhachHang.getText().trim();
-//        if (txtTim == null) {
-//            MessageDialog.warning(null, "Chưa nhập số điện thoại khách muốn tìm !!!");
-//        } else {
-//            Customer cus = customerBUS.getCustomerByPhone(txtTim);
-//            if (cus == null) {
-//                customer = null;
-//                MessageDialog.warning(null, "Khách hàng không tồn tại !!!");
-//            } else {
-//                customer = cus;
-//                txtTenKhachHang.setText(cus.getName());
-//                txtTimKhachHang.setText("");
-//            }
-//        }
+        timKhachHang();
     }//GEN-LAST:event_txtTimKhachHangActionPerformed
+    
+    /**
+     * Tìm khách hàng theo số điện thoại
+     */
+    private void timKhachHang() {
+        String soDienThoai = txtTimKhachHang.getText().trim();
+        
+        // Kiểm tra input rỗng
+        if (soDienThoai.isEmpty()) {
+            Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER, 
+                "Vui lòng nhập số điện thoại khách hàng");
+            txtTimKhachHang.requestFocus();
+            return;
+        }
+        
+        // Kiểm tra định dạng số điện thoại (10 số, bắt đầu bằng 0)
+        if (!soDienThoai.matches("^0[0-9]{9}$")) {
+            Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER, 
+                "Số điện thoại không hợp lệ. Phải bắt đầu bằng 0 và gồm 10 chữ số");
+            txtTimKhachHang.selectAll();
+            txtTimKhachHang.requestFocus();
+            return;
+        }
+        
+        // Tìm khách hàng theo số điện thoại
+        Optional<KhachHang> khachHangOpt = khachHangBUS.timKhachHangTheoSoDienThoai(soDienThoai);
+        
+        if (khachHangOpt.isPresent()) {
+            khachHangHienTai = khachHangOpt.get();
+            
+            // Hiển thị thông tin khách hàng
+            txtTenKhachHang.setText(khachHangHienTai.getTenKhachHang());
+            
+            // Thông báo thành công
+            Notifications.getInstance().show(Notifications.Type.SUCCESS, Notifications.Location.TOP_CENTER, 
+                "Đã tìm thấy khách hàng: " + khachHangHienTai.getTenKhachHang());
+            
+            // Xóa text field tìm kiếm
+            txtTimKhachHang.setText("");
+        } else {
+            // Reset về khách vãng lai
+            khachHangHienTai = null;
+            txtTenKhachHang.setText("Vãng lai");
+            
+            Notifications.getInstance().show(Notifications.Type.INFO, Notifications.Location.TOP_CENTER, 
+                "Không tìm thấy khách hàng với SĐT: " + soDienThoai + ". Khách hàng vãng lai");
+            
+            txtTimKhachHang.selectAll();
+            txtTimKhachHang.requestFocus();
+        }
+    }
+    
+    /**
+     * Lấy khách hàng hiện tại
+     */
+    public KhachHang getKhachHangHienTai() {
+        return khachHangHienTai;
+    }
 
     private void createOrder() {
 //        List<OrderDTO> orderDTOs = createListOrderDetail();

@@ -42,7 +42,7 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlythuch
  */
 public class MainForm extends JLayeredPane {
 
-    private int type = 2;
+    private int type = 1;
 
     public MainForm() {
         init();

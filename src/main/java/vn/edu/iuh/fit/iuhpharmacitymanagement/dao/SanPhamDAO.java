@@ -63,6 +63,12 @@ public class SanPhamDAO implements DAOInterface<SanPham, String> {
     private final String SQL_LAY_MA_CUOI = 
             "SELECT TOP 1 maSanPham FROM SanPham ORDER BY maSanPham DESC";
     
+    private final String SQL_TIM_THEO_SO_DANG_KY = 
+            "SELECT sp.*, dv.maDonVi, dv.tenDonVi " +
+            "FROM SanPham sp " +
+            "LEFT JOIN DonViTinh dv ON sp.maDonVi = dv.maDonVi " +
+            "WHERE sp.soDangKy = ?";
+    
 
     @Override
     public boolean insert(SanPham sanPham) {
@@ -280,5 +286,24 @@ public class SanPhamDAO implements DAOInterface<SanPham, String> {
      */
     public boolean exists(String maSanPham) {
         return findById(maSanPham).isPresent();
+    }
+    
+    /**
+     * Tìm sản phẩm theo số đăng ký
+     */
+    public Optional<SanPham> findBySoDangKy(String soDangKy) {
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(SQL_TIM_THEO_SO_DANG_KY)) {
+            
+            stmt.setString(1, soDangKy);
+            ResultSet rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                return Optional.of(mapResultSetToSanPham(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return Optional.empty();
     }
 }

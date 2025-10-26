@@ -12,6 +12,8 @@ import java.awt.FlowLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.util.Optional;
 import javax.management.Notification;
 import javax.swing.Box;
 import javax.swing.JButton;
@@ -20,6 +22,9 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.UIManager;
 import raven.toast.Notifications;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.SanPhamBUS;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.SanPhamDAO;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham;
 
 /**
  *
@@ -28,17 +33,20 @@ import raven.toast.Notifications;
 public class GD_BanHang extends javax.swing.JPanel {
 
     static int transactionNumber = 1;
+    private SanPhamBUS sanPhamBUS;
 
     /**
      * Creates new form LapHoaDonForm
      */
     public GD_BanHang() {
+        // Khởi tạo BUS
+        sanPhamBUS = new SanPhamBUS(new SanPhamDAO());
+        
         lookAndFeelSet();
         initComponents();
         customUI();
         addPanelThanhToan();
         addHeaderRow();
-        addSampleProduct();
     }
 
     private void addPanelThanhToan() {
@@ -153,14 +161,6 @@ public class GD_BanHang extends javax.swing.JPanel {
         headerPanel.add(lblHeaderAction, gbc);
 
         containerPanel.add(headerPanel);
-    }
-
-    private void addSampleProduct() {
-        // Thêm một panel chi tiết sản phẩm mẫu vào container
-        Panel_ChiTietSanPham panelChiTiet = new Panel_ChiTietSanPham();
-        containerPanel.add(panelChiTiet);
-        containerPanel.revalidate();
-        containerPanel.repaint();
     }
 
     private void customUI() {
@@ -302,19 +302,72 @@ public class GD_BanHang extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnMaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnMaActionPerformed
-//        // TODO add your handling code here:
-//        String sdk = txtTimSanPham.getText().trim();
-//        searchProduct(sdk);
+        timSanPham();
     }//GEN-LAST:event_btnMaActionPerformed
 
     private void txtTimSanPhamKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtTimSanPhamKeyPressed
-//        // TODO add your handling code here:
-//        if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
-//            String sdk = txtTimSanPham.getText().trim();
-//            searchProduct(sdk);
-//            txtTimSanPham.requestFocus();
-//        }
+        if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
+            timSanPham();
+        }
     }//GEN-LAST:event_txtTimSanPhamKeyPressed
+    
+    /**
+     * Tìm sản phẩm theo số đăng ký
+     */
+    private void timSanPham() {
+        String soDangKy = txtTimSanPham.getText().trim();
+        
+        // Kiểm tra input rỗng
+        if (soDangKy.isEmpty()) {
+            Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER, 
+                "Vui lòng nhập số đăng ký sản phẩm");
+            txtTimSanPham.requestFocus();
+            return;
+        }
+        
+        // Tìm sản phẩm theo số đăng ký
+        Optional<SanPham> sanPhamOpt = sanPhamBUS.timSanPhamTheoSoDangKy(soDangKy);
+        
+        if (sanPhamOpt.isPresent()) {
+            SanPham sanPham = sanPhamOpt.get();
+            
+            // Kiểm tra sản phẩm có đang hoạt động không
+            if (!sanPham.isHoatDong()) {
+                Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER, 
+                    "Sản phẩm '" + sanPham.getTenSanPham() + "' đã ngưng bán");
+                return;
+            }
+            
+            // Thêm sản phẩm vào giỏ hàng
+            themSanPhamVaoGioHang(sanPham);
+            
+            // Thông báo thành công
+            Notifications.getInstance().show(Notifications.Type.SUCCESS, Notifications.Location.TOP_CENTER, 
+                "Đã thêm sản phẩm: " + sanPham.getTenSanPham());
+            
+            // Xóa text field và focus
+            txtTimSanPham.setText("");
+            txtTimSanPham.requestFocus();
+        } else {
+            Notifications.getInstance().show(Notifications.Type.ERROR, Notifications.Location.TOP_CENTER, 
+                "Không tìm thấy sản phẩm với số đăng ký: " + soDangKy);
+            txtTimSanPham.selectAll();
+            txtTimSanPham.requestFocus();
+        }
+    }
+    
+    /**
+     * Thêm sản phẩm vào giỏ hàng (container panel)
+     */
+    private void themSanPhamVaoGioHang(SanPham sanPham) {
+        // TODO: Implement logic thêm Panel_ChiTietSanPham với dữ liệu thực
+        // Hiện tại chỉ thêm panel mẫu
+        Panel_ChiTietSanPham panelChiTiet = new Panel_ChiTietSanPham();
+        // panelChiTiet.setSanPham(sanPham); // Sẽ implement sau
+        containerPanel.add(panelChiTiet);
+        containerPanel.revalidate();
+        containerPanel.repaint();
+    }
 
     private JPanel createTabTitle(JTabbedPane tabbedPane, String title, Component tabComponent) {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));

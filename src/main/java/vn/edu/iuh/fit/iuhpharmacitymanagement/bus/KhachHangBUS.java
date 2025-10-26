@@ -89,5 +89,10 @@ public class KhachHangBUS {
         }
         return khachHangDAO.searchByKeyword(keyword.trim());
     }
+    
+    // Tìm khách hàng theo số điện thoại
+    public Optional<KhachHang> timKhachHangTheoSoDienThoai(String soDienThoai) {
+        return khachHangDAO.findBySoDienThoai(soDienThoai);
+    }
 }
 

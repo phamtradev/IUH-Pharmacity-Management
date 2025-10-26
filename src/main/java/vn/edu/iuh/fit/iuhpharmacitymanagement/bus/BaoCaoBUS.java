@@ -15,6 +15,7 @@ import java.util.Map;
 
 /**
  * Business logic layer for Báo cáo thu chi
+ *
  * @author PhamTra
  */
 public class BaoCaoBUS {
@@ -33,9 +34,11 @@ public class BaoCaoBUS {
 
     /**
      * Lấy báo cáo thu chi theo thời gian và loại
+     *
      * @param start Ngày bắt đầu
      * @param end Ngày kết thúc
-     * @param type Loại báo cáo: "Tất cả", "Bán hàng", "Trả hàng", "Nhập hàng", "Xuất hủy"
+     * @param type L oại báo cáo: "Tất cả", "Bán hàng", "Trả hàng", "Nhập hàng",
+     * "Xuất hủy"
      * @return BaoCaoThuChi chứa danh sách giao dịch và thống kê
      */
     public BaoCaoThuChi layBaoCaoTheoThoiGian(LocalDate start, LocalDate end, String type) {
@@ -43,10 +46,10 @@ public class BaoCaoBUS {
         List<DonTraHang> donTraHangs = new ArrayList<>();
         List<DonNhapHang> donNhapHangs = new ArrayList<>();
         List<HangHong> hangHongs = new ArrayList<>();
-        
+
         Map<String, Map<Integer, Double>> orderType = new LinkedHashMap<>();
         List<Object> objects = new ArrayList<>();
-        
+
         if (type.equals("Tất cả")) {
             donHangs = layDonHangTheoNgay(start, end);
             donTraHangs = layDonTraHangTheoNgay(start, end);
@@ -184,6 +187,7 @@ public class BaoCaoBUS {
      * Inner class để chứa kết quả báo cáo
      */
     public static class BaoCaoThuChi {
+
         private List<Object> reports;
         private Map<String, Map<Integer, Double>> orderType;
         private double profit;

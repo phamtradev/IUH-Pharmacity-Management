@@ -65,4 +65,8 @@ public class SanPhamBUS {
     public String layMaSanPhamCuoi() {
         return sanPhamDAO.getLastMaSanPham();
     }
+    
+    public Optional<SanPham> timSanPhamTheoSoDangKy(String soDangKy) {
+        return sanPhamDAO.findBySoDangKy(soDangKy);
+    }
 }
