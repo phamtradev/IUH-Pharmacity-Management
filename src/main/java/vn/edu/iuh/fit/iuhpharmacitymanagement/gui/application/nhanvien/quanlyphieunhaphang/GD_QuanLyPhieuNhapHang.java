@@ -84,6 +84,7 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
         initComponents();
         lookAndFeelSet();
         setupPanelSanPham();
+        setupSupplierSearchListener();
 
         txtSearchProduct.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập số đăng kí hoặc quét mã vạch");
         txtSearchSupplier.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Số điện thoại nhà cung cấp");
@@ -98,6 +99,94 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
         javax.swing.JPanel headerPanel = createHeaderPanel();
         pnSanPham.add(headerPanel);
         pnSanPham.add(Box.createVerticalStrut(5));
+    }
+    
+    /**
+     * Thiết lập listener cho textfield tìm kiếm nhà cung cấp
+     * Tự động tìm và hiển thị thông tin NCC khi nhập số điện thoại
+     */
+    private void setupSupplierSearchListener() {
+        // Khởi tạo NhaCungCapBUS nếu chưa có
+        if (nhaCungCapBUS == null) {
+            nhaCungCapBUS = new NhaCungCapBUS();
+        }
+        
+        // Thêm DocumentListener để tìm kiếm real-time
+        txtSearchSupplier.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            private javax.swing.Timer searchTimer;
+            
+            @Override
+            public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                scheduleSearch();
+            }
+            
+            @Override
+            public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                scheduleSearch();
+            }
+            
+            @Override
+            public void changedUpdate(javax.swing.event.DocumentEvent e) {
+                scheduleSearch();
+            }
+            
+            // Debounce: chờ người dùng gõ xong 300ms mới search
+            private void scheduleSearch() {
+                if (searchTimer != null) {
+                    searchTimer.stop();
+                }
+                
+                searchTimer = new javax.swing.Timer(300, evt -> {
+                    searchSupplierByPhone();
+                });
+                searchTimer.setRepeats(false);
+                searchTimer.start();
+            }
+        });
+    }
+    
+    /**
+     * Tìm kiếm nhà cung cấp theo số điện thoại
+     * Tự động điền mã và tên nhà cung cấp khi tìm thấy
+     */
+    private void searchSupplierByPhone() {
+        String soDienThoai = txtSearchSupplier.getText().trim();
+        
+        // Nếu rỗng → xóa thông tin hiện tại
+        if (soDienThoai.isEmpty()) {
+            txtSupplierId.setText("");
+            txtSupplierName.setText("");
+            nhaCungCapHienTai = null;
+            return;
+        }
+        
+        // Tìm nhà cung cấp theo số điện thoại
+        try {
+            NhaCungCap ncc = nhaCungCapBUS.layNhaCungCapTheoSoDienThoai(soDienThoai);
+            
+            if (ncc != null) {
+                // Tìm thấy → hiển thị thông tin
+                txtSupplierId.setText(ncc.getMaNhaCungCap() != null ? ncc.getMaNhaCungCap() : "");
+                txtSupplierName.setText(ncc.getTenNhaCungCap() != null ? ncc.getTenNhaCungCap() : "");
+                nhaCungCapHienTai = ncc;
+                
+                // Đổi màu nền sang xanh nhạt để báo hiệu tìm thấy
+                txtSearchSupplier.setBackground(new Color(220, 255, 220)); // Light green
+            } else {
+                // Không tìm thấy → xóa thông tin, đổi màu nền sang vàng nhạt
+                txtSupplierId.setText("");
+                txtSupplierName.setText("");
+                nhaCungCapHienTai = null;
+                txtSearchSupplier.setBackground(new Color(255, 255, 200)); // Light yellow
+            }
+        } catch (Exception e) {
+            // Lỗi khi tìm kiếm
+            txtSupplierId.setText("");
+            txtSupplierName.setText("");
+            nhaCungCapHienTai = null;
+            txtSearchSupplier.setBackground(Color.WHITE);
+            System.err.println("Lỗi khi tìm nhà cung cấp: " + e.getMessage());
+        }
     }
     
     private javax.swing.JPanel createHeaderPanel() {
