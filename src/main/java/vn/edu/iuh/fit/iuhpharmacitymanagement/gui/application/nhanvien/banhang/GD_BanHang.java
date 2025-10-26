@@ -14,7 +14,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.util.Optional;
-import javax.management.Notification;
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -34,6 +33,7 @@ public class GD_BanHang extends javax.swing.JPanel {
 
     static int transactionNumber = 1;
     private SanPhamBUS sanPhamBUS;
+    private Panel_DonHang panelDonHang;
 
     /**
      * Creates new form LapHoaDonForm
@@ -54,9 +54,9 @@ public class GD_BanHang extends javax.swing.JPanel {
         javax.swing.JPanel wrapperPanel = new javax.swing.JPanel(new java.awt.BorderLayout());
         wrapperPanel.setBackground(java.awt.Color.WHITE);
 
-        Panel_DonHang panelThanhToan = new Panel_DonHang();
+        panelDonHang = new Panel_DonHang();
         wrapperPanel.add(pnMi, java.awt.BorderLayout.CENTER);
-        wrapperPanel.add(panelThanhToan, java.awt.BorderLayout.EAST);
+        wrapperPanel.add(panelDonHang, java.awt.BorderLayout.EAST);
 
         // Xóa pnMi khỏi vị trí cũ và thêm wrapper
         remove(pnMi);
@@ -198,7 +198,6 @@ public class GD_BanHang extends javax.swing.JPanel {
         UIManager.put("ToggleButton.selectedForeground", Color.WHITE);
     }
 
-    @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
@@ -360,13 +359,42 @@ public class GD_BanHang extends javax.swing.JPanel {
      * Thêm sản phẩm vào giỏ hàng (container panel)
      */
     private void themSanPhamVaoGioHang(SanPham sanPham) {
-        // TODO: Implement logic thêm Panel_ChiTietSanPham với dữ liệu thực
-        // Hiện tại chỉ thêm panel mẫu
-        Panel_ChiTietSanPham panelChiTiet = new Panel_ChiTietSanPham();
-        // panelChiTiet.setSanPham(sanPham); // Sẽ implement sau
+        // Tạo panel chi tiết sản phẩm với dữ liệu thực
+        Panel_ChiTietSanPham panelChiTiet = new Panel_ChiTietSanPham(sanPham);
+        
+        // Thêm listener để cập nhật tổng tiền khi có thay đổi
+        panelChiTiet.addPropertyChangeListener("tongTien", evt -> capNhatTongTien());
+        
         containerPanel.add(panelChiTiet);
         containerPanel.revalidate();
         containerPanel.repaint();
+        
+        // Cập nhật tổng tiền ngay sau khi thêm
+        capNhatTongTien();
+    }
+    
+    /**
+     * Cập nhật tổng tiền đơn hàng từ tất cả các sản phẩm
+     */
+    public void capNhatTongTien() {
+        double tongTienHang = 0;
+        double tongGiamGiaSanPham = 0;
+        
+        // Duyệt qua tất cả các Panel_ChiTietSanPham
+        for (Component comp : containerPanel.getComponents()) {
+            if (comp instanceof Panel_ChiTietSanPham) {
+                Panel_ChiTietSanPham panel = (Panel_ChiTietSanPham) comp;
+                tongTienHang += panel.getTongTien();
+                // Nếu có giảm giá sản phẩm, tính vào tổng giảm giá
+                // tongGiamGiaSanPham += panel.getGiamGia(); // Sẽ implement sau
+            }
+        }
+        
+        // Cập nhật vào Panel_DonHang
+        if (panelDonHang != null) {
+            panelDonHang.updateTongTienHang(tongTienHang);
+            panelDonHang.updateDiscountProduct(tongGiamGiaSanPham);
+        }
     }
 
     private JPanel createTabTitle(JTabbedPane tabbedPane, String title, Component tabComponent) {

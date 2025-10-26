@@ -142,7 +142,7 @@ public class Panel_ChiTietSanPhamXuatHuy extends javax.swing.JPanel {
         // Tên sản phẩm - dòng đầu tiên
         lblTenSP = new javax.swing.JLabel();
         lblTenSP.setFont(new java.awt.Font("Segoe UI", 1, 14)); // Bold và lớn hơn
-        lblTenSP.setText("Tên sản phẩm");
+        lblTenSP.setText("");
         gbcProduct.gridx = 0;
         gbcProduct.gridy = 0;
         gbcProduct.insets = new java.awt.Insets(5, 0, 2, 0);
@@ -156,7 +156,7 @@ public class Panel_ChiTietSanPhamXuatHuy extends javax.swing.JPanel {
         lblLoHang = new javax.swing.JLabel();
         lblLoHang.setFont(new java.awt.Font("Segoe UI", 0, 11));
         lblLoHang.setForeground(new java.awt.Color(102, 102, 102));
-        lblLoHang.setText("Lô: L001");
+        lblLoHang.setText("");
         pnLoInfo.add(lblLoHang);
         
         javax.swing.JLabel lblSeparator1 = new javax.swing.JLabel(" | ");
@@ -167,7 +167,7 @@ public class Panel_ChiTietSanPhamXuatHuy extends javax.swing.JPanel {
         lblHanSuDung = new javax.swing.JLabel();
         lblHanSuDung.setFont(new java.awt.Font("Segoe UI", 0, 11));
         lblHanSuDung.setForeground(new java.awt.Color(220, 53, 69)); // Màu đỏ cho HSD (hết hạn)
-        lblHanSuDung.setText("HSD: 31/12/2024");
+        lblHanSuDung.setText("");
         pnLoInfo.add(lblHanSuDung);
         
         javax.swing.JLabel lblSeparator2 = new javax.swing.JLabel(" | ");
@@ -178,7 +178,7 @@ public class Panel_ChiTietSanPhamXuatHuy extends javax.swing.JPanel {
         lblTonKho = new javax.swing.JLabel();
         lblTonKho.setFont(new java.awt.Font("Segoe UI", 0, 11));
         lblTonKho.setForeground(new java.awt.Color(102, 102, 102));
-        lblTonKho.setText("Tồn: 100");
+        lblTonKho.setText("");
         pnLoInfo.add(lblTonKho);
         
         gbcProduct.gridy = 1;
@@ -210,7 +210,7 @@ public class Panel_ChiTietSanPhamXuatHuy extends javax.swing.JPanel {
         // 4. Đơn vị
         lblDonVi = new javax.swing.JLabel();
         lblDonVi.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        lblDonVi.setText("Đơn vị");
+        lblDonVi.setText("");
         lblDonVi.setPreferredSize(new java.awt.Dimension(60, 80));
         lblDonVi.setMinimumSize(new java.awt.Dimension(60, 80));
         lblDonVi.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -242,7 +242,7 @@ public class Panel_ChiTietSanPhamXuatHuy extends javax.swing.JPanel {
         // 6. Đơn giá
         txtDonGia = new javax.swing.JLabel();
         txtDonGia.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        txtDonGia.setText("100,000 ₫");
+        txtDonGia.setText("");
         txtDonGia.setPreferredSize(new java.awt.Dimension(85, 100));
         txtDonGia.setMinimumSize(new java.awt.Dimension(85, 100));
         txtDonGia.setMaximumSize(new java.awt.Dimension(85, 100));
@@ -256,7 +256,7 @@ public class Panel_ChiTietSanPhamXuatHuy extends javax.swing.JPanel {
         txtTongTienHuy = new javax.swing.JLabel();
         txtTongTienHuy.setFont(new java.awt.Font("Segoe UI", 1, 16)); // NOI18N
         txtTongTienHuy.setForeground(new java.awt.Color(220, 53, 69)); // Màu đỏ cho xuất hủy
-        txtTongTienHuy.setText("100,000 ₫");
+        txtTongTienHuy.setText("");
         txtTongTienHuy.setPreferredSize(new java.awt.Dimension(95, 100));
         txtTongTienHuy.setMinimumSize(new java.awt.Dimension(95, 100));
         txtTongTienHuy.setMaximumSize(new java.awt.Dimension(95, 100));

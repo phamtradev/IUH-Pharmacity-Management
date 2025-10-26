@@ -211,6 +211,9 @@ public class Panel_DonHang extends javax.swing.JPanel {
             public void keyPressed(java.awt.event.KeyEvent evt) {
                 txtTienKhachDuaKeyPressed(evt);
             }
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                updateTienTraKhach();
+            }
         });
 
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
@@ -531,6 +534,118 @@ public class Panel_DonHang extends javax.swing.JPanel {
     private double tongTienHang;
     private double discountProduct;
     private double discountOrder;
+    
+    /**
+     * Cập nhật tổng tiền hàng
+     */
+    public void updateTongTienHang(double tongTien) {
+        this.tongTienHang = tongTien;
+        txtTongTienHang.setText(String.format("%,.0f đ", tongTien));
+        updateTongHoaDon();
+    }
+    
+    /**
+     * Cập nhật tổng giảm giá sản phẩm
+     */
+    public void updateDiscountProduct(double discount) {
+        this.discountProduct = discount;
+        txtDiscountProduct.setText(String.format("%,.0f đ", discount));
+        updateTongHoaDon();
+    }
+    
+    /**
+     * Cập nhật tổng giảm giá hóa đơn
+     */
+    public void updateDiscountOrder(double discount) {
+        this.discountOrder = discount;
+        txtDiscountOrder.setText(String.format("%,.0f đ", discount));
+        updateTongHoaDon();
+    }
+    
+    /**
+     * Cập nhật tổng hóa đơn (tự động tính)
+     */
+    private void updateTongHoaDon() {
+        double tongHoaDon = tongTienHang - discountProduct - discountOrder;
+        txtTongHoaDon.setText(String.format("%,.0f đ", tongHoaDon));
+        updateTienTraKhach();
+    }
+    
+    /**
+     * Cập nhật tiền trả khách khi khách đưa tiền
+     */
+    private void updateTienTraKhach() {
+        try {
+            String tienKhachDuaStr = txtTienKhachDua.getText().replaceAll("[^0-9]", "");
+            if (!tienKhachDuaStr.isEmpty()) {
+                double tienKhachDua = Double.parseDouble(tienKhachDuaStr);
+                double tongHoaDon = tongTienHang - discountProduct - discountOrder;
+                double tienTraKhach = tienKhachDua - tongHoaDon;
+                
+                if (tienTraKhach >= 0) {
+                    txtTienTraKhach.setText(String.format("%,.0f đ", tienTraKhach));
+                } else {
+                    txtTienTraKhach.setText("0 đ");
+                }
+            } else {
+                txtTienTraKhach.setText("0 đ");
+            }
+        } catch (NumberFormatException e) {
+            txtTienTraKhach.setText("0 đ");
+        }
+    }
+    
+    /**
+     * Lấy tổng tiền hàng
+     */
+    public double getTongTienHang() {
+        return tongTienHang;
+    }
+    
+    /**
+     * Lấy tổng giảm giá sản phẩm
+     */
+    public double getDiscountProduct() {
+        return discountProduct;
+    }
+    
+    /**
+     * Lấy tổng giảm giá hóa đơn
+     */
+    public double getDiscountOrder() {
+        return discountOrder;
+    }
+    
+    /**
+     * Lấy tổng hóa đơn
+     */
+    public double getTongHoaDon() {
+        return tongTienHang - discountProduct - discountOrder;
+    }
+    
+    /**
+     * Lấy tiền khách đưa
+     */
+    public double getTienKhachDua() {
+        try {
+            String tienKhachDuaStr = txtTienKhachDua.getText().replaceAll("[^0-9]", "");
+            return tienKhachDuaStr.isEmpty() ? 0 : Double.parseDouble(tienKhachDuaStr);
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+    
+    /**
+     * Lấy tiền trả khách
+     */
+    public double getTienTraKhach() {
+        try {
+            String tienTraKhachStr = txtTienTraKhach.getText().replaceAll("[^0-9]", "");
+            return tienTraKhachStr.isEmpty() ? 0 : Double.parseDouble(tienTraKhachStr);
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnBanHang;

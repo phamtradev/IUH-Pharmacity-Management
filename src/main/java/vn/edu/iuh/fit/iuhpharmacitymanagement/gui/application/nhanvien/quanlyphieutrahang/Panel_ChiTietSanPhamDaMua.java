@@ -130,7 +130,7 @@ public class Panel_ChiTietSanPhamDaMua extends javax.swing.JPanel {
         lblHinh.setOpaque(true);
         lblHinh.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         lblHinh.setVerticalAlignment(javax.swing.SwingConstants.CENTER);
-        lblHinh.setText("IMG");
+        lblHinh.setText("");
         gbc.gridx = 0;
         gbc.weightx = 0.0;
         add(lblHinh, gbc);
@@ -138,7 +138,7 @@ public class Panel_ChiTietSanPhamDaMua extends javax.swing.JPanel {
         // 2. Tên sản phẩm
         lblTenSP = new javax.swing.JLabel();
         lblTenSP.setFont(new java.awt.Font("Segoe UI", 0, 14));
-        lblTenSP.setText("Tên sản phẩm");
+        lblTenSP.setText("");
         lblTenSP.setPreferredSize(new java.awt.Dimension(180, 80));
         lblTenSP.setMinimumSize(new java.awt.Dimension(180, 80));
         lblTenSP.setVerticalAlignment(javax.swing.SwingConstants.CENTER);
@@ -149,7 +149,7 @@ public class Panel_ChiTietSanPhamDaMua extends javax.swing.JPanel {
         // 3. Đơn vị
         lblDonVi = new javax.swing.JLabel();
         lblDonVi.setFont(new java.awt.Font("Segoe UI", 0, 14));
-        lblDonVi.setText("Hộp");
+        lblDonVi.setText("");
         lblDonVi.setPreferredSize(new java.awt.Dimension(80, 80));
         lblDonVi.setMinimumSize(new java.awt.Dimension(80, 80));
         lblDonVi.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -177,7 +177,7 @@ public class Panel_ChiTietSanPhamDaMua extends javax.swing.JPanel {
         // 5. Đơn giá
         txtDonGia = new javax.swing.JLabel();
         txtDonGia.setFont(new java.awt.Font("Segoe UI", 0, 14));
-        txtDonGia.setText("16,500 ₫");
+        txtDonGia.setText("");
         txtDonGia.setPreferredSize(new java.awt.Dimension(100, 100));
         txtDonGia.setMinimumSize(new java.awt.Dimension(100, 100));
         txtDonGia.setMaximumSize(new java.awt.Dimension(100, 100));
@@ -191,7 +191,7 @@ public class Panel_ChiTietSanPhamDaMua extends javax.swing.JPanel {
         txtTongTien = new javax.swing.JLabel();
         txtTongTien.setFont(new java.awt.Font("Segoe UI", 1, 16));
         txtTongTien.setForeground(new java.awt.Color(0, 120, 215));
-        txtTongTien.setText("49,500 ₫");
+        txtTongTien.setText("");
         txtTongTien.setPreferredSize(new java.awt.Dimension(120, 100));
         txtTongTien.setMinimumSize(new java.awt.Dimension(120, 100));
         txtTongTien.setMaximumSize(new java.awt.Dimension(120, 100));

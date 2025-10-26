@@ -111,7 +111,7 @@ public class Panel_ChiTietSanPhamTraHang extends javax.swing.JPanel {
         lblHinh.setOpaque(true);
         lblHinh.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         lblHinh.setVerticalAlignment(javax.swing.SwingConstants.CENTER);
-        lblHinh.setText("IMG");
+        lblHinh.setText("");
         gbc.gridx = 0;
         gbc.weightx = 0.0;
         add(lblHinh, gbc);
@@ -119,7 +119,7 @@ public class Panel_ChiTietSanPhamTraHang extends javax.swing.JPanel {
         // 2. Tên sản phẩm
         javax.swing.JLabel lblTenSP = new javax.swing.JLabel();
         lblTenSP.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        lblTenSP.setText("Tên sản phẩm");
+        lblTenSP.setText("");
         lblTenSP.setPreferredSize(new java.awt.Dimension(180, 80));
         lblTenSP.setMinimumSize(new java.awt.Dimension(180, 80));
         lblTenSP.setVerticalAlignment(javax.swing.SwingConstants.CENTER);
@@ -130,7 +130,7 @@ public class Panel_ChiTietSanPhamTraHang extends javax.swing.JPanel {
         // 3. Đơn vị
         javax.swing.JLabel lblDonVi = new javax.swing.JLabel();
         lblDonVi.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        lblDonVi.setText("Đơn vị");
+        lblDonVi.setText("");
         lblDonVi.setPreferredSize(new java.awt.Dimension(80, 80));
         lblDonVi.setMinimumSize(new java.awt.Dimension(80, 80));
         lblDonVi.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -162,7 +162,7 @@ public class Panel_ChiTietSanPhamTraHang extends javax.swing.JPanel {
         // 4. Đơn giá
         txtDonGia = new javax.swing.JLabel();
         txtDonGia.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        txtDonGia.setText("100,000 đ");
+        txtDonGia.setText("");
         txtDonGia.setPreferredSize(new java.awt.Dimension(100, 100));
         txtDonGia.setMinimumSize(new java.awt.Dimension(100, 100));
         txtDonGia.setMaximumSize(new java.awt.Dimension(100, 100));
@@ -176,7 +176,7 @@ public class Panel_ChiTietSanPhamTraHang extends javax.swing.JPanel {
         txtTongTienTra = new javax.swing.JLabel();
         txtTongTienTra.setFont(new java.awt.Font("Segoe UI", 1, 16)); // NOI18N
         txtTongTienTra.setForeground(new java.awt.Color(255, 0, 0));
-        txtTongTienTra.setText("100,000 đ");
+        txtTongTienTra.setText("");
         txtTongTienTra.setPreferredSize(new java.awt.Dimension(120, 100));
         txtTongTienTra.setMinimumSize(new java.awt.Dimension(120, 100));
         txtTongTienTra.setMaximumSize(new java.awt.Dimension(120, 100));

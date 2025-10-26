@@ -5,7 +5,6 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.LoHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham;
 
 import java.sql.*;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -13,10 +12,10 @@ import java.util.Optional;
 public class LoHangDAO implements DAOInterface<LoHang, String> {
 
     private final String SQL_THEM =
-            "INSERT INTO LoHang (maLoHang, tenLoHang, ngaySanXuat, hanSuDung, tonKho, trangThai, maSanPham) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            "INSERT INTO LoHang (maLoHang, tenLoHang, hanSuDung, tonKho, trangThai, maSanPham) VALUES (?, ?, ?, ?, ?, ?)";
 
     private final String SQL_CAP_NHAT =
-            "UPDATE LoHang SET tenLoHang = ?, ngaySanXuat = ?, hanSuDung = ?, tonKho = ?, trangThai = ?, maSanPham = ? WHERE maLoHang = ?";
+            "UPDATE LoHang SET tenLoHang = ?, hanSuDung = ?, tonKho = ?, trangThai = ?, maSanPham = ? WHERE maLoHang = ?";
 
     private final String SQL_TIM_THEO_MA =
             "SELECT * FROM LoHang WHERE maLoHang = ?";
@@ -44,11 +43,10 @@ public class LoHangDAO implements DAOInterface<LoHang, String> {
 
             stmt.setString(1, loHang.getMaLoHang());
             stmt.setString(2, loHang.getTenLoHang());
-            stmt.setDate(3, Date.valueOf(loHang.getNgaySanXuat()));
-            stmt.setDate(4, Date.valueOf(loHang.getHanSuDung()));
-            stmt.setInt(5, loHang.getTonKho());
-            stmt.setBoolean(6, loHang.isTrangThai());
-            stmt.setString(7, loHang.getSanPham().getMaSanPham());
+            stmt.setDate(3, Date.valueOf(loHang.getHanSuDung()));
+            stmt.setInt(4, loHang.getTonKho());
+            stmt.setBoolean(5, loHang.isTrangThai());
+            stmt.setString(6, loHang.getSanPham().getMaSanPham());
 
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -66,12 +64,11 @@ public class LoHangDAO implements DAOInterface<LoHang, String> {
              PreparedStatement stmt = con.prepareStatement(SQL_CAP_NHAT)) {
 
             stmt.setString(1, loHang.getTenLoHang());
-            stmt.setDate(2, Date.valueOf(loHang.getNgaySanXuat()));
-            stmt.setDate(3, Date.valueOf(loHang.getHanSuDung()));
-            stmt.setInt(4, loHang.getTonKho());
-            stmt.setBoolean(5, loHang.isTrangThai());
-            stmt.setString(6, loHang.getSanPham().getMaSanPham());
-            stmt.setString(7, loHang.getMaLoHang());
+            stmt.setDate(2, Date.valueOf(loHang.getHanSuDung()));
+            stmt.setInt(3, loHang.getTonKho());
+            stmt.setBoolean(4, loHang.isTrangThai());
+            stmt.setString(5, loHang.getSanPham().getMaSanPham());
+            stmt.setString(6, loHang.getMaLoHang());
 
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -136,7 +133,10 @@ public class LoHangDAO implements DAOInterface<LoHang, String> {
 
         loHang.setMaLoHang(rs.getString("maLoHang"));
         loHang.setTenLoHang(rs.getString("tenLoHang"));
-        loHang.setNgaySanXuat(rs.getDate("ngaySanXuat").toLocalDate());
+        
+        // Không đọc ngaySanXuat vì cột này không tồn tại trong database
+        // loHang.setNgaySanXuat(rs.getDate("ngaySanXuat").toLocalDate());
+        
         loHang.setHanSuDung(rs.getDate("hanSuDung").toLocalDate());
         loHang.setTonKho(rs.getInt("tonKho"));
         loHang.setTrangThai(rs.getBoolean("trangThai"));

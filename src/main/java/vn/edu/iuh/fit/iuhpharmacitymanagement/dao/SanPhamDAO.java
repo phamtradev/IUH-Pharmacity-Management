@@ -32,30 +32,30 @@ public class SanPhamDAO implements DAOInterface<SanPham, String> {
             "thueVAT = ?, hinhAnh = ?, loaiSanPham = ?, maDonVi = ? WHERE maSanPham = ?";
     
     private final String SQL_TIM_THEO_MA = 
-            "SELECT sp.*, dv.maDonVi, dv.tenDonVi " +
+            "SELECT sp.*, dv.tenDonVi AS donViTinhTen " +
             "FROM SanPham sp " +
             "LEFT JOIN DonViTinh dv ON sp.maDonVi = dv.maDonVi " +
             "WHERE sp.maSanPham = ?";
     
     private final String SQL_TIM_TAT_CA = 
-            "SELECT sp.*, dv.maDonVi, dv.tenDonVi " +
+            "SELECT sp.*, dv.tenDonVi AS donViTinhTen " +
             "FROM SanPham sp " +
             "LEFT JOIN DonViTinh dv ON sp.maDonVi = dv.maDonVi";
     
     private final String SQL_TIM_THEO_TEN = 
-            "SELECT sp.*, dv.maDonVi, dv.tenDonVi " +
+            "SELECT sp.*, dv.tenDonVi AS donViTinhTen " +
             "FROM SanPham sp " +
             "LEFT JOIN DonViTinh dv ON sp.maDonVi = dv.maDonVi " +
             "WHERE sp.tenSanPham LIKE ?";
     
     private final String SQL_TIM_THEO_LOAI = 
-            "SELECT sp.*, dv.maDonVi, dv.tenDonVi " +
+            "SELECT sp.*, dv.tenDonVi AS donViTinhTen " +
             "FROM SanPham sp " +
             "LEFT JOIN DonViTinh dv ON sp.maDonVi = dv.maDonVi " +
             "WHERE sp.loaiSanPham = ?";
     
     private final String SQL_TIM_THEO_HOAT_DONG = 
-            "SELECT sp.*, dv.maDonVi, dv.tenDonVi " +
+            "SELECT sp.*, dv.tenDonVi AS donViTinhTen " +
             "FROM SanPham sp " +
             "LEFT JOIN DonViTinh dv ON sp.maDonVi = dv.maDonVi " +
             "WHERE sp.hoatDong = ?";
@@ -64,7 +64,7 @@ public class SanPhamDAO implements DAOInterface<SanPham, String> {
             "SELECT TOP 1 maSanPham FROM SanPham ORDER BY maSanPham DESC";
     
     private final String SQL_TIM_THEO_SO_DANG_KY = 
-            "SELECT sp.*, dv.maDonVi, dv.tenDonVi " +
+            "SELECT sp.*, dv.tenDonVi AS donViTinhTen " +
             "FROM SanPham sp " +
             "LEFT JOIN DonViTinh dv ON sp.maDonVi = dv.maDonVi " +
             "WHERE sp.soDangKy = ?";
@@ -191,7 +191,8 @@ public class SanPhamDAO implements DAOInterface<SanPham, String> {
             if (maDonVi != null) {
                 DonViTinh donViTinh = new DonViTinh();
                 donViTinh.setMaDonVi(maDonVi);
-                donViTinh.setTenDonVi(rs.getString("tenDonVi"));
+                String tenDonVi = rs.getString("donViTinhTen");
+                donViTinh.setTenDonVi(tenDonVi);
                 sanPham.setDonViTinh(donViTinh);
             }
         } catch (Exception e) {
