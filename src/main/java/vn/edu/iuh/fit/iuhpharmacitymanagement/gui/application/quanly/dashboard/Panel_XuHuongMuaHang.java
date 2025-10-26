@@ -4,23 +4,42 @@
  */
 package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.dashboard;
 
-import java.sql.Date;
+import raven.toast.Notifications;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.ChiTietDonHangBUS;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonHang;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.barchart.Chart;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.barchart.ModelChart;
+
+import java.awt.Color;
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  *
  * @author PhamTra
  */
 public class Panel_XuHuongMuaHang extends javax.swing.JPanel {
+    
+    private final ChiTietDonHangBUS chiTietDonHangBUS;
+    private Chart chart;
 
     public Panel_XuHuongMuaHang() {
+        chiTietDonHangBUS = new ChiTietDonHangBUS();
+        initChart();
         initComponents();
         initSimpleUI();
     }
     
+    private void initChart() {
+        chart = new Chart();
+        chart.addLegend("Số lượng bán", new Color(245, 189, 135));
+    }
+    
     private void initSimpleUI() {
-        jDateFrom.setDate(Date.valueOf(LocalDate.now()));
-        jDateTo.setDate(Date.valueOf(LocalDate.now()));
+        jDateFrom.setDate(java.util.Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant()));
+        jDateTo.setDate(java.util.Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant()));
         lbdt.setVisible(false);
         lbt5.setVisible(false);
         lbtl.setVisible(false);
@@ -139,15 +158,8 @@ public class Panel_XuHuongMuaHang extends javax.swing.JPanel {
 
         jPanel14.add(jPanel16, java.awt.BorderLayout.PAGE_START);
         
-        // Tạo placeholder cho chart
-        javax.swing.JPanel chartPlaceholder = new javax.swing.JPanel();
-        chartPlaceholder.setBackground(new java.awt.Color(255, 255, 255));
-        javax.swing.JLabel placeholderLabel = new javax.swing.JLabel("Biểu đồ sẽ được hiển thị sau khi tìm kiếm");
-        placeholderLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        placeholderLabel.setFont(new java.awt.Font("Segoe UI", 0, 16));
-        chartPlaceholder.setLayout(new java.awt.BorderLayout());
-        chartPlaceholder.add(placeholderLabel, java.awt.BorderLayout.CENTER);
-        jPanel14.add(chartPlaceholder, java.awt.BorderLayout.CENTER);
+        // Thêm chart thực sự
+        jPanel14.add(chart, java.awt.BorderLayout.CENTER);
 
         pnContent.add(jPanel14, java.awt.BorderLayout.CENTER);
 
@@ -247,9 +259,75 @@ public class Panel_XuHuongMuaHang extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSearchActionPerformed
-        // TODO: Tính năng thống kê sẽ được triển khai sau
-        javax.swing.JOptionPane.showMessageDialog(this, "Chức năng đang được phát triển", "Thông báo", javax.swing.JOptionPane.INFORMATION_MESSAGE);
+        if (jDateFrom.getDate() == null || jDateTo.getDate() == null) {
+            Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER, "Vui lòng chọn ngày bắt đầu và ngày kết thúc");
+            return;
+        }
+        
+        LocalDate dateFrom = jDateFrom.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate dateTo = jDateTo.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        
+        if (dateFrom.isAfter(dateTo)) {
+            Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER, "Ngày bắt đầu phải trước ngày kết thúc");
+            return;
+        }
+        
+        loadTopProducts(dateFrom, dateTo);
+        Notifications.getInstance().show(Notifications.Type.SUCCESS, Notifications.Location.TOP_CENTER, "Đã tải dữ liệu xu hướng mua hàng");
     }//GEN-LAST:event_btnSearchActionPerformed
+    
+    private void loadTopProducts(LocalDate dateFrom, LocalDate dateTo) {
+        chart.clear();
+        
+        // Lấy tất cả chi tiết đơn hàng
+        List<ChiTietDonHang> allDetails = chiTietDonHangBUS.layTatCaChiTietDonHang();
+        
+        // Lọc theo khoảng thời gian
+        List<ChiTietDonHang> filteredDetails = allDetails.stream()
+                .filter(ct -> ct.getDonHang() != null && ct.getDonHang().getNgayDatHang() != null)
+                .filter(ct -> !ct.getDonHang().getNgayDatHang().isBefore(dateFrom) && !ct.getDonHang().getNgayDatHang().isAfter(dateTo))
+                .collect(Collectors.toList());
+        
+        // Nhóm theo sản phẩm và tính tổng số lượng
+        Map<String, Integer> productQuantityMap = new HashMap<>();
+        Map<String, String> productNameMap = new HashMap<>();
+        
+        for (ChiTietDonHang ct : filteredDetails) {
+            if (ct.getLoHang() != null && ct.getLoHang().getSanPham() != null) {
+                String productId = ct.getLoHang().getSanPham().getMaSanPham();
+                String productName = ct.getLoHang().getSanPham().getTenSanPham();
+                
+                productQuantityMap.put(productId, productQuantityMap.getOrDefault(productId, 0) + ct.getSoLuong());
+                productNameMap.put(productId, productName);
+            }
+        }
+        
+        // Sắp xếp theo số lượng giảm dần và lấy top 5
+        List<Map.Entry<String, Integer>> topProducts = productQuantityMap.entrySet().stream()
+                .sorted((e1, e2) -> e2.getValue().compareTo(e1.getValue()))
+                .limit(5)
+                .collect(Collectors.toList());
+        
+        // Hiển thị trên biểu đồ
+        for (Map.Entry<String, Integer> entry : topProducts) {
+            String productName = productNameMap.get(entry.getKey());
+            // Rút gọn tên sản phẩm nếu quá dài
+            if (productName.length() > 15) {
+                productName = productName.substring(0, 15) + "...";
+            }
+            
+            chart.addData(new ModelChart(productName, new double[]{entry.getValue()}));
+        }
+        
+        chart.start();
+        
+        // Cập nhật label
+        if (topProducts.isEmpty()) {
+            lblChartProduct.setText("KHÔNG CÓ SẢN PHẨM NÀO TRONG KHOẢNG THỜI GIAN NÀY");
+        } else {
+            lblChartProduct.setText("TOP " + topProducts.size() + " SẢN PHẨM BÁN CHẠY");
+        }
+    }
 
 
 

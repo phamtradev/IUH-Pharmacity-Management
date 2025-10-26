@@ -4,19 +4,39 @@
  */
 package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.dashboard;
 
+import raven.toast.Notifications;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.DonHangBUS;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonHang;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.barchart.Chart;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.barchart.ModelChart;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.util.DinhDangSo;
+
 import java.awt.Color;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.Calendar;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  *
  * @author Hoang
  */
 public class Panel_ThongKeTheoThang extends javax.swing.JPanel {
+    
+    private final DonHangBUS donHangBUS;
+    private Chart chart;
 
     public Panel_ThongKeTheoThang() {
+        donHangBUS = new DonHangBUS();
+        initChart();
         initComponents();
         fillComboBoxMonthAndYear();
+    }
+    
+    private void initChart() {
+        chart = new Chart();
+        chart.addLegend("Doanh thu", new Color(135, 189, 245));
     }
 
     private void fillComboBoxMonthAndYear() {
@@ -194,15 +214,8 @@ public class Panel_ThongKeTheoThang extends javax.swing.JPanel {
 
         pnContent.setLayout(new java.awt.BorderLayout());
         
-        // Tạo placeholder cho chart
-        javax.swing.JPanel chartPlaceholder = new javax.swing.JPanel();
-        chartPlaceholder.setBackground(new java.awt.Color(255, 255, 255));
-        javax.swing.JLabel placeholderLabel = new javax.swing.JLabel("Biểu đồ sẽ được hiển thị sau khi tìm kiếm");
-        placeholderLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        placeholderLabel.setFont(new java.awt.Font("Segoe UI", 0, 16));
-        chartPlaceholder.setLayout(new java.awt.BorderLayout());
-        chartPlaceholder.add(placeholderLabel, java.awt.BorderLayout.CENTER);
-        pnContent.add(chartPlaceholder, java.awt.BorderLayout.CENTER);
+        // Thêm chart thực sự
+        pnContent.add(chart, java.awt.BorderLayout.CENTER);
 
         jPanel2.setBackground(new java.awt.Color(255, 255, 255));
         jPanel2.setBorder(javax.swing.BorderFactory.createMatteBorder(2, 0, 2, 0, new java.awt.Color(232, 232, 232)));
@@ -362,9 +375,121 @@ public class Panel_ThongKeTheoThang extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSearchActionPerformed
-        // TODO: Tính năng thống kê sẽ được triển khai sau
-        javax.swing.JOptionPane.showMessageDialog(this, "Chức năng đang được phát triển", "Thông báo", javax.swing.JOptionPane.INFORMATION_MESSAGE);
+        int month = comboMonth.getSelectedIndex() + 1;
+        int year = Integer.parseInt(comboYear.getSelectedItem().toString());
+        
+        loadChartData(month, year);
+        loadStatistics(month, year);
+        Notifications.getInstance().show(Notifications.Type.SUCCESS, Notifications.Location.TOP_CENTER, "Đã tải dữ liệu thống kê tháng " + month + "/" + year);
     }//GEN-LAST:event_btnSearchActionPerformed
+    
+    private void loadChartData(int month, int year) {
+        chart.clear();
+        
+        List<DonHang> allOrders = donHangBUS.layTatCaDonHang();
+        String paymentType = comboPaymentType.getSelectedItem().toString();
+        String promotionType = comboIsPromotion.getSelectedItem().toString();
+        
+        // Lấy số ngày trong tháng
+        YearMonth yearMonth = YearMonth.of(year, month);
+        int daysInMonth = yearMonth.lengthOfMonth();
+        
+        // Lọc đơn hàng theo tháng và năm
+        List<DonHang> filteredOrders = allOrders.stream()
+                .filter(dh -> dh.getNgayDatHang() != null)
+                .filter(dh -> dh.getNgayDatHang().getMonthValue() == month && dh.getNgayDatHang().getYear() == year)
+                .collect(Collectors.toList());
+        
+        // Lọc theo phương thức thanh toán
+        if (!paymentType.equals("Tất cả")) {
+            String paymentMethod = paymentType.equals("Tiền mặt") ? "TIEN_MAT" : "TIN_DUNG";
+            filteredOrders = filteredOrders.stream()
+                    .filter(dh -> dh.getPhuongThucThanhToan() != null && dh.getPhuongThucThanhToan().toString().equals(paymentMethod))
+                    .collect(Collectors.toList());
+        }
+        
+        // Lọc theo khuyến mãi
+        if (!promotionType.equals("Tất cả")) {
+            boolean hasPromotion = promotionType.equals("Có khuyến mãi");
+            filteredOrders = filteredOrders.stream()
+                    .filter(dh -> (dh.getKhuyenMai() != null) == hasPromotion)
+                    .collect(Collectors.toList());
+        }
+        
+        // Hiển thị dữ liệu theo từng ngày trong tháng
+        for (int day = 1; day <= daysInMonth; day++) {
+            int currentDay = day;
+            
+            double sumPrice = filteredOrders.stream()
+                    .filter(dh -> dh.getNgayDatHang().getDayOfMonth() == currentDay)
+                    .mapToDouble(DonHang::getThanhTien)
+                    .sum();
+            
+            chart.addData(new ModelChart(day + "", new double[]{sumPrice}));
+        }
+        
+        chart.start();
+    }
+    
+    private void loadStatistics(int month, int year) {
+        List<DonHang> allOrders = donHangBUS.layTatCaDonHang();
+        String paymentType = comboPaymentType.getSelectedItem().toString();
+        String promotionType = comboIsPromotion.getSelectedItem().toString();
+        
+        // Lấy số ngày trong tháng
+        YearMonth yearMonth = YearMonth.of(year, month);
+        int daysInMonth = yearMonth.lengthOfMonth();
+        
+        // Lọc đơn hàng theo tháng và năm
+        List<DonHang> filteredOrders = allOrders.stream()
+                .filter(dh -> dh.getNgayDatHang() != null)
+                .filter(dh -> dh.getNgayDatHang().getMonthValue() == month && dh.getNgayDatHang().getYear() == year)
+                .collect(Collectors.toList());
+        
+        // Lọc theo phương thức thanh toán
+        if (!paymentType.equals("Tất cả")) {
+            String paymentMethod = paymentType.equals("Tiền mặt") ? "TIEN_MAT" : "TIN_DUNG";
+            filteredOrders = filteredOrders.stream()
+                    .filter(dh -> dh.getPhuongThucThanhToan() != null && dh.getPhuongThucThanhToan().toString().equals(paymentMethod))
+                    .collect(Collectors.toList());
+        }
+        
+        // Lọc theo khuyến mãi
+        if (!promotionType.equals("Tất cả")) {
+            boolean hasPromotion = promotionType.equals("Có khuyến mãi");
+            filteredOrders = filteredOrders.stream()
+                    .filter(dh -> (dh.getKhuyenMai() != null) == hasPromotion)
+                    .collect(Collectors.toList());
+        }
+        
+        // Tính toán thống kê
+        double totalRevenue = filteredOrders.stream().mapToDouble(DonHang::getThanhTien).sum();
+        double averageRevenue = daysInMonth > 0 ? totalRevenue / daysInMonth : 0;
+        int totalOrders = filteredOrders.size();
+        
+        // Tìm ngày có doanh thu cao nhất
+        int bestDay = 0;
+        double maxRevenue = 0;
+        
+        for (int day = 1; day <= daysInMonth; day++) {
+            int currentDay = day;
+            double dayRevenue = filteredOrders.stream()
+                    .filter(dh -> dh.getNgayDatHang().getDayOfMonth() == currentDay)
+                    .mapToDouble(DonHang::getThanhTien)
+                    .sum();
+            
+            if (dayRevenue > maxRevenue) {
+                maxRevenue = dayRevenue;
+                bestDay = day;
+            }
+        }
+        
+        // Hiển thị thống kê
+        txtAverage.setText(DinhDangSo.dinhDangTien(averageRevenue));
+        txtSumOfQuantity.setText(totalOrders + " đơn");
+        txtBestDay.setText(bestDay > 0 ? bestDay + "/" + month + "/" + year : "N/A");
+        txtMaxPrice.setText(DinhDangSo.dinhDangTien(maxRevenue));
+    }
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

@@ -4,17 +4,37 @@
  */
 package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.dashboard;
 
+import raven.toast.Notifications;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.DonHangBUS;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonHang;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.barchart.Chart;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.barchart.ModelChart;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.util.DinhDangSo;
+
+import java.awt.Color;
 import java.util.Calendar;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  *
  * @author Hoang
  */
 public class Panel_ThongKeTheoNam extends javax.swing.JPanel {
+    
+    private final DonHangBUS donHangBUS;
+    private Chart chart;
 
     public Panel_ThongKeTheoNam() {
+        donHangBUS = new DonHangBUS();
+        initChart();
         initComponents();
         fillComboBoxMonthAndYear();
+    }
+    
+    private void initChart() {
+        chart = new Chart();
+        chart.addLegend("Doanh thu", new Color(135, 189, 245));
     }
 
     private void fillComboBoxMonthAndYear() {
@@ -182,15 +202,8 @@ public class Panel_ThongKeTheoNam extends javax.swing.JPanel {
 
         pnContent.setLayout(new java.awt.BorderLayout());
         
-        // Tạo placeholder cho chart
-        javax.swing.JPanel chartPlaceholder = new javax.swing.JPanel();
-        chartPlaceholder.setBackground(new java.awt.Color(255, 255, 255));
-        javax.swing.JLabel placeholderLabel = new javax.swing.JLabel("Biểu đồ sẽ được hiển thị sau khi tìm kiếm");
-        placeholderLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        placeholderLabel.setFont(new java.awt.Font("Segoe UI", 0, 16));
-        chartPlaceholder.setLayout(new java.awt.BorderLayout());
-        chartPlaceholder.add(placeholderLabel, java.awt.BorderLayout.CENTER);
-        pnContent.add(chartPlaceholder, java.awt.BorderLayout.CENTER);
+        // Thêm chart thực sự
+        pnContent.add(chart, java.awt.BorderLayout.CENTER);
 
         jPanel2.setBackground(new java.awt.Color(255, 255, 255));
         jPanel2.setBorder(javax.swing.BorderFactory.createMatteBorder(2, 0, 2, 0, new java.awt.Color(232, 232, 232)));
@@ -350,9 +363,120 @@ public class Panel_ThongKeTheoNam extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSearchActionPerformed
-        // TODO: Tính năng thống kê sẽ được triển khai sau
-        javax.swing.JOptionPane.showMessageDialog(this, "Chức năng đang được phát triển", "Thông báo", javax.swing.JOptionPane.INFORMATION_MESSAGE);
+        int yearStart = Integer.parseInt(comboYearStart.getSelectedItem().toString());
+        int yearEnd = Integer.parseInt(comboYearEnd.getSelectedItem().toString());
+        
+        if (yearStart > yearEnd) {
+            Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER, "Năm bắt đầu phải nhỏ hơn hoặc bằng năm kết thúc");
+            return;
+        }
+        
+        loadChartData(yearStart, yearEnd);
+        loadStatistics(yearStart, yearEnd);
+        Notifications.getInstance().show(Notifications.Type.SUCCESS, Notifications.Location.TOP_CENTER, "Đã tải dữ liệu thống kê từ năm " + yearStart + " đến " + yearEnd);
     }//GEN-LAST:event_btnSearchActionPerformed
+    
+    private void loadChartData(int yearStart, int yearEnd) {
+        chart.clear();
+        
+        List<DonHang> allOrders = donHangBUS.layTatCaDonHang();
+        String paymentType = comboPaymentType.getSelectedItem().toString();
+        String promotionType = comboIsPromotion.getSelectedItem().toString();
+        
+        // Lọc đơn hàng theo năm
+        List<DonHang> filteredOrders = allOrders.stream()
+                .filter(dh -> dh.getNgayDatHang() != null)
+                .filter(dh -> dh.getNgayDatHang().getYear() >= yearStart && dh.getNgayDatHang().getYear() <= yearEnd)
+                .collect(Collectors.toList());
+        
+        // Lọc theo phương thức thanh toán
+        if (!paymentType.equals("Tất cả")) {
+            String paymentMethod = paymentType.equals("Tiền mặt") ? "TIEN_MAT" : "TIN_DUNG";
+            filteredOrders = filteredOrders.stream()
+                    .filter(dh -> dh.getPhuongThucThanhToan() != null && dh.getPhuongThucThanhToan().toString().equals(paymentMethod))
+                    .collect(Collectors.toList());
+        }
+        
+        // Lọc theo khuyến mãi
+        if (!promotionType.equals("Tất cả")) {
+            boolean hasPromotion = promotionType.equals("Có khuyến mãi");
+            filteredOrders = filteredOrders.stream()
+                    .filter(dh -> (dh.getKhuyenMai() != null) == hasPromotion)
+                    .collect(Collectors.toList());
+        }
+        
+        // Hiển thị dữ liệu theo từng năm
+        for (int year = yearStart; year <= yearEnd; year++) {
+            int currentYear = year;
+            
+            double sumPrice = filteredOrders.stream()
+                    .filter(dh -> dh.getNgayDatHang().getYear() == currentYear)
+                    .mapToDouble(DonHang::getThanhTien)
+                    .sum();
+            
+            chart.addData(new ModelChart(year + "", new double[]{sumPrice}));
+        }
+        
+        chart.start();
+    }
+    
+    private void loadStatistics(int yearStart, int yearEnd) {
+        List<DonHang> allOrders = donHangBUS.layTatCaDonHang();
+        String paymentType = comboPaymentType.getSelectedItem().toString();
+        String promotionType = comboIsPromotion.getSelectedItem().toString();
+        
+        int totalYears = yearEnd - yearStart + 1;
+        
+        // Lọc đơn hàng theo năm
+        List<DonHang> filteredOrders = allOrders.stream()
+                .filter(dh -> dh.getNgayDatHang() != null)
+                .filter(dh -> dh.getNgayDatHang().getYear() >= yearStart && dh.getNgayDatHang().getYear() <= yearEnd)
+                .collect(Collectors.toList());
+        
+        // Lọc theo phương thức thanh toán
+        if (!paymentType.equals("Tất cả")) {
+            String paymentMethod = paymentType.equals("Tiền mặt") ? "TIEN_MAT" : "TIN_DUNG";
+            filteredOrders = filteredOrders.stream()
+                    .filter(dh -> dh.getPhuongThucThanhToan() != null && dh.getPhuongThucThanhToan().toString().equals(paymentMethod))
+                    .collect(Collectors.toList());
+        }
+        
+        // Lọc theo khuyến mãi
+        if (!promotionType.equals("Tất cả")) {
+            boolean hasPromotion = promotionType.equals("Có khuyến mãi");
+            filteredOrders = filteredOrders.stream()
+                    .filter(dh -> (dh.getKhuyenMai() != null) == hasPromotion)
+                    .collect(Collectors.toList());
+        }
+        
+        // Tính toán thống kê
+        double totalRevenue = filteredOrders.stream().mapToDouble(DonHang::getThanhTien).sum();
+        double averageRevenue = totalYears > 0 ? totalRevenue / totalYears : 0;
+        int totalOrders = filteredOrders.size();
+        
+        // Tìm năm có doanh thu cao nhất
+        int bestYear = 0;
+        double maxRevenue = 0;
+        
+        for (int year = yearStart; year <= yearEnd; year++) {
+            int currentYear = year;
+            double yearRevenue = filteredOrders.stream()
+                    .filter(dh -> dh.getNgayDatHang().getYear() == currentYear)
+                    .mapToDouble(DonHang::getThanhTien)
+                    .sum();
+            
+            if (yearRevenue > maxRevenue) {
+                maxRevenue = yearRevenue;
+                bestYear = year;
+            }
+        }
+        
+        // Hiển thị thống kê
+        txtAverage.setText(DinhDangSo.dinhDangTien(averageRevenue));
+        txtSumOfQuantity.setText(totalOrders + " đơn");
+        txtBestDay.setText(bestYear > 0 ? "Năm " + bestYear : "N/A");
+        txtMaxPrice.setText(DinhDangSo.dinhDangTien(maxRevenue));
+    }
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
