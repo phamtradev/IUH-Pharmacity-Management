@@ -822,13 +822,24 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
         
         // Lưu vào database
         System.out.println("→ Đang lưu nhà cung cấp mới vào database...");
+        System.out.println("   Thông tin trước khi lưu: " + nccMoi);
         boolean success = nhaCungCapBUS.taoNhaCungCap(nccMoi);
         if (!success) {
             throw new Exception("Không thể lưu nhà cung cấp mới vào database: " + tenNCC + ". Kiểm tra console để biết chi tiết lỗi.");
         }
         
-        System.out.println("✓ Đã tạo nhà cung cấp mới: " + nccMoi.getTenNhaCungCap() + " (Mã: " + nccMoi.getMaNhaCungCap() + ")");
-        return nccMoi;
+        System.out.println("✓ Đã lưu thành công vào database!");
+        System.out.println("   Thông tin sau khi lưu: " + nccMoi);
+        System.out.println("   Mã NCC đã được sinh: " + nccMoi.getMaNhaCungCap());
+        
+        // Đọc lại từ database để đảm bảo có đầy đủ thông tin
+        NhaCungCap nccDaLuu = nhaCungCapBUS.layNhaCungCapTheoMa(nccMoi.getMaNhaCungCap());
+        if (nccDaLuu == null) {
+            throw new Exception("Không thể đọc lại nhà cung cấp vừa tạo từ database");
+        }
+        
+        System.out.println("✓ Đã tạo và xác nhận nhà cung cấp mới: " + nccDaLuu.getTenNhaCungCap() + " (Mã: " + nccDaLuu.getMaNhaCungCap() + ")");
+        return nccDaLuu;
     }
     
     /**
