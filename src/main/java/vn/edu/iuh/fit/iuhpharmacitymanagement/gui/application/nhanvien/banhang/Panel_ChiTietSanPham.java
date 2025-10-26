@@ -24,6 +24,7 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
     private LoHangBUS loHangBUS;
     private Panel_ChonLo panelChonLo;
     private List<LoHang> danhSachLoHang;
+    private double cachedTongTien = 0; // Cache giá trị tổng tiền để detect thay đổi
 
     public Panel_ChiTietSanPham() {
         this.currencyFormat = new DecimalFormat("#,###");
@@ -51,7 +52,7 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
             // Set giảm giá mặc định là 0%
             txtDiscount.setText("0%");
             
-            // Set tổng tiền ban đầu
+            // Set tổng tiền ban đầu (cachedTongTien = 0 để lần đầu fire property change)
             updateTongTien();
             
             // Load hình ảnh nếu có
@@ -93,9 +94,12 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
     private void updateTongTien() {
         if (sanPham != null) {
             int soLuong = (int) spinnerSoLuong.getValue();
-            double oldTongTien = getTongTien();
+            double oldTongTien = cachedTongTien; // Sử dụng giá trị cached
             double tongTien = sanPham.getGiaBan() * soLuong;
             txtTongTien.setText(currencyFormat.format(tongTien) + " đ");
+            
+            // Cập nhật cache
+            cachedTongTien = tongTien;
             
             // Fire property change để notify parent
             firePropertyChange("tongTien", oldTongTien, tongTien);
