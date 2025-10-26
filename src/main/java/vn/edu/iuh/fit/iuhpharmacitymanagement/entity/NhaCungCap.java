@@ -69,7 +69,7 @@ public class NhaCungCap {
     }
 
     public void setDiaChi(String diaChi) throws Exception {
-        if (diaChi.isBlank()) {
+        if (diaChi != null && diaChi.isBlank()) {
             throw new Exception(DIA_CHI_RONG);
         }
         this.diaChi = diaChi;
@@ -80,7 +80,7 @@ public class NhaCungCap {
     }
 
     public void setSoDienThoai(String soDienThoai) throws Exception {
-        if (!soDienThoai.matches(SO_DIEN_THOAI_REGEX)) {
+        if (soDienThoai != null && !soDienThoai.isEmpty() && !soDienThoai.matches(SO_DIEN_THOAI_REGEX)) {
             throw new Exception(SO_DIEN_THOAI_SAI);
         }
         this.soDienThoai = soDienThoai;
@@ -91,7 +91,7 @@ public class NhaCungCap {
     }
 
     public void setEmail(String email) throws Exception {
-        if (!email.matches(EMAIL_REGEX)) {
+        if (email != null && !email.isEmpty() && !email.matches(EMAIL_REGEX)) {
             throw new Exception(EMAIL_SAI);
         }
         this.email = email;
@@ -102,7 +102,7 @@ public class NhaCungCap {
     }
 
     public void setMaSoThue(String maSoThue) throws Exception {
-        if (!maSoThue.matches(MA_SO_THUE_REGEX)) {
+        if (maSoThue != null && !maSoThue.isEmpty() && !maSoThue.matches(MA_SO_THUE_REGEX)) {
             throw new Exception(MA_SO_THUE_SAI);
         }
         this.maSoThue = maSoThue;

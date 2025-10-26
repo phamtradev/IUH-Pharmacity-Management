@@ -142,6 +142,14 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
             Notifications.getInstance().show(Notifications.Type.ERROR, "Lỗi khi tải dữ liệu lô hàng: " + e.getMessage());
         }
     }
+    
+    /**
+     * Phương thức public để refresh dữ liệu lô hàng từ bên ngoài
+     * Được gọi khi có thay đổi từ module khác (ví dụ: import Excel từ phiếu nhập)
+     */
+    public void refreshData() {
+        loadBatchData();
+    }
 
     /**
      * This method is called from within the constructor to initialize the form.
