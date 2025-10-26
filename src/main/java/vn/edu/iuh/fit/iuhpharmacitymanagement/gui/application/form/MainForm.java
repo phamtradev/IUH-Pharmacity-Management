@@ -34,6 +34,7 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlynhaph
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlytrahang.GD_QuanLyTraHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlydonhang.GD_QuanLyDonHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlykhuyenmai.GD_QuanLyKhuyenMai;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlylohang.GD_QuanLyLoHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlythuchi.GD_BaoCaoThuChi;
 
 /**
@@ -42,7 +43,7 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlythuch
  */
 public class MainForm extends JLayeredPane {
 
-    private int type = 1;
+    private int type = 2;
 
     public MainForm() {
         init();
@@ -161,34 +162,40 @@ public class MainForm extends JLayeredPane {
                     // Quản lý đơn vị tính
                     showForm(new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlydonvitinh.GD_QuanLyDonViTinh());
                 } else if (index == 4) {
+                    // Quản lý lô hàng
+                    showForm(new GD_QuanLyLoHang());
+                } else if (index == 5) {
                     // Quản lý nhân viên
                     showForm(new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlynhanvien.GD_QuanLyNhanVien());
-                } else if (index == 5) {
+                } else if (index == 6) {
                     // Quản lý khách hàng (quản lý có button xóa)
                     showForm(new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlykhachhang.GD_QuanLyKhachHang());
-                } else if (index == 6) {
+                } else if (index == 7) {
                     // Quản lý nhà cung cấp (quản lý)
                     showForm(new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlynhacungcap.GD_QuanLyNhaCungCap());
-                } else if (index == 7) {
+                } else if (index == 8) {
                     // Quản lý nhập hàng
                     showForm(new GD_QuanLyNhapHang());
-                } else if (index == 8) {
+                } else if (index == 9) {
                     // Quản lý trả hàng
                     showForm(new GD_QuanLyTraHang());
-                } else if (index == 9) {
+                } else if (index == 10) {
                     // Quản lý xuất hủy
                     showForm(new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlyxuathuy.GD_QuanLyXuatHuy());
-                } else if (index == 10) {
+                } else if (index == 11) {
                     // Quản lý đơn hàng
                     showForm(new GD_QuanLyDonHang());
-                } else if (index == 11) {
+                } else if (index == 12) {
                     // Quản lý khuyến mãi
                     showForm(new GD_QuanLyKhuyenMai());
-//                } else if (index == 12) {
-//                    showForm(new TABPersonalInformation());
 //                } else if (index == 13) {
+//                    // Thông tin cá nhân
+//                    showForm(new TABPersonalInformation());
+//                } else if (index == 14) {
+//                    // Trợ giúp
 //                    showForm(new ViewPdfPanel(2));
-//                } else if (index == 14) { 
+//                } else if (index == 15) {
+//                    // Đăng xuất
 //                    Application.logout();
                 } else {
                     action.cancel();

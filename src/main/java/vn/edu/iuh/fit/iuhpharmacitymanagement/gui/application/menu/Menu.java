@@ -24,6 +24,7 @@ public class Menu extends JPanel {
         {"Báo cáo thu chi"},
         {"Quản lý sản phẩm"},
         {"Quản lý đơn vị tính"},
+        {"Quản lý lô hàng"},
         {"Quản lý nhân viên"},
         {"Quản lý khách hàng"},
         {"Quản lý nhà cung cấp"},
