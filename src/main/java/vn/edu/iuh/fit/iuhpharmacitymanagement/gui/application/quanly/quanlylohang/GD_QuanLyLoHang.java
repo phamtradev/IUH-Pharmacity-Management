@@ -12,12 +12,16 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import javax.swing.BorderFactory;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 import raven.toast.Notifications;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.LoHangBUS;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.SanPhamBUS;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.common.TableDesign;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.SanPhamDAO;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.LoHang;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham;
 
 /**
  *
@@ -26,12 +30,16 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.LoHang;
 public class GD_QuanLyLoHang extends javax.swing.JPanel {
 
     private final LoHangBUS loHangBUS;
+    private final SanPhamBUS sanPhamBUS;
     private TableDesign tableDesign;
+    private List<SanPham> danhSachSanPham;
 
     public GD_QuanLyLoHang() {
         this.loHangBUS = new LoHangBUS();
+        this.sanPhamBUS = new SanPhamBUS(new SanPhamDAO());
         initComponents();
         setUIManager();
+        loadSanPham();
         fillTable();
     }
 
@@ -51,6 +59,41 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
         
         UIManager.put("Button.arc", 10);
     }
+    
+    // Load danh sách sản phẩm vào combobox
+    private void loadSanPham() {
+        try {
+            danhSachSanPham = sanPhamBUS.layTatCaSanPham();
+            
+            // Tạo model cho combobox
+            DefaultComboBoxModel<String> modelAdd = new DefaultComboBoxModel<>();
+            DefaultComboBoxModel<String> modelEdit = new DefaultComboBoxModel<>();
+            
+            modelAdd.addElement("-- Chọn sản phẩm --");
+            modelEdit.addElement("-- Chọn sản phẩm --");
+            
+            for (SanPham sp : danhSachSanPham) {
+                String item = sp.getMaSanPham() + " - " + sp.getTenSanPham();
+                modelAdd.addElement(item);
+                modelEdit.addElement(item);
+            }
+            
+            comboProductAdd.setModel(modelAdd);
+            comboProductEdit.setModel(modelEdit);
+            
+        } catch (Exception e) {
+            Notifications.getInstance().show(Notifications.Type.ERROR, "Lỗi khi tải danh sách sản phẩm: " + e.getMessage());
+        }
+    }
+    
+    // Lấy sản phẩm được chọn từ combobox
+    private SanPham getSelectedSanPham(javax.swing.JComboBox<String> combo) {
+        int selectedIndex = combo.getSelectedIndex();
+        if (selectedIndex <= 0) {
+            return null;
+        }
+        return danhSachSanPham.get(selectedIndex - 1);
+    }
 
     private void fillTable() {
         String[] headers = {"Mã lô hàng", "Tên lô hàng", "Hạn sử dụng", "Tồn kho", "Trạng thái"};
@@ -68,17 +111,31 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
             // Xóa dữ liệu cũ trong bảng
             tableDesign.getModelTable().setRowCount(0);
             
-            // Lấy danh sách lô hàng từ BUS
+            // Lấy danh sách lô hàng từ BUS (đã tự động cập nhật trạng thái hết hạn)
             List<LoHang> danhSachLH = loHangBUS.getAllLoHang();
             
             // Thêm từng lô hàng vào bảng
             for (LoHang lh : danhSachLH) {
+                // Kiểm tra và cập nhật trạng thái hết hạn
+                boolean isExpired = lh.getHanSuDung().isBefore(LocalDate.now());
+                String trangThai = isExpired ? "Hết hạn" : "Còn hạn";
+                
+                // Nếu trạng thái thay đổi, cập nhật vào database
+                if (isExpired && lh.isTrangThai()) {
+                    lh.setTrangThai(false);
+                    try {
+                        loHangBUS.capNhatLoHang(lh);
+                    } catch (Exception ex) {
+                        System.err.println("Lỗi khi cập nhật trạng thái lô hàng: " + ex.getMessage());
+                    }
+                }
+                
                 tableDesign.getModelTable().addRow(new Object[]{
                     lh.getMaLoHang(),
                     lh.getTenLoHang(),
                     lh.getHanSuDung(),
                     lh.getTonKho(),
-                    lh.isTrangThai() ? "Còn hạn" : "Hết hạn"
+                    trangThai
                 });
             }
         } catch (Exception e) {
@@ -97,6 +154,8 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
 
         modalAddBatch = new javax.swing.JDialog();
         jPanel2 = new javax.swing.JPanel();
+        jLabel25 = new javax.swing.JLabel();
+        comboProductAdd = new javax.swing.JComboBox<>();
         txtBatchNameAdd = new javax.swing.JTextField();
         jLabel18 = new javax.swing.JLabel();
         jLabel22 = new javax.swing.JLabel();
@@ -109,6 +168,8 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
         btnExitModalAdd = new javax.swing.JButton();
         modalEditBatch = new javax.swing.JDialog();
         jPanel4 = new javax.swing.JPanel();
+        jLabel29 = new javax.swing.JLabel();
+        comboProductEdit = new javax.swing.JComboBox<>();
         txtBatchNameEdit = new javax.swing.JTextField();
         jLabel19 = new javax.swing.JLabel();
         jLabel26 = new javax.swing.JLabel();
@@ -135,12 +196,17 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
         modalAddBatch.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         modalAddBatch.setTitle("Thêm lô hàng");
         modalAddBatch.setBackground(new java.awt.Color(255, 255, 255));
-        modalAddBatch.setMinimumSize(new java.awt.Dimension(650, 550));
+        modalAddBatch.setMinimumSize(new java.awt.Dimension(650, 650));
         modalAddBatch.setModal(true);
         modalAddBatch.setResizable(false);
-        modalAddBatch.setSize(new java.awt.Dimension(650, 550));
+        modalAddBatch.setSize(new java.awt.Dimension(650, 650));
 
         jPanel2.setBackground(new java.awt.Color(255, 255, 255));
+
+        jLabel25.setFont(new java.awt.Font("Segoe UI", 1, 16)); // NOI18N
+        jLabel25.setText("Sản phẩm");
+
+        comboProductAdd.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
         txtBatchNameAdd.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
@@ -188,6 +254,8 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addGap(50, 50, 50)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jLabel25)
+                    .addComponent(comboProductAdd, 0, 540, Short.MAX_VALUE)
                     .addComponent(jLabel18)
                     .addComponent(txtBatchNameAdd, javax.swing.GroupLayout.DEFAULT_SIZE, 540, Short.MAX_VALUE)
                     .addComponent(jLabel22)
@@ -205,27 +273,31 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
-                .addGap(40, 40, 40)
+                .addGap(30, 30, 30)
+                .addComponent(jLabel25)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(comboProductAdd, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
                 .addComponent(jLabel18)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(txtBatchNameAdd, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(22, 22, 22)
+                .addComponent(txtBatchNameAdd, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
                 .addComponent(jLabel22)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(dateExpiryAdd, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(22, 22, 22)
+                .addComponent(dateExpiryAdd, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
                 .addComponent(jLabel24)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(txtStockAdd, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(22, 22, 22)
+                .addComponent(txtStockAdd, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
                 .addComponent(jLabel23)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(comboStatusAdd, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(35, 35, 35)
+                .addComponent(comboStatusAdd, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(30, 30, 30)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnAddBatch, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnExitModalAdd, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(40, Short.MAX_VALUE))
+                    .addComponent(btnAddBatch, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnExitModalAdd, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(30, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout modalAddBatchLayout = new javax.swing.GroupLayout(modalAddBatch.getContentPane());
@@ -248,12 +320,17 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
         modalEditBatch.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         modalEditBatch.setTitle("Sửa lô hàng");
         modalEditBatch.setBackground(new java.awt.Color(255, 255, 255));
-        modalEditBatch.setMinimumSize(new java.awt.Dimension(650, 550));
+        modalEditBatch.setMinimumSize(new java.awt.Dimension(650, 650));
         modalEditBatch.setModal(true);
         modalEditBatch.setResizable(false);
-        modalEditBatch.setSize(new java.awt.Dimension(650, 550));
+        modalEditBatch.setSize(new java.awt.Dimension(650, 650));
 
         jPanel4.setBackground(new java.awt.Color(255, 255, 255));
+
+        jLabel29.setFont(new java.awt.Font("Segoe UI", 1, 16)); // NOI18N
+        jLabel29.setText("Sản phẩm");
+
+        comboProductEdit.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
         txtBatchNameEdit.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
@@ -301,6 +378,8 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
             .addGroup(jPanel4Layout.createSequentialGroup()
                 .addGap(50, 50, 50)
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jLabel29)
+                    .addComponent(comboProductEdit, 0, 540, Short.MAX_VALUE)
                     .addComponent(jLabel19)
                     .addComponent(txtBatchNameEdit, javax.swing.GroupLayout.DEFAULT_SIZE, 540, Short.MAX_VALUE)
                     .addComponent(jLabel26)
@@ -319,6 +398,10 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel4Layout.createSequentialGroup()
                 .addGap(30, 30, 30)
+                .addComponent(jLabel29)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(comboProductEdit, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
                 .addComponent(jLabel19)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(txtBatchNameEdit, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -530,8 +613,15 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
             Date hanSD = dateExpiryAdd.getDate();
             String tonKhoStr = txtStockAdd.getText().trim();
             String trangThaiStr = (String) comboStatusAdd.getSelectedItem();
+            SanPham sanPham = getSelectedSanPham(comboProductAdd);
             
             // Validate dữ liệu
+            if (sanPham == null) {
+                Notifications.getInstance().show(Notifications.Type.WARNING, "Vui lòng chọn sản phẩm!");
+                comboProductAdd.requestFocus();
+                return;
+            }
+            
             if (tenLH.isEmpty()) {
                 Notifications.getInstance().show(Notifications.Type.WARNING, "Vui lòng nhập tên lô hàng!");
                 txtBatchNameAdd.requestFocus();
@@ -540,6 +630,13 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
             
             if (hanSD == null) {
                 Notifications.getInstance().show(Notifications.Type.WARNING, "Vui lòng chọn hạn sử dụng!");
+                return;
+            }
+            
+            // Kiểm tra hạn sử dụng phải lớn hơn ngày hiện tại
+            LocalDate hanSuDung = hanSD.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            if (hanSuDung.isBefore(LocalDate.now())) {
+                Notifications.getInstance().show(Notifications.Type.WARNING, "Hạn sử dụng phải lớn hơn hoặc bằng ngày hiện tại!");
                 return;
             }
             
@@ -563,28 +660,38 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
                 return;
             }
             
-            // Chuyển đổi Date sang LocalDate
-            LocalDate hanSuDung = hanSD.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-            boolean trangThai = trangThaiStr.equals("Còn hạn");
+            // Tự động xác định trạng thái dựa trên hạn sử dụng
+            boolean trangThai = !hanSuDung.isBefore(LocalDate.now());
             
-            // Tạo đối tượng LoHang (chưa có sản phẩm - cần bổ sung sau)
+            // Tạo đối tượng LoHang
             LoHang lh = new LoHang();
             lh.setTenLoHang(tenLH);
             lh.setHanSuDung(hanSuDung);
             lh.setTonKho(tonKho);
             lh.setTrangThai(trangThai);
+            lh.setSanPham(sanPham);
             
-            // Note: Cần thêm logic chọn sản phẩm cho lô hàng
-            // Hiện tại tạm thời bỏ qua để demo giao diện
-            Notifications.getInstance().show(Notifications.Type.INFO, "Chức năng thêm lô hàng cần bổ sung logic chọn sản phẩm!");
+            // Thêm vào database
+            boolean success = loHangBUS.themLoHang(lh);
             
-            // Xóa dữ liệu form
-            clearData(txtBatchNameAdd, txtStockAdd);
-            dateExpiryAdd.setDate(null);
-            comboStatusAdd.setSelectedIndex(0);
+            if (success) {
+                Notifications.getInstance().show(Notifications.Type.SUCCESS, "Thêm lô hàng thành công!");
+                
+                // Xóa dữ liệu form
+                clearData(txtBatchNameAdd, txtStockAdd);
+                dateExpiryAdd.setDate(null);
+                comboStatusAdd.setSelectedIndex(0);
+                comboProductAdd.setSelectedIndex(0);
+                
+                // Đóng modal và reload dữ liệu
+                modalAddBatch.dispose();
+                loadBatchData();
+            } else {
+                Notifications.getInstance().show(Notifications.Type.ERROR, "Thêm lô hàng thất bại!");
+            }
             
         } catch (Exception e) {
-            Notifications.getInstance().show(Notifications.Type.ERROR, e.getMessage());
+            Notifications.getInstance().show(Notifications.Type.ERROR, "Lỗi: " + e.getMessage());
         }
     }//GEN-LAST:event_btnAddBatchActionPerformed
 
@@ -600,8 +707,15 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
             Date hanSD = dateExpiryEdit.getDate();
             String tonKhoStr = txtStockEdit.getText().trim();
             String trangThaiStr = (String) comboStatusEdit.getSelectedItem();
+            SanPham sanPham = getSelectedSanPham(comboProductEdit);
             
             // Validate dữ liệu
+            if (sanPham == null) {
+                Notifications.getInstance().show(Notifications.Type.WARNING, "Vui lòng chọn sản phẩm!");
+                comboProductEdit.requestFocus();
+                return;
+            }
+            
             if (tenLH.isEmpty()) {
                 Notifications.getInstance().show(Notifications.Type.WARNING, "Vui lòng nhập tên lô hàng!");
                 txtBatchNameEdit.requestFocus();
@@ -635,20 +749,41 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
             
             // Chuyển đổi Date sang LocalDate
             LocalDate hanSuDung = hanSD.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-            boolean trangThai = trangThaiStr.equals("Còn hạn");
             
-            // Note: Cần lấy thông tin lô hàng hiện tại và cập nhật
-            Notifications.getInstance().show(Notifications.Type.INFO, "Chức năng sửa lô hàng cần bổ sung logic!");
+            // Tự động xác định trạng thái dựa trên hạn sử dụng
+            boolean trangThai = !hanSuDung.isBefore(LocalDate.now());
             
-            // Xóa dữ liệu form và đóng modal
-            clearData(txtBatchNameEdit, txtStockEdit);
-            dateExpiryEdit.setDate(null);
-            comboStatusEdit.setSelectedIndex(0);
-            batchIdEdit = null;
-            modalEditBatch.dispose();
+            // Tạo đối tượng LoHang với thông tin cập nhật
+            LoHang lh = new LoHang();
+            lh.setMaLoHang(batchIdEdit);
+            lh.setTenLoHang(tenLH);
+            lh.setHanSuDung(hanSuDung);
+            lh.setTonKho(tonKho);
+            lh.setTrangThai(trangThai);
+            lh.setSanPham(sanPham);
+            
+            // Cập nhật vào database
+            boolean success = loHangBUS.capNhatLoHang(lh);
+            
+            if (success) {
+                Notifications.getInstance().show(Notifications.Type.SUCCESS, "Cập nhật lô hàng thành công!");
+                
+                // Xóa dữ liệu form và đóng modal
+                clearData(txtBatchNameEdit, txtStockEdit);
+                dateExpiryEdit.setDate(null);
+                comboStatusEdit.setSelectedIndex(0);
+                comboProductEdit.setSelectedIndex(0);
+                batchIdEdit = null;
+                modalEditBatch.dispose();
+                
+                // Reload dữ liệu
+                loadBatchData();
+            } else {
+                Notifications.getInstance().show(Notifications.Type.ERROR, "Cập nhật lô hàng thất bại!");
+            }
             
         } catch (Exception e) {
-            Notifications.getInstance().show(Notifications.Type.ERROR, e.getMessage());
+            Notifications.getInstance().show(Notifications.Type.ERROR, "Lỗi: " + e.getMessage());
         }
     }//GEN-LAST:event_btnEditBatchActionPerformed
 
@@ -665,22 +800,52 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
             return;
         }
 
-        // Lấy thông tin từ bảng
-        String maLH = tableDesign.getTable().getValueAt(selectedRow, 0).toString();
-        String tenLH = tableDesign.getTable().getValueAt(selectedRow, 1).toString();
-        LocalDate hanSD = (LocalDate) tableDesign.getTable().getValueAt(selectedRow, 2);
-        String tonKho = tableDesign.getTable().getValueAt(selectedRow, 3).toString();
-        String trangThai = tableDesign.getTable().getValueAt(selectedRow, 4).toString();
+        try {
+            // Lấy thông tin từ bảng
+            String maLH = tableDesign.getTable().getValueAt(selectedRow, 0).toString();
+            String tenLH = tableDesign.getTable().getValueAt(selectedRow, 1).toString();
+            LocalDate hanSD = (LocalDate) tableDesign.getTable().getValueAt(selectedRow, 2);
+            String tonKho = tableDesign.getTable().getValueAt(selectedRow, 3).toString();
+            String trangThai = tableDesign.getTable().getValueAt(selectedRow, 4).toString();
 
-        // Hiển thị lên modal edit
-        batchIdEdit = maLH;
-        txtBatchNameEdit.setText(tenLH);
-        dateExpiryEdit.setDate(Date.from(hanSD.atStartOfDay(ZoneId.systemDefault()).toInstant()));
-        txtStockEdit.setText(tonKho);
-        comboStatusEdit.setSelectedItem(trangThai);
+            // Lấy thông tin lô hàng từ database để có đầy đủ thông tin sản phẩm
+            List<LoHang> danhSachLH = loHangBUS.getAllLoHang();
+            LoHang loHangEdit = null;
+            for (LoHang lh : danhSachLH) {
+                if (lh.getMaLoHang().equals(maLH)) {
+                    loHangEdit = lh;
+                    break;
+                }
+            }
 
-        modalEditBatch.setLocationRelativeTo(this);
-        modalEditBatch.setVisible(true);
+            if (loHangEdit == null) {
+                Notifications.getInstance().show(Notifications.Type.ERROR, "Không tìm thấy thông tin lô hàng!");
+                return;
+            }
+
+            // Hiển thị lên modal edit
+            batchIdEdit = maLH;
+            txtBatchNameEdit.setText(tenLH);
+            dateExpiryEdit.setDate(Date.from(hanSD.atStartOfDay(ZoneId.systemDefault()).toInstant()));
+            txtStockEdit.setText(tonKho);
+            comboStatusEdit.setSelectedItem(trangThai);
+
+            // Set sản phẩm đã chọn
+            if (loHangEdit.getSanPham() != null) {
+                String maSP = loHangEdit.getSanPham().getMaSanPham();
+                for (int i = 0; i < danhSachSanPham.size(); i++) {
+                    if (danhSachSanPham.get(i).getMaSanPham().equals(maSP)) {
+                        comboProductEdit.setSelectedIndex(i + 1); // +1 vì index 0 là "-- Chọn sản phẩm --"
+                        break;
+                    }
+                }
+            }
+
+            modalEditBatch.setLocationRelativeTo(this);
+            modalEditBatch.setVisible(true);
+        } catch (Exception e) {
+            Notifications.getInstance().show(Notifications.Type.ERROR, "Lỗi khi tải thông tin lô hàng: " + e.getMessage());
+        }
     }//GEN-LAST:event_btnUpdateActionPerformed
 
     private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddActionPerformed
@@ -743,6 +908,8 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
     private javax.swing.JButton btnExitModalEdit;
     private javax.swing.JButton btnSearch;
     private javax.swing.JButton btnUpdate;
+    private javax.swing.JComboBox<String> comboProductAdd;
+    private javax.swing.JComboBox<String> comboProductEdit;
     private javax.swing.JComboBox<String> comboStatusAdd;
     private javax.swing.JComboBox<String> comboStatusEdit;
     private com.toedter.calendar.JDateChooser dateExpiryAdd;
@@ -753,9 +920,11 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel22;
     private javax.swing.JLabel jLabel23;
     private javax.swing.JLabel jLabel24;
+    private javax.swing.JLabel jLabel25;
     private javax.swing.JLabel jLabel26;
     private javax.swing.JLabel jLabel27;
     private javax.swing.JLabel jLabel28;
+    private javax.swing.JLabel jLabel29;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
