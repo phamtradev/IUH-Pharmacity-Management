@@ -9,7 +9,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.KeyEvent;
-import java.io.File;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -19,10 +18,7 @@ import java.util.Optional;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.JFileChooser;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import raven.toast.Notifications;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.ChiTietDonHangBUS;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.ChiTietKhuyenMaiSanPhamBUS;
@@ -662,67 +658,6 @@ public class Panel_DonHang extends javax.swing.JPanel {
         }
     }
     
-    /**
-     * Xuất hóa đơn ra file PDF
-     */
-    private void xuatHoaDonPDF(DonHang donHang, List<ChiTietDonHang> chiTietDonHangList) {
-        try {
-            // Tạo file chooser
-            JFileChooser fileChooser = new JFileChooser();
-            fileChooser.setDialogTitle("Lưu hóa đơn PDF");
-            
-            // Set tên file mặc định
-            String fileName = XuatHoaDonPDF.generateFileName(donHang.getMaDonHang());
-            fileChooser.setSelectedFile(new File(fileName));
-            
-            // Chỉ cho phép lưu file PDF
-            FileNameExtensionFilter filter = new FileNameExtensionFilter("PDF Files", "pdf");
-            fileChooser.setFileFilter(filter);
-            
-            // Hiển thị dialog
-            int userSelection = fileChooser.showSaveDialog(this);
-            
-            if (userSelection == JFileChooser.APPROVE_OPTION) {
-                File fileToSave = fileChooser.getSelectedFile();
-                String filePath = fileToSave.getAbsolutePath();
-                
-                // Đảm bảo file có đuôi .pdf
-                if (!filePath.toLowerCase().endsWith(".pdf")) {
-                    filePath += ".pdf";
-                }
-                
-                // Xuất PDF
-                boolean success = XuatHoaDonPDF.xuatHoaDon(donHang, chiTietDonHangList, filePath);
-                
-                if (success) {
-                    Notifications.getInstance().show(Notifications.Type.SUCCESS, 
-                        Notifications.Location.TOP_CENTER,
-                        "Xuất hóa đơn PDF thành công!");
-                    
-                    // Hỏi có muốn mở file không
-                    int openChoice = JOptionPane.showConfirmDialog(this, 
-                        "Bạn có muốn mở file PDF vừa xuất không?", 
-                        "Mở file", 
-                        JOptionPane.YES_NO_OPTION);
-                    
-                    if (openChoice == JOptionPane.YES_OPTION) {
-                        // Mở file PDF bằng ứng dụng mặc định
-                        java.awt.Desktop.getDesktop().open(new File(filePath));
-                    }
-                } else {
-                    Notifications.getInstance().show(Notifications.Type.ERROR, 
-                        Notifications.Location.TOP_CENTER,
-                        "Không thể xuất hóa đơn PDF!");
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            Notifications.getInstance().show(Notifications.Type.ERROR, 
-                Notifications.Location.TOP_CENTER,
-                "Lỗi khi xuất PDF: " + e.getMessage());
-        }
-    }
-
     private void btnBanHangActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBanHangActionPerformed
         createOrder();
 
@@ -1198,7 +1133,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
         dialog.setTitle("Hóa đơn bán hàng");
         dialog.setModal(true);
         dialog.setSize(900, 650);
-        dialog.setLocationRelativeTo(this);
+        dialog.setLocationRelativeTo(null); // Hiển thị giữa màn hình
         
         // Panel chính
         javax.swing.JPanel mainPanel = new javax.swing.JPanel();
@@ -1353,24 +1288,6 @@ public class Panel_DonHang extends javax.swing.JPanel {
         
         footerPanel.add(tongTienPanel);
         footerPanel.add(Box.createVerticalStrut(10));
-        
-        // Nút xuất PDF
-        javax.swing.JButton btnXuatPDF = new javax.swing.JButton("Xuất hóa đơn PDF");
-        btnXuatPDF.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 14));
-        btnXuatPDF.setBackground(new Color(25, 135, 84));
-        btnXuatPDF.setForeground(Color.WHITE);
-        btnXuatPDF.setFocusPainted(false);
-        btnXuatPDF.setBorderPainted(false);
-        btnXuatPDF.setPreferredSize(new java.awt.Dimension(180, 40));
-        btnXuatPDF.addActionListener(e -> {
-            xuatHoaDonPDF(donHang, danhSachChiTiet);
-        });
-        
-        javax.swing.JPanel btnPanel = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER));
-        btnPanel.setBackground(Color.WHITE);
-        btnPanel.add(btnXuatPDF);
-        
-        footerPanel.add(btnPanel);
         
         mainPanel.add(footerPanel, BorderLayout.SOUTH);
         
