@@ -59,9 +59,9 @@ public class MainApplication {
                 }
 
                 // Khởi tạo ứng dụng - chạy vào giao diện chính luôn
-                new MenuForm().setVisible(true);
+                //new MenuForm().setVisible(true);
 //                    new LoginFrame().setVisible(true);
-//           new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.loading.SplashScreen().setVisible(true);
+          new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.loading.SplashScreen().setVisible(true);
 
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(null,

@@ -78,8 +78,10 @@ public class LoginFormPanel extends javax.swing.JPanel {
         contentPanel = new javax.swing.JPanel();
         lblTieuDe = new javax.swing.JLabel();
         txtTenDangNhap = new javax.swing.JTextField();
-        txtMatKhau = new javax.swing.JTextField();
+        txtMatKhau = new javax.swing.JPasswordField();
         pnlDangNhap = new javax.swing.JPanel();
+        chkHienMatKhau = new javax.swing.JCheckBox();
+        jPanel1 = new javax.swing.JPanel();
         btnDangNhap = new javax.swing.JButton();
         lblQuenMatKhau = new javax.swing.JLabel();
 
@@ -137,30 +139,29 @@ public class LoginFormPanel extends javax.swing.JPanel {
 
         txtMatKhau.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         txtMatKhau.setPreferredSize(new java.awt.Dimension(300, 45));
-        txtMatKhau.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                txtMatKhauFocusGained(evt);
-            }
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                txtMatKhauFocusLost(evt);
-            }
-        });
-        txtMatKhau.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                txtMatKhauMouseClicked(evt);
-            }
-        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.insets = new java.awt.Insets(0, 310, 10, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 310, 0, 0);
         contentPanel.add(txtMatKhau, gridBagConstraints);
-        txtMatKhau.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Mật khẩu");
 
         pnlDangNhap.setBackground(javax.swing.UIManager.getDefaults().getColor("Component.success.borderColor"));
         pnlDangNhap.setOpaque(false);
-        pnlDangNhap.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT));
+        pnlDangNhap.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 2, 5));
+
+        chkHienMatKhau.setText("Hiện mật khẩu");
+        chkHienMatKhau.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        chkHienMatKhau.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                chkHienMatKhauActionPerformed(evt);
+            }
+        });
+        pnlDangNhap.add(chkHienMatKhau);
+
+        jPanel1.setOpaque(false);
+        jPanel1.setPreferredSize(new java.awt.Dimension(45, 100));
+        pnlDangNhap.add(jPanel1);
 
         btnDangNhap.setBackground(javax.swing.UIManager.getDefaults().getColor("Actions.Blue"));
         btnDangNhap.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
@@ -304,10 +305,6 @@ public class LoginFormPanel extends javax.swing.JPanel {
         font = font.deriveFont(Font.PLAIN | Font.BOLD);
         txt.setFont(font);
     }
-    private void txtMatKhauMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_txtMatKhauMouseClicked
-        // txtMatKhau.
-    }//GEN-LAST:event_txtMatKhauMouseClicked
-
     private void txtTenDangNhapActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtTenDangNhapActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_txtTenDangNhapActionPerformed
@@ -332,13 +329,6 @@ public class LoginFormPanel extends javax.swing.JPanel {
 
     }//GEN-LAST:event_txtTenDangNhapMouseClicked
 
-    private void txtMatKhauFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtMatKhauFocusGained
-        if (txtMatKhau.getText().equals("Nhập mật khẩu")) {
-            txtMatKhau.setText("");
-            removePlayhoder(txtMatKhau);
-        }
-    }//GEN-LAST:event_txtMatKhauFocusGained
-
     private void txtTenDangNhapFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtTenDangNhapFocusLost
         if (txtTenDangNhap.getText().length() == 0) {
             addPlayhoder(txtTenDangNhap);
@@ -346,24 +336,23 @@ public class LoginFormPanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_txtTenDangNhapFocusLost
 
-    private void txtMatKhauFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtMatKhauFocusLost
-        if (txtMatKhau.getText().length() == 0) {
-            addPlayhoder(txtMatKhau);
-            txtMatKhau.setText("Nhập mật khẩu");
-        }
-    }//GEN-LAST:event_txtMatKhauFocusLost
-
     private void formFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_formFocusGained
 
     }//GEN-LAST:event_formFocusGained
 
+    private void chkHienMatKhauActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chkHienMatKhauActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_chkHienMatKhauActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnDangNhap;
+    private javax.swing.JCheckBox chkHienMatKhau;
     private javax.swing.JPanel contentPanel;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JLabel lblQuenMatKhau;
     private javax.swing.JLabel lblTieuDe;
     private javax.swing.JPanel pnlDangNhap;
-    private javax.swing.JTextField txtMatKhau;
+    private javax.swing.JPasswordField txtMatKhau;
     private javax.swing.JTextField txtTenDangNhap;
     // End of variables declaration//GEN-END:variables
 }
