@@ -163,18 +163,38 @@ public class DonHangDAO implements DAOInterface<DonHang, String> {
     }
 
     private String taoMaDonHangMoi() {
-        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(SQL_LAY_MA_CUOI); ResultSet rs = stmt.executeQuery()) {
+        LocalDate ngayHienTai = LocalDate.now();
+        String ngayThangNam = String.format("%02d%02d%04d", 
+                ngayHienTai.getDayOfMonth(), 
+                ngayHienTai.getMonthValue(), 
+                ngayHienTai.getYear());
+        
+        String prefixHienTai = "DH" + ngayThangNam;
+        
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(
+                     "SELECT TOP 1 maDonHang FROM DonHang WHERE maDonHang LIKE ? ORDER BY maDonHang DESC")) {
+            
+            stmt.setString(1, prefixHienTai + "%");
+            ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
                 String maCuoi = rs.getString("maDonHang");
-                int so = Integer.parseInt(maCuoi.substring(2)) + 1;
-                return String.format("DH%05d", so);
+                try {
+                    // Lấy 4 số cuối: DHddMMyyyyxxxx -> xxxx
+                    String soSTT = maCuoi.substring(12);
+                    int so = Integer.parseInt(soSTT) + 1;
+                    return prefixHienTai + String.format("%04d", so);
+                } catch (NumberFormatException | StringIndexOutOfBoundsException e) {
+                    System.err.println("Mã đơn hàng không hợp lệ: " + maCuoi + ". Tạo mã mới.");
+                }
             }
 
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return "DH00001";
+        // Nếu chưa có đơn nào trong ngày, tạo mã đầu tiên
+        return prefixHienTai + "0001";
     }
 
     public boolean exists(String maDonHang) {

@@ -55,6 +55,7 @@ public class GD_BanHang extends javax.swing.JPanel {
         wrapperPanel.setBackground(java.awt.Color.WHITE);
 
         panelDonHang = new Panel_DonHang();
+        panelDonHang.setGdBanHang(this); // Set reference đến form cha
         
         // Thêm listener để lắng nghe thay đổi khuyến mãi
         panelDonHang.addPropertyChangeListener("khuyenMaiChanged", evt -> {
@@ -526,6 +527,42 @@ public class GD_BanHang extends javax.swing.JPanel {
         txtTimSanPham.setText("");
         txtTimSanPham.requestFocus();
         Notifications.getInstance().show(Notifications.Type.SUCCESS, "Đã xóa trắng thành công !");
+    }
+    
+    /**
+     * Lấy danh sách sản phẩm trong giỏ hàng
+     */
+    public java.util.List<Panel_ChiTietSanPham> getDanhSachSanPhamTrongGio() {
+        java.util.List<Panel_ChiTietSanPham> danhSach = new java.util.ArrayList<>();
+        
+        // Duyệt qua tất cả components trong containerPanel
+        for (Component comp : containerPanel.getComponents()) {
+            if (comp instanceof Panel_ChiTietSanPham) {
+                danhSach.add((Panel_ChiTietSanPham) comp);
+            }
+        }
+        
+        return danhSach;
+    }
+    
+    /**
+     * Xóa toàn bộ giỏ hàng
+     */
+    public void xoaToanBoGioHang() {
+        // Lấy danh sách Panel_ChiTietSanPham
+        java.util.List<Panel_ChiTietSanPham> danhSach = getDanhSachSanPhamTrongGio();
+        
+        // Xóa từng panel
+        for (Panel_ChiTietSanPham panel : danhSach) {
+            containerPanel.remove(panel);
+        }
+        
+        // Cập nhật giao diện
+        containerPanel.revalidate();
+        containerPanel.repaint();
+        
+        // Cập nhật tổng tiền (sẽ về 0)
+        capNhatTongTien();
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
