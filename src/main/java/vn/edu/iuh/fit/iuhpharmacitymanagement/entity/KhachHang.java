@@ -25,7 +25,7 @@ public class KhachHang {
     
     public static final String MA_KHACH_HANG_REGEX = "^KH\\d{5}$";
     public static final String SO_DIEN_THOAI_REGEX = "^0[0-9]{9}$";
-    public static final String EMAIL_REGEX = "^[^@]+@[^@]+\\.[a-zA-Z]{2,}$";
+    public static final String EMAIL_REGEX = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.(com|vn)$";
 
     public KhachHang() {
     }
@@ -45,7 +45,7 @@ public class KhachHang {
     }
 
     public void setMaKhachHang(String maKhachHang) throws Exception {
-        if (!maKhachHang.matches(MA_KHACH_HANG_REGEX)) {
+        if (maKhachHang == null || !maKhachHang.matches(MA_KHACH_HANG_REGEX)) {
             throw new Exception(MA_KHACH_HANG_SAI);
         }
         this.maKhachHang = maKhachHang;

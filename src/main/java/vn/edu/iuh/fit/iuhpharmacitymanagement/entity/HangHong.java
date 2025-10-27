@@ -27,6 +27,9 @@ public class HangHong {
     
     public static final String NGAY_NHAP_HANG_SAI ="Ngày nhập hàng hỏng phải nhỏ hơn hoặc bằng ngày hiện tại";
     public static final String NGAY_NHAP_HANG_NULL ="Ngày nhập hàng hỏng không được rỗng";
+    
+    
+    
     public HangHong() {
     }
 
