@@ -36,8 +36,7 @@ public class DonHang {
     public static final String THANH_TIEN_SAI = "Thành tiền phải là một số dương";
     public static final String PHUONG_THUC_THANH_TOAN_RONG = "Phương thức thanh toán không được để trống";
     public static final String NHAN_VIEN_RONG = "Nhân viên không được để trống";
-    public static final String KHACH_HANG_RONG = "Khách hàng không được để trống";
-    public static final String KHUYEN_MAI_RONG = "Khuyến mãi không được để trống";
+    // KHACH_HANG_RONG và KHUYEN_MAI_RONG đã bỏ vì có thể null (vãng lai/không khuyến mãi)
     public static final String CHI_TIET_DON_HANG_RONG = "Đơn hàng phải có ít nhất một chi tiết đơn hàng";
     
 //    public static final String MA_DON_HANG_PREFIX = "DH";
@@ -114,10 +113,8 @@ public class DonHang {
         return khachHang;
     }
 
-    public void setKhachHang(KhachHang khachHang) throws Exception{
-        if(khachHang == null){
-            throw new Exception(KHACH_HANG_RONG);
-        }
+    public void setKhachHang(KhachHang khachHang) {
+        // Khách hàng có thể null (khách vãng lai)
         this.khachHang = khachHang;
     }
 
@@ -125,10 +122,8 @@ public class DonHang {
         return khuyenMai;
     }
 
-    public void setKhuyenMai(KhuyenMai khuyenMai) throws Exception{
-        if(khuyenMai == null){
-            throw new Exception(KHUYEN_MAI_RONG);
-        }
+    public void setKhuyenMai(KhuyenMai khuyenMai) {
+        // Khuyến mãi có thể null (không áp dụng khuyến mãi)
         this.khuyenMai = khuyenMai;
     }
 
