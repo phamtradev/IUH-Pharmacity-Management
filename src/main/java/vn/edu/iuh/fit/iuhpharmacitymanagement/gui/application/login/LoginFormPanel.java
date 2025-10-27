@@ -5,9 +5,22 @@
 package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.login;
 
 import com.formdev.flatlaf.FlatClientProperties;
+import com.formdev.flatlaf.FlatLightLaf;
+import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Image;
+import java.sql.SQLException;
+import java.util.Optional;
 import javax.swing.ImageIcon;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import raven.toast.Notifications;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.connectDB.ConnectDB;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.TaiKhoanDAO;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.form.MenuForm;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.form.WelcomeFormNhanVien;
 
 /**
  *
@@ -33,10 +46,16 @@ public class LoginFormPanel extends javax.swing.JPanel {
                 javax.swing.BorderFactory.createEmptyBorder(20, 20, 20, 20)
         ));
 
-        btnDangNhap.putClientProperty("JButton.buttonType", "primary"); // không hoạt động nhưng mà đừng xóa :v
-
+        btnDangNhap.putClientProperty("JButton.buttonType", "primary"); // không hoạt động nhưng mà đừng xóa :v        
         txtTenDangNhap.putClientProperty(FlatClientProperties.TEXT_FIELD_LEADING_ICON, new com.formdev.flatlaf.extras.FlatSVGIcon("img/user_icon.svg"));
         txtMatKhau.putClientProperty(FlatClientProperties.TEXT_FIELD_LEADING_ICON, new com.formdev.flatlaf.extras.FlatSVGIcon("img/password_icon.svg"));
+        txtTenDangNhap.setText("Tên đăng nhập");
+        txtMatKhau.setText("Nhập mật khẩu");
+        //mặt focus vào pnl đẻ txt k mất playhoder
+        contentPanel.setFocusable(true);
+        contentPanel.requestFocusInWindow();
+        addPlayhoder(txtTenDangNhap);
+        addPlayhoder(txtMatKhau);
     }
 
     @Override
@@ -65,6 +84,11 @@ public class LoginFormPanel extends javax.swing.JPanel {
         lblQuenMatKhau = new javax.swing.JLabel();
 
         setBackground(javax.swing.UIManager.getDefaults().getColor("Component.success.borderColor"));
+        addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                formFocusGained(evt);
+            }
+        });
         setLayout(new java.awt.GridBagLayout());
 
         contentPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("Component.success.borderColor"));
@@ -82,6 +106,27 @@ public class LoginFormPanel extends javax.swing.JPanel {
 
         txtTenDangNhap.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         txtTenDangNhap.setPreferredSize(new java.awt.Dimension(300, 45));
+        txtTenDangNhap.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                txtTenDangNhapFocusGained(evt);
+            }
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                txtTenDangNhapFocusLost(evt);
+            }
+        });
+        txtTenDangNhap.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                txtTenDangNhapMouseClicked(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                txtTenDangNhapMouseExited(evt);
+            }
+        });
+        txtTenDangNhap.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtTenDangNhapActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -92,6 +137,19 @@ public class LoginFormPanel extends javax.swing.JPanel {
 
         txtMatKhau.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         txtMatKhau.setPreferredSize(new java.awt.Dimension(300, 45));
+        txtMatKhau.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                txtMatKhauFocusGained(evt);
+            }
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                txtMatKhauFocusLost(evt);
+            }
+        });
+        txtMatKhau.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                txtMatKhauMouseClicked(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -110,6 +168,11 @@ public class LoginFormPanel extends javax.swing.JPanel {
         btnDangNhap.setText("Đăng nhập");
         btnDangNhap.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnDangNhap.setPreferredSize(new java.awt.Dimension(150, 45));
+        btnDangNhap.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDangNhapActionPerformed(evt);
+            }
+        });
         pnlDangNhap.add(btnDangNhap);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -136,6 +199,163 @@ public class LoginFormPanel extends javax.swing.JPanel {
         add(contentPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
+    TaiKhoanDAO tkDao = new TaiKhoanDAO();
+
+    private static void setupLookAndFeel() {
+        // Configure FlatLaf with white title bar
+        System.setProperty("flatlaf.useWindowDecorations", "true");
+        FlatLightLaf.setup();
+
+        // Configure global title bar colors
+        UIManager.put("TitlePane.background", Color.WHITE);
+        UIManager.put("TitlePane.foreground", Color.BLACK);
+        UIManager.put("TitlePane.inactiveBackground", Color.WHITE);
+        UIManager.put("TitlePane.inactiveForeground", Color.GRAY);
+
+        // Remove all shadow effects and gray colors
+        UIManager.put("Component.focusWidth", 0);
+        UIManager.put("Component.innerFocusWidth", 0);
+        UIManager.put("Component.borderWidth", 0);
+        UIManager.put("PopupMenu.borderWidth", 0);
+        UIManager.put("ScrollPane.borderWidth", 0);
+        UIManager.put("Panel.borderWidth", 0);
+
+        // Remove default backgrounds that might cause gray colors
+        UIManager.put("Panel.background", Color.WHITE);
+        UIManager.put("ScrollPane.background", Color.WHITE);
+        UIManager.put("Viewport.background", Color.WHITE);
+    }
+    private void btnDangNhapActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDangNhapActionPerformed
+        System.out.println("đã nhấn");
+        try {
+            ConnectDB.getConnection();
+        } catch (SQLException ex) {
+            System.getLogger(LoginFormPanel.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        }                
+         if(txtTenDangNhap.getText().trim().isEmpty() || txtTenDangNhap.getText().trim().length() == 0){
+          Notifications.getInstance().setJFrame(new LoginFrame());
+            Notifications.getInstance().show(
+                    Notifications.Type.ERROR,
+                    Notifications.Location.TOP_CENTER,
+                    "Hãy nhập tên đăng nhập!"
+            );            
+             System.out.println("áđâsdâsdâsda");
+            txtTenDangNhap.requestFocus();
+            return;
+         }
+         if(txtMatKhau.getText().trim().isEmpty() || txtMatKhau.getText().trim().length() ==0){
+              Notifications.getInstance().setJFrame(new LoginFrame());
+            Notifications.getInstance().show(
+                    Notifications.Type.ERROR,
+                    Notifications.Location.TOP_CENTER,
+                    "Hãy nhập mật đăng nhập!"
+            );            
+            txtMatKhau.requestFocus();
+            return;
+         }
+          Optional<String> optVaiTro = tkDao.tonTaiTaiKhoanKhiLogin(txtTenDangNhap.getText(), txtMatKhau.getText());  
+          if (optVaiTro.isEmpty()) {           
+            Notifications.getInstance().setJFrame(new LoginFrame());
+            Notifications.getInstance().show(
+                    Notifications.Type.ERROR,
+                    Notifications.Location.TOP_CENTER,
+                    "Sai tên đăng nhập hoặc mật khẩu hãy nhập lại!"
+            );
+            txtTenDangNhap.requestFocus();
+            return;
+        }
+        if (optVaiTro.get().equalsIgnoreCase("Quản lý")  ) {
+            SwingUtilities.invokeLater(() -> {
+                Notifications.getInstance().setJFrame(new LoginFrame());
+                    Notifications.getInstance().show(Notifications.Type.INFO,
+                            Notifications.Location.TOP_CENTER,
+                            "Đăng nhập thành công! xin chào Quản lý");
+                try {
+                    setupLookAndFeel();                    
+                    new MenuForm().setVisible(true);
+                    this.setVisible(false);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
+
+        } else if (optVaiTro.get().equalsIgnoreCase("Nhân viên")) {
+            // Đăng nhập cho Nhân viên
+            Notifications.getInstance().setJFrame(new LoginFrame());
+            Notifications.getInstance().show(
+                    Notifications.Type.SUCCESS,
+                    Notifications.Location.TOP_CENTER,
+                    "Đăng nhập thành công! Xin chào Nhân viên!"
+            );
+           //để xử lý sau
+           this.setVisible(false);
+        }          
+
+    }//GEN-LAST:event_btnDangNhapActionPerformed
+    public void addPlayhoder(JTextField txt) {
+        Font font = txt.getFont();
+        font = font.deriveFont(Font.ITALIC);
+        txt.setFont(font);
+        txt.setBackground(Color.WHITE);
+    }
+
+    public void removePlayhoder(JTextField txt) {
+        Font font = txt.getFont();
+        font = font.deriveFont(Font.PLAIN | Font.BOLD);
+        txt.setFont(font);
+    }
+    private void txtMatKhauMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_txtMatKhauMouseClicked
+        // txtMatKhau.
+    }//GEN-LAST:event_txtMatKhauMouseClicked
+
+    private void txtTenDangNhapActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtTenDangNhapActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtTenDangNhapActionPerformed
+
+    private void txtTenDangNhapFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtTenDangNhapFocusGained
+        if (txtTenDangNhap.getText().equals("Tên đăng nhập")) {
+            txtTenDangNhap.setText("");
+            txtTenDangNhap.requestFocus();
+            removePlayhoder(txtTenDangNhap);
+        }
+    }//GEN-LAST:event_txtTenDangNhapFocusGained
+
+    private void txtTenDangNhapMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_txtTenDangNhapMouseExited
+//        if(txtTenDangNhap.getText().equals("")){
+//            txtTenDangNhap.setText("Tên đăng nhập");                        
+//            txtMatKhau.requestFocus();           
+//            removePlayhoder(txtMatKhau);
+//        }
+    }//GEN-LAST:event_txtTenDangNhapMouseExited
+
+    private void txtTenDangNhapMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_txtTenDangNhapMouseClicked
+
+    }//GEN-LAST:event_txtTenDangNhapMouseClicked
+
+    private void txtMatKhauFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtMatKhauFocusGained
+        if (txtMatKhau.getText().equals("Nhập mật khẩu")) {
+            txtMatKhau.setText("");
+            removePlayhoder(txtMatKhau);
+        }
+    }//GEN-LAST:event_txtMatKhauFocusGained
+
+    private void txtTenDangNhapFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtTenDangNhapFocusLost
+        if (txtTenDangNhap.getText().length() == 0) {
+            addPlayhoder(txtTenDangNhap);
+            txtTenDangNhap.setText("Tên đăng nhập");
+        }
+    }//GEN-LAST:event_txtTenDangNhapFocusLost
+
+    private void txtMatKhauFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtMatKhauFocusLost
+        if (txtMatKhau.getText().length() == 0) {
+            addPlayhoder(txtMatKhau);
+            txtMatKhau.setText("Nhập mật khẩu");
+        }
+    }//GEN-LAST:event_txtMatKhauFocusLost
+
+    private void formFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_formFocusGained
+
+    }//GEN-LAST:event_formFocusGained
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnDangNhap;

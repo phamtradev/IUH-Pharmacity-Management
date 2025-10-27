@@ -10,48 +10,47 @@ import java.util.List;
 import java.util.Optional;
 
 public class TaiKhoanDAO implements DAOInterface<TaiKhoan, String> {
-    
-    private final String SQL_THEM = 
-            "INSERT INTO TaiKhoan (tenDangNhap, matKhau, maNhanVien) VALUES (?, ?, ?)";
-    
-    private final String SQL_CAP_NHAT = 
-            "UPDATE TaiKhoan SET matKhau = ?, maNhanVien = ? WHERE tenDangNhap = ?";
-    
-    private final String SQL_TIM_THEO_TEN_DANG_NHAP = 
-            "SELECT tk.tenDangNhap, tk.matKhau, tk.maNhanVien, " +
-            "nv.tenNhanVien, nv.diaChi, nv.soDienThoai, nv.email, nv.vaiTro " +
-            "FROM TaiKhoan tk " +
-            "LEFT JOIN NhanVien nv ON tk.maNhanVien = nv.maNhanVien " +
-            "WHERE tk.tenDangNhap = ?";
-    
-    private final String SQL_TIM_TAT_CA = 
-            "SELECT tk.tenDangNhap, tk.matKhau, tk.maNhanVien, " +
-            "nv.tenNhanVien, nv.diaChi, nv.soDienThoai, nv.email, nv.vaiTro " +
-            "FROM TaiKhoan tk " +
-            "LEFT JOIN NhanVien nv ON tk.maNhanVien = nv.maNhanVien";
-    
-    private final String SQL_DANG_NHAP = 
-            "SELECT tk.tenDangNhap, tk.matKhau, tk.maNhanVien, " +
-            "nv.tenNhanVien, nv.diaChi, nv.soDienThoai, nv.email, nv.vaiTro " +
-            "FROM TaiKhoan tk " +
-            "LEFT JOIN NhanVien nv ON tk.maNhanVien = nv.maNhanVien " +
-            "WHERE tk.maNhanVien = ?";
-    
-    private final String SQL_TIM_THEO_MA_NHAN_VIEN = 
-            "SELECT tk.tenDangNhap, tk.matKhau, tk.maNhanVien, " +
-            "nv.tenNhanVien, nv.diaChi, nv.soDienThoai, nv.email, nv.vaiTro " +
-            "FROM TaiKhoan tk " +
-            "LEFT JOIN NhanVien nv ON tk.maNhanVien = nv.maNhanVien " +
-            "WHERE tk.maNhanVien = ?";
-    
-    private final String SQL_LAY_MA_CUOI = 
-            "SELECT TOP 1 tenDangNhap FROM TaiKhoan ORDER BY tenDangNhap DESC";
+
+    private final String SQL_THEM
+            = "INSERT INTO TaiKhoan (tenDangNhap, matKhau, maNhanVien) VALUES (?, ?, ?)";
+
+    private final String SQL_CAP_NHAT
+            = "UPDATE TaiKhoan SET matKhau = ?, maNhanVien = ? WHERE tenDangNhap = ?";
+
+    private final String SQL_TIM_THEO_TEN_DANG_NHAP
+            = "SELECT tk.tenDangNhap, tk.matKhau, tk.maNhanVien, "
+            + "nv.tenNhanVien, nv.diaChi, nv.soDienThoai, nv.email, nv.vaiTro "
+            + "FROM TaiKhoan tk "
+            + "LEFT JOIN NhanVien nv ON tk.maNhanVien = nv.maNhanVien "
+            + "WHERE tk.tenDangNhap = ?";
+
+    private final String SQL_TIM_TAT_CA
+            = "SELECT tk.tenDangNhap, tk.matKhau, tk.maNhanVien, "
+            + "nv.tenNhanVien, nv.diaChi, nv.soDienThoai, nv.email, nv.vaiTro "
+            + "FROM TaiKhoan tk "
+            + "LEFT JOIN NhanVien nv ON tk.maNhanVien = nv.maNhanVien";
+
+    private final String SQL_DANG_NHAP
+            = "SELECT tk.tenDangNhap, tk.matKhau, tk.maNhanVien, "
+            + "nv.tenNhanVien, nv.diaChi, nv.soDienThoai, nv.email, nv.vaiTro "
+            + "FROM TaiKhoan tk "
+            + "LEFT JOIN NhanVien nv ON tk.maNhanVien = nv.maNhanVien "
+            + "WHERE tk.maNhanVien = ?";
+
+    private final String SQL_TIM_THEO_MA_NHAN_VIEN
+            = "SELECT tk.tenDangNhap, tk.matKhau, tk.maNhanVien, "
+            + "nv.tenNhanVien, nv.diaChi, nv.soDienThoai, nv.email, nv.vaiTro "
+            + "FROM TaiKhoan tk "
+            + "LEFT JOIN NhanVien nv ON tk.maNhanVien = nv.maNhanVien "
+            + "WHERE tk.maNhanVien = ?";
+
+    private final String SQL_LAY_MA_CUOI
+            = "SELECT TOP 1 tenDangNhap FROM TaiKhoan ORDER BY tenDangNhap DESC";
 
     @Override
     public boolean insert(TaiKhoan taiKhoan) {
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement stmt = con.prepareStatement(SQL_THEM)) {
-            
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(SQL_THEM)) {
+
             if (taiKhoan.getTenDangNhap() == null || taiKhoan.getTenDangNhap().trim().isEmpty()) {
                 try {
                     taiKhoan.setTenDangNhap(taoMaTaiKhoan());
@@ -60,11 +59,11 @@ public class TaiKhoanDAO implements DAOInterface<TaiKhoan, String> {
                     return false;
                 }
             }
-            
+
             stmt.setString(1, taiKhoan.getTenDangNhap());
             stmt.setString(2, taiKhoan.getMatKhau());
             stmt.setString(3, taiKhoan.getNhanVien() != null ? taiKhoan.getNhanVien().getMaNhanVien() : null);
-            
+
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -74,13 +73,12 @@ public class TaiKhoanDAO implements DAOInterface<TaiKhoan, String> {
 
     @Override
     public boolean update(TaiKhoan taiKhoan) {
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement stmt = con.prepareStatement(SQL_CAP_NHAT)) {
-            
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(SQL_CAP_NHAT)) {
+
             stmt.setString(1, taiKhoan.getMatKhau());
             stmt.setString(2, taiKhoan.getNhanVien() != null ? taiKhoan.getNhanVien().getMaNhanVien() : null);
             stmt.setString(3, taiKhoan.getTenDangNhap());
-            
+
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -90,12 +88,11 @@ public class TaiKhoanDAO implements DAOInterface<TaiKhoan, String> {
 
     @Override
     public Optional<TaiKhoan> findById(String tenDangNhap) {
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement stmt = con.prepareStatement(SQL_TIM_THEO_TEN_DANG_NHAP)) {
-            
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(SQL_TIM_THEO_TEN_DANG_NHAP)) {
+
             stmt.setString(1, tenDangNhap);
             ResultSet rs = stmt.executeQuery();
-            
+
             if (rs.next()) {
                 return Optional.of(mapResultSetToTaiKhoan(rs));
             }
@@ -108,11 +105,9 @@ public class TaiKhoanDAO implements DAOInterface<TaiKhoan, String> {
     @Override
     public List<TaiKhoan> findAll() {
         List<TaiKhoan> danhSachTaiKhoan = new ArrayList<>();
-        
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement stmt = con.prepareStatement(SQL_TIM_TAT_CA);
-             ResultSet rs = stmt.executeQuery()) {
-            
+
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(SQL_TIM_TAT_CA); ResultSet rs = stmt.executeQuery()) {
+
             while (rs.next()) {
                 danhSachTaiKhoan.add(mapResultSetToTaiKhoan(rs));
             }
@@ -123,12 +118,11 @@ public class TaiKhoanDAO implements DAOInterface<TaiKhoan, String> {
     }
 
     public TaiKhoan dangNhap(String maNhanVien) {
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement stmt = con.prepareStatement(SQL_DANG_NHAP)) {
-            
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(SQL_DANG_NHAP)) {
+
             stmt.setString(1, maNhanVien);
             ResultSet rs = stmt.executeQuery();
-            
+
             if (rs.next()) {
                 return mapResultSetToTaiKhoan(rs);
             }
@@ -139,12 +133,11 @@ public class TaiKhoanDAO implements DAOInterface<TaiKhoan, String> {
     }
 
     public Optional<TaiKhoan> timTheoMaNhanVien(String maNhanVien) {
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement stmt = con.prepareStatement(SQL_TIM_THEO_MA_NHAN_VIEN)) {
-            
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(SQL_TIM_THEO_MA_NHAN_VIEN)) {
+
             stmt.setString(1, maNhanVien);
             ResultSet rs = stmt.executeQuery();
-            
+
             if (rs.next()) {
                 return Optional.of(mapResultSetToTaiKhoan(rs));
             }
@@ -157,10 +150,10 @@ public class TaiKhoanDAO implements DAOInterface<TaiKhoan, String> {
     private TaiKhoan mapResultSetToTaiKhoan(ResultSet rs) throws SQLException {
         try {
             TaiKhoan taiKhoan = new TaiKhoan();
-            
+
             taiKhoan.setTenDangNhap(rs.getString("tenDangNhap"));
             taiKhoan.setMatKhau(rs.getString("matKhau"));
-            
+
             String maNhanVien = rs.getString("maNhanVien");
             if (maNhanVien != null) {
                 NhanVien nhanVien = new NhanVien();
@@ -170,10 +163,10 @@ public class TaiKhoanDAO implements DAOInterface<TaiKhoan, String> {
                 nhanVien.setSoDienThoai(rs.getString("soDienThoai"));
                 nhanVien.setEmail(rs.getString("email"));
                 nhanVien.setVaiTro(rs.getString("vaiTro"));
-                
+
                 taiKhoan.setNhanVien(nhanVien);
             }
-            
+
             return taiKhoan;
         } catch (Exception e) {
             throw new SQLException("Lỗi khi map dữ liệu từ ResultSet: " + e.getMessage(), e);
@@ -181,10 +174,8 @@ public class TaiKhoanDAO implements DAOInterface<TaiKhoan, String> {
     }
 
     private String taoMaTaiKhoan() {
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement stmt = con.prepareStatement(SQL_LAY_MA_CUOI);
-             ResultSet rs = stmt.executeQuery()) {
-            
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(SQL_LAY_MA_CUOI); ResultSet rs = stmt.executeQuery()) {
+
             if (rs.next()) {
                 String maCuoi = rs.getString("tenDangNhap");
                 String phanSo = maCuoi.substring(3); // Bỏ "TDN"
@@ -201,17 +192,36 @@ public class TaiKhoanDAO implements DAOInterface<TaiKhoan, String> {
         return findById(tenDangNhap).isPresent();
     }
 
+    public Optional<String> tonTaiTaiKhoanKhiLogin(String tenDangNhap, String mk) {
+        String sql = "select tk.tenDangNhap, tk.matKhau, tk.maNhanVien, nv.vaiTro "
+                + " from taikhoan tk "
+                + " JOIN nhanvien nv on tk.maNhanVien = nv.maNhanVien "
+                + " WHERE tk.tenDangNhap = ? AND tk.matKhau = ? ";
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement pre = con.prepareStatement(sql)) {
+
+            pre.setString(1, tenDangNhap);
+            pre.setString(2, mk);
+
+            try (ResultSet rs = pre.executeQuery()) {
+                if (rs.next()) {
+                    return Optional.ofNullable(rs.getString("vaiTro"));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return Optional.empty();
+    }
+
     public boolean tonTaiTheoMaNhanVien(String maNhanVien) {
         return timTheoMaNhanVien(maNhanVien).isPresent();
     }
 
     public int dem() {
         String sql = "SELECT COUNT(*) as total FROM TaiKhoan";
-        
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement stmt = con.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
-            
+
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
+
             if (rs.next()) {
                 return rs.getInt("total");
             }
@@ -219,5 +229,11 @@ public class TaiKhoanDAO implements DAOInterface<TaiKhoan, String> {
             e.printStackTrace();
         }
         return 0;
+    }
+
+    public static void main(String[] args) {
+        TaiKhoanDAO tk = new TaiKhoanDAO();
+        System.out.println(tk.tonTaiTaiKhoanKhiLogin("nv00006", "Nv@2506") + "");
+
     }
 }

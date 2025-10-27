@@ -33,6 +33,10 @@ public class NhanVien {
     public NhanVien() {
     }
 
+    public NhanVien(String maNhanVien) {
+        this.maNhanVien = maNhanVien;
+    }
+    
     public NhanVien(String maNhanVien, String tenNhanVien, String diaChi, String soDienThoai, String email, String vaiTro) {
         this.maNhanVien = maNhanVien;
         this.tenNhanVien = tenNhanVien;
