@@ -27,7 +27,7 @@ public class NhaCungCap {
 
     public static final String MA_NHA_CUNG_CAP_REGEX = "^NCC\\d{5}$";
     public static final String SO_DIEN_THOAI_REGEX = "^0[0-9]{9}$";
-    public static final String EMAIL_REGEX = "^[^@]+@[^@]+\\.[a-zA-Z]{2,}$";
+    public static final String EMAIL_REGEX = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.(com|vn)$";
     public static final String MA_SO_THUE_REGEX = "^[0-9]{10}(-[0-9]{3})?$";
     
     public NhaCungCap() {
