@@ -26,9 +26,61 @@ public class GD_QuanLyDonViTinh extends javax.swing.JPanel {
     public GD_QuanLyDonViTinh() {
         this.donViTinhBUS = new DonViTinhBUS(new DonViTinhDAO());
         initComponents();
+        
+        //sì tai cho các nút
+        styleButton(btnThem, "THÊM");
+        styleButton(btnSua, "SỬA");
+        styleButton(btnXoa, "Xóa");
+        styleButton(btnTimKiem, "Tìm kiếm");
+        
         setUIManager();
         setupModalStyle();
         fillTable();
+    }
+    
+        private void styleButton(javax.swing.JButton button, String text) {
+        button.setText(text);
+        button.setFont(new java.awt.Font("Segoe UI", 1, 14));
+        button.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        button.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        button.setVerticalTextPosition(javax.swing.SwingConstants.CENTER);
+        button.setPreferredSize(new java.awt.Dimension(95, 40));
+
+        String style = ""
+                + "arc:10;"
+                + "borderWidth:0;"
+                + "focusWidth:0;";
+
+        if (text.equalsIgnoreCase("THÊM")) {
+            style += ""
+                    + "background:#28A745;" // Xanh lá
+                    + "foreground:#FFFFFF;"
+                    + "hoverBackground:#218838;"
+                    + "pressedBackground:#1E7E34;";
+            button.putClientProperty(FlatClientProperties.STYLE, style);
+        } else if (text.equalsIgnoreCase("SỬA")) {
+            style += ""
+                    + "background:#007BFF;" // Xanh dương
+                    + "foreground:#FFFFFF;"
+                    + "hoverBackground:#0069D9;"
+                    + "pressedBackground:#0056B3;";
+            button.putClientProperty(FlatClientProperties.STYLE, style);
+        } else if (text.equalsIgnoreCase("XÓA")) {
+            style += ""
+                    + "background:#DC3545;" // Đỏ
+                    + "foreground:#FFFFFF;"
+                    + "hoverBackground:#C82333;"
+                    + "pressedBackground:#BD2130;";
+            button.putClientProperty(FlatClientProperties.STYLE, style);
+        } else if (text.equalsIgnoreCase("Tìm kiếm")) {
+            button.setPreferredSize(new java.awt.Dimension(150, 40));
+            style += ""
+                    + "background:#28A745;" // Xanh lá giống nút THÊM
+                    + "foreground:#FFFFFF;"
+                    + "hoverBackground:#218838;"
+                    + "pressedBackground:#1E7E34;";
+            button.putClientProperty(FlatClientProperties.STYLE, style);
+        }
     }
     
     private void setupModalStyle() {
@@ -47,7 +99,7 @@ public class GD_QuanLyDonViTinh extends javax.swing.JPanel {
         // Style cho text fields
         txtNameUnitAdd.putClientProperty(FlatClientProperties.STYLE, "arc:10");
         txtNameUnitEdit.putClientProperty(FlatClientProperties.STYLE, "arc:10");
-        txtSearchUnit.putClientProperty(FlatClientProperties.STYLE, "arc:10");
+        txtTimKiem.putClientProperty(FlatClientProperties.STYLE, "arc:10");
         
         // Style cho buttons trong modal Add - giống modal Quản lý Sản phẩm
         btnAddUnit.putClientProperty(FlatClientProperties.STYLE, ""
@@ -75,7 +127,7 @@ public class GD_QuanLyDonViTinh extends javax.swing.JPanel {
     }
 
     private void setUIManager() {
-        txtSearchUnit.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Tên đơn vị tính");
+        txtTimKiem.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Tên đơn vị tính");
         txtNameUnitAdd.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập tên đơn vị tính");
         txtNameUnitEdit.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập tên đơn vị tính mới");
     }
@@ -120,16 +172,16 @@ public class GD_QuanLyDonViTinh extends javax.swing.JPanel {
         btnEditUnit = new javax.swing.JButton();
         btnExitModalEdit = new javax.swing.JButton();
         pnAll = new javax.swing.JPanel();
-        headerPanel = new javax.swing.JPanel();
-        jPanel5 = new javax.swing.JPanel();
-        jPanel6 = new javax.swing.JPanel();
-        txtSearchUnit = new javax.swing.JTextField();
-        btnOpenModalAddUnit = new javax.swing.JButton();
-        actionPanel = new javax.swing.JPanel();
-        btnAdd = new javax.swing.JButton();
-        btnUpdate = new javax.swing.JButton();
-        btnDelete = new javax.swing.JButton();
-        jPanel4 = new javax.swing.JPanel();
+        pnlTieuDe = new javax.swing.JPanel();
+        pnlTimKiem = new javax.swing.JPanel();
+        pnlKhungTimKiem = new javax.swing.JPanel();
+        txtTimKiem = new javax.swing.JTextField();
+        btnTimKiem = new javax.swing.JButton();
+        pnlChinhSua = new javax.swing.JPanel();
+        btnThem = new javax.swing.JButton();
+        btnSua = new javax.swing.JButton();
+        btnXoa = new javax.swing.JButton();
+        pnlThongTin = new javax.swing.JPanel();
         scrollTable = new javax.swing.JScrollPane();
 
         modalAddUnit.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
@@ -161,9 +213,7 @@ public class GD_QuanLyDonViTinh extends javax.swing.JPanel {
             }
         });
 
-        btnExitModalAdd.setBackground(new java.awt.Color(92, 107, 192));
         btnExitModalAdd.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        btnExitModalAdd.setForeground(new java.awt.Color(255, 255, 255));
         btnExitModalAdd.setText("Thoát");
         btnExitModalAdd.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -234,9 +284,7 @@ public class GD_QuanLyDonViTinh extends javax.swing.JPanel {
 
         txtNameUnitEdit.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
-        btnEditUnit.setBackground(new java.awt.Color(78, 94, 186));
         btnEditUnit.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        btnEditUnit.setForeground(new java.awt.Color(255, 255, 255));
         btnEditUnit.setText("Sửa");
         btnEditUnit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -305,111 +353,100 @@ public class GD_QuanLyDonViTinh extends javax.swing.JPanel {
         pnAll.setBackground(new java.awt.Color(255, 255, 255));
         pnAll.setLayout(new java.awt.BorderLayout());
 
-        headerPanel.setBackground(new java.awt.Color(255, 255, 255));
-        headerPanel.setBorder(javax.swing.BorderFactory.createMatteBorder(2, 0, 2, 0, new java.awt.Color(232, 232, 232)));
-        headerPanel.setLayout(new java.awt.BorderLayout());
+        pnlTieuDe.setBackground(new java.awt.Color(255, 255, 255));
+        pnlTieuDe.setBorder(javax.swing.BorderFactory.createMatteBorder(2, 0, 2, 0, new java.awt.Color(232, 232, 232)));
+        pnlTieuDe.setLayout(new java.awt.BorderLayout());
 
-        jPanel5.setBackground(new java.awt.Color(255, 255, 255));
-        jPanel5.setPreferredSize(new java.awt.Dimension(590, 100));
-        jPanel5.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 16, 24));
+        pnlTimKiem.setBackground(new java.awt.Color(255, 255, 255));
+        pnlTimKiem.setPreferredSize(new java.awt.Dimension(590, 100));
+        pnlTimKiem.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 16, 24));
 
-        jPanel6.setBackground(new java.awt.Color(255, 255, 255));
-        jPanel6.setPreferredSize(new java.awt.Dimension(584, 50));
-        jPanel6.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.TRAILING));
+        pnlKhungTimKiem.setBackground(new java.awt.Color(255, 255, 255));
+        pnlKhungTimKiem.setPreferredSize(new java.awt.Dimension(584, 50));
+        pnlKhungTimKiem.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.TRAILING));
 
-        txtSearchUnit.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        txtSearchUnit.setMinimumSize(new java.awt.Dimension(300, 40));
-        txtSearchUnit.setPreferredSize(new java.awt.Dimension(300, 40));
-        txtSearchUnit.addActionListener(new java.awt.event.ActionListener() {
+        txtTimKiem.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        txtTimKiem.setMinimumSize(new java.awt.Dimension(300, 40));
+        txtTimKiem.setPreferredSize(new java.awt.Dimension(300, 40));
+        txtTimKiem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txtSearchUnitActionPerformed(evt);
+                txtTimKiemActionPerformed(evt);
             }
         });
-        jPanel6.add(txtSearchUnit);
+        pnlKhungTimKiem.add(txtTimKiem);
 
-        btnOpenModalAddUnit.setBackground(new java.awt.Color(115, 165, 71));
-        btnOpenModalAddUnit.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
-        btnOpenModalAddUnit.setForeground(new java.awt.Color(255, 255, 255));
-        btnOpenModalAddUnit.setText("Tìm kiếm");
-        btnOpenModalAddUnit.setMaximumSize(new java.awt.Dimension(150, 40));
-        btnOpenModalAddUnit.setMinimumSize(new java.awt.Dimension(150, 40));
-        btnOpenModalAddUnit.setPreferredSize(new java.awt.Dimension(150, 40));
-        btnOpenModalAddUnit.addActionListener(new java.awt.event.ActionListener() {
+        btnTimKiem.setBackground(new java.awt.Color(115, 165, 71));
+        btnTimKiem.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
+        btnTimKiem.setForeground(new java.awt.Color(255, 255, 255));
+        btnTimKiem.setText("Tìm kiếm");
+        btnTimKiem.setMaximumSize(new java.awt.Dimension(150, 40));
+        btnTimKiem.setMinimumSize(new java.awt.Dimension(150, 40));
+        btnTimKiem.setPreferredSize(new java.awt.Dimension(150, 40));
+        btnTimKiem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnOpenModalAddUnitActionPerformed(evt);
+                btnTimKiemActionPerformed(evt);
             }
         });
-        jPanel6.add(btnOpenModalAddUnit);
+        pnlKhungTimKiem.add(btnTimKiem);
 
-        jPanel5.add(jPanel6);
+        pnlTimKiem.add(pnlKhungTimKiem);
 
-        headerPanel.add(jPanel5, java.awt.BorderLayout.CENTER);
+        pnlTieuDe.add(pnlTimKiem, java.awt.BorderLayout.CENTER);
 
-        actionPanel.setBackground(new java.awt.Color(255, 255, 255));
-        actionPanel.setPreferredSize(new java.awt.Dimension(320, 60));
-        actionPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 10, 25));
+        pnlChinhSua.setBackground(new java.awt.Color(255, 255, 255));
+        pnlChinhSua.setPreferredSize(new java.awt.Dimension(320, 60));
+        pnlChinhSua.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 10, 25));
 
-        btnAdd.setBackground(new java.awt.Color(115, 165, 71));
-        btnAdd.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnAdd.setForeground(new java.awt.Color(255, 255, 255));
-        btnAdd.setText("Thêm");
-        btnAdd.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        btnAdd.setFocusPainted(false);
-        btnAdd.setPreferredSize(new java.awt.Dimension(95, 40));
-        btnAdd.addActionListener(new java.awt.event.ActionListener() {
+        btnThem.setBackground(new java.awt.Color(115, 165, 71));
+        btnThem.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        btnThem.setForeground(new java.awt.Color(255, 255, 255));
+        btnThem.setText("Thêm");
+        btnThem.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnThem.setFocusPainted(false);
+        btnThem.setPreferredSize(new java.awt.Dimension(95, 40));
+        btnThem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnAddActionPerformed(evt);
+                btnThemActionPerformed(evt);
             }
         });
-        actionPanel.add(btnAdd);
+        pnlChinhSua.add(btnThem);
 
-        btnUpdate.setBackground(new java.awt.Color(255, 193, 7));
-        btnUpdate.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnUpdate.setForeground(new java.awt.Color(0, 0, 0));
-        btnUpdate.setText("Sửa");
-        btnUpdate.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        btnUpdate.setFocusPainted(false);
-        btnUpdate.setPreferredSize(new java.awt.Dimension(95, 40));
-        btnUpdate.addActionListener(new java.awt.event.ActionListener() {
+        btnSua.setBackground(new java.awt.Color(255, 193, 7));
+        btnSua.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        btnSua.setText("Sửa");
+        btnSua.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnSua.setFocusPainted(false);
+        btnSua.setPreferredSize(new java.awt.Dimension(95, 40));
+        btnSua.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnUpdateActionPerformed(evt);
+                btnSuaActionPerformed(evt);
             }
         });
-        actionPanel.add(btnUpdate);
+        pnlChinhSua.add(btnSua);
 
-        btnDelete.setBackground(new java.awt.Color(220, 60, 60));
-        btnDelete.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnDelete.setForeground(new java.awt.Color(255, 255, 255));
-        btnDelete.setText("Xóa");
-        btnDelete.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        btnDelete.setFocusPainted(false);
-        btnDelete.setPreferredSize(new java.awt.Dimension(95, 40));
-        btnDelete.addActionListener(new java.awt.event.ActionListener() {
+        btnXoa.setBackground(new java.awt.Color(220, 60, 60));
+        btnXoa.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        btnXoa.setForeground(new java.awt.Color(255, 255, 255));
+        btnXoa.setText("Xóa");
+        btnXoa.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnXoa.setFocusPainted(false);
+        btnXoa.setPreferredSize(new java.awt.Dimension(95, 40));
+        btnXoa.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnDeleteActionPerformed(evt);
+                btnXoaActionPerformed(evt);
             }
         });
-        actionPanel.add(btnDelete);
+        pnlChinhSua.add(btnXoa);
 
-        headerPanel.add(actionPanel, java.awt.BorderLayout.WEST);
+        pnlTieuDe.add(pnlChinhSua, java.awt.BorderLayout.WEST);
 
-        pnAll.add(headerPanel, java.awt.BorderLayout.NORTH);
+        pnAll.add(pnlTieuDe, java.awt.BorderLayout.NORTH);
 
-        jPanel4.setBackground(new java.awt.Color(255, 255, 255));
-        jPanel4.setLayout(new java.awt.BorderLayout());
+        pnlThongTin.setBackground(new java.awt.Color(255, 255, 255));
+        pnlThongTin.setLayout(new java.awt.BorderLayout());
+        pnlThongTin.add(scrollTable, java.awt.BorderLayout.CENTER);
 
-        // Thêm tiêu đề "DANH SÁCH THÔNG TIN ĐƠN VỊ TÍNH"
-        javax.swing.JPanel titlePanel = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 12));
-        titlePanel.setBackground(new java.awt.Color(23, 162, 184)); // Màu xanh cyan
-        javax.swing.JLabel lblTitle = new javax.swing.JLabel("DANH SÁCH THÔNG TIN ĐƠN VỊ TÍNH");
-        lblTitle.setFont(new java.awt.Font("Segoe UI", 1, 16));
-        lblTitle.setForeground(new java.awt.Color(255, 255, 255)); // Chữ màu trắng
-        titlePanel.add(lblTitle);
-        jPanel4.add(titlePanel, java.awt.BorderLayout.NORTH);
-
-        jPanel4.add(scrollTable, java.awt.BorderLayout.CENTER);
-
-        pnAll.add(jPanel4, java.awt.BorderLayout.CENTER);
+        pnAll.add(pnlThongTin, java.awt.BorderLayout.CENTER);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -482,17 +519,17 @@ public class GD_QuanLyDonViTinh extends javax.swing.JPanel {
         modalEditUnit.dispose();
     }//GEN-LAST:event_btnExitModalEditActionPerformed
 
-    private void btnOpenModalAddUnitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOpenModalAddUnitActionPerformed
+    private void btnTimKiemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTimKiemActionPerformed
         try {
-            String name = txtSearchUnit.getText().trim();
+            String name = txtTimKiem.getText().trim();
             List<DonViTinh> donViTinhs = donViTinhBUS.timDonViTinhTheoTenGanDung(name);
             fillContent(donViTinhs);
         } catch (Exception e) {
             Notifications.getInstance().show(Notifications.Type.ERROR, "Lỗi khi tìm kiếm: " + e.getMessage());
         }
-    }//GEN-LAST:event_btnOpenModalAddUnitActionPerformed
+    }//GEN-LAST:event_btnTimKiemActionPerformed
 
-    private void btnUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateActionPerformed
+    private void btnSuaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSuaActionPerformed
         // TODO add your handling code here:
         int selectedRow = tableDesign.getTable().getSelectedRow();
         if (selectedRow != -1) {
@@ -504,15 +541,15 @@ public class GD_QuanLyDonViTinh extends javax.swing.JPanel {
                 tableDesign.getTable().getCellEditor().stopCellEditing();
             }
         }
-    }//GEN-LAST:event_btnUpdateActionPerformed
+    }//GEN-LAST:event_btnSuaActionPerformed
 
-    private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddActionPerformed
+    private void btnThemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnThemActionPerformed
         // TODO add your handling code here:
         modalAddUnit.setLocationRelativeTo(null);
         modalAddUnit.setVisible(true);
-    }//GEN-LAST:event_btnAddActionPerformed
+    }//GEN-LAST:event_btnThemActionPerformed
 
-    private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteActionPerformed
+    private void btnXoaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnXoaActionPerformed
         int selectedRow = tableDesign.getTable().getSelectedRow();
         if (selectedRow == -1) {
             Notifications.getInstance().show(Notifications.Type.WARNING, "Vui lòng chọn đơn vị tính cần xóa!");
@@ -543,47 +580,47 @@ public class GD_QuanLyDonViTinh extends javax.swing.JPanel {
                 Notifications.getInstance().show(Notifications.Type.ERROR, "Lỗi: " + e.getMessage());
             }
         }
-    }//GEN-LAST:event_btnDeleteActionPerformed
+    }//GEN-LAST:event_btnXoaActionPerformed
 
     private void modalAddUnitMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_modalAddUnitMouseClicked
         // TODO add your handling code here:
     }//GEN-LAST:event_modalAddUnitMouseClicked
 
-    private void txtSearchUnitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtSearchUnitActionPerformed
+    private void txtTimKiemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtTimKiemActionPerformed
         try {
-            String name = txtSearchUnit.getText().trim();
+            String name = txtTimKiem.getText().trim();
             List<DonViTinh> donViTinhs = donViTinhBUS.timDonViTinhTheoTenGanDung(name);
             fillContent(donViTinhs);
         } catch (Exception e) {
             Notifications.getInstance().show(Notifications.Type.ERROR, "Lỗi khi tìm kiếm: " + e.getMessage());
         }
-    }//GEN-LAST:event_txtSearchUnitActionPerformed
+    }//GEN-LAST:event_txtTimKiemActionPerformed
 
     private String unitIdEdit;
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel actionPanel;
-    private javax.swing.JButton btnAdd;
     private javax.swing.JButton btnAddUnit;
     private javax.swing.JButton btnEditUnit;
     private javax.swing.JButton btnExitModalAdd;
     private javax.swing.JButton btnExitModalEdit;
-    private javax.swing.JButton btnOpenModalAddUnit;
-    private javax.swing.JButton btnUpdate;
-    private javax.swing.JButton btnDelete;
-    private javax.swing.JPanel headerPanel;
+    private javax.swing.JButton btnSua;
+    private javax.swing.JButton btnThem;
+    private javax.swing.JButton btnTimKiem;
+    private javax.swing.JButton btnXoa;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
-    private javax.swing.JPanel jPanel4;
-    private javax.swing.JPanel jPanel5;
-    private javax.swing.JPanel jPanel6;
     private javax.swing.JDialog modalAddUnit;
     private javax.swing.JDialog modalEditUnit;
     private javax.swing.JPanel pnAll;
+    private javax.swing.JPanel pnlChinhSua;
+    private javax.swing.JPanel pnlKhungTimKiem;
+    private javax.swing.JPanel pnlThongTin;
+    private javax.swing.JPanel pnlTieuDe;
+    private javax.swing.JPanel pnlTimKiem;
     private javax.swing.JScrollPane scrollTable;
     private javax.swing.JTextField txtNameUnitAdd;
     private javax.swing.JTextField txtNameUnitEdit;
-    private javax.swing.JTextField txtSearchUnit;
+    private javax.swing.JTextField txtTimKiem;
     // End of variables declaration//GEN-END:variables
 }
