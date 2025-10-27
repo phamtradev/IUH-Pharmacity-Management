@@ -18,14 +18,14 @@ public class NhaCungCap {
     private String email;
     private String maSoThue;
     
-    public static final String MA_NHA_CUNG_CAP_SAI = "Mã nhà cung cấp phải có dạng NCCXXXX (XXXX là số nguyên dương từ 0001 đến 9999)";
+    public static final String MA_NHA_CUNG_CAP_SAI = "Mã nhà cung cấp phải có dạng NCCXXXXX (XXXXX là số nguyên dương từ 0001 đến 9999)";
     public static final String TEN_NHA_CUNG_CAP_RONG = "Tên nhà cung cấp không được để trống";
     public static final String DIA_CHI_RONG = "Địa chỉ không được để trống";
     public static final String SO_DIEN_THOAI_SAI = "Số điện thoại phải bắt đầu bằng 0 và gồm đúng 10 chữ số";
     public static final String EMAIL_SAI = "Email không đúng định dạng";
     public static final String MA_SO_THUE_SAI = "Mã số thuế phải gồm 10 số hoặc 13 ký tự dạng 0123456789-001";
 
-    public static final String MA_NHA_CUNG_CAP_REGEX = "^NCC\\d{4}$";
+    public static final String MA_NHA_CUNG_CAP_REGEX = "^NCC\\d{5}$";
     public static final String SO_DIEN_THOAI_REGEX = "^0[0-9]{9}$";
     public static final String EMAIL_REGEX = "^[^@]+@[^@]+\\.[a-zA-Z]{2,}$";
     public static final String MA_SO_THUE_REGEX = "^[0-9]{10}(-[0-9]{3})?$";

@@ -28,7 +28,7 @@ public class NhanVien {
     
     public static final String MA_NHAN_VIEN_REGEX = "^NV\\d{5}$";
     public static final String SO_DIEN_THOAI_REGEX = "^0[0-9]{9}$";
-    public static final String EMAIL_REGEX = "^[^@]+@[^@]+\\.[a-zA-Z]{2,}$";
+    public static final String EMAIL_REGEX = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.(com|vn)$";
 
     public NhanVien() {
     }
