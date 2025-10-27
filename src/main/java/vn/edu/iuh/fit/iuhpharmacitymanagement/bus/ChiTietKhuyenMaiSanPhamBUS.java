@@ -30,10 +30,6 @@ public class ChiTietKhuyenMaiSanPhamBUS {
         return chiTietKhuyenMaiSanPhamDAO.update(ctkmsp);
     }
 
-    
-    public boolean xoaChiTietKhuyenMaiSanPham(String maChiTietKM) {
-        return chiTietKhuyenMaiSanPhamDAO.delete(maChiTietKM);
-    }
 
     
     public Optional<ChiTietKhuyenMaiSanPham> timTheoMa(String maChiTietKM) {
@@ -52,24 +48,11 @@ public class ChiTietKhuyenMaiSanPhamBUS {
     }
 
     
-    public List<ChiTietKhuyenMaiSanPham> timTheoMaKhuyenMai(String maKhuyenMai) {
-        return chiTietKhuyenMaiSanPhamDAO.findByMaKhuyenMai(maKhuyenMai);
-    }
-
-    
-    public List<ChiTietKhuyenMaiSanPham> timTheoMaSanPham(String maSanPham) {
-        return chiTietKhuyenMaiSanPhamDAO.findByMaSanPham(maSanPham);
-    }
-
-    
     public boolean kiemTraTonTai(String maChiTietKM) {
         return chiTietKhuyenMaiSanPhamDAO.exists(maChiTietKM);
     }
 
-    
-    public boolean kiemTraTonTai(String maSanPham, String maKhuyenMai) {
-        return chiTietKhuyenMaiSanPhamDAO.existsBySanPhamVaKhuyenMai(maSanPham, maKhuyenMai);
-    }
+
 
     
     public int demTongSoChiTietKhuyenMaiSanPham() {
