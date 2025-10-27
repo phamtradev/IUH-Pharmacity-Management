@@ -7,9 +7,14 @@ package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.loading;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.SQLException;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.connectDB.ConnectDB;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.form.WelcomeFormNhanVien;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.form.WelcomeFormQuanLy;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.login.LoginFrame;
 
 /**
@@ -19,7 +24,6 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.login.LoginFrame;
 public class SplashScreen extends javax.swing.JFrame {
 
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(SplashScreen.class.getName());
-    private Timer timer;
 
     /**
      * Creates new form SplashScreen
@@ -27,61 +31,66 @@ public class SplashScreen extends javax.swing.JFrame {
     public SplashScreen() {
         initComponents();
 
-        BackgroundPanel.setComponentZOrder(ProgressBar, 0); // ProgressBar ở lớp trên cùng
-        BackgroundPanel.setComponentZOrder(lblLoading, 1);
-        BackgroundPanel.setComponentZOrder(ProgressBar, 2);
-        BackgroundPanel.setComponentZOrder(IUHLogo, 3);
-        BackgroundPanel.setComponentZOrder(BackgroundImg, 3);
-
         setLocationRelativeTo(null);
         setResizable(false);
-        IUHLogo.setSize(424, 300);
 
+        // Load hình ảnh trong thread riêng
         new Thread(() -> {
             setImageToLabel(BackgroundImg, "/img/LoadingImage.png");
             setImageToLabel(IUHLogo, "/img/IUH.png");
         }).start();
 
-        timer = new Timer(100, new ActionListener() {
-            int i = 0;
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                i++;
-                setProgress(i);
-                if (i == 5) {
-                    lblLoading.setText("Đang khởi tạo hệ thống...");
-                }
-                if (i == 15) {
-                    lblLoading.setText("Đang tải giao diện người dùng...");
-                }
-                if (i == 30) {
-                    lblLoading.setText("Đang kết nối cơ sở dữ liệu...");
-                }
-                if (i == 50) {
-                    lblLoading.setText("Đang khởi động các module chức năng...");
-                }
-                if (i == 70) {
-                    lblLoading.setText("Đang kiểm tra cấu hình...");
-                }
-                if (i == 90) {
-                    lblLoading.setText("Chuẩn bị hoàn tất...");
-                }
-                if (i >= 100) {
-                    lblLoading.setText("Hoàn tất! Đang vào hệ thống...");
-                    timer.stop(); 
-                    dispose(); // Đóng splash 
+        // Thread thực tế để load các bước
+        new Thread(() -> {
+            try {
+                // Bước 1: Khởi tạo hệ thống
+                updateProgress("Đang khởi tạo hệ thống...", 0);                
+//                for (int i = 1; i < 9; i++) {
+//                    updateProgress("Đang kết nối cơ sở dữ liệu...", i*10);
+//                   openLogin();
+//                    Thread.sleep(500);
+//                }                
+                updateProgress("Đang kết nối cơ sở dữ liệu...", 10);
+                connectDatabase();
+                Thread.sleep(500);
+                
+                updateProgress("Chuẩn bị gd...", 30);
+                openLogin();
+                Thread.sleep(500);
+                
+                updateProgress("Chuẩn bị gd...", 50);
+                openFrameForMana();
+                Thread.sleep(500);
+                
+                updateProgress("Chuẩn bị gd...", 70);
+                openFrameForEmp();
+                Thread.sleep(500);
+                
+                updateProgress("Chuẩn bị hoàn tất...", 90);                                
+                Thread.sleep(500);
+                updateProgress("Hoàn tất! Đang vào hệ thống...", 100);
+                Thread.sleep(500);
+                SwingUtilities.invokeLater(() -> {
+                    dispose();
                     new LoginFrame().setVisible(true);
-                }
+                });
 
+            } catch (Exception e) {
+                e.printStackTrace();
             }
+        }).start();
+    }
+
+    private void updateProgress(String message, int progress) {
+        SwingUtilities.invokeLater(() -> {
+            lblLoading.setText(message);
+            progressBar.setValue(progress);
         });
-        timer.start();
     }
 
     public void setProgress(int value) {
         //quyền truy cập private ProgressBar để hiện số tiến trình
-        this.ProgressBar.setValue(value);
+        this.progressBar.setValue(value);
     }
 
     private void setImageToLabel(javax.swing.JLabel label, String imagePath) {
@@ -117,7 +126,7 @@ public class SplashScreen extends javax.swing.JFrame {
         BackgroundPanel = new javax.swing.JPanel();
         BackgroundImg = new javax.swing.JLabel();
         IUHLogo = new javax.swing.JLabel();
-        ProgressBar = new javax.swing.JProgressBar();
+        progressBar = new javax.swing.JProgressBar();
         lblLoading = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -139,8 +148,8 @@ public class SplashScreen extends javax.swing.JFrame {
         IUHLogo.setPreferredSize(new java.awt.Dimension(424, 300));
         BackgroundPanel.add(IUHLogo, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 10, 250, 140));
 
-        ProgressBar.setStringPainted(true);
-        BackgroundPanel.add(ProgressBar, new org.netbeans.lib.awtextra.AbsoluteConstraints(6, 576, 1190, -1));
+        progressBar.setStringPainted(true);
+        BackgroundPanel.add(progressBar, new org.netbeans.lib.awtextra.AbsoluteConstraints(6, 576, 1190, -1));
 
         lblLoading.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         lblLoading.setText("Loading...");
@@ -181,15 +190,34 @@ public class SplashScreen extends javax.swing.JFrame {
         } catch (ReflectiveOperationException | javax.swing.UnsupportedLookAndFeelException ex) {
             logger.log(java.util.logging.Level.SEVERE, null, ex);
         }
-        //</editor-fold>
+        //</editor-fold>   
+        new SplashScreen().setVisible(true);
 
     }
 
+    //các task thực tế
+    private void connectDatabase() {
+        try {
+            ConnectDB.getConnection();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void openLogin() {
+        new LoginFrame().setVisible(true);
+    }
+    private  void openFrameForMana(){
+        new WelcomeFormQuanLy().setVisible(true);
+    }
+    private  void openFrameForEmp(){
+        new WelcomeFormNhanVien().setVisible(true);
+    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel BackgroundImg;
     private javax.swing.JPanel BackgroundPanel;
     private javax.swing.JLabel IUHLogo;
-    private javax.swing.JProgressBar ProgressBar;
     private javax.swing.JLabel lblLoading;
+    private javax.swing.JProgressBar progressBar;
     // End of variables declaration//GEN-END:variables
 }

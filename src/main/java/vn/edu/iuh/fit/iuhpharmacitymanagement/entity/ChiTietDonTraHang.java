@@ -14,8 +14,8 @@ public class ChiTietDonTraHang {
     private DonTraHang donTraHang;
     
     public static final String MA_CHI_TIET_DON_TRA_HANG_RONG = "Mã chi tiết đơn trả hàng không được rỗng";
-    public static final String SO_LUONG_SAI = "Số lượng phải lớn hơn 0";
-    public static final String DON_GIA_SAI = "Đơn giá phải lớn hơn 0";
+    public static final String SO_LUONG_SAI = "Số lượng phải lớn hơn 0, không được rỗng";
+    public static final String DON_GIA_SAI = "Đơn giá phải lớn hơn 0, không được rỗng";
     public static final String LY_DO_TRA_RONG = "Lý do trả không được rỗng";
     public static final String THANH_TIEN_SAI = "Thành tiền không hợp lệ";
     public static final String SAN_PHAM_SAI = "Sản phẩm không hợp lệ";

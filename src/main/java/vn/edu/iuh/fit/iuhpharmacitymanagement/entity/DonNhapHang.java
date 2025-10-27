@@ -6,6 +6,7 @@ package vn.edu.iuh.fit.iuhpharmacitymanagement.entity;
 
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
 
@@ -20,7 +21,12 @@ public class DonNhapHang {
     private NhanVien nhanVien;
     private NhaCungCap nhaCungCap;
     private List<ChiTietDonNhapHang> chiTietDonNhapHang;
-    public static final String MA_DON_NHAP_HANG_SAI ="Mã đơn nhập hàng phải bắt đầu bằng DNHddmmyyyy (dd là ngày nhập, mm là tháng nhập, yyyy là năm nhập)";
+    public static final String MA_DON_NHAP_HANG_SAI ="Mã đơn nhập hàng không được rỗng, phải bắt đầu bằng DNHddmmyyyyxxxx (dd là ngày nhập, mm là tháng nhập, yyyy là năm nhập, xxxx là 4 số)";
+        private static final String REGEX_MA_DON_NHAP_HANG =
+    "^DH(0[1-9]|[12][0-9]|3[01])" + 
+    "(0[1-9]|1[0-2])" +                
+    "(20)\\d{2}" +             
+    "(?!0000)\\d{4}$"; 
     public static final String NGAY_NHAP_HANG_SAI ="Ngày nhập hàng phải nhỏ hơn hoặc bằng ngày hiện tại";
     public static final String NGAY_NHAP_HANG_NULL ="Ngày nhập hàng không được rỗng";
     public DonNhapHang() {
@@ -40,13 +46,14 @@ public class DonNhapHang {
         return maDonNhapHang;
     }
 
-    public void setMaDonNhapHang(String maDonNhapHang) throws Exception {
-        if(maDonNhapHang.isBlank()){
+   public void setMaDonNhapHang(String maDonNhapHang) throws Exception {
+
+        if (maDonNhapHang == null || maDonNhapHang.isBlank() || !maDonNhapHang.matches(REGEX_MA_DON_NHAP_HANG)) {
             throw new Exception(MA_DON_NHAP_HANG_SAI);
         }
-        this.maDonNhapHang=maDonNhapHang;
-    }
 
+        this.maDonNhapHang = maDonNhapHang;
+    }
     public LocalDate getNgayNhap() {
         return ngayNhap;
     }
@@ -65,7 +72,8 @@ public class DonNhapHang {
         return thanhTien;
     }
 
-    public void setThanhTien(double thanhTien) {
+    public void setThanhTien(double thanhTien) throws Exception {
+        if(thanhTien<=0) throw  new Exception("thành tiền phải lớn hơn 0, không được rỗng");
         this.thanhTien = thanhTien;
     }
 
@@ -73,7 +81,8 @@ public class DonNhapHang {
         return nhanVien;
     }
 
-    public void setNhanVien(NhanVien nhanVien) {
+    public void setNhanVien(NhanVien nhanVien) throws Exception {
+        if(nhanVien == null) throw new Exception("nhân viên không được để rỗng");
         this.nhanVien = nhanVien;
     }
 
@@ -104,4 +113,5 @@ public class DonNhapHang {
                 ", chiTietDonNhapHang=" + (chiTietDonNhapHang != null ? chiTietDonNhapHang.size() : 0) +
                 '}';
     }
+
 }

@@ -15,8 +15,8 @@ public class ChiTietKhuyenMaiSanPham {
     private KhuyenMai khuyenMai;
 
     public static final String MA_CHI_TIET_KHUYEN_MAI_SAN_PHAM_SAI = "Mã chi tiết khuyến mãi sản phẩm không hợp lệ";
-    public static final String SAN_PHAM_SAI = "Sản phẩm không hợp lệ";
-    public static final String KHUYEN_MAI_SAI = "Khuyến mãi không hợp lệ";
+    public static final String SAN_PHAM_SAI = "Sản phẩm không hợp lệ, không được rỗng";
+    public static final String KHUYEN_MAI_SAI = "Khuyến mãi không hợp lệ, không được rỗng";
 
     public ChiTietKhuyenMaiSanPham() {
     }

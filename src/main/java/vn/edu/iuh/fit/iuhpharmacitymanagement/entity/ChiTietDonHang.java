@@ -11,10 +11,10 @@ public class ChiTietDonHang {
     private DonHang donHang;
 
     public static final String MA_CHI_TIET_DON_HANG_RONG = "Mã chi tiết đơn hàng không được rỗng";
-    public static final String SO_LUONG_SAI = "Số lượng không hợp lệ (phải > 0)";
-    public static final String DON_GIA_SAI = "Đơn giá không hợp lệ (phải > 0)";
-    public static final String THANH_TIEN_SAI = "Thành tiền không hợp lệ (phải > 0)";
-    public static final String GIAM_GIA_SAI = "Giảm giá không hợp lệ (phải >= 0)";
+    public static final String SO_LUONG_SAI = "Số lượng không hợp lệ phải lớn hơn 0, không được rỗng";
+    public static final String DON_GIA_SAI = "Đơn giá không hợp lệ phải lớn hơn 0, không được rỗng";
+    public static final String THANH_TIEN_SAI = "Thành tiền không hợp lệ phải lớn hơn 0, không được rỗng";
+    public static final String GIAM_GIA_SAI = "Giảm giá không hợp lệ phải lớn hơn 0";
     public static final String LO_HANG_SAI = "Lô hàng không hợp lệ (không được null)";
     public static final String DON_HANG_SAI = "Đơn hàng không hợp lệ (không được null)";
 

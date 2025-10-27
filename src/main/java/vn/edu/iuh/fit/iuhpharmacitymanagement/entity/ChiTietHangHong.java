@@ -13,8 +13,8 @@ public class ChiTietHangHong {
     private HangHong hangHong;
     
     public static final String MA_CHI_TIET_RONG = "Mã chi tiết hàng hỏng không được để trống";
-    public static final String SO_LUONG_SAI = "Số lượng phải là số nguyên dương lớn hơn 0";
-    public static final String DON_GIA_SAI = "Đơn giá phải là số thực dương lớn hơn 0";
+    public static final String SO_LUONG_SAI = "Số lượng phải là số nguyên dương lớn hơn 0, không được rỗng";
+    public static final String DON_GIA_SAI = "Đơn giá phải là số thực dương lớn hơn 0, không được rỗng";
     public static final String LO_HANG_RONG = "Lô hàng không được để trống";
     public static final String HANG_HONG_RONG = "Hàng hỏng không được để trống";
 
@@ -92,4 +92,12 @@ public class ChiTietHangHong {
         }
         this.hangHong = hangHong;
     }
+
+    @Override
+    public String toString() {
+        return "ChiTietHangHong{" + "maChiTietHangHong=" + maChiTietHangHong + ", soLuong=" + soLuong + ", donGia=" + donGia + ", thanhTien=" + thanhTien + ", loHang=" + loHang + ", hangHong=" + hangHong + '}';
+    }
+
+    
+    
 }

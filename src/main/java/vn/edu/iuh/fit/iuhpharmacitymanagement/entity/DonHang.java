@@ -26,7 +26,12 @@ public class DonHang {
     private KhuyenMai khuyenMai;
     private List<ChiTietDonHang> chiTietDonHang;
     
-    public static final String MA_DON_HANG_SAI = "Mã đơn hàng phải có dạng DHddMMyyyyxxxx (Trong đó ddMMyyyy là ngày lập đơn, xxxx là 4 chữ số) ví dụ: DNH20102025";
+    public static final String MA_DON_HANG_SAI = "Mã đơn hàng phải có dạng DHddMMyyyyxxxx (Trong đó ddMMyyyy là ngày lập đơn, xxxx là 4 chữ số) ví dụ: DH201020250001";
+       private static final String REGEX_MA_DON_HANG =
+    "^DH(0[1-9]|[12][0-9]|3[01])" + 
+    "(0[1-9]|1[0-2])" +                
+    "(20)\\d{2}" +             
+    "(?!0000)\\d{4}$"; 
     public static final String NGAY_DAT_HANG_RONG = "Ngày đặt hàng không được để trống";
     public static final String THANH_TIEN_SAI = "Thành tiền phải là một số dương";
     public static final String PHUONG_THUC_THANH_TOAN_RONG = "Phương thức thanh toán không được để trống";
@@ -35,8 +40,8 @@ public class DonHang {
     public static final String KHUYEN_MAI_RONG = "Khuyến mãi không được để trống";
     public static final String CHI_TIET_DON_HANG_RONG = "Đơn hàng phải có ít nhất một chi tiết đơn hàng";
     
-    public static final String MA_DON_HANG_PREFIX = "DH";
-    public static final String MA_DON_HANG_SUFFIX_REGEX = "\\d{4}";
+//    public static final String MA_DON_HANG_PREFIX = "DH";
+//    public static final String MA_DON_HANG_SUFFIX_REGEX = "\\d{4}";
 
     public DonHang() {
     }
@@ -54,10 +59,8 @@ public class DonHang {
         return maDonHang;
     }
 
-    public void setMaDonHang(String maDonHang) throws Exception{
-        String ngayThangNamHienTai = LocalDate.now().format(DateTimeFormatter.ofPattern("ddMMyyyy"));
-        String regex = "^" + MA_DON_HANG_PREFIX + ngayThangNamHienTai + MA_DON_HANG_SUFFIX_REGEX + "$";
-        if (maDonHang == null || !maDonHang.matches(regex)) {
+    public void setMaDonHang(String maDonHang) throws Exception{             
+        if (maDonHang == null || !maDonHang.matches(REGEX_MA_DON_HANG) || maDonHang.isBlank() ) {
             throw new Exception(MA_DON_HANG_SAI);
         }
         this.maDonHang = maDonHang;
@@ -153,4 +156,5 @@ public class DonHang {
                 ", chiTietDonHang=" + (chiTietDonHang != null ? chiTietDonHang.size() : 0) +
                 '}';
     }
+  
 }

@@ -5,6 +5,7 @@
 package vn.edu.iuh.fit.iuhpharmacitymanagement.entity;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /**
@@ -17,7 +18,13 @@ public class HangHong {
     private double thanhTien;
     private NhanVien nhanVien;
     private List<ChiTietHangHong> chiTietHangHong;
-    public static final String MA_HANG_HONG_SAI ="Mã hàng hỏng phải bắt đầu bằng HHddmmyyyyxxx (dd là ngày phát hiện hàng hỏng, mm là tháng phát hiện hàng hỏng, yyyy là năm phát hiện hàng hỏng, xxx  là 3 số dương)";
+    public static final String MA_HANG_HONG_SAI ="Mã hàng hỏng không được rỗng và phải bắt đầu bằng HHddmmyyyyxxxx (dd là ngày phát hiện hàng hỏng, mm là tháng phát hiện hàng hỏng, yyyy là năm phát hiện hàng hỏng, xxxx  là 4 số dương)";
+       private static final String REGEX_MA_HANG_HONG =
+    "^HH(0[1-9]|[12][0-9]|3[01])" + 
+    "(0[1-9]|1[0-2])" +                
+    "(20)\\d{2}" +             
+    "(?!0000)\\d{4}$";  
+    
     public static final String NGAY_NHAP_HANG_SAI ="Ngày nhập hàng hỏng phải nhỏ hơn hoặc bằng ngày hiện tại";
     public static final String NGAY_NHAP_HANG_NULL ="Ngày nhập hàng hỏng không được rỗng";
     public HangHong() {
@@ -36,12 +43,27 @@ public class HangHong {
         return maHangHong;
     }
 
-    public void setMaHangHong(String maHangHong) throws Exception {
-        if(maHangHong.isBlank()){
+     public void setMaHangHong(String maHangHong) throws Exception {      
+        if (maHangHong == null || !maHangHong.matches(REGEX_MA_HANG_HONG) || maHangHong.isBlank()) {
             throw new Exception(MA_HANG_HONG_SAI);
         }
         this.maHangHong = maHangHong;
     }
+//    private static final String MA_HANG_HONG_PREFIX = "HH";
+//    private static final String MA_HANG_HONG_SUFFIX_REGEX = "\\d{4}"; // 4 chữ số
+//
+//    public void setMaHangHong(String maHangHong) throws Exception {
+//        String ngayThangNamHienTai = LocalDate.now()
+//                .format(DateTimeFormatter.ofPattern("ddMMyyyy"));
+//
+//        String regex = "^" + MA_HANG_HONG_PREFIX + ngayThangNamHienTai + MA_HANG_HONG_SUFFIX_REGEX + "$";
+//
+//        if (maHangHong == null || maHangHong.isBlank() || !maHangHong.matches(regex)) {
+//            throw new Exception(MA_HANG_HONG_SAI);
+//        }
+//
+//        this.maHangHong = maHangHong;
+//    }
 
     public LocalDate getNgayNhap() {
         return ngayNhap;
@@ -62,7 +84,8 @@ public class HangHong {
         return thanhTien;
     }
 
-    public void setThanhTien(double thanhTien) {
+    public void setThanhTien(double thanhTien) throws Exception {
+        if(thanhTien<=0 ) throw new Exception("thành tiền phải lớn hơn 0, không được rỗng");
         this.thanhTien = thanhTien;
     }
 
@@ -70,7 +93,8 @@ public class HangHong {
         return nhanVien;
     }
 
-    public void setNhanVien(NhanVien nhanVien) {
+    public void setNhanVien(NhanVien nhanVien) throws Exception {
+        if(nhanVien == null) throw new Exception("nhân viên không được rỗng");
         this.nhanVien = nhanVien;
     }
 
@@ -92,4 +116,5 @@ public class HangHong {
                 ", chiTietHangHong=" + chiTietHangHong +
                 '}';
     }
+ 
 }

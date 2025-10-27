@@ -13,9 +13,9 @@ public class ChiTietDonNhapHang {
     private LoHang loHang;
     
     public static final String MA_CHI_TIET_DON_NHAP_HANG_RONG = "Mã chi tiết đơn nhập hàng không được rỗng";
-    public static final String SO_LUONG_SAI = "Số lượng không hợp lệ";
-    public static final String DON_GIA_SAI = "Đơn giá không hợp lệ";
-    public static final String THANH_TIEN_SAI = "Thành tiền không hợp lệ";
+    public static final String SO_LUONG_SAI = "Số lượng không hợp lệ phải lớn hơn 0, không được rỗng";
+    public static final String DON_GIA_SAI = "Đơn giá không hợp lệ phải lớn hơn 0, không được rỗng";
+    public static final String THANH_TIEN_SAI = "Thành tiền không hợp lệ phải lớn hơn 0, không được rỗng";
     public static final String DON_NHAP_HANG_RONG = "Đơn nhập hàng không được rỗng";
     public static final String LO_HANG_RONG = "Lô hàng không được rỗng";
     
@@ -47,7 +47,7 @@ public class ChiTietDonNhapHang {
     }
 
     public void setSoLuong(int soLuong) throws Exception{
-        if(soLuong < 0){
+        if(soLuong <= 0){
             throw new Exception(SO_LUONG_SAI);
         }
         this.soLuong = soLuong;
@@ -58,7 +58,7 @@ public class ChiTietDonNhapHang {
     }
 
     public void setDonGia(double donGia) throws Exception{
-        if(donGia < 0){
+        if(donGia <= 0){
             throw new Exception(DON_GIA_SAI);
         }
         this.donGia = donGia;

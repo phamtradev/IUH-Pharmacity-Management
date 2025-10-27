@@ -89,7 +89,7 @@
             </Constraint>
           </Constraints>
         </Component>
-        <Component class="javax.swing.JProgressBar" name="ProgressBar">
+        <Component class="javax.swing.JProgressBar" name="progressBar">
           <Properties>
             <Property name="stringPainted" type="boolean" value="true"/>
           </Properties>
