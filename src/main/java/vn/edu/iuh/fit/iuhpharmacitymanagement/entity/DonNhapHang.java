@@ -23,7 +23,7 @@ public class DonNhapHang {
     private List<ChiTietDonNhapHang> chiTietDonNhapHang;
     public static final String MA_DON_NHAP_HANG_SAI ="Mã đơn nhập hàng không được rỗng, phải bắt đầu bằng DNHddmmyyyyxxxx (dd là ngày nhập, mm là tháng nhập, yyyy là năm nhập, xxxx là 4 số)";
         private static final String REGEX_MA_DON_NHAP_HANG =
-    "^DH(0[1-9]|[12][0-9]|3[01])" + 
+    "^DNH(0[1-9]|[12][0-9]|3[01])" + 
     "(0[1-9]|1[0-2])" +                
     "(20)\\d{2}" +             
     "(?!0000)\\d{4}$"; 

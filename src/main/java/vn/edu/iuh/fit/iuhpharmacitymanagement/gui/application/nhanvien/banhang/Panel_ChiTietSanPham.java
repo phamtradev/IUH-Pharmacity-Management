@@ -43,8 +43,17 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
     
     private void loadSanPhamData() {
         if (sanPham != null) {
-            // Set tên sản phẩm
-            lblTenSP.setText(sanPham.getTenSanPham());
+            // Set tên sản phẩm với đơn vị tính (sử dụng HTML để hiển thị 2 dòng)
+            String donViTinh = sanPham.getDonViTinh() != null ? 
+                sanPham.getDonViTinh().getTenDonVi() : "";
+            
+            String htmlText = "<html><div style='text-align: left;'>" +
+                "<div style='font-size: 14px; font-weight: normal;'>" + sanPham.getTenSanPham() + "</div>" +
+                (donViTinh.isEmpty() ? "" : 
+                    "<div style='font-size: 11px; color: #666666; margin-top: 2px;'>Đơn vị: " + donViTinh + "</div>") +
+                "</div></html>";
+            
+            lblTenSP.setText(htmlText);
             
             // Set đơn giá
             txtDonGia.setText(currencyFormat.format(sanPham.getGiaBan()) + " đ");
@@ -161,6 +170,18 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
         }
         return null;
     }
+    
+    /**
+     * Set % giảm giá cho sản phẩm (hiển thị trong txtDiscount)
+     * @param phanTramGiamGia % giảm giá (0-100)
+     */
+    public void setGiamGia(double phanTramGiamGia) {
+        if (phanTramGiamGia > 0) {
+            txtDiscount.setText("-" + phanTramGiamGia + "%");
+        } else {
+            txtDiscount.setText("0%");
+        }
+    }
 
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -271,7 +292,7 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
         lblTenSP.setText("");
         lblTenSP.setPreferredSize(new java.awt.Dimension(180, 80));
         lblTenSP.setMinimumSize(new java.awt.Dimension(180, 80));
-        lblTenSP.setVerticalAlignment(javax.swing.SwingConstants.CENTER);
+        lblTenSP.setVerticalAlignment(javax.swing.SwingConstants.TOP);
         gbc.gridx = 1;
         gbc.weightx = 1.0;
         add(lblTenSP, gbc);

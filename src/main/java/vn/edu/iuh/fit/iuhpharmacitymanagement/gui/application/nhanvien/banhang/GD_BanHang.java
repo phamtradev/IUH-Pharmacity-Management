@@ -55,6 +55,13 @@ public class GD_BanHang extends javax.swing.JPanel {
         wrapperPanel.setBackground(java.awt.Color.WHITE);
 
         panelDonHang = new Panel_DonHang();
+        
+        // Thêm listener để lắng nghe thay đổi khuyến mãi
+        panelDonHang.addPropertyChangeListener("khuyenMaiChanged", evt -> {
+            // Khi khuyến mãi thay đổi, cập nhật lại tổng tiền
+            capNhatTongTien();
+        });
+        
         wrapperPanel.add(pnMi, java.awt.BorderLayout.CENTER);
         wrapperPanel.add(panelDonHang, java.awt.BorderLayout.EAST);
 
@@ -379,21 +386,67 @@ public class GD_BanHang extends javax.swing.JPanel {
     public void capNhatTongTien() {
         double tongTienHang = 0;
         double tongGiamGiaSanPham = 0;
+        double giamGiaHoaDon = 0;
         
-        // Duyệt qua tất cả các Panel_ChiTietSanPham
+        // Thu thập danh sách sản phẩm và số lượng trong giỏ hàng
+        java.util.Map<vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham, Integer> danhSachSanPham = 
+            new java.util.HashMap<>();
+        
+        // Duyệt qua tất cả các Panel_ChiTietSanPham để tính tổng tiền và thu thập sản phẩm
         for (Component comp : containerPanel.getComponents()) {
             if (comp instanceof Panel_ChiTietSanPham) {
                 Panel_ChiTietSanPham panel = (Panel_ChiTietSanPham) comp;
                 tongTienHang += panel.getTongTien();
-                // Nếu có giảm giá sản phẩm, tính vào tổng giảm giá
-                // tongGiamGiaSanPham += panel.getGiamGia(); // Sẽ implement sau
+                
+                // Thêm vào danh sách sản phẩm
+                danhSachSanPham.put(panel.getSanPham(), panel.getSoLuong());
+                
+                // Reset giảm giá sản phẩm về 0
+                panel.setGiamGia(0);
             }
+        }
+        
+        // Tự động tìm và áp dụng khuyến mãi tốt nhất
+        panelDonHang.tuDongApDungKhuyenMai(tongTienHang, danhSachSanPham);
+        
+        // Lấy khuyến mãi đã chọn từ Panel_DonHang (sau khi tự động áp dụng)
+        vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhuyenMai khuyenMai = panelDonHang.getKhuyenMaiDaChon();
+        
+        // Tính giảm giá dựa trên khuyến mãi được áp dụng
+        for (Component comp : containerPanel.getComponents()) {
+            if (comp instanceof Panel_ChiTietSanPham) {
+                Panel_ChiTietSanPham panel = (Panel_ChiTietSanPham) comp;
+                
+                // Nếu có khuyến mãi sản phẩm, tính giảm giá
+                if (khuyenMai != null && khuyenMai.getLoaiKhuyenMai() == vn.edu.iuh.fit.iuhpharmacitymanagement.constant.LoaiKhuyenMai.SAN_PHAM) {
+                    // Kiểm tra xem sản phẩm có trong chương trình khuyến mãi không
+                    java.util.List<vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietKhuyenMaiSanPham> danhSachCTKM = 
+                        panelDonHang.getChiTietKhuyenMaiSanPhamBUS().timTheoMaKhuyenMai(khuyenMai.getMaKhuyenMai());
+                    
+                    for (vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietKhuyenMaiSanPham ctkm : danhSachCTKM) {
+                        if (ctkm.getSanPham().getMaSanPham().equals(panel.getSanPham().getMaSanPham())) {
+                            // Sản phẩm có trong chương trình khuyến mãi
+                            double giamGia = panel.getTongTien() * (khuyenMai.getGiamGia() / 100.0);
+                            tongGiamGiaSanPham += giamGia;
+                            // Cập nhật giảm giá cho panel (hiển thị % giảm giá)
+                            panel.setGiamGia(khuyenMai.getGiamGia());
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Nếu có khuyến mãi hóa đơn, tính giảm giá
+        if (khuyenMai != null && khuyenMai.getLoaiKhuyenMai() == vn.edu.iuh.fit.iuhpharmacitymanagement.constant.LoaiKhuyenMai.DON_HANG) {
+            giamGiaHoaDon = tongTienHang * (khuyenMai.getGiamGia() / 100.0);
         }
         
         // Cập nhật vào Panel_DonHang
         if (panelDonHang != null) {
             panelDonHang.updateTongTienHang(tongTienHang);
             panelDonHang.updateDiscountProduct(tongGiamGiaSanPham);
+            panelDonHang.updateDiscountOrder(giamGiaHoaDon);
         }
     }
 

@@ -7,11 +7,19 @@ package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.banhang;
 import com.formdev.flatlaf.FlatClientProperties;
 import java.awt.event.KeyEvent;
 import java.util.Optional;
+import javax.swing.JLabel;
 import raven.toast.Notifications;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.ChiTietKhuyenMaiSanPhamBUS;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.KhachHangBUS;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.KhuyenMaiBUS;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.constant.LoaiKhuyenMai;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.ChiTietKhuyenMaiSanPhamDAO;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.DonHangDAO;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.KhachHangDAO;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhachHang;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhuyenMai;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham;
+import java.util.Map;
 
 /**
  *
@@ -21,6 +29,12 @@ public class Panel_DonHang extends javax.swing.JPanel {
 
     private KhachHangBUS khachHangBUS;
     private KhachHang khachHangHienTai;
+    private KhuyenMaiBUS khuyenMaiBUS;
+    private ChiTietKhuyenMaiSanPhamBUS chiTietKhuyenMaiSanPhamBUS;
+    private KhuyenMai khuyenMaiDaChon;
+    private JLabel lblTenKhuyenMaiHoaDon;
+    private JLabel lblTenKhuyenMaiSanPham;
+    private JLabel lblThongTinKhuyenMai; // Label hiển thị thông tin khuyến mãi đang áp dụng
 
     /**
      * Creates new form TabHoaDon
@@ -28,9 +42,12 @@ public class Panel_DonHang extends javax.swing.JPanel {
     public Panel_DonHang() {
         // Khởi tạo BUS
         khachHangBUS = new KhachHangBUS(new KhachHangDAO(), new DonHangDAO());
+        khuyenMaiBUS = new KhuyenMaiBUS();
+        chiTietKhuyenMaiSanPhamBUS = new ChiTietKhuyenMaiSanPhamBUS(new ChiTietKhuyenMaiSanPhamDAO());
         
         initComponents();
         customizeTextFields();
+        addPromotionLabels();
     }
 
     private void customizeTextFields() {
@@ -101,7 +118,6 @@ public class Panel_DonHang extends javax.swing.JPanel {
         jPanel3 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         txtTenKhachHang = new javax.swing.JTextField();
-
         setLayout(new java.awt.BorderLayout());
 
         pnMid.setMinimumSize(new java.awt.Dimension(200, 200));
@@ -364,7 +380,6 @@ public class Panel_DonHang extends javax.swing.JPanel {
                 .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, 66, Short.MAX_VALUE)
                 .addComponent(txtTenKhachHang, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
-
         javax.swing.GroupLayout pnLeftLayout = new javax.swing.GroupLayout(pnLeft);
         pnLeft.setLayout(pnLeftLayout);
         pnLeftLayout.setHorizontalGroup(
@@ -392,6 +407,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
                 .addComponent(txtTimKhachHang, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+
                 .addGap(8, 8, 8)
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -541,6 +557,16 @@ public class Panel_DonHang extends javax.swing.JPanel {
     public void updateTongTienHang(double tongTien) {
         this.tongTienHang = tongTien;
         txtTongTienHang.setText(String.format("%,.0f đ", tongTien));
+        
+        // Cập nhật label hiển thị chi tiết (nếu có khuyến mãi)
+        if (khuyenMaiDaChon != null) {
+            String htmlText = String.format("<html>Tổng tiền hàng:<br/><small style='color:#009600;'>(%s áp dụng)</small></html>", 
+                khuyenMaiDaChon.getTenKhuyenMai());
+            jLabel3.setText(htmlText);
+        } else {
+            jLabel3.setText("Tổng tiền hàng:");
+        }
+        
         updateTongHoaDon();
     }
     
@@ -645,6 +671,101 @@ public class Panel_DonHang extends javax.swing.JPanel {
         } catch (NumberFormatException e) {
             return 0;
         }
+    }
+
+    
+    /**
+     * Thêm label hiển thị tên khuyến mãi vào UI
+     * Sẽ được gọi sau khi initComponents() hoàn tất
+     */
+    private void addPromotionLabels() {
+        // Label cho khuyến mãi hóa đơn (nằm dưới giảm giá đơn hàng)
+        lblTenKhuyenMaiHoaDon = new JLabel();
+        lblTenKhuyenMaiHoaDon.setFont(new java.awt.Font("Segoe UI", java.awt.Font.ITALIC, 10));
+        lblTenKhuyenMaiHoaDon.setForeground(new java.awt.Color(0, 150, 0));
+        lblTenKhuyenMaiHoaDon.setText("");
+        
+        // Label cho khuyến mãi sản phẩm (nằm dưới giảm giá sản phẩm)
+        lblTenKhuyenMaiSanPham = new JLabel();
+        lblTenKhuyenMaiSanPham.setFont(new java.awt.Font("Segoe UI", java.awt.Font.ITALIC, 10));
+        lblTenKhuyenMaiSanPham.setForeground(new java.awt.Color(0, 150, 0));
+        lblTenKhuyenMaiSanPham.setText("");
+        
+        // Label hiển thị thông tin khuyến mãi đang áp dụng
+        lblThongTinKhuyenMai = new JLabel();
+        lblThongTinKhuyenMai.setFont(new java.awt.Font("Segoe UI", java.awt.Font.ITALIC | java.awt.Font.BOLD, 10));
+        lblThongTinKhuyenMai.setForeground(new java.awt.Color(0, 120, 215));
+        lblThongTinKhuyenMai.setText("");
+    }
+    
+    /**
+     * Lấy khuyến mãi đã chọn
+     */
+    public KhuyenMai getKhuyenMaiDaChon() {
+        return khuyenMaiDaChon;
+    }
+    
+    /**
+     * Lấy ChiTietKhuyenMaiSanPhamBUS
+     */
+    public ChiTietKhuyenMaiSanPhamBUS getChiTietKhuyenMaiSanPhamBUS() {
+        return chiTietKhuyenMaiSanPhamBUS;
+    }
+    
+    /**
+     * Tự động kiểm tra và áp dụng khuyến mãi tốt nhất dựa trên giỏ hàng
+     * @param tongTienHang Tổng tiền hàng hiện tại
+     * @param danhSachSanPham Map sản phẩm và số lượng trong giỏ
+     */
+    public void tuDongApDungKhuyenMai(double tongTienHang, Map<SanPham, Integer> danhSachSanPham) {
+        // Tìm khuyến mãi tốt nhất
+        KhuyenMai khuyenMaiTotNhat = khuyenMaiBUS.timKhuyenMaiTotNhat(tongTienHang, danhSachSanPham);
+        
+        // Nếu không có sản phẩm trong giỏ hoặc không có khuyến mãi nào phù hợp
+        if (tongTienHang == 0 || khuyenMaiTotNhat == null) {
+            // Reset về không áp dụng khuyến mãi
+            if (khuyenMaiDaChon != null) {
+                khuyenMaiDaChon = null;
+                
+                // Xóa thông tin khuyến mãi trên label
+                if (lblThongTinKhuyenMai != null) {
+                    lblThongTinKhuyenMai.setText("");
+                }
+            }
+            return;
+        }
+        
+        // Nếu khuyến mãi tốt nhất khác với khuyến mãi đang chọn
+        if (khuyenMaiDaChon == null || !khuyenMaiDaChon.getMaKhuyenMai().equals(khuyenMaiTotNhat.getMaKhuyenMai())) {
+            khuyenMaiDaChon = khuyenMaiTotNhat;
+            String tenKM = khuyenMaiTotNhat.getTenKhuyenMai();
+            
+            // Hiển thị thông báo
+            String loaiKM = khuyenMaiTotNhat.getLoaiKhuyenMai() == LoaiKhuyenMai.DON_HANG 
+                ? "giảm " + khuyenMaiTotNhat.getGiamGia() + "% trên tổng hóa đơn"
+                : "giảm " + khuyenMaiTotNhat.getGiamGia() + "% cho các sản phẩm áp dụng";
+            
+            // Cập nhật label hiển thị thông tin khuyến mãi
+            if (lblThongTinKhuyenMai != null) {
+                lblThongTinKhuyenMai.setText("🎉 Đang áp dụng: " + tenKM);
+            }
+            
+            Notifications.getInstance().show(
+                Notifications.Type.SUCCESS, 
+                Notifications.Location.TOP_CENTER,
+                "✨ Tự động áp dụng: " + tenKM + " (" + loaiKM + ")"
+            );
+            
+            // Notify để cập nhật lại tổng tiền
+            firePropertyChange("khuyenMaiChanged", null, khuyenMaiTotNhat);
+        }
+    }
+    
+    /**
+     * Lấy KhuyenMaiBUS
+     */
+    public KhuyenMaiBUS getKhuyenMaiBUS() {
+        return khuyenMaiBUS;
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

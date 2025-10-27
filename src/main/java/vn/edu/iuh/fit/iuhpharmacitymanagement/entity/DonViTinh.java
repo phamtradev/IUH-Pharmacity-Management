@@ -12,10 +12,10 @@ public class DonViTinh {
     private String maDonVi;
     private String tenDonVi;
     
-    public static final String MA_DON_VI_SAI = "Mã đơn vị không hợp lệ. Mã phải có dạng DVTxxxxx, với xxxxx là 5 chữ số (ví dụ: DVT00001)";
+    public static final String MA_DON_VI_SAI = "Mã đơn vị không hợp lệ. Mã phải có dạng DVxxxxx, với xxxxx là 5 chữ số (ví dụ: DV00001)";
     public static final String TEN_DON_VI_RONG = "Tên đơn vị không được để trống";
     
-    public static final String MA_DON_VI_REGEX = "^DVT\\d{5}$";
+    public static final String MA_DON_VI_REGEX = "^DV\\d{5}$";
 
     public DonViTinh() {
     }

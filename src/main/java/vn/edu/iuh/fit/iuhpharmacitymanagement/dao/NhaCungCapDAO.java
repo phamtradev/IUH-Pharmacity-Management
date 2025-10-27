@@ -210,11 +210,11 @@ public class NhaCungCapDAO implements DAOInterface<NhaCungCap, String> {
                 String maCuoi = rs.getString("maNhaCungCap");
                 String phanSo = maCuoi.substring(3);
                 int soTiepTheo = Integer.parseInt(phanSo) + 1;
-                return String.format("NCC%04d", soTiepTheo);
+                return String.format("NCC%05d", soTiepTheo);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return "NCC0001";
+        return "NCC00001";
     }
 }

@@ -36,6 +36,18 @@ public class ChiTietKhuyenMaiSanPhamDAO implements DAOInterface<ChiTietKhuyenMai
     private final String SQL_LAY_MA_CUOI =
             "SELECT TOP 1 maChiTietKhuyenMaiSanPham FROM ChiTietKhuyenMaiSanPham ORDER BY maChiTietKhuyenMaiSanPham DESC";
 
+    private final String SQL_XOA =
+            "DELETE FROM ChiTietKhuyenMaiSanPham WHERE maChiTietKhuyenMaiSanPham = ?";
+
+    private final String SQL_TIM_THEO_MA_KHUYEN_MAI =
+            "SELECT maSanPham, maKhuyenMai FROM ChiTietKhuyenMaiSanPham WHERE maKhuyenMai = ?";
+
+    private final String SQL_TIM_THEO_MA_SAN_PHAM =
+            "SELECT * FROM ChiTietKhuyenMaiSanPham WHERE maSanPham = ?";
+
+    private final String SQL_KIEM_TRA_TON_TAI_SAN_PHAM_VA_KHUYEN_MAI =
+            "SELECT COUNT(*) AS total FROM ChiTietKhuyenMaiSanPham WHERE maSanPham = ? AND maKhuyenMai = ?";
+
 
     @Override
     public boolean insert(ChiTietKhuyenMaiSanPham chiTietKhuyenMaiSanPham) {
@@ -128,7 +140,12 @@ public class ChiTietKhuyenMaiSanPhamDAO implements DAOInterface<ChiTietKhuyenMai
     private ChiTietKhuyenMaiSanPham mapResultSetToChiTietKhuyenMaiSanPham(ResultSet rs) throws SQLException, Exception {
         ChiTietKhuyenMaiSanPham chiTietKhuyenMaiSanPham = new ChiTietKhuyenMaiSanPham();
 
-        chiTietKhuyenMaiSanPham.setMaChiTietKhuyenMaiSanPham(rs.getString("maChiTietKhuyenMaiSanPham"));
+        // Kiểm tra xem cột có tồn tại không trước khi lấy
+        try {
+            chiTietKhuyenMaiSanPham.setMaChiTietKhuyenMaiSanPham(rs.getString("maChiTietKhuyenMaiSanPham"));
+        } catch (SQLException e) {
+            // Nếu không có cột này, bỏ qua (cho trường hợp SELECT maSanPham, maKhuyenMai)
+        }
 
         SanPham sp = new SanPham();
         sp.setMaSanPham(rs.getString("maSanPham"));
@@ -176,5 +193,80 @@ public class ChiTietKhuyenMaiSanPhamDAO implements DAOInterface<ChiTietKhuyenMai
             e.printStackTrace();
         }
         return 0;
+    }
+
+    public boolean delete(String maChiTietKhuyenMaiSanPham) {
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(SQL_XOA)) {
+
+            stmt.setString(1, maChiTietKhuyenMaiSanPham);
+            return stmt.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public List<ChiTietKhuyenMaiSanPham> findByMaKhuyenMai(String maKhuyenMai) {
+        List<ChiTietKhuyenMaiSanPham> ds = new ArrayList<>();
+
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(SQL_TIM_THEO_MA_KHUYEN_MAI)) {
+
+            stmt.setString(1, maKhuyenMai);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                ds.add(mapResultSetToChiTietKhuyenMaiSanPham(rs));
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (Exception ex) {
+            System.getLogger(ChiTietKhuyenMaiSanPhamDAO.class.getName())
+                    .log(System.Logger.Level.ERROR, (String) null, ex);
+        }
+        return ds;
+    }
+
+    public List<ChiTietKhuyenMaiSanPham> findByMaSanPham(String maSanPham) {
+        List<ChiTietKhuyenMaiSanPham> ds = new ArrayList<>();
+
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(SQL_TIM_THEO_MA_SAN_PHAM)) {
+
+            stmt.setString(1, maSanPham);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                ds.add(mapResultSetToChiTietKhuyenMaiSanPham(rs));
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (Exception ex) {
+            System.getLogger(ChiTietKhuyenMaiSanPhamDAO.class.getName())
+                    .log(System.Logger.Level.ERROR, (String) null, ex);
+        }
+        return ds;
+    }
+
+    public boolean existsBySanPhamVaKhuyenMai(String maSanPham, String maKhuyenMai) {
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(SQL_KIEM_TRA_TON_TAI_SAN_PHAM_VA_KHUYEN_MAI)) {
+
+            stmt.setString(1, maSanPham);
+            stmt.setString(2, maKhuyenMai);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt("total") > 0;
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }

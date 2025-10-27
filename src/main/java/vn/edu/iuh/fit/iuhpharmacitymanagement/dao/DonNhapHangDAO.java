@@ -23,17 +23,15 @@ public class DonNhapHangDAO implements DAOInterface<DonNhapHang, String> {
     private final String SQL_TIM_TAT_CA =
             "SELECT * FROM DonNhapHang";
 
-    private final String SQL_LAY_MA_CUOI =
-            "SELECT TOP 1 maDonNhapHang FROM DonNhapHang ORDER BY maDonNhapHang DESC";
-
-
     @Override
     public boolean insert(DonNhapHang donNhapHang) {
         try (Connection con = ConnectDB.getConnection();
              PreparedStatement stmt = con.prepareStatement(SQL_THEM)) {
 
             if (donNhapHang.getMaDonNhapHang() == null || donNhapHang.getMaDonNhapHang().trim().isEmpty()) {
-                donNhapHang.setMaDonNhapHang(taoMaDonNhapHangMoi());
+                String maMoi = taoMaDonNhapHangMoi();
+                System.out.println("🔍 DEBUG: Mã đơn nhập hàng được tạo = [" + maMoi + "]");
+                donNhapHang.setMaDonNhapHang(maMoi);
             }
 
             stmt.setString(1, donNhapHang.getMaDonNhapHang());
@@ -131,20 +129,38 @@ public class DonNhapHangDAO implements DAOInterface<DonNhapHang, String> {
     }
 
     private String taoMaDonNhapHangMoi() {
+        LocalDate ngayHienTai = LocalDate.now();
+        String ngayThangNam = String.format("%02d%02d%04d", 
+                ngayHienTai.getDayOfMonth(), 
+                ngayHienTai.getMonthValue(), 
+                ngayHienTai.getYear());
+        
+        String prefixHienTai = "DNH" + ngayThangNam;
+        
         try (Connection con = ConnectDB.getConnection();
-             PreparedStatement stmt = con.prepareStatement(SQL_LAY_MA_CUOI);
-             ResultSet rs = stmt.executeQuery()) {
+             PreparedStatement stmt = con.prepareStatement(
+                     "SELECT TOP 1 maDonNhapHang FROM DonNhapHang WHERE maDonNhapHang LIKE ? ORDER BY maDonNhapHang DESC")) {
+            
+            stmt.setString(1, prefixHienTai + "%");
+            ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
                 String maCuoi = rs.getString("maDonNhapHang");
-                int so = Integer.parseInt(maCuoi.substring(3)) + 1; // ví dụ: DNH00001
-                return String.format("DNH%05d", so);
+                try {
+                    // Lấy 4 số cuối: DNHddmmyyyyxxxx -> xxxx
+                    String soSTT = maCuoi.substring(13);
+                    int so = Integer.parseInt(soSTT) + 1;
+                    return prefixHienTai + String.format("%04d", so);
+                } catch (NumberFormatException | StringIndexOutOfBoundsException e) {
+                    System.err.println("Mã đơn nhập hàng không hợp lệ: " + maCuoi + ". Tạo mã mới.");
+                }
             }
 
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return "DNH00001";
+        // Nếu chưa có đơn nào trong ngày, tạo mã đầu tiên
+        return prefixHienTai + "0001";
     }
 
     public boolean exists(String maDonNhapHang) {

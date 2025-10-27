@@ -6,10 +6,14 @@ package vn.edu.iuh.fit.iuhpharmacitymanagement.bus;
 
 import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.DonHangDAO;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.KhuyenMaiDAO;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.ChiTietKhuyenMaiSanPhamDAO;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhuyenMai;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.constant.LoaiKhuyenMai;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -20,10 +24,12 @@ public class KhuyenMaiBUS {
 
     private final KhuyenMaiDAO khuyenMaiDAO;
     private final DonHangDAO donHangDAO;
+    private final ChiTietKhuyenMaiSanPhamDAO chiTietKhuyenMaiSanPhamDAO;
 
     public KhuyenMaiBUS() {
         this.khuyenMaiDAO = new KhuyenMaiDAO();
         this.donHangDAO = new DonHangDAO();
+        this.chiTietKhuyenMaiSanPhamDAO = new ChiTietKhuyenMaiSanPhamDAO();
     }
 
     //Lấy danh sách tất cả các chương trình khuyến mãi.
@@ -82,5 +88,52 @@ public class KhuyenMaiBUS {
         else if (!homNay.isAfter(km.getNgayKetThuc()) && !homNay.isBefore(km.getNgayBatDau()) && !km.isTrangThai()) {
             km.setTrangThai(true);
         }
+    }
+    
+    /**
+     * Tìm khuyến mãi tốt nhất (giảm giá nhiều nhất) cho đơn hàng
+     * @param tongTienHang Tổng tiền hàng hiện tại
+     * @param danhSachSanPham Map của sản phẩm và số lượng trong giỏ hàng
+     * @return Khuyến mãi tốt nhất hoặc null nếu không có
+     */
+    public KhuyenMai timKhuyenMaiTotNhat(double tongTienHang, Map<SanPham, Integer> danhSachSanPham) {
+        List<KhuyenMai> danhSachKhuyenMai = getKhuyenMaiConHan();
+        
+        KhuyenMai khuyenMaiTotNhat = null;
+        double giamGiaLonNhat = 0;
+        
+        for (KhuyenMai km : danhSachKhuyenMai) {
+            double giamGia = 0;
+            
+            if (km.getLoaiKhuyenMai() == LoaiKhuyenMai.DON_HANG) {
+                // Khuyến mãi hóa đơn: Áp dụng cho tổng đơn hàng
+                giamGia = tongTienHang * (km.getGiamGia() / 100.0);
+            } else if (km.getLoaiKhuyenMai() == LoaiKhuyenMai.SAN_PHAM) {
+                // Khuyến mãi sản phẩm: Kiểm tra từng sản phẩm trong giỏ
+                var danhSachCTKM = chiTietKhuyenMaiSanPhamDAO.findByMaKhuyenMai(km.getMaKhuyenMai());
+                
+                for (var entry : danhSachSanPham.entrySet()) {
+                    SanPham sp = entry.getKey();
+                    int soLuong = entry.getValue();
+                    
+                    // Kiểm tra sản phẩm có trong chương trình khuyến mãi không
+                    boolean coKhuyenMai = danhSachCTKM.stream()
+                        .anyMatch(ctkm -> ctkm.getSanPham().getMaSanPham().equals(sp.getMaSanPham()));
+                    
+                    if (coKhuyenMai) {
+                        double tongTienSP = sp.getGiaBan() * soLuong;
+                        giamGia += tongTienSP * (km.getGiamGia() / 100.0);
+                    }
+                }
+            }
+            
+            // So sánh và chọn khuyến mãi có giảm giá lớn nhất
+            if (giamGia > giamGiaLonNhat) {
+                giamGiaLonNhat = giamGia;
+                khuyenMaiTotNhat = km;
+            }
+        }
+        
+        return khuyenMaiTotNhat;
     }
 }
