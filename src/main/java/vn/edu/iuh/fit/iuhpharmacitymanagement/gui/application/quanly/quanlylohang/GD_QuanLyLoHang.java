@@ -5,14 +5,12 @@
 package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlylohang;
 
 import com.formdev.flatlaf.FlatClientProperties;
-import com.toedter.calendar.JDateChooser;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import javax.swing.BorderFactory;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 import raven.toast.Notifications;
@@ -44,13 +42,17 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
     }
 
     private void setUIManager() {
-        txtBatchNameAdd.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Tên lô hàng");
+        txtBarcodeAdd.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Quét mã vạch sản phẩm (Số đăng ký)");
+        txtBarcodeEdit.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Quét mã vạch sản phẩm (Số đăng ký)");
+            txtBatchNameAdd.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Tên lô hàng");
         txtBatchNameEdit.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Tên lô hàng");
         txtStockAdd.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Số lượng tồn kho");
         txtStockEdit.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Số lượng tồn kho");
         txtSearchBatch.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Tìm kiếm theo mã lô hàng, tên lô hàng");
         
         // Thêm viền cho các TextField
+        txtBarcodeAdd.putClientProperty(FlatClientProperties.STYLE, "arc:10");
+        txtBarcodeEdit.putClientProperty(FlatClientProperties.STYLE, "arc:10");
         txtBatchNameAdd.putClientProperty(FlatClientProperties.STYLE, "arc:10");
         txtBatchNameEdit.putClientProperty(FlatClientProperties.STYLE, "arc:10");
         txtStockAdd.putClientProperty(FlatClientProperties.STYLE, "arc:10");
@@ -60,40 +62,49 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
         UIManager.put("Button.arc", 10);
     }
     
-    // Load danh sách sản phẩm vào combobox
+    // Load danh sách sản phẩm
     private void loadSanPham() {
         try {
             danhSachSanPham = sanPhamBUS.layTatCaSanPham();
-            
-            // Tạo model cho combobox
-            DefaultComboBoxModel<String> modelAdd = new DefaultComboBoxModel<>();
-            DefaultComboBoxModel<String> modelEdit = new DefaultComboBoxModel<>();
-            
-            modelAdd.addElement("-- Chọn sản phẩm --");
-            modelEdit.addElement("-- Chọn sản phẩm --");
-            
-            for (SanPham sp : danhSachSanPham) {
-                String item = sp.getMaSanPham() + " - " + sp.getTenSanPham();
-                modelAdd.addElement(item);
-                modelEdit.addElement(item);
-            }
-            
-            comboProductAdd.setModel(modelAdd);
-            comboProductEdit.setModel(modelEdit);
-            
         } catch (Exception e) {
             Notifications.getInstance().show(Notifications.Type.ERROR, "Lỗi khi tải danh sách sản phẩm: " + e.getMessage());
         }
     }
     
-    // Lấy sản phẩm được chọn từ combobox
-    private SanPham getSelectedSanPham(javax.swing.JComboBox<String> combo) {
-        int selectedIndex = combo.getSelectedIndex();
-        if (selectedIndex <= 0) {
+    // Tìm sản phẩm từ mã vạch (số đăng ký) và hiển thị tên
+    private SanPham findProductByBarcode(String barcode, javax.swing.JLabel lblProductName) {
+        if (barcode == null || barcode.trim().isEmpty()) {
+            lblProductName.setText("Chưa quét mã");
+            lblProductName.setForeground(new java.awt.Color(150, 150, 150));
             return null;
         }
-        return danhSachSanPham.get(selectedIndex - 1);
+        
+        try {
+            String soDangKy = barcode.trim();
+            // Tìm sản phẩm theo số đăng ký (như bán hàng)
+            java.util.Optional<SanPham> optionalSP = sanPhamBUS.timSanPhamTheoSoDangKy(soDangKy);
+            
+            if (optionalSP.isPresent()) {
+                SanPham sanPham = optionalSP.get();
+                lblProductName.setText("✓ " + sanPham.getTenSanPham());
+                lblProductName.setForeground(new java.awt.Color(34, 139, 34)); // Màu xanh lá
+                return sanPham;
+            } else {
+                lblProductName.setText("❌ Không tìm thấy sản phẩm với số ĐK: " + soDangKy);
+                lblProductName.setForeground(new java.awt.Color(220, 53, 69)); // Màu đỏ
+                return null;
+            }
+        } catch (Exception e) {
+            lblProductName.setText("❌ Lỗi: " + e.getMessage());
+            lblProductName.setForeground(new java.awt.Color(220, 53, 69));
+            e.printStackTrace();
+            return null;
+        }
     }
+    
+    // Biến lưu sản phẩm đã chọn (thay thế cho combobox)
+    private SanPham selectedProductAdd = null;
+    private SanPham selectedProductEdit = null;
 
     private void fillTable() {
         String[] headers = {"Mã lô hàng", "Tên lô hàng", "Hạn sử dụng", "Tồn kho", "Trạng thái"};
@@ -163,13 +174,12 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
         modalAddBatch = new javax.swing.JDialog();
         jPanel2 = new javax.swing.JPanel();
         jLabel25 = new javax.swing.JLabel();
-        comboProductAdd = new javax.swing.JComboBox<>();
+        txtBarcodeAdd = new javax.swing.JTextField();
+        lblProductNameAdd = new javax.swing.JLabel();
         txtBatchNameAdd = new javax.swing.JTextField();
         jLabel18 = new javax.swing.JLabel();
         jLabel22 = new javax.swing.JLabel();
         dateExpiryAdd = new com.toedter.calendar.JDateChooser();
-        jLabel23 = new javax.swing.JLabel();
-        comboStatusAdd = new javax.swing.JComboBox<>();
         txtStockAdd = new javax.swing.JTextField();
         jLabel24 = new javax.swing.JLabel();
         btnAddBatch = new javax.swing.JButton();
@@ -177,13 +187,12 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
         modalEditBatch = new javax.swing.JDialog();
         jPanel4 = new javax.swing.JPanel();
         jLabel29 = new javax.swing.JLabel();
-        comboProductEdit = new javax.swing.JComboBox<>();
+        txtBarcodeEdit = new javax.swing.JTextField();
+        lblProductNameEdit = new javax.swing.JLabel();
         txtBatchNameEdit = new javax.swing.JTextField();
         jLabel19 = new javax.swing.JLabel();
         jLabel26 = new javax.swing.JLabel();
         dateExpiryEdit = new com.toedter.calendar.JDateChooser();
-        jLabel27 = new javax.swing.JLabel();
-        comboStatusEdit = new javax.swing.JComboBox<>();
         txtStockEdit = new javax.swing.JTextField();
         jLabel28 = new javax.swing.JLabel();
         btnEditBatch = new javax.swing.JButton();
@@ -212,9 +221,18 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
         jPanel2.setBackground(new java.awt.Color(255, 255, 255));
 
         jLabel25.setFont(new java.awt.Font("Segoe UI", 1, 16)); // NOI18N
-        jLabel25.setText("Sản phẩm");
+        jLabel25.setText("Mã vạch sản phẩm");
 
-        comboProductAdd.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        txtBarcodeAdd.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        txtBarcodeAdd.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                txtBarcodeAddKeyReleased(evt);
+            }
+        });
+
+        lblProductNameAdd.setFont(new java.awt.Font("Segoe UI", 2, 14)); // NOI18N
+        lblProductNameAdd.setForeground(new java.awt.Color(150, 150, 150));
+        lblProductNameAdd.setText("Chưa quét mã");
 
         txtBatchNameAdd.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
@@ -226,11 +244,6 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
 
         dateExpiryAdd.setDateFormatString("dd/MM/yyyy");
         dateExpiryAdd.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-
-        jLabel23.setFont(new java.awt.Font("Segoe UI", 1, 16)); // NOI18N
-        jLabel23.setText("Trạng thái");
-
-        comboStatusAdd.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Còn hạn", "Hết hạn" }));
 
         txtStockAdd.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
@@ -263,13 +276,12 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
                 .addGap(50, 50, 50)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(jLabel25)
-                    .addComponent(comboProductAdd, 0, 540, Short.MAX_VALUE)
+                    .addComponent(txtBarcodeAdd, 0, 540, Short.MAX_VALUE)
+                    .addComponent(lblProductNameAdd)
                     .addComponent(jLabel18)
                     .addComponent(txtBatchNameAdd, javax.swing.GroupLayout.DEFAULT_SIZE, 540, Short.MAX_VALUE)
                     .addComponent(jLabel22)
                     .addComponent(dateExpiryAdd, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jLabel23)
-                    .addComponent(comboStatusAdd, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jLabel24)
                     .addComponent(txtStockAdd)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
@@ -284,7 +296,9 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
                 .addGap(30, 30, 30)
                 .addComponent(jLabel25)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(comboProductAdd, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(txtBarcodeAdd, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(lblProductNameAdd)
                 .addGap(18, 18, 18)
                 .addComponent(jLabel18)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -297,10 +311,6 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
                 .addComponent(jLabel24)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(txtStockAdd, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(jLabel23)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(comboStatusAdd, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(30, 30, 30)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnAddBatch, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -336,9 +346,18 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
         jPanel4.setBackground(new java.awt.Color(255, 255, 255));
 
         jLabel29.setFont(new java.awt.Font("Segoe UI", 1, 16)); // NOI18N
-        jLabel29.setText("Sản phẩm");
+        jLabel29.setText("Mã vạch sản phẩm");
 
-        comboProductEdit.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        txtBarcodeEdit.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        txtBarcodeEdit.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                txtBarcodeEditKeyReleased(evt);
+            }
+        });
+
+        lblProductNameEdit.setFont(new java.awt.Font("Segoe UI", 2, 14)); // NOI18N
+        lblProductNameEdit.setForeground(new java.awt.Color(150, 150, 150));
+        lblProductNameEdit.setText("Chưa quét mã");
 
         txtBatchNameEdit.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
@@ -350,11 +369,6 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
 
         dateExpiryEdit.setDateFormatString("dd/MM/yyyy");
         dateExpiryEdit.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-
-        jLabel27.setFont(new java.awt.Font("Segoe UI", 1, 16)); // NOI18N
-        jLabel27.setText("Trạng thái");
-
-        comboStatusEdit.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Còn hạn", "Hết hạn" }));
 
         txtStockEdit.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
@@ -387,13 +401,12 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
                 .addGap(50, 50, 50)
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(jLabel29)
-                    .addComponent(comboProductEdit, 0, 540, Short.MAX_VALUE)
+                    .addComponent(txtBarcodeEdit, 0, 540, Short.MAX_VALUE)
+                    .addComponent(lblProductNameEdit)
                     .addComponent(jLabel19)
                     .addComponent(txtBatchNameEdit, javax.swing.GroupLayout.DEFAULT_SIZE, 540, Short.MAX_VALUE)
                     .addComponent(jLabel26)
                     .addComponent(dateExpiryEdit, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jLabel27)
-                    .addComponent(comboStatusEdit, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jLabel28)
                     .addComponent(txtStockEdit)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
@@ -408,7 +421,9 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
                 .addGap(30, 30, 30)
                 .addComponent(jLabel29)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(comboProductEdit, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(txtBarcodeEdit, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(lblProductNameEdit)
                 .addGap(18, 18, 18)
                 .addComponent(jLabel19)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -421,10 +436,6 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
                 .addComponent(jLabel28)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(txtStockEdit, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(jLabel27)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(comboStatusEdit, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(30, 30, 30)
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnEditBatch, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -609,8 +620,11 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
     }//GEN-LAST:event_txtSearchBatchKeyReleased
 
     private void btnExitModalAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExitModalAddActionPerformed
-        clearData(txtBatchNameAdd, txtStockAdd);
+        clearData(txtBatchNameAdd, txtStockAdd, txtBarcodeAdd);
         dateExpiryAdd.setDate(null);
+        selectedProductAdd = null;
+        lblProductNameAdd.setText("Chưa quét mã");
+        lblProductNameAdd.setForeground(new java.awt.Color(150, 150, 150));
         modalAddBatch.dispose();
     }//GEN-LAST:event_btnExitModalAddActionPerformed
 
@@ -620,13 +634,12 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
             String tenLH = txtBatchNameAdd.getText().trim();
             Date hanSD = dateExpiryAdd.getDate();
             String tonKhoStr = txtStockAdd.getText().trim();
-            String trangThaiStr = (String) comboStatusAdd.getSelectedItem();
-            SanPham sanPham = getSelectedSanPham(comboProductAdd);
+            SanPham sanPham = selectedProductAdd;
             
             // Validate dữ liệu
             if (sanPham == null) {
-                Notifications.getInstance().show(Notifications.Type.WARNING, "Vui lòng chọn sản phẩm!");
-                comboProductAdd.requestFocus();
+                Notifications.getInstance().show(Notifications.Type.WARNING, "Vui lòng quét mã vạch sản phẩm!");
+                txtBarcodeAdd.requestFocus();
                 return;
             }
             
@@ -686,10 +699,11 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
                 Notifications.getInstance().show(Notifications.Type.SUCCESS, "Thêm lô hàng thành công!");
                 
                 // Xóa dữ liệu form
-                clearData(txtBatchNameAdd, txtStockAdd);
+                clearData(txtBatchNameAdd, txtStockAdd, txtBarcodeAdd);
                 dateExpiryAdd.setDate(null);
-                comboStatusAdd.setSelectedIndex(0);
-                comboProductAdd.setSelectedIndex(0);
+                selectedProductAdd = null;
+                lblProductNameAdd.setText("Chưa quét mã");
+                lblProductNameAdd.setForeground(new java.awt.Color(150, 150, 150));
                 
                 // Đóng modal và reload dữ liệu
                 modalAddBatch.dispose();
@@ -714,13 +728,12 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
             String tenLH = txtBatchNameEdit.getText().trim();
             Date hanSD = dateExpiryEdit.getDate();
             String tonKhoStr = txtStockEdit.getText().trim();
-            String trangThaiStr = (String) comboStatusEdit.getSelectedItem();
-            SanPham sanPham = getSelectedSanPham(comboProductEdit);
+            SanPham sanPham = selectedProductEdit;
             
             // Validate dữ liệu
             if (sanPham == null) {
-                Notifications.getInstance().show(Notifications.Type.WARNING, "Vui lòng chọn sản phẩm!");
-                comboProductEdit.requestFocus();
+                Notifications.getInstance().show(Notifications.Type.WARNING, "Vui lòng quét mã vạch sản phẩm!");
+                txtBarcodeEdit.requestFocus();
                 return;
             }
             
@@ -777,10 +790,11 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
                 Notifications.getInstance().show(Notifications.Type.SUCCESS, "Cập nhật lô hàng thành công!");
                 
                 // Xóa dữ liệu form và đóng modal
-                clearData(txtBatchNameEdit, txtStockEdit);
+                clearData(txtBatchNameEdit, txtStockEdit, txtBarcodeEdit);
                 dateExpiryEdit.setDate(null);
-                comboStatusEdit.setSelectedIndex(0);
-                comboProductEdit.setSelectedIndex(0);
+                selectedProductEdit = null;
+                lblProductNameEdit.setText("Chưa quét mã");
+                lblProductNameEdit.setForeground(new java.awt.Color(150, 150, 150));
                 batchIdEdit = null;
                 modalEditBatch.dispose();
                 
@@ -796,8 +810,11 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
     }//GEN-LAST:event_btnEditBatchActionPerformed
 
     private void btnExitModalEditActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExitModalEditActionPerformed
-        clearData(txtBatchNameEdit, txtStockEdit);
+        clearData(txtBatchNameEdit, txtStockEdit, txtBarcodeEdit);
         dateExpiryEdit.setDate(null);
+        selectedProductEdit = null;
+        lblProductNameEdit.setText("Chưa quét mã");
+        lblProductNameEdit.setForeground(new java.awt.Color(150, 150, 150));
         modalEditBatch.dispose();
     }//GEN-LAST:event_btnExitModalEditActionPerformed
 
@@ -814,7 +831,6 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
             String tenLH = tableDesign.getTable().getValueAt(selectedRow, 1).toString();
             LocalDate hanSD = (LocalDate) tableDesign.getTable().getValueAt(selectedRow, 2);
             String tonKho = tableDesign.getTable().getValueAt(selectedRow, 3).toString();
-            String trangThai = tableDesign.getTable().getValueAt(selectedRow, 4).toString();
 
             // Lấy thông tin lô hàng từ database để có đầy đủ thông tin sản phẩm
             List<LoHang> danhSachLH = loHangBUS.getAllLoHang();
@@ -836,17 +852,14 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
             txtBatchNameEdit.setText(tenLH);
             dateExpiryEdit.setDate(Date.from(hanSD.atStartOfDay(ZoneId.systemDefault()).toInstant()));
             txtStockEdit.setText(tonKho);
-            comboStatusEdit.setSelectedItem(trangThai);
 
             // Set sản phẩm đã chọn
             if (loHangEdit.getSanPham() != null) {
                 String maSP = loHangEdit.getSanPham().getMaSanPham();
-                for (int i = 0; i < danhSachSanPham.size(); i++) {
-                    if (danhSachSanPham.get(i).getMaSanPham().equals(maSP)) {
-                        comboProductEdit.setSelectedIndex(i + 1); // +1 vì index 0 là "-- Chọn sản phẩm --"
-                        break;
-                    }
-                }
+                txtBarcodeEdit.setText(maSP);
+                selectedProductEdit = loHangEdit.getSanPham();
+                lblProductNameEdit.setText("✓ " + loHangEdit.getSanPham().getTenSanPham());
+                lblProductNameEdit.setForeground(new java.awt.Color(34, 139, 34));
             }
 
             modalEditBatch.setLocationRelativeTo(this);
@@ -860,6 +873,16 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
         modalAddBatch.setLocationRelativeTo(this);
         modalAddBatch.setVisible(true);
     }//GEN-LAST:event_btnAddActionPerformed
+
+    private void txtBarcodeAddKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtBarcodeAddKeyReleased
+        String barcode = txtBarcodeAdd.getText().trim();
+        selectedProductAdd = findProductByBarcode(barcode, lblProductNameAdd);
+    }//GEN-LAST:event_txtBarcodeAddKeyReleased
+
+    private void txtBarcodeEditKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtBarcodeEditKeyReleased
+        String barcode = txtBarcodeEdit.getText().trim();
+        selectedProductEdit = findProductByBarcode(barcode, lblProductNameEdit);
+    }//GEN-LAST:event_txtBarcodeEditKeyReleased
 
     private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteActionPerformed
         int selectedRow = tableDesign.getTable().getSelectedRow();
@@ -916,21 +939,15 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
     private javax.swing.JButton btnExitModalEdit;
     private javax.swing.JButton btnSearch;
     private javax.swing.JButton btnUpdate;
-    private javax.swing.JComboBox<String> comboProductAdd;
-    private javax.swing.JComboBox<String> comboProductEdit;
-    private javax.swing.JComboBox<String> comboStatusAdd;
-    private javax.swing.JComboBox<String> comboStatusEdit;
     private com.toedter.calendar.JDateChooser dateExpiryAdd;
     private com.toedter.calendar.JDateChooser dateExpiryEdit;
     private javax.swing.JPanel headerPanel;
     private javax.swing.JLabel jLabel18;
     private javax.swing.JLabel jLabel19;
     private javax.swing.JLabel jLabel22;
-    private javax.swing.JLabel jLabel23;
     private javax.swing.JLabel jLabel24;
     private javax.swing.JLabel jLabel25;
     private javax.swing.JLabel jLabel26;
-    private javax.swing.JLabel jLabel27;
     private javax.swing.JLabel jLabel28;
     private javax.swing.JLabel jLabel29;
     private javax.swing.JPanel jPanel2;
@@ -938,10 +955,14 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
+    private javax.swing.JLabel lblProductNameAdd;
+    private javax.swing.JLabel lblProductNameEdit;
     private javax.swing.JDialog modalAddBatch;
     private javax.swing.JDialog modalEditBatch;
     private javax.swing.JPanel pnAll;
     private javax.swing.JScrollPane scrollTable;
+    private javax.swing.JTextField txtBarcodeAdd;
+    private javax.swing.JTextField txtBarcodeEdit;
     private javax.swing.JTextField txtBatchNameAdd;
     private javax.swing.JTextField txtBatchNameEdit;
     private javax.swing.JTextField txtSearchBatch;

@@ -355,7 +355,10 @@ public class GD_QuanLyDonHang extends javax.swing.JPanel {
             // Thêm chi tiết đơn hàng vào bảng
             for (ChiTietDonHang ct : chiTietDonHangs) {
                 String maLoHang = ct.getLoHang() != null ? ct.getLoHang().getMaLoHang() : "";
-                String tenSanPham = "N/A"; // Cần lấy từ LoHang nếu có relationship
+                String tenSanPham = "N/A";
+                if (ct.getLoHang() != null && ct.getLoHang().getSanPham() != null) {
+                    tenSanPham = ct.getLoHang().getSanPham().getTenSanPham();
+                }
 
                 tableDetail.getModelTable().addRow(new Object[]{
                     maLoHang,

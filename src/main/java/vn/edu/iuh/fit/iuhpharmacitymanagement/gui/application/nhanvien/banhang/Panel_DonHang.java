@@ -26,6 +26,7 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.DonHangBUS;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.KhachHangBUS;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.KhuyenMaiBUS;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.NhanVienBUS;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.LoHangBUS;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.constant.LoaiKhuyenMai;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.constant.PhuongThucThanhToan;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.ChiTietKhuyenMaiSanPhamDAO;
@@ -35,6 +36,7 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhachHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhuyenMai;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.LoHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhanVien;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.util.UserSession;
@@ -58,6 +60,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
     private DonHangBUS donHangBUS;
     private ChiTietDonHangBUS chiTietDonHangBUS;
     private NhanVienBUS nhanVienBUS;
+    private LoHangBUS loHangBUS;
     private GD_BanHang gdBanHang; // Reference đến form cha để lấy container panel
 
     /**
@@ -71,6 +74,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
         donHangBUS = new DonHangBUS();
         chiTietDonHangBUS = new ChiTietDonHangBUS();
         nhanVienBUS = new NhanVienBUS();
+        loHangBUS = new LoHangBUS();
         
         initComponents();
         customizeTextFields();
@@ -626,6 +630,71 @@ public class Panel_DonHang extends javax.swing.JPanel {
                         Notifications.Location.TOP_CENTER,
                         "Không thể lưu chi tiết đơn hàng!");
                     return;
+                }
+                
+                // QUAN TRỌNG: Xử lý giảm tồn kho - tự động chuyển lô nếu cần
+                int soLuongBan = panel.getSoLuong();
+                List<LoHang> danhSachLoHang = panel.getDanhSachLoHang();
+                
+                if (danhSachLoHang == null || danhSachLoHang.isEmpty()) {
+                    Notifications.getInstance().show(Notifications.Type.ERROR, 
+                        Notifications.Location.TOP_CENTER,
+                        "Lỗi: Không tìm thấy lô hàng cho sản phẩm " + panel.getSanPham().getTenSanPham());
+                    return;
+                }
+                
+                // Kiểm tra tổng tồn kho của tất cả các lô còn hiệu lực
+                int tongTonKho = danhSachLoHang.stream()
+                    .filter(lh -> lh.getTonKho() > 0 && lh.isTrangThai())
+                    .mapToInt(LoHang::getTonKho)
+                    .sum();
+                
+                if (tongTonKho < soLuongBan) {
+                    Notifications.getInstance().show(Notifications.Type.ERROR, 
+                        Notifications.Location.TOP_CENTER,
+                        "Hết hàng! Sản phẩm '" + panel.getSanPham().getTenSanPham() + 
+                        "' chỉ còn " + tongTonKho + " trong kho");
+                    return;
+                }
+                
+                // Giảm tồn kho từ các lô hàng (ưu tiên lô có hạn sử dụng gần nhất)
+                int soLuongConLai = soLuongBan;
+                List<LoHang> danhSachLoHopLe = danhSachLoHang.stream()
+                    .filter(lh -> lh.getTonKho() > 0 && lh.isTrangThai())
+                    .sorted((lh1, lh2) -> lh1.getHanSuDung().compareTo(lh2.getHanSuDung())) // FIFO
+                    .collect(java.util.stream.Collectors.toList());
+                
+                for (LoHang loHang : danhSachLoHopLe) {
+                    if (soLuongConLai <= 0) break;
+                    
+                    int tonKhoHienTai = loHang.getTonKho();
+                    int soLuongTuLoNay = Math.min(tonKhoHienTai, soLuongConLai);
+                    int tonKhoMoi = tonKhoHienTai - soLuongTuLoNay;
+                    
+                    try {
+                        loHang.setTonKho(tonKhoMoi);
+                        
+                        // Cập nhật vào database
+                        if (!loHangBUS.capNhatLoHang(loHang)) {
+                            Notifications.getInstance().show(Notifications.Type.ERROR, 
+                                Notifications.Location.TOP_CENTER,
+                                "Không thể cập nhật tồn kho cho lô hàng: " + loHang.getMaLoHang());
+                            return;
+                        }
+                        
+                        // Ghi log
+                        System.out.println("✓ Giảm tồn kho lô " + loHang.getMaLoHang() + 
+                            ": " + tonKhoHienTai + " → " + tonKhoMoi + 
+                            " (bán " + soLuongTuLoNay + ")");
+                        
+                        soLuongConLai -= soLuongTuLoNay;
+                        
+                    } catch (Exception e) {
+                        Notifications.getInstance().show(Notifications.Type.ERROR, 
+                            Notifications.Location.TOP_CENTER,
+                            "Lỗi khi cập nhật tồn kho: " + e.getMessage());
+                        return;
+                    }
                 }
                 
                 chiTietDonHangList.add(chiTiet);

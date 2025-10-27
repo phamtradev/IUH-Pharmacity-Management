@@ -65,21 +65,26 @@ public class ChiTietDonHangDAO implements DAOInterface<ChiTietDonHang, String> {
     }
 
     @Override
-    public Optional<ChiTietDonHang> findById(String id) {        
+    public Optional<ChiTietDonHang> findById(String id) {
+        LoHangDAO loHangDAO = new LoHangDAO();
+        
         try (Connection con = ConnectDB.getConnection();
              PreparedStatement pre = con.prepareStatement("select * from chitietdonhang where maDonHang = ?")) {
             pre.setString(1, id);
             ResultSet rs = pre.executeQuery();
             if(rs.next()){
-             double donGia = rs.getDouble("donGia");
+                double donGia = rs.getDouble("donGia");
                 double giamGia = rs.getDouble("giamGia");
                 int soLuong = rs.getInt("soLuong");
                 double thanhTien = rs.getDouble("thanhTien");
                 String maLo = rs.getString("maLoHang");
                 String maDonHang = rs.getString("maDonHang");
                 
+                // Load đầy đủ thông tin LoHang (bao gồm SanPham)
+                LoHang loHang = loHangDAO.findById(maLo).orElse(new LoHang(maLo));
+                
                 ChiTietDonHang ctdh = new ChiTietDonHang(soLuong, donGia, thanhTien, giamGia, 
-                        new LoHang(maLo), new DonHang(maDonHang));
+                        loHang, new DonHang(maDonHang));
                 return Optional.of(ctdh);            
             }
         } catch (Exception e) {
@@ -91,6 +96,8 @@ public class ChiTietDonHangDAO implements DAOInterface<ChiTietDonHang, String> {
 
     public ArrayList<ChiTietDonHang> findByIdList(String id) {
         ArrayList<ChiTietDonHang> dsCtdh = new ArrayList<>();
+        LoHangDAO loHangDAO = new LoHangDAO();
+        
         try (Connection con = ConnectDB.getConnection();
              PreparedStatement pre = con.prepareStatement("select * from chitietdonhang where maDonHang = ?")) {
             
@@ -105,8 +112,11 @@ public class ChiTietDonHangDAO implements DAOInterface<ChiTietDonHang, String> {
                 String maLo = rs.getString("maLoHang");
                 String maDonHang = rs.getString("maDonHang");
                 
+                // Load đầy đủ thông tin LoHang (bao gồm SanPham)
+                LoHang loHang = loHangDAO.findById(maLo).orElse(new LoHang(maLo));
+                
                 ChiTietDonHang ctdh = new ChiTietDonHang(soLuong, donGia, thanhTien, giamGia, 
-                        new LoHang(maLo), new DonHang(maDonHang));
+                        loHang, new DonHang(maDonHang));
                 dsCtdh.add(ctdh);
             }
         } catch (Exception e) {
@@ -117,7 +127,9 @@ public class ChiTietDonHangDAO implements DAOInterface<ChiTietDonHang, String> {
 
     @Override
     public List<ChiTietDonHang> findAll() {
-        List<ChiTietDonHang> dsCtdh = new ArrayList<>(); 
+        List<ChiTietDonHang> dsCtdh = new ArrayList<>();
+        LoHangDAO loHangDAO = new LoHangDAO();
+        
         try (Connection con = ConnectDB.getConnection();
              Statement stm = con.createStatement();
              ResultSet rs = stm.executeQuery("select * from chitietdonhang")) {
@@ -130,8 +142,11 @@ public class ChiTietDonHangDAO implements DAOInterface<ChiTietDonHang, String> {
                 String maLo = rs.getString("maLoHang");
                 String maDonHang = rs.getString("maDonHang");
                 
+                // Load đầy đủ thông tin LoHang (bao gồm SanPham)
+                LoHang loHang = loHangDAO.findById(maLo).orElse(new LoHang(maLo));
+                
                 ChiTietDonHang ctdh = new ChiTietDonHang(soLuong, donGia, thanhTien, giamGia, 
-                        new LoHang(maLo), new DonHang(maDonHang));
+                        loHang, new DonHang(maDonHang));
                 dsCtdh.add(ctdh);
             }
         } catch (Exception e) {
