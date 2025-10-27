@@ -164,11 +164,7 @@ public class DonHangBUS {
         return donHangDAO.countByKhachHang(maKhachHang);
     }
 
-    /**
-     * Đếm số lượng đơn hàng theo khuyến mãi
-     * @param maKhuyenMai Mã khuyến mãi
-     * @return Số lượng đơn hàng
-     */
+    
     public long demSoLuongTheoKhuyenMai(String maKhuyenMai) {
         return donHangDAO.countByKhuyenMai(maKhuyenMai);
     }
