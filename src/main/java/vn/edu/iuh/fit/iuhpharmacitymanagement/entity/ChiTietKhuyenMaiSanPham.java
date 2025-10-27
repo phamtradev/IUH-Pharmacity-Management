@@ -32,9 +32,8 @@ public class ChiTietKhuyenMaiSanPham {
     }
 
     public void setMaChiTietKhuyenMaiSanPham(String maChiTietKhuyenMaiSanPham) throws Exception{
-        if(maChiTietKhuyenMaiSanPham == null){
-            throw new Exception(MA_CHI_TIET_KHUYEN_MAI_SAN_PHAM_SAI);
-        }
+        // Bảng ChiTietKhuyenMaiSanPham không có khóa chính riêng trong database
+        // Cho phép null
         this.maChiTietKhuyenMaiSanPham = maChiTietKhuyenMaiSanPham;
     }
 

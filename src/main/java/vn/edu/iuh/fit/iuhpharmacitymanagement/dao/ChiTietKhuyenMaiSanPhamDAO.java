@@ -22,22 +22,13 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham;
 public class ChiTietKhuyenMaiSanPhamDAO implements DAOInterface<ChiTietKhuyenMaiSanPham, String> {
 
     private final String SQL_THEM =
-            "INSERT INTO ChiTietKhuyenMaiSanPham (maChiTietKhuyenMaiSanPham, maSanPham, maKhuyenMai) VALUES (?, ?, ?)";
-
-    private final String SQL_CAP_NHAT =
-            "UPDATE ChiTietKhuyenMaiSanPham SET maSanPham = ?, maKhuyenMai = ? WHERE maChiTietKhuyenMaiSanPham = ?";
-
-    private final String SQL_TIM_THEO_MA =
-            "SELECT * FROM ChiTietKhuyenMaiSanPham WHERE maChiTietKhuyenMaiSanPham = ?";
+            "INSERT INTO ChiTietKhuyenMaiSanPham (maSanPham, maKhuyenMai) VALUES (?, ?)";
 
     private final String SQL_TIM_TAT_CA =
             "SELECT * FROM ChiTietKhuyenMaiSanPham";
 
-    private final String SQL_LAY_MA_CUOI =
-            "SELECT TOP 1 maChiTietKhuyenMaiSanPham FROM ChiTietKhuyenMaiSanPham ORDER BY maChiTietKhuyenMaiSanPham DESC";
-
     private final String SQL_XOA =
-            "DELETE FROM ChiTietKhuyenMaiSanPham WHERE maChiTietKhuyenMaiSanPham = ?";
+            "DELETE FROM ChiTietKhuyenMaiSanPham WHERE maSanPham = ? AND maKhuyenMai = ?";
 
     private final String SQL_TIM_THEO_MA_KHUYEN_MAI =
             "SELECT maSanPham, maKhuyenMai FROM ChiTietKhuyenMaiSanPham WHERE maKhuyenMai = ?";
@@ -54,14 +45,8 @@ public class ChiTietKhuyenMaiSanPhamDAO implements DAOInterface<ChiTietKhuyenMai
         try (Connection con = ConnectDB.getConnection();
              PreparedStatement stmt = con.prepareStatement(SQL_THEM)) {
 
-         
-            if (chiTietKhuyenMaiSanPham.getMaChiTietKhuyenMaiSanPham() == null || chiTietKhuyenMaiSanPham.getMaChiTietKhuyenMaiSanPham().trim().isEmpty()) {
-                chiTietKhuyenMaiSanPham.setMaChiTietKhuyenMaiSanPham(taoMaMoi());
-            }
-
-            stmt.setString(1, chiTietKhuyenMaiSanPham.getMaChiTietKhuyenMaiSanPham());
-            stmt.setString(2, chiTietKhuyenMaiSanPham.getSanPham() != null ? chiTietKhuyenMaiSanPham.getSanPham().getMaSanPham() : null);
-            stmt.setString(3, chiTietKhuyenMaiSanPham.getKhuyenMai() != null ? chiTietKhuyenMaiSanPham.getKhuyenMai().getMaKhuyenMai() : null);
+            stmt.setString(1, chiTietKhuyenMaiSanPham.getSanPham() != null ? chiTietKhuyenMaiSanPham.getSanPham().getMaSanPham() : null);
+            stmt.setString(2, chiTietKhuyenMaiSanPham.getKhuyenMai() != null ? chiTietKhuyenMaiSanPham.getKhuyenMai().getMaKhuyenMai() : null);
 
             return stmt.executeUpdate() > 0;
 
@@ -77,40 +62,16 @@ public class ChiTietKhuyenMaiSanPhamDAO implements DAOInterface<ChiTietKhuyenMai
 
     @Override
     public boolean update(ChiTietKhuyenMaiSanPham chiTietKhuyenMaiSanPham) {
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement stmt = con.prepareStatement(SQL_CAP_NHAT)) {
-
-            stmt.setString(1, chiTietKhuyenMaiSanPham.getSanPham() != null ? chiTietKhuyenMaiSanPham.getSanPham().getMaSanPham() : null);
-            stmt.setString(2, chiTietKhuyenMaiSanPham.getKhuyenMai() != null ? chiTietKhuyenMaiSanPham.getKhuyenMai().getMaKhuyenMai() : null);
-            stmt.setString(3, chiTietKhuyenMaiSanPham.getMaChiTietKhuyenMaiSanPham());
-
-            return stmt.executeUpdate() > 0;
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        // Bảng ChiTietKhuyenMaiSanPham không có khóa chính riêng, không hỗ trợ update
+        // Nếu cần update, xóa và insert lại
         return false;
     }
 
 
     @Override
     public Optional<ChiTietKhuyenMaiSanPham> findById(String maChiTietKhuyenMaiSanPham) {
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement stmt = con.prepareStatement(SQL_TIM_THEO_MA)) {
-
-            stmt.setString(1, maChiTietKhuyenMaiSanPham);
-            ResultSet rs = stmt.executeQuery();
-
-            if (rs.next()) {
-                return Optional.of(mapResultSetToChiTietKhuyenMaiSanPham(rs));
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } catch (Exception ex) {
-            System.getLogger(ChiTietKhuyenMaiSanPhamDAO.class.getName())
-                    .log(System.Logger.Level.ERROR, (String) null, ex);
-        }
+        // Bảng ChiTietKhuyenMaiSanPham không có khóa chính riêng
+        // Không hỗ trợ tìm theo ID đơn lẻ
         return Optional.empty();
     }
 
@@ -140,13 +101,6 @@ public class ChiTietKhuyenMaiSanPhamDAO implements DAOInterface<ChiTietKhuyenMai
     private ChiTietKhuyenMaiSanPham mapResultSetToChiTietKhuyenMaiSanPham(ResultSet rs) throws SQLException, Exception {
         ChiTietKhuyenMaiSanPham chiTietKhuyenMaiSanPham = new ChiTietKhuyenMaiSanPham();
 
-        // Kiểm tra xem cột có tồn tại không trước khi lấy
-        try {
-            chiTietKhuyenMaiSanPham.setMaChiTietKhuyenMaiSanPham(rs.getString("maChiTietKhuyenMaiSanPham"));
-        } catch (SQLException e) {
-            // Nếu không có cột này, bỏ qua (cho trường hợp SELECT maSanPham, maKhuyenMai)
-        }
-
         SanPham sp = new SanPham();
         sp.setMaSanPham(rs.getString("maSanPham"));
         chiTietKhuyenMaiSanPham.setSanPham(sp);
@@ -159,27 +113,6 @@ public class ChiTietKhuyenMaiSanPhamDAO implements DAOInterface<ChiTietKhuyenMai
     }
 
 
-    private String taoMaMoi() {
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement stmt = con.prepareStatement(SQL_LAY_MA_CUOI);
-             ResultSet rs = stmt.executeQuery()) {
-
-            if (rs.next()) {
-                String maCuoi = rs.getString("maChiTietKhuyenMaiSanPham");
-                int so = Integer.parseInt(maCuoi.substring(4)) + 1;
-                return String.format("CTKM%05d", so);
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return "CTKM00001";
-    }
-
-
-    public boolean exists(String maChiTietKhuyenMaiSanPham) {
-        return findById(maChiTietKhuyenMaiSanPham).isPresent();
-    }
 
     public int count() {
         String sql = "SELECT COUNT(*) AS total FROM ChiTietKhuyenMaiSanPham";
@@ -195,11 +128,12 @@ public class ChiTietKhuyenMaiSanPhamDAO implements DAOInterface<ChiTietKhuyenMai
         return 0;
     }
 
-    public boolean delete(String maChiTietKhuyenMaiSanPham) {
+    public boolean delete(String maSanPham, String maKhuyenMai) {
         try (Connection con = ConnectDB.getConnection();
              PreparedStatement stmt = con.prepareStatement(SQL_XOA)) {
 
-            stmt.setString(1, maChiTietKhuyenMaiSanPham);
+            stmt.setString(1, maSanPham);
+            stmt.setString(2, maKhuyenMai);
             return stmt.executeUpdate() > 0;
 
         } catch (SQLException e) {

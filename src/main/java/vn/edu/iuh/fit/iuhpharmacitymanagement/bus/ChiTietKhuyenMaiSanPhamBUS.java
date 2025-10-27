@@ -31,8 +31,8 @@ public class ChiTietKhuyenMaiSanPhamBUS {
     }
 
     
-    public boolean xoaChiTietKhuyenMaiSanPham(String maChiTietKM) {
-        return chiTietKhuyenMaiSanPhamDAO.delete(maChiTietKM);
+    public boolean xoaChiTietKhuyenMaiSanPham(String maSanPham, String maKhuyenMai) {
+        return chiTietKhuyenMaiSanPhamDAO.delete(maSanPham, maKhuyenMai);
     }
 
     
@@ -59,11 +59,6 @@ public class ChiTietKhuyenMaiSanPhamBUS {
     
     public List<ChiTietKhuyenMaiSanPham> timTheoMaSanPham(String maSanPham) {
         return chiTietKhuyenMaiSanPhamDAO.findByMaSanPham(maSanPham);
-    }
-
-    
-    public boolean kiemTraTonTai(String maChiTietKM) {
-        return chiTietKhuyenMaiSanPhamDAO.exists(maChiTietKM);
     }
 
     

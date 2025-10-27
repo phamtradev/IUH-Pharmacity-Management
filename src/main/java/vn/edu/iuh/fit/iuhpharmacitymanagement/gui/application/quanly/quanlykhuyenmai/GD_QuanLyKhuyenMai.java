@@ -78,7 +78,7 @@ public class GD_QuanLyKhuyenMai extends javax.swing.JPanel {
     private void fillTable() {
         String[] headers = {"Mã khuyến mãi", "Tên khuyến mãi", "Ngày bắt đầu",
             "Ngày kết thúc", "Giảm giá", "Loại khuyến mãi", "Trạng thái"};
-        List<Integer> tableWidths = Arrays.asList(120, 250, 150, 150, 120, 150, 150);
+        List<Integer> tableWidths = Arrays.asList(120, 200, 120, 120, 100, 120, 100);
         tableDesign = new TableDesign(headers, tableWidths);
         scrollTable.setViewportView(tableDesign.getTable());
         scrollTable.setBorder(BorderFactory.createEmptyBorder(15, 20, 20, 20));

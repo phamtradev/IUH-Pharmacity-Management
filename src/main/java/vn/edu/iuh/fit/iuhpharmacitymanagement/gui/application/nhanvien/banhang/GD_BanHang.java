@@ -193,6 +193,21 @@ public class GD_BanHang extends javax.swing.JPanel {
                 + "borderWidth:0;"
                 + "focusWidth:0"
         );
+        
+        // Tự động focus vào ô tìm kiếm khi load form (QUAN TRỌNG cho máy quét barcode)
+        javax.swing.SwingUtilities.invokeLater(() -> {
+            txtTimSanPham.requestFocusInWindow();
+        });
+        
+        // Chọn toàn bộ text khi focus vào (để máy quét ghi đè text cũ)
+        txtTimSanPham.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                javax.swing.SwingUtilities.invokeLater(() -> {
+                    txtTimSanPham.selectAll();
+                });
+            }
+        });
     }
 
     private void lookAndFeelSet() {
@@ -318,15 +333,19 @@ public class GD_BanHang extends javax.swing.JPanel {
     }//GEN-LAST:event_txtTimSanPhamKeyPressed
     
     /**
-     * Tìm sản phẩm theo số đăng ký
+     * Tìm sản phẩm theo số đăng ký (hỗ trợ máy quét barcode)
      */
     private void timSanPham() {
-        String soDangKy = txtTimSanPham.getText().trim();
+        // Lấy và làm sạch input (trim, loại bỏ ký tự đặc biệt có thể có từ barcode scanner)
+        String soDangKy = txtTimSanPham.getText().trim().replaceAll("[\\r\\n\\t]", "");
+        
+        // Debug: In ra console để kiểm tra
+        System.out.println("🔍 Đang tìm sản phẩm với số đăng ký: '" + soDangKy + "' (length: " + soDangKy.length() + ")");
         
         // Kiểm tra input rỗng
         if (soDangKy.isEmpty()) {
             Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER, 
-                "Vui lòng nhập số đăng ký sản phẩm");
+                "Vui lòng nhập số đăng ký sản phẩm hoặc quét mã vạch");
             txtTimSanPham.requestFocus();
             return;
         }
@@ -337,10 +356,14 @@ public class GD_BanHang extends javax.swing.JPanel {
         if (sanPhamOpt.isPresent()) {
             SanPham sanPham = sanPhamOpt.get();
             
+            System.out.println("✅ Tìm thấy sản phẩm: " + sanPham.getTenSanPham());
+            
             // Kiểm tra sản phẩm có đang hoạt động không
             if (!sanPham.isHoatDong()) {
                 Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER, 
                     "Sản phẩm '" + sanPham.getTenSanPham() + "' đã ngưng bán");
+                txtTimSanPham.setText("");
+                txtTimSanPham.requestFocus();
                 return;
             }
             
@@ -349,16 +372,17 @@ public class GD_BanHang extends javax.swing.JPanel {
             
             // Thông báo thành công
             Notifications.getInstance().show(Notifications.Type.SUCCESS, Notifications.Location.TOP_CENTER, 
-                "Đã thêm sản phẩm: " + sanPham.getTenSanPham());
+                "✓ Đã thêm: " + sanPham.getTenSanPham());
             
-            // Xóa text field và focus
+            // Xóa text field và focus lại (quan trọng cho lần quét tiếp theo)
             txtTimSanPham.setText("");
-            txtTimSanPham.requestFocus();
+            txtTimSanPham.requestFocusInWindow();
         } else {
+            System.out.println("❌ KHÔNG tìm thấy sản phẩm với số đăng ký: '" + soDangKy + "'");
             Notifications.getInstance().show(Notifications.Type.ERROR, Notifications.Location.TOP_CENTER, 
-                "Không tìm thấy sản phẩm với số đăng ký: " + soDangKy);
+                "❌ Không tìm thấy sản phẩm: " + soDangKy);
             txtTimSanPham.selectAll();
-            txtTimSanPham.requestFocus();
+            txtTimSanPham.requestFocusInWindow();
         }
     }
     
@@ -371,6 +395,7 @@ public class GD_BanHang extends javax.swing.JPanel {
         
         // Thêm listener để cập nhật tổng tiền khi có thay đổi
         panelChiTiet.addPropertyChangeListener("tongTien", evt -> capNhatTongTien());
+        panelChiTiet.addPropertyChangeListener("sanPhamXoa", evt -> capNhatTongTien());
         
         containerPanel.add(panelChiTiet);
         containerPanel.revalidate();
@@ -391,6 +416,22 @@ public class GD_BanHang extends javax.swing.JPanel {
         // Thu thập danh sách sản phẩm và số lượng trong giỏ hàng
         java.util.Map<vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham, Integer> danhSachSanPham = 
             new java.util.HashMap<>();
+        
+        // Đếm số lượng sản phẩm trong giỏ hàng (không tính header)
+        int soLuongSanPham = 0;
+        for (Component comp : containerPanel.getComponents()) {
+            if (comp instanceof Panel_ChiTietSanPham) {
+                soLuongSanPham++;
+            }
+        }
+        
+        // Nếu giỏ hàng rỗng (chỉ còn header), reset tất cả về 0
+        if (soLuongSanPham == 0) {
+            if (panelDonHang != null) {
+                panelDonHang.resetThanhToan();
+            }
+            return;
+        }
         
         // Duyệt qua tất cả các Panel_ChiTietSanPham để tính tổng tiền và thu thập sản phẩm
         for (Component comp : containerPanel.getComponents()) {

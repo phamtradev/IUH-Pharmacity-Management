@@ -325,20 +325,63 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
             }
         });
         
-        // Label hiển thị số lượng
-        javax.swing.JLabel lblSoLuong = new javax.swing.JLabel("1");
-        lblSoLuong.setFont(new java.awt.Font("Segoe UI", 1, 16));
-        lblSoLuong.setPreferredSize(new java.awt.Dimension(60, 35));
-        lblSoLuong.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        lblSoLuong.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(200, 200, 200), 1));
+        // TextField EDITABLE để nhập số lượng trực tiếp
+        javax.swing.JTextField txtSoLuong = new javax.swing.JTextField("1");
+        txtSoLuong.setFont(new java.awt.Font("Segoe UI", 1, 16));
+        txtSoLuong.setPreferredSize(new java.awt.Dimension(60, 35));
+        txtSoLuong.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        txtSoLuong.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(200, 200, 200), 1));
         
-        // Cập nhật spinner để đồng bộ với label (ẩn spinner)
+        // Cập nhật spinner để đồng bộ với textfield (ẩn spinner)
         spinnerSoLuong.setModel(new javax.swing.SpinnerNumberModel(1, 1, 1000, 1));
         spinnerSoLuong.setVisible(false); // Ẩn spinner, chỉ dùng để lưu giá trị
         
-        // Listener để cập nhật label khi spinner thay đổi
+        // Listener để cập nhật textfield khi spinner thay đổi (từ nút +/-)
         spinnerSoLuong.addChangeListener(evt -> {
-            lblSoLuong.setText(String.valueOf(spinnerSoLuong.getValue()));
+            txtSoLuong.setText(String.valueOf(spinnerSoLuong.getValue()));
+        });
+        
+        // Listener để cập nhật spinner khi người dùng EDIT trực tiếp vào textfield
+        txtSoLuong.addActionListener(evt -> {
+            try {
+                int value = Integer.parseInt(txtSoLuong.getText().trim());
+                if (value >= 1 && value <= 1000) {
+                    spinnerSoLuong.setValue(value);
+                    spinnerSoLuongStateChanged(null);
+                } else {
+                    // Nếu ngoài phạm vi, reset về giá trị hiện tại
+                    txtSoLuong.setText(String.valueOf(spinnerSoLuong.getValue()));
+                    javax.swing.JOptionPane.showMessageDialog(this, 
+                        "Số lượng phải từ 1 đến 1000!", 
+                        "Lỗi", 
+                        javax.swing.JOptionPane.WARNING_MESSAGE);
+                }
+            } catch (NumberFormatException e) {
+                // Nếu nhập sai định dạng, reset về giá trị hiện tại
+                txtSoLuong.setText(String.valueOf(spinnerSoLuong.getValue()));
+                javax.swing.JOptionPane.showMessageDialog(this, 
+                    "Vui lòng nhập số nguyên hợp lệ!", 
+                    "Lỗi", 
+                    javax.swing.JOptionPane.ERROR_MESSAGE);
+            }
+        });
+        
+        // Listener khi mất focus (blur) - tự động cập nhật
+        txtSoLuong.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                try {
+                    int value = Integer.parseInt(txtSoLuong.getText().trim());
+                    if (value >= 1 && value <= 1000) {
+                        spinnerSoLuong.setValue(value);
+                        spinnerSoLuongStateChanged(null);
+                    } else {
+                        txtSoLuong.setText(String.valueOf(spinnerSoLuong.getValue()));
+                    }
+                } catch (NumberFormatException e) {
+                    txtSoLuong.setText(String.valueOf(spinnerSoLuong.getValue()));
+                }
+            }
         });
         
         // Nút tăng
@@ -359,7 +402,7 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
         });
         
         pnSpinner.add(btnGiam);
-        pnSpinner.add(lblSoLuong);
+        pnSpinner.add(txtSoLuong);
         pnSpinner.add(btnTang);
         pnSpinner.setPreferredSize(new java.awt.Dimension(150, 100));
         pnSpinner.setMinimumSize(new java.awt.Dimension(150, 100));
@@ -433,15 +476,15 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnXoaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnXoaActionPerformed
-        // Fire property change trước khi xóa để cập nhật tổng tiền
-        firePropertyChange("tongTien", getTongTien(), 0.0);
-        
         // Xóa panel này khỏi container cha
         java.awt.Container parent = this.getParent();
         if (parent != null) {
             parent.remove(this);
             parent.revalidate();
             parent.repaint();
+            
+            // Fire property change SAU KHI xóa để GD_BanHang cập nhật tổng tiền
+            firePropertyChange("sanPhamXoa", false, true);
         }
     }//GEN-LAST:event_btnXoaActionPerformed
 

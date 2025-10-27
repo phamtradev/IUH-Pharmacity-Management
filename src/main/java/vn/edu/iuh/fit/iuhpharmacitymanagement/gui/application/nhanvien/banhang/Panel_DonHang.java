@@ -48,6 +48,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
         initComponents();
         customizeTextFields();
         addPromotionLabels();
+        addPriceSuggestButtons();
     }
 
     private void customizeTextFields() {
@@ -595,6 +596,9 @@ public class Panel_DonHang extends javax.swing.JPanel {
         double tongHoaDon = tongTienHang - discountProduct - discountOrder;
         txtTongHoaDon.setText(String.format("%,.0f đ", tongHoaDon));
         updateTienTraKhach();
+        
+        // Cập nhật các nút tiền mệnh giá gợi ý dựa trên tổng hóa đơn mới
+        addPriceSuggestButtons();
     }
     
     /**
@@ -766,6 +770,205 @@ public class Panel_DonHang extends javax.swing.JPanel {
      */
     public KhuyenMaiBUS getKhuyenMaiBUS() {
         return khuyenMaiBUS;
+    }
+    
+    /**
+     * Thêm các nút tiền mệnh giá gợi ý vào panel (CHỈ HIỂN THỊ KHI CÓ SẢN PHẨM)
+     * Các nút này giúp người bán nhanh chóng chọn số tiền khách đưa
+     * 
+     * LOGIC DỰ ĐOÁN THÔNG MINH - PHÙ HỢP VỚI MỨC GIÁ:
+     * - Ví dụ hóa đơn 1.500đ → hiển thị: 2k, 3k, 5k, 10k, 20k, 50k
+     * - Ví dụ hóa đơn 44.000đ → hiển thị: 44k, 45k, 50k, 100k, 200k, 500k
+     * - Ví dụ hóa đơn 567.000đ → hiển thị: 567k, 570k, 600k, 1tr, 2tr, 5tr
+     * - Chưa có sản phẩm (0đ) → ẨN HẾT (không hiển thị nút nào)
+     */
+    private void addPriceSuggestButtons() {
+        // Xóa tất cả components cũ trong panel (nếu có)
+        pnPriceSuggest.removeAll();
+        
+        // Lấy tổng hóa đơn hiện tại
+        double tongHoaDon = parseCurrency(txtTongHoaDon.getText());
+        
+        if (tongHoaDon <= 0) {
+            // ẨN HẾT CÁC NÚT KHI CHƯA CÓ SẢN PHẨM
+            // Không làm gì cả, để panel trống
+        } else {
+            // TÍNH TOÁN 6 NÚT DỰ ĐOÁN THÔNG MINH (CHỈ KHI CÓ SẢN PHẨM)
+            java.util.List<Long> suggestions = new java.util.ArrayList<>();
+            long tongHoaDonRound = (long) Math.ceil(tongHoaDon);
+            
+            // NÚT 1: Đúng bằng tổng hóa đơn (làm tròn lên nghìn)
+            long exact = (long) (Math.ceil(tongHoaDonRound / 1000.0) * 1000);
+            suggestions.add(exact);
+            
+            // NÚT 2-3: Các mức tiền gần kề (+1k, +2k, +5k tùy mức giá)
+            if (exact < 10000) {
+                // Dưới 10k: +1k, +2k
+                addIfNotExists(suggestions, exact + 1000);
+                addIfNotExists(suggestions, exact + 2000);
+            } else if (exact < 50000) {
+                // 10k-50k: +1k, +5k
+                addIfNotExists(suggestions, exact + 1000);
+                addIfNotExists(suggestions, exact + 5000);
+            } else if (exact < 100000) {
+                // 50k-100k: +5k, +10k
+                addIfNotExists(suggestions, exact + 5000);
+                addIfNotExists(suggestions, exact + 10000);
+            } else {
+                // Trên 100k: +10k, +20k
+                addIfNotExists(suggestions, exact + 10000);
+                addIfNotExists(suggestions, exact + 20000);
+            }
+            
+            // NÚT 4-6: Các mệnh giá tiêu chuẩn PHÙ HỢP với mức giá
+            long[] allDenominations = {
+                2000, 5000, 10000, 20000, 50000, 
+                100000, 200000, 500000, 
+                1000000, 2000000, 5000000, 10000000
+            };
+            
+            for (long denom : allDenominations) {
+                if (suggestions.size() >= 6) break;
+                if (denom > exact && !suggestions.contains(denom)) {
+                    suggestions.add(denom);
+                }
+            }
+            
+            // Đảm bảo có đủ 6 nút (nếu thiếu thì thêm mệnh giá gấp đôi)
+            if (suggestions.size() < 6) {
+                long lastAmount = suggestions.get(suggestions.size() - 1);
+                while (suggestions.size() < 6) {
+                    lastAmount *= 2;
+                    if (!suggestions.contains(lastAmount)) {
+                        suggestions.add(lastAmount);
+                    }
+                }
+            }
+            
+            // Chỉ lấy 6 nút đầu tiên
+            for (int i = 0; i < Math.min(6, suggestions.size()); i++) {
+                addPriceSuggestButton(suggestions.get(i));
+            }
+        }
+        
+        pnPriceSuggest.revalidate();
+        pnPriceSuggest.repaint();
+    }
+    
+    /**
+     * Thêm giá trị vào list nếu chưa tồn tại
+     */
+    private void addIfNotExists(java.util.List<Long> list, long value) {
+        if (!list.contains(value)) {
+            list.add(value);
+        }
+    }
+    
+    /**
+     * Thêm một nút tiền mệnh giá vào panel
+     * 
+     * @param amount số tiền hiển thị trên nút
+     */
+    private void addPriceSuggestButton(long amount) {
+        javax.swing.JButton btn = new javax.swing.JButton();
+        
+        // Format số tiền: 10.000, 20.000, ...
+        String giaText = String.format("%,d đ", amount).replace(",", ".");
+        btn.setText(giaText);
+        
+        // Style cho nút
+        btn.setFont(btn.getFont().deriveFont(java.awt.Font.BOLD, 13f));
+        btn.putClientProperty(FlatClientProperties.STYLE, 
+            "arc:8;borderWidth:1;borderColor:#519AF4;background:#F0F8FF");
+        
+        // Thêm action listener
+        btn.addActionListener(e -> {
+            // Lấy tổng hóa đơn hiện tại
+            double tongHoaDon = parseCurrency(txtTongHoaDon.getText());
+            
+            if (tongHoaDon <= 0) {
+                Notifications.getInstance().show(
+                    Notifications.Type.WARNING, 
+                    Notifications.Location.TOP_CENTER,
+                    "Chưa có sản phẩm trong giỏ hàng"
+                );
+                return;
+            }
+            
+            // Set số tiền khách đưa
+            txtTienKhachDua.setText(String.format("%,d", amount).replace(",", "."));
+            
+            // Cập nhật tiền trả khách
+            updateTienTraKhach();
+        });
+        
+        pnPriceSuggest.add(btn);
+    }
+    
+    /**
+     * Chuyển đổi chuỗi tiền tệ sang số double
+     * Ví dụ: "1.000.000 đ" -> 1000000.0
+     * 
+     * @param currencyText chuỗi tiền tệ (có thể chứa dấu chấm phân cách nghìn và ký tự "đ")
+     * @return giá trị số tương ứng
+     */
+    private double parseCurrency(String currencyText) {
+        if (currencyText == null || currencyText.trim().isEmpty()) {
+            return 0;
+        }
+        
+        try {
+            // Loại bỏ dấu chấm phân cách nghìn, ký tự "đ" và khoảng trắng
+            String cleaned = currencyText.replace(".", "")
+                                        .replace("đ", "")
+                                        .replace(",", "")
+                                        .trim();
+            return Double.parseDouble(cleaned);
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+    
+    /**
+     * Reset tất cả thông tin thanh toán về trạng thái ban đầu
+     * Được gọi khi giỏ hàng rỗng (xóa hết sản phẩm)
+     */
+    public void resetThanhToan() {
+        // Reset các biến
+        tongTienHang = 0;
+        discountProduct = 0;
+        discountOrder = 0;
+        khuyenMaiDaChon = null;
+        
+        // Reset tất cả các text field về 0
+        txtTongTienHang.setText("0 đ");
+        txtDiscountProduct.setText("0 đ");
+        txtDiscountOrder.setText("0 đ");
+        txtTongHoaDon.setText("0 đ");
+        txtTienKhachDua.setText("");
+        txtTienTraKhach.setText("0 đ");
+        
+        // Reset các nút tiền mệnh giá về mặc định
+        addPriceSuggestButtons();
+        
+        // Reset thông tin khách hàng về vãng lai
+        khachHangHienTai = null;
+        txtTenKhachHang.setText("Vãng lai");
+        txtTimKhachHang.setText("");
+        
+        // Xóa thông tin khuyến mãi
+        if (lblThongTinKhuyenMai != null) {
+            lblThongTinKhuyenMai.setText("");
+        }
+        if (lblTenKhuyenMaiHoaDon != null) {
+            lblTenKhuyenMaiHoaDon.setText("");
+        }
+        if (lblTenKhuyenMaiSanPham != null) {
+            lblTenKhuyenMaiSanPham.setText("");
+        }
+        
+        // Reset label tổng tiền hàng về text mặc định
+        jLabel3.setText("Tổng tiền hàng:");
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

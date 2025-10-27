@@ -6,14 +6,21 @@ package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlykhuy
 
 import com.formdev.flatlaf.FlatClientProperties;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.KhuyenMaiBUS;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.SanPhamBUS;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.ChiTietKhuyenMaiSanPhamBUS;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.SanPhamDAO;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.ChiTietKhuyenMaiSanPhamDAO;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.constant.LoaiKhuyenMai;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhuyenMai;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietKhuyenMaiSanPham;
 import raven.toast.Notifications;
 
 import javax.swing.*;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Dialog để thêm khuyến mãi
@@ -22,11 +29,16 @@ import java.util.Date;
 public class ThemKhuyenMaiDialog extends javax.swing.JDialog {
 
     private final KhuyenMaiBUS khuyenMaiBUS;
+    private final SanPhamBUS sanPhamBUS;
+    private final ChiTietKhuyenMaiSanPhamBUS chiTietKhuyenMaiSanPhamBUS;
     private boolean themThanhCong = false;
+    private SanPham sanPhamHienTai = null; // Lưu sản phẩm được tìm thấy
 
     public ThemKhuyenMaiDialog(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         this.khuyenMaiBUS = new KhuyenMaiBUS();
+        this.sanPhamBUS = new SanPhamBUS(new SanPhamDAO());
+        this.chiTietKhuyenMaiSanPhamBUS = new ChiTietKhuyenMaiSanPhamBUS(new ChiTietKhuyenMaiSanPhamDAO());
         initComponents();
         setLocationRelativeTo(parent);
         setupUI();
@@ -36,13 +48,85 @@ public class ThemKhuyenMaiDialog extends javax.swing.JDialog {
         // Placeholder text
         txtTenKhuyenMai.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập tên khuyến mãi");
         txtGiamGia.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "VD: 0.1 (10%)");
+        txtSoDangKy.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập số đăng ký sản phẩm");
         
         // Thiết lập date chooser
         dateNgayBatDau.setMinSelectableDate(new Date());
         dateNgayKetThuc.setMinSelectableDate(new Date());
         
-        // Thiết lập combo box
+        // Thiết lập combo box loại khuyến mãi
         cboLoaiKhuyenMai.setModel(new DefaultComboBoxModel<>(new String[]{"Sản phẩm", "Đơn hàng"}));
+        
+        // Set txtTenSanPham không thể chỉnh sửa
+        txtTenSanPham.setEditable(false);
+        txtTenSanPham.setFocusable(false);
+        
+        // Thêm document listener cho txtSoDangKy để tự động tìm sản phẩm
+        txtSoDangKy.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            @Override
+            public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                timSanPhamTheoSoDangKy();
+            }
+            
+            @Override
+            public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                timSanPhamTheoSoDangKy();
+            }
+            
+            @Override
+            public void changedUpdate(javax.swing.event.DocumentEvent e) {
+                timSanPhamTheoSoDangKy();
+            }
+        });
+        
+        // Thêm action listener cho combo box loại khuyến mãi
+        cboLoaiKhuyenMai.addActionListener(e -> {
+            String loaiKM = (String) cboLoaiKhuyenMai.getSelectedItem();
+            boolean isProductPromotion = "Sản phẩm".equals(loaiKM);
+            lblSoDangKy.setVisible(isProductPromotion);
+            txtSoDangKy.setVisible(isProductPromotion);
+            lblTenSanPham.setVisible(isProductPromotion);
+            txtTenSanPham.setVisible(isProductPromotion);
+        });
+        
+        // Mặc định ẩn các trường sản phẩm nếu chọn "Đơn hàng"
+        String loaiKM = (String) cboLoaiKhuyenMai.getSelectedItem();
+        boolean isProductPromotion = "Sản phẩm".equals(loaiKM);
+        lblSoDangKy.setVisible(isProductPromotion);
+        txtSoDangKy.setVisible(isProductPromotion);
+        lblTenSanPham.setVisible(isProductPromotion);
+        txtTenSanPham.setVisible(isProductPromotion);
+    }
+    
+    private void timSanPhamTheoSoDangKy() {
+        String soDangKy = txtSoDangKy.getText().trim();
+        
+        if (soDangKy.isEmpty()) {
+            txtTenSanPham.setText("");
+            sanPhamHienTai = null;
+            return;
+        }
+        
+        try {
+            // Tìm sản phẩm theo số đăng ký
+            List<SanPham> danhSachSanPham = sanPhamBUS.layTatCaSanPham();
+            SanPham sanPham = danhSachSanPham.stream()
+                .filter(sp -> sp.getSoDangKy() != null && sp.getSoDangKy().equals(soDangKy))
+                .findFirst()
+                .orElse(null);
+            
+            if (sanPham != null) {
+                txtTenSanPham.setText(sanPham.getTenSanPham());
+                sanPhamHienTai = sanPham;
+            } else {
+                txtTenSanPham.setText("Không tìm thấy sản phẩm");
+                sanPhamHienTai = null;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            txtTenSanPham.setText("Lỗi khi tìm sản phẩm");
+            sanPhamHienTai = null;
+        }
     }
 
     public boolean isThemThanhCong() {
@@ -64,6 +148,10 @@ public class ThemKhuyenMaiDialog extends javax.swing.JDialog {
         txtGiamGia = new javax.swing.JTextField();
         jLabel6 = new javax.swing.JLabel();
         cboLoaiKhuyenMai = new javax.swing.JComboBox<>();
+        lblSoDangKy = new javax.swing.JLabel();
+        txtSoDangKy = new javax.swing.JTextField();
+        lblTenSanPham = new javax.swing.JLabel();
+        txtTenSanPham = new javax.swing.JTextField();
         jPanel3 = new javax.swing.JPanel();
         btnLuu = new javax.swing.JButton();
         btnHuy = new javax.swing.JButton();
@@ -121,6 +209,16 @@ public class ThemKhuyenMaiDialog extends javax.swing.JDialog {
 
         cboLoaiKhuyenMai.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
+        lblSoDangKy.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        lblSoDangKy.setText("Số đăng ký:");
+
+        txtSoDangKy.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+
+        lblTenSanPham.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        lblTenSanPham.setText("Tên sản phẩm:");
+
+        txtTenSanPham.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -131,14 +229,18 @@ public class ThemKhuyenMaiDialog extends javax.swing.JDialog {
                     .addComponent(jLabel3)
                     .addComponent(jLabel4)
                     .addComponent(jLabel5)
-                    .addComponent(jLabel6))
+                    .addComponent(jLabel6)
+                    .addComponent(lblSoDangKy)
+                    .addComponent(lblTenSanPham))
                 .addGap(30, 30, 30)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(txtTenKhuyenMai)
                     .addComponent(dateNgayBatDau, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(dateNgayKetThuc, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(txtGiamGia)
-                    .addComponent(cboLoaiKhuyenMai, 0, 350, Short.MAX_VALUE)))
+                    .addComponent(cboLoaiKhuyenMai, 0, 350, Short.MAX_VALUE)
+                    .addComponent(txtSoDangKy)
+                    .addComponent(txtTenSanPham)))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -162,6 +264,14 @@ public class ThemKhuyenMaiDialog extends javax.swing.JDialog {
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel6)
                     .addComponent(cboLoaiKhuyenMai, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(20, 20, 20)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblSoDangKy)
+                    .addComponent(txtSoDangKy, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(20, 20, 20)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblTenSanPham)
+                    .addComponent(txtTenSanPham, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(0, 20, Short.MAX_VALUE))
         );
 
@@ -296,9 +406,44 @@ public class ThemKhuyenMaiDialog extends javax.swing.JDialog {
             String loaiKM = (String) cboLoaiKhuyenMai.getSelectedItem();
             km.setLoaiKhuyenMai(loaiKM.equals("Sản phẩm") ? LoaiKhuyenMai.SAN_PHAM : LoaiKhuyenMai.DON_HANG);
 
+            // Nếu là khuyến mãi sản phẩm, kiểm tra đã nhập số đăng ký chưa
+            if (loaiKM.equals("Sản phẩm")) {
+                String soDangKy = txtSoDangKy.getText().trim();
+                if (soDangKy.isEmpty()) {
+                    Notifications.getInstance().show(Notifications.Type.WARNING, "Vui lòng nhập số đăng ký sản phẩm!");
+                    txtSoDangKy.requestFocus();
+                    return;
+                }
+                
+                if (sanPhamHienTai == null) {
+                    Notifications.getInstance().show(Notifications.Type.WARNING, "Không tìm thấy sản phẩm với số đăng ký này!");
+                    txtSoDangKy.requestFocus();
+                    return;
+                }
+            }
+
             // Thêm vào database
             boolean success = khuyenMaiBUS.themKhuyenMai(km);
             if (success) {
+                // Nếu là khuyến mãi sản phẩm, thêm vào bảng ChiTietKhuyenMaiSanPham
+                if (loaiKM.equals("Sản phẩm") && sanPhamHienTai != null) {
+                    try {
+                        ChiTietKhuyenMaiSanPham ctkmsp = new ChiTietKhuyenMaiSanPham();
+                        ctkmsp.setSanPham(sanPhamHienTai);
+                        ctkmsp.setKhuyenMai(km);
+                        
+                        boolean successDetail = chiTietKhuyenMaiSanPhamBUS.taoChiTietKhuyenMaiSanPham(ctkmsp);
+                        if (!successDetail) {
+                            Notifications.getInstance().show(Notifications.Type.WARNING, 
+                                "Thêm khuyến mãi thành công nhưng không thể liên kết với sản phẩm!");
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        Notifications.getInstance().show(Notifications.Type.WARNING, 
+                            "Thêm khuyến mãi thành công nhưng lỗi khi liên kết sản phẩm: " + e.getMessage());
+                    }
+                }
+                
                 Notifications.getInstance().show(Notifications.Type.SUCCESS, "Thêm khuyến mãi thành công!");
                 themThanhCong = true;
                 dispose();
@@ -326,11 +471,15 @@ public class ThemKhuyenMaiDialog extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel lblSoDangKy;
+    private javax.swing.JLabel lblTenSanPham;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JTextField txtGiamGia;
+    private javax.swing.JTextField txtSoDangKy;
     private javax.swing.JTextField txtTenKhuyenMai;
+    private javax.swing.JTextField txtTenSanPham;
     // End of variables declaration
 }
 
