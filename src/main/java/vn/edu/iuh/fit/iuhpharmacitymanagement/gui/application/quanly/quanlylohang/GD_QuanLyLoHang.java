@@ -38,9 +38,60 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
         this.loHangBUS = new LoHangBUS();
         this.sanPhamBUS = new SanPhamBUS(new SanPhamDAO());
         initComponents();
+        
+        styleButton(btnAdd, "THÊM");
+        styleButton(btnUpdate, "SỬA");
+        styleButton(btnDelete, "Xóa");
+        styleButton(btnSearch, "Tìm kiếm");
+        
         setUIManager();
         loadSanPham();
         fillTable();
+    }
+    
+    private void styleButton(javax.swing.JButton button, String text) {
+        button.setText(text);
+        button.setFont(new java.awt.Font("Segoe UI", 1, 14));
+        button.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        button.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        button.setVerticalTextPosition(javax.swing.SwingConstants.CENTER);
+        button.setPreferredSize(new java.awt.Dimension(95, 40));
+
+        String style = ""
+                + "arc:10;"
+                + "borderWidth:0;"
+                + "focusWidth:0;";
+
+        if (text.equalsIgnoreCase("THÊM")) {
+            style += ""
+                    + "background:#28A745;" // Xanh lá
+                    + "foreground:#FFFFFF;"
+                    + "hoverBackground:#218838;"
+                    + "pressedBackground:#1E7E34;";
+            button.putClientProperty(FlatClientProperties.STYLE, style);
+        } else if (text.equalsIgnoreCase("SỬA")) {
+            style += ""
+                    + "background:#007BFF;" // Xanh dương
+                    + "foreground:#FFFFFF;"
+                    + "hoverBackground:#0069D9;"
+                    + "pressedBackground:#0056B3;";
+            button.putClientProperty(FlatClientProperties.STYLE, style);
+        } else if (text.equalsIgnoreCase("XÓA")) {
+            style += ""
+                    + "background:#DC3545;" // Đỏ
+                    + "foreground:#FFFFFF;"
+                    + "hoverBackground:#C82333;"
+                    + "pressedBackground:#BD2130;";
+            button.putClientProperty(FlatClientProperties.STYLE, style);
+        } else if (text.equalsIgnoreCase("Tìm kiếm")) {
+            button.setPreferredSize(new java.awt.Dimension(150, 40));
+            style += ""
+                    + "background:#28A745;" // Xanh lá giống nút THÊM
+                    + "foreground:#FFFFFF;"
+                    + "hoverBackground:#218838;"
+                    + "pressedBackground:#1E7E34;";
+            button.putClientProperty(FlatClientProperties.STYLE, style);
+        }
     }
 
     private void setUIManager() {
