@@ -44,7 +44,7 @@ public class SplashScreen extends javax.swing.JFrame {
         new Thread(() -> {
             try {
                 // Bước 1: Khởi tạo hệ thống
-                updateProgress("Đang khởi tạo hệ thống...", 0);                
+                updateProgress("Đang khởi tạo hệ thống...", 0);
 //                for (int i = 1; i < 9; i++) {
 //                    updateProgress("Đang kết nối cơ sở dữ liệu...", i*10);
 //                   openLogin();
@@ -53,20 +53,21 @@ public class SplashScreen extends javax.swing.JFrame {
                 updateProgress("Đang kết nối cơ sở dữ liệu...", 10);
                 connectDatabase();
                 Thread.sleep(500);
-                
+
                 updateProgress("Chuẩn bị gd...", 30);
-                openLogin();
+                // openLogin();
+                //abc
                 Thread.sleep(500);
-                
+
                 updateProgress("Chuẩn bị gd...", 50);
                 openFrameForMana();
                 Thread.sleep(500);
-                
+
                 updateProgress("Chuẩn bị gd...", 70);
                 openFrameForEmp();
                 Thread.sleep(500);
-                
-                updateProgress("Chuẩn bị hoàn tất...", 90);                                
+
+                updateProgress("Chuẩn bị hoàn tất...", 90);
                 Thread.sleep(500);
                 updateProgress("Hoàn tất! Đang vào hệ thống...", 100);
                 Thread.sleep(500);
@@ -207,10 +208,12 @@ public class SplashScreen extends javax.swing.JFrame {
     private void openLogin() {
         new LoginFrame().setVisible(true);
     }
-    private  void openFrameForMana(){
+
+    private void openFrameForMana() {
         new WelcomeFormQuanLy().setVisible(true);
     }
-    private  void openFrameForEmp(){
+
+    private void openFrameForEmp() {
         new WelcomeFormNhanVien().setVisible(true);
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
