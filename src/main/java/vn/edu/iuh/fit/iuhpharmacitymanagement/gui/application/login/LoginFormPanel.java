@@ -13,12 +13,14 @@ import java.awt.Image;
 import java.sql.SQLException;
 import java.util.Optional;
 import javax.swing.ImageIcon;
+import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import raven.toast.Notifications;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.connectDB.ConnectDB;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.TaiKhoanDAO;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.form.MainForm;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.form.MenuForm;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.form.WelcomeFormNhanVien;
 
@@ -50,8 +52,7 @@ public class LoginFormPanel extends javax.swing.JPanel {
         txtTenDangNhap.putClientProperty(FlatClientProperties.TEXT_FIELD_LEADING_ICON, new com.formdev.flatlaf.extras.FlatSVGIcon("img/user_icon.svg"));
         txtMatKhau.putClientProperty(FlatClientProperties.TEXT_FIELD_LEADING_ICON, new com.formdev.flatlaf.extras.FlatSVGIcon("img/password_icon.svg"));
         txtTenDangNhap.setText("Tên đăng nhập");
-        txtMatKhau.setText("Nhập mật khẩu");
-        //mặt focus vào pnl đẻ txt k mất playhoder
+        //txtMatKhau = new JPasswordField("Nhập mật khẩu");
         contentPanel.setFocusable(true);
         contentPanel.requestFocusInWindow();
         addPlayhoder(txtTenDangNhap);
@@ -139,6 +140,14 @@ public class LoginFormPanel extends javax.swing.JPanel {
 
         txtMatKhau.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         txtMatKhau.setPreferredSize(new java.awt.Dimension(300, 45));
+        txtMatKhau.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                txtMatKhauFocusGained(evt);
+            }
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                txtMatKhauFocusLost(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -232,30 +241,30 @@ public class LoginFormPanel extends javax.swing.JPanel {
             ConnectDB.getConnection();
         } catch (SQLException ex) {
             System.getLogger(LoginFormPanel.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
-        }                
-         if(txtTenDangNhap.getText().trim().isEmpty() || txtTenDangNhap.getText().trim().length() == 0){
-          Notifications.getInstance().setJFrame(new LoginFrame());
+        }
+        if (txtTenDangNhap.getText().trim().isEmpty() || txtTenDangNhap.getText().trim().length() == 0) {
+            Notifications.getInstance().setJFrame(new LoginFrame());
             Notifications.getInstance().show(
                     Notifications.Type.ERROR,
                     Notifications.Location.TOP_CENTER,
                     "Hãy nhập tên đăng nhập!"
-            );            
-             System.out.println("áđâsdâsdâsda");
+            );
+            System.out.println("áđâsdâsdâsda");
             txtTenDangNhap.requestFocus();
             return;
-         }
-         if(txtMatKhau.getText().trim().isEmpty() || txtMatKhau.getText().trim().length() ==0){
-              Notifications.getInstance().setJFrame(new LoginFrame());
+        }
+        if (txtMatKhau.getText().trim().isEmpty() || txtMatKhau.getText().trim().length() == 0) {
+            Notifications.getInstance().setJFrame(new LoginFrame());
             Notifications.getInstance().show(
                     Notifications.Type.ERROR,
                     Notifications.Location.TOP_CENTER,
                     "Hãy nhập mật đăng nhập!"
-            );            
+            );
             txtMatKhau.requestFocus();
             return;
-         }
-          Optional<String> optVaiTro = tkDao.tonTaiTaiKhoanKhiLogin(txtTenDangNhap.getText(), txtMatKhau.getText());  
-          if (optVaiTro.isEmpty()) {           
+        }
+        Optional<String> optVaiTro = tkDao.tonTaiTaiKhoanKhiLogin(txtTenDangNhap.getText(), txtMatKhau.getText());
+        if (optVaiTro.isEmpty()) {
             Notifications.getInstance().setJFrame(new LoginFrame());
             Notifications.getInstance().show(
                     Notifications.Type.ERROR,
@@ -265,14 +274,14 @@ public class LoginFormPanel extends javax.swing.JPanel {
             txtTenDangNhap.requestFocus();
             return;
         }
-        if (optVaiTro.get().equalsIgnoreCase("Quản lý")  ) {
+        if (optVaiTro.get().equalsIgnoreCase("Quản lý")) {
             SwingUtilities.invokeLater(() -> {
                 Notifications.getInstance().setJFrame(new LoginFrame());
-                    Notifications.getInstance().show(Notifications.Type.INFO,
-                            Notifications.Location.TOP_CENTER,
-                            "Đăng nhập thành công! xin chào Quản lý");
+                Notifications.getInstance().show(Notifications.Type.INFO,
+                        Notifications.Location.TOP_CENTER,
+                        "Đăng nhập thành công! xin chào Quản lý");
                 try {
-                    setupLookAndFeel();                    
+                    setupLookAndFeel();
                     new MenuForm().setVisible(true);
                     this.setVisible(false);
                 } catch (Exception e) {
@@ -280,7 +289,7 @@ public class LoginFormPanel extends javax.swing.JPanel {
                 }
             });
 
-        } else if (optVaiTro.get().equalsIgnoreCase("Nhân viên")) {
+        } else if (optVaiTro.get().equalsIgnoreCase("Nhân viên") || optVaiTro.get().equalsIgnoreCase("Thu ngân")) {
             // Đăng nhập cho Nhân viên
             Notifications.getInstance().setJFrame(new LoginFrame());
             Notifications.getInstance().show(
@@ -288,9 +297,16 @@ public class LoginFormPanel extends javax.swing.JPanel {
                     Notifications.Location.TOP_CENTER,
                     "Đăng nhập thành công! Xin chào Nhân viên!"
             );
-           //để xử lý sau
-           this.setVisible(false);
-        }          
+            //để xử lý sau
+            try {
+                    setupLookAndFeel();
+                    new MainForm().showForm(new WelcomeFormNhanVien());
+                    this.setVisible(false);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }            
+//            this.setVisible(false);
+        }
 
     }//GEN-LAST:event_btnDangNhapActionPerformed
     public void addPlayhoder(JTextField txt) {
@@ -341,8 +357,26 @@ public class LoginFormPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_formFocusGained
 
     private void chkHienMatKhauActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chkHienMatKhauActionPerformed
-        // TODO add your handling code here:
+        if (chkHienMatKhau.isSelected()) {
+            if (!String.valueOf(txtMatKhau.getPassword()).isEmpty()) {
+                txtMatKhau.setEchoChar((char) 0);
+            }
+        }
     }//GEN-LAST:event_chkHienMatKhauActionPerformed
+
+    private void txtMatKhauFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtMatKhauFocusGained
+        if (String.valueOf(txtMatKhau.getPassword()).equals("Nhập mật khẩu")) {
+            txtMatKhau.setText("");
+            txtMatKhau.setEchoChar('*');
+        }
+    }//GEN-LAST:event_txtMatKhauFocusGained
+
+    private void txtMatKhauFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtMatKhauFocusLost
+        if (String.valueOf(txtMatKhau.getPassword()).isEmpty()) {
+            txtMatKhau.setText("Nhập mật khẩu");
+            txtMatKhau.setEchoChar((char) 0);
+        }
+    }//GEN-LAST:event_txtMatKhauFocusLost
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnDangNhap;
