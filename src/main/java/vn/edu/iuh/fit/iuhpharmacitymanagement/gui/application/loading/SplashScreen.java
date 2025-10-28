@@ -33,7 +33,7 @@ public class SplashScreen extends javax.swing.JFrame {
 
         BackgroundPanel.setComponentZOrder(progressBar, 0); // ProgressBar ở lớp trên cùng
         BackgroundPanel.setComponentZOrder(lblLoading, 1);
-        //BackgroundPanel.setComponentZOrder(ProgressBar, 2);
+        
         BackgroundPanel.setComponentZOrder(IUHLogo, 3);
         BackgroundPanel.setComponentZOrder(BackgroundImg, 3);
 
@@ -61,9 +61,7 @@ public class SplashScreen extends javax.swing.JFrame {
                 Thread.sleep(500);
 
                 updateProgress("Chuẩn bị gd...", 30);
-                // openLogin();
-                //abc
-                //openLogin();
+                
 
                 Thread.sleep(500);
 
