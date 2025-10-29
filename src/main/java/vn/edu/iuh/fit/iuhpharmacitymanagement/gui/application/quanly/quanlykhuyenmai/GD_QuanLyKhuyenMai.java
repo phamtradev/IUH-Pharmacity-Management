@@ -424,13 +424,9 @@ public class GD_QuanLyKhuyenMai extends javax.swing.JPanel {
             return;
         }
         
-        // Hiển thị progress dialog
-        JOptionPane.showMessageDialog(
-            this,
-            "Đang gửi email đến " + khachHangCoEmail.size() + " khách hàng...\nVui lòng đợi!",
-            "Đang xử lý",
-            JOptionPane.INFORMATION_MESSAGE
-        );
+        // Hiển thị thông báo bắt đầu
+        Notifications.getInstance().show(Notifications.Type.INFO, 
+            "Đang gửi email đến " + khachHangCoEmail.size() + " khách hàng trong background...");
         
         // Gửi email trong background thread
         new Thread(() -> {
@@ -460,7 +456,7 @@ public class GD_QuanLyKhuyenMai extends javax.swing.JPanel {
             SwingUtilities.invokeLater(() -> {
                 if (thatBai == 0) {
                     Notifications.getInstance().show(Notifications.Type.SUCCESS, 
-                        "Gửi email thành công đến " + thanhCong + " khách hàng!");
+                        "Phát hành khuyến mãi thành công! Đã gửi email đến " + thanhCong + " khách hàng!");
                 } else {
                     Notifications.getInstance().show(Notifications.Type.WARNING, 
                         "Hoàn thành! Thành công: " + thanhCong + ", Thất bại: " + thatBai);
@@ -468,7 +464,6 @@ public class GD_QuanLyKhuyenMai extends javax.swing.JPanel {
             });
         }).start();
     }//GEN-LAST:event_btnLamMoiActionPerformed
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnLamMoi;

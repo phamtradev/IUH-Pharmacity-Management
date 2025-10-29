@@ -4,28 +4,29 @@
  */
 package vn.edu.iuh.fit.iuhpharmacitymanagement.util;
 
-import com.sendgrid.*;
-import com.sendgrid.helpers.mail.Mail;
-import com.sendgrid.helpers.mail.objects.Content;
-import com.sendgrid.helpers.mail.objects.Email;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhachHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhuyenMai;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.time.format.DateTimeFormatter;
 import java.util.Properties;
 import java.text.DecimalFormat;
+import javax.mail.*;
+import javax.mail.internet.*;
 
 /**
- * Utility class để gửi email sử dụng SendGrid API
+ * Utility class để gửi email sử dụng JavaMail API (SMTP)
  * @author PhamTra
  */
 public class EmailUtil {
     
     // Cấu hình email được load từ file properties
-    private static String SENDGRID_API_KEY;
+    private static String SMTP_HOST;
+    private static String SMTP_PORT;
+    private static String SMTP_AUTH;
+    private static String SMTP_STARTTLS;
     private static String SENDER_EMAIL;
+    private static String SENDER_PASSWORD;
     private static String SENDER_NAME;
     
     // Static block để load config khi class được khởi tạo
@@ -42,8 +43,12 @@ public class EmailUtil {
             if (input == null) {
                 System.err.println("❌ Không tìm thấy file email.properties!");
                 // Set giá trị mặc định
-                SENDGRID_API_KEY = "";
+                SMTP_HOST = "smtp.gmail.com";
+                SMTP_PORT = "587";
+                SMTP_AUTH = "true";
+                SMTP_STARTTLS = "true";
                 SENDER_EMAIL = "";
+                SENDER_PASSWORD = "";
                 SENDER_NAME = "Pharmacity Management System";
                 return;
             }
@@ -51,23 +56,31 @@ public class EmailUtil {
             // Load properties từ file
             props.load(input);
             
-            SENDGRID_API_KEY = props.getProperty("sendgrid.api.key", "");
+            SMTP_HOST = props.getProperty("mail.smtp.host", "smtp.gmail.com");
+            SMTP_PORT = props.getProperty("mail.smtp.port", "587");
+            SMTP_AUTH = props.getProperty("mail.smtp.auth", "true");
+            SMTP_STARTTLS = props.getProperty("mail.smtp.starttls.enable", "true");
             SENDER_EMAIL = props.getProperty("sender.email", "");
+            SENDER_PASSWORD = props.getProperty("sender.password", "");
             SENDER_NAME = props.getProperty("sender.name", "Pharmacity Management System");
             
-            System.out.println("✅ Đã load cấu hình SendGrid email thành công!");
+            System.out.println("✅ Đã load cấu hình JavaMail (SMTP) thành công!");
             
-        } catch (IOException e) {
+        } catch (Exception e) {
             System.err.println("❌ Lỗi khi đọc file email.properties: " + e.getMessage());
             // Set giá trị mặc định
-            SENDGRID_API_KEY = "";
+            SMTP_HOST = "smtp.gmail.com";
+            SMTP_PORT = "587";
+            SMTP_AUTH = "true";
+            SMTP_STARTTLS = "true";
             SENDER_EMAIL = "";
+            SENDER_PASSWORD = "";
             SENDER_NAME = "Pharmacity Management System";
         }
     }
     
     /**
-     * Gửi email khuyến mãi đến khách hàng sử dụng SendGrid
+     * Gửi email khuyến mãi đến khách hàng sử dụng JavaMail (SMTP)
      * @param khachHang Thông tin khách hàng
      * @param khuyenMai Thông tin khuyến mãi
      * @return true nếu gửi thành công, false nếu thất bại
@@ -76,7 +89,7 @@ public class EmailUtil {
         try {
             // Kiểm tra cấu hình
             if (!kiemTraCauHinhEmail()) {
-                System.err.println("❌ Chưa cấu hình SendGrid API Key!");
+                System.err.println("❌ Chưa cấu hình email SMTP!");
                 return false;
             }
             
@@ -86,42 +99,45 @@ public class EmailUtil {
                 return false;
             }
             
-            // Tạo email từ SendGrid
-            Email from = new Email(SENDER_EMAIL, SENDER_NAME);
-            Email to = new Email(khachHang.getEmail(), khachHang.getTenKhachHang());
-            String subject = "🎉 Chương trình khuyến mãi đặc biệt dành cho bạn!";
+            // Cấu hình SMTP properties
+            Properties props = new Properties();
+            props.put("mail.smtp.host", SMTP_HOST);
+            props.put("mail.smtp.port", SMTP_PORT);
+            props.put("mail.smtp.auth", SMTP_AUTH);
+            props.put("mail.smtp.starttls.enable", SMTP_STARTTLS);
+            props.put("mail.smtp.ssl.protocols", "TLSv1.2");
+            props.put("mail.smtp.ssl.trust", SMTP_HOST);
+            
+            // Tạo session với authentication
+            Session session = Session.getInstance(props, new Authenticator() {
+                @Override
+                protected PasswordAuthentication getPasswordAuthentication() {
+                    return new PasswordAuthentication(SENDER_EMAIL, SENDER_PASSWORD);
+                }
+            });
+            
+            // Tạo message
+            Message message = new MimeMessage(session);
+            message.setFrom(new InternetAddress(SENDER_EMAIL, SENDER_NAME, "UTF-8"));
+            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(khachHang.getEmail()));
+            message.setSubject("🎉 Chương trình khuyến mãi đặc biệt dành cho bạn!");
             
             // Tạo nội dung HTML
             String htmlContent = taoNoiDungEmailHTML(khachHang, khuyenMai);
-            Content content = new Content("text/html", htmlContent);
+            message.setContent(htmlContent, "text/html; charset=UTF-8");
             
-            // Tạo mail object
-            Mail mail = new Mail(from, subject, to, content);
+            // Gửi email
+            Transport.send(message);
             
-            // Gửi email qua SendGrid
-            SendGrid sg = new SendGrid(SENDGRID_API_KEY);
-            Request request = new Request();
+            System.out.println("✅ Gửi email thành công đến: " + khachHang.getEmail());
+            return true;
             
-            request.setMethod(Method.POST);
-            request.setEndpoint("mail/send");
-            request.setBody(mail.build());
-            
-            Response response = sg.api(request);
-            
-            // Kiểm tra response
-            if (response.getStatusCode() >= 200 && response.getStatusCode() < 300) {
-                System.out.println("✅ Gửi email thành công đến: " + khachHang.getEmail());
-                System.out.println("📧 Response code: " + response.getStatusCode());
-                return true;
-            } else {
-                System.err.println("❌ Gửi email thất bại!");
-                System.err.println("Status code: " + response.getStatusCode());
-                System.err.println("Response body: " + response.getBody());
-                return false;
-            }
-            
-        } catch (IOException e) {
+        } catch (MessagingException e) {
             System.err.println("❌ Lỗi khi gửi email: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        } catch (Exception e) {
+            System.err.println("❌ Lỗi không xác định khi gửi email: " + e.getMessage());
             e.printStackTrace();
             return false;
         }
@@ -131,7 +147,6 @@ public class EmailUtil {
      * Tạo nội dung email HTML đẹp mắt
      */
     private static String taoNoiDungEmailHTML(KhachHang khachHang, KhuyenMai khuyenMai) {
-        DecimalFormat df = new DecimalFormat("#,###");
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         
         StringBuilder html = new StringBuilder();
@@ -185,10 +200,12 @@ public class EmailUtil {
         html.append("<p style='margin: 10px 0; font-size: 16px;'>Mã khuyến mãi của bạn:</p>");
         html.append("<div class='promo-code'>").append(khuyenMai.getMaKhuyenMai()).append("</div>");
         
-        // Hiển thị giá trị khuyến mãi
+        // Hiển thị giá trị khuyến mãi (giamGia lưu dưới dạng thập phân: 0.2 = 20%)
+        DecimalFormat percentFormat = new DecimalFormat("#.##%");
+        String giamGiaText = percentFormat.format(khuyenMai.getGiamGia());
+        
         html.append("<p style='font-size: 20px; margin: 15px 0 0 0;'>🎁 Giảm <strong>")
-            .append(df.format(khuyenMai.getGiamGia()))
-            .append(khuyenMai.getLoaiKhuyenMai().toString().equals("PHAN_TRAM") ? "%" : " VNĐ")
+            .append(giamGiaText)
             .append("</strong></p>");
         html.append("</div>");
         
@@ -229,9 +246,10 @@ public class EmailUtil {
      * Kiểm tra cấu hình email có hợp lệ không
      */
     public static boolean kiemTraCauHinhEmail() {
-        return SENDGRID_API_KEY != null && !SENDGRID_API_KEY.isEmpty() 
-            && !SENDGRID_API_KEY.equals("your-sendgrid-api-key-here")
-            && SENDER_EMAIL != null && !SENDER_EMAIL.isEmpty();
+        return SENDER_EMAIL != null && !SENDER_EMAIL.isEmpty() 
+            && SENDER_PASSWORD != null && !SENDER_PASSWORD.isEmpty()
+            && !SENDER_PASSWORD.equals("YOUR_APP_PASSWORD_HERE")
+            && SMTP_HOST != null && !SMTP_HOST.isEmpty();
     }
     
     /**
@@ -242,20 +260,42 @@ public class EmailUtil {
     }
     
     /**
-     * Kiểm tra kết nối SendGrid
+     * Kiểm tra kết nối SMTP Server
      */
     public static boolean kiemTraKetNoi() {
         try {
             if (!kiemTraCauHinhEmail()) {
+                System.err.println("❌ Chưa cấu hình đầy đủ thông tin email!");
                 return false;
             }
             
-            // Kiểm tra API Key có hợp lệ không
-            new SendGrid(SENDGRID_API_KEY);
+            // Cấu hình SMTP properties
+            Properties props = new Properties();
+            props.put("mail.smtp.host", SMTP_HOST);
+            props.put("mail.smtp.port", SMTP_PORT);
+            props.put("mail.smtp.auth", SMTP_AUTH);
+            props.put("mail.smtp.starttls.enable", SMTP_STARTTLS);
+            props.put("mail.smtp.connectiontimeout", "5000");
+            props.put("mail.smtp.timeout", "5000");
+            
+            // Tạo session và kiểm tra kết nối
+            Session session = Session.getInstance(props, new Authenticator() {
+                @Override
+                protected PasswordAuthentication getPasswordAuthentication() {
+                    return new PasswordAuthentication(SENDER_EMAIL, SENDER_PASSWORD);
+                }
+            });
+            
+            // Thử kết nối đến SMTP server
+            Transport transport = session.getTransport("smtp");
+            transport.connect(SMTP_HOST, SENDER_EMAIL, SENDER_PASSWORD);
+            transport.close();
+            
+            System.out.println("✅ Kết nối SMTP thành công!");
             return true;
             
         } catch (Exception e) {
-            System.err.println("❌ Lỗi khi kiểm tra kết nối SendGrid: " + e.getMessage());
+            System.err.println("❌ Lỗi khi kiểm tra kết nối SMTP: " + e.getMessage());
             return false;
         }
     }
