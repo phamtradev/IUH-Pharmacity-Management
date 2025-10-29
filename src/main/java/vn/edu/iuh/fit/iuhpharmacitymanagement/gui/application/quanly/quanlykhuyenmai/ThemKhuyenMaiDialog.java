@@ -54,8 +54,8 @@ public class ThemKhuyenMaiDialog extends javax.swing.JDialog {
         dateNgayBatDau.setMinSelectableDate(new Date());
         dateNgayKetThuc.setMinSelectableDate(new Date());
         
-        // Thiết lập combo box loại khuyến mãi
-        cboLoaiKhuyenMai.setModel(new DefaultComboBoxModel<>(new String[]{"Sản phẩm", "Đơn hàng"}));
+        // Thiết lập combo box loại khuyến mãi - Mặc định "Đơn hàng"
+        cboLoaiKhuyenMai.setModel(new DefaultComboBoxModel<>(new String[]{"Đơn hàng", "Sản phẩm"}));
         
         // Set txtTenSanPham không thể chỉnh sửa
         txtTenSanPham.setEditable(false);

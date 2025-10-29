@@ -138,8 +138,9 @@ public class KhuyenMaiDAO implements DAOInterface<KhuyenMai, String> {
 
         khuyenMai.setMaKhuyenMai(rs.getString("maKhuyenMai"));
         khuyenMai.setTenKhuyenMai(rs.getString("tenKhuyenMai"));
-        khuyenMai.setNgayBatDau(rs.getDate("ngayBatDau").toLocalDate());
-        khuyenMai.setNgayKetThuc(rs.getDate("ngayKetThuc").toLocalDate());
+        // Dùng method không validate khi load từ database (vì dữ liệu cũ có thể có ngày trong quá khứ)
+        khuyenMai.setNgayBatDauFromDatabase(rs.getDate("ngayBatDau").toLocalDate());
+        khuyenMai.setNgayKetThucFromDatabase(rs.getDate("ngayKetThuc").toLocalDate());
         khuyenMai.setGiamGia(rs.getDouble("giamGia"));
         khuyenMai.setTrangThai(rs.getBoolean("trangThai"));
         khuyenMai.setLoaiKhuyenMai(LoaiKhuyenMai.valueOf(rs.getString("loaiKhuyenMai")));

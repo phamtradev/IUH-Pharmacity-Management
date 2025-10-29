@@ -24,7 +24,7 @@ public class KhuyenMai {
     
     public static final String MA_KHUYEN_MAI_SAI = "Mã khuyến mãi phải có dạng KMXXXXX (trong đó XXXXX là dãy số từ 00001 đến 99999)";
     public static final String TEN_KHUYEN_MAI_RONG = "Tên khuyến mãi không được để trống";
-    public static final String NGAY_BAT_DAU_SAI = "Ngày bắt đầu phải lớn hơn hoặc bằng ngày hiện tại";
+    public static final String NGAY_BAT_DAU_SAI = "Ngày bắt đầu phải lớn hơn ngày hiện tại";
     public static final String NGAY_KET_THUC_SAI = "Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu";
     public static final String GIAM_GIA_SAI = "Giảm giá phải là số thực dương lớn hơn 0";
     public static final String LOAI_KHUYEN_MAI_RONG = "Loại khuyến mãi không được để trống";
@@ -77,9 +77,15 @@ public class KhuyenMai {
     }
 
     public void setNgayBatDau(LocalDate ngayBatDau) throws Exception {
-        if (ngayBatDau.isBefore(LocalDate.now())) {
+        // Không cho phép ngày bắt đầu <= ngày hiện tại (chỉ cho phép > ngày hiện tại)
+        if (ngayBatDau.isBefore(LocalDate.now()) || ngayBatDau.isEqual(LocalDate.now())) {
             throw new Exception(NGAY_BAT_DAU_SAI);
         }
+        this.ngayBatDau = ngayBatDau;
+    }
+    
+    // Method không validate - chỉ dùng cho DAO khi load từ database
+    public void setNgayBatDauFromDatabase(LocalDate ngayBatDau) {
         this.ngayBatDau = ngayBatDau;
     }
 
@@ -91,6 +97,11 @@ public class KhuyenMai {
         if (this.ngayBatDau != null && ngayKetThuc.isBefore(this.ngayBatDau)) {
             throw new Exception(NGAY_KET_THUC_SAI);
         }
+        this.ngayKetThuc = ngayKetThuc;
+    }
+    
+    // Method không validate - chỉ dùng cho DAO khi load từ database
+    public void setNgayKetThucFromDatabase(LocalDate ngayKetThuc) {
         this.ngayKetThuc = ngayKetThuc;
     }
 

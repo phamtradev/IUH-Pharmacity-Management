@@ -459,11 +459,22 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         lblHanSuDung.setHorizontalAlignment(SwingConstants.CENTER);
         batchPanel.add(lblHanSuDung);
 
-        // Tồn kho
-        JLabel lblTonKho = new JLabel(String.valueOf(loHang.getTonKho()));
-        lblTonKho.setHorizontalAlignment(SwingConstants.CENTER);
-        lblTonKho.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        batchPanel.add(lblTonKho);
+        // Tồn kho - Dùng JTextField để có thể edit trực tiếp
+        JTextField txtTonKho = new JTextField(String.valueOf(loHang.getTonKho()));
+        txtTonKho.setHorizontalAlignment(SwingConstants.CENTER);
+        txtTonKho.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        txtTonKho.setPreferredSize(new Dimension(80, 30));
+        
+        // Thêm listener để cập nhật khi user nhập xong (nhấn Enter hoặc mất focus)
+        txtTonKho.addActionListener(e -> updateBatchQuantityFromTextField(loHang, txtTonKho));
+        txtTonKho.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                updateBatchQuantityFromTextField(loHang, txtTonKho);
+            }
+        });
+        
+        batchPanel.add(txtTonKho);
 
         // Trạng thái
         JLabel lblTrangThai = new JLabel(loHang.isTrangThai() ? "Hoạt động" : "Ngừng");
@@ -478,12 +489,12 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         JButton btnDecrease = new JButton("-");
         btnDecrease.setPreferredSize(new Dimension(40, 30));
         btnDecrease.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        btnDecrease.addActionListener(e -> updateBatchQuantity(loHang, -1, lblTonKho));
+        btnDecrease.addActionListener(e -> updateBatchQuantity(loHang, -1, txtTonKho));
 
         JButton btnIncrease = new JButton("+");
         btnIncrease.setPreferredSize(new Dimension(40, 30));
         btnIncrease.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        btnIncrease.addActionListener(e -> updateBatchQuantity(loHang, 1, lblTonKho));
+        btnIncrease.addActionListener(e -> updateBatchQuantity(loHang, 1, txtTonKho));
 
         actionPanel.add(btnDecrease);
         actionPanel.add(btnIncrease);
@@ -493,7 +504,7 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         return batchPanel;
     }
 
-    private void updateBatchQuantity(LoHang loHang, int delta, JLabel lblTonKho) {
+    private void updateBatchQuantity(LoHang loHang, int delta, JTextField txtTonKho) {
         try {
             int currentQuantity = loHang.getTonKho();
             int newQuantity = currentQuantity + delta;
@@ -511,8 +522,8 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
             boolean success = loHangDAO.update(loHang);
 
             if (success) {
-                // Cập nhật label hiển thị trong panel lô hàng
-                lblTonKho.setText(String.valueOf(newQuantity));
+                // Cập nhật textfield hiển thị trong panel lô hàng
+                txtTonKho.setText(String.valueOf(newQuantity));
 
                 // Cập nhật tổng tồn kho trong TextField
                 updateTotalQuantityTextField(loHang.getSanPham().getMaSanPham());
@@ -532,6 +543,68 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
             Notifications.getInstance().show(Notifications.Type.ERROR,
                     Notifications.Location.TOP_CENTER,
                     "Lỗi: " + e.getMessage());
+        }
+    }
+    
+    // Method mới: Cập nhật khi user nhập trực tiếp vào TextField
+    private void updateBatchQuantityFromTextField(LoHang loHang, JTextField txtTonKho) {
+        try {
+            String input = txtTonKho.getText().trim();
+            
+            // Kiểm tra input rỗng
+            if (input.isEmpty()) {
+                txtTonKho.setText(String.valueOf(loHang.getTonKho())); // Reset về giá trị cũ
+                return;
+            }
+            
+            // Parse số lượng mới
+            int newQuantity = Integer.parseInt(input);
+            
+            // Kiểm tra số lượng không được âm
+            if (newQuantity < 0) {
+                Notifications.getInstance().show(Notifications.Type.WARNING,
+                        Notifications.Location.TOP_CENTER,
+                        "Số lượng tồn kho không thể nhỏ hơn 0");
+                txtTonKho.setText(String.valueOf(loHang.getTonKho())); // Reset về giá trị cũ
+                return;
+            }
+            
+            // Nếu giá trị không thay đổi thì không cần cập nhật
+            if (newQuantity == loHang.getTonKho()) {
+                return;
+            }
+            
+            // Cập nhật vào database
+            loHang.setTonKho(newQuantity);
+            boolean success = loHangDAO.update(loHang);
+            
+            if (success) {
+                // Cập nhật tổng tồn kho trong TextField
+                updateTotalQuantityTextField(loHang.getSanPham().getMaSanPham());
+                
+                // Cập nhật tổng tồn kho trong bảng sản phẩm
+                updateProductTotalQuantityInTable(loHang.getSanPham().getMaSanPham());
+                
+                Notifications.getInstance().show(Notifications.Type.SUCCESS,
+                        Notifications.Location.TOP_CENTER,
+                        "Cập nhật số lượng thành công: " + loHang.getTenLoHang() + " = " + newQuantity);
+            } else {
+                Notifications.getInstance().show(Notifications.Type.ERROR,
+                        Notifications.Location.TOP_CENTER,
+                        "Lỗi khi cập nhật số lượng");
+                txtTonKho.setText(String.valueOf(loHang.getTonKho())); // Reset về giá trị cũ
+            }
+        } catch (NumberFormatException e) {
+            Notifications.getInstance().show(Notifications.Type.ERROR,
+                    Notifications.Location.TOP_CENTER,
+                    "Vui lòng nhập số nguyên hợp lệ!");
+            txtTonKho.setText(String.valueOf(loHang.getTonKho())); // Reset về giá trị cũ
+        } catch (Exception e) {
+            Notifications.getInstance().show(Notifications.Type.ERROR,
+                    Notifications.Location.TOP_CENTER,
+                    "Lỗi: " + e.getMessage());
+            txtTonKho.setText(String.valueOf(loHang.getTonKho())); // Reset về giá trị cũ
+            e.printStackTrace();
         }
     }
 
@@ -1284,7 +1357,7 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         headerPanel.add(jPanel5, java.awt.BorderLayout.CENTER);
 
         actionPanel.setBackground(new java.awt.Color(255, 255, 255));
-        actionPanel.setPreferredSize(new java.awt.Dimension(320, 60));
+        actionPanel.setPreferredSize(new java.awt.Dimension(470, 60));
         actionPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 10, 25));
 
         btnAdd.setBackground(new java.awt.Color(115, 165, 71));
@@ -1313,6 +1386,21 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
             }
         });
         actionPanel.add(btnUpdate);
+
+        btnViewDetail = new javax.swing.JButton();
+        btnViewDetail.setBackground(new java.awt.Color(23, 162, 184));
+        btnViewDetail.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        btnViewDetail.setForeground(new java.awt.Color(255, 255, 255));
+        btnViewDetail.setText("Xem chi tiết");
+        btnViewDetail.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnViewDetail.setFocusPainted(false);
+        btnViewDetail.setPreferredSize(new java.awt.Dimension(130, 40));
+        btnViewDetail.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnViewDetailActionPerformed(evt);
+            }
+        });
+        actionPanel.add(btnViewDetail);
 
         btnDelete.setBackground(new java.awt.Color(220, 60, 60));
         btnDelete.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
@@ -1503,6 +1591,185 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
             Notifications.getInstance().show(Notifications.Type.INFO, "Chức năng xóa sản phẩm đang được phát triển!");
         }
     }//GEN-LAST:event_btnDeleteActionPerformed
+
+    private void btnViewDetailActionPerformed(java.awt.event.ActionEvent evt) {
+        int selectedRow = tableDesign.getTable().getSelectedRow();
+        if (selectedRow == -1) {
+            Notifications.getInstance().show(Notifications.Type.WARNING,
+                    Notifications.Location.TOP_CENTER,
+                    "Vui lòng chọn sản phẩm để xem chi tiết!");
+            return;
+        }
+
+        // Lấy mã sản phẩm từ bảng
+        String maSP = tableDesign.getTable().getValueAt(selectedRow, 0).toString();
+
+        // Lấy thông tin chi tiết từ database
+        Optional<SanPham> spOpt = sanPhamBUS.timSanPhamTheoMa(maSP);
+        if (!spOpt.isPresent()) {
+            Notifications.getInstance().show(Notifications.Type.ERROR,
+                    Notifications.Location.TOP_CENTER,
+                    "Không tìm thấy sản phẩm");
+            return;
+        }
+
+        SanPham sp = spOpt.get();
+        
+        // Tạo dialog xem chi tiết
+        showProductDetailDialog(sp);
+    }
+    
+    private void showProductDetailDialog(SanPham sp) {
+        // Tạo dialog
+        JDialog detailDialog = new JDialog((java.awt.Frame) SwingUtilities.getWindowAncestor(this), "Chi tiết sản phẩm", true);
+        detailDialog.setSize(900, 700);
+        detailDialog.setLocationRelativeTo(this);
+        
+        // Panel chính
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.setBackground(Color.WHITE);
+        
+        // Header panel
+        JPanel headerPanel = new JPanel();
+        headerPanel.setBackground(new Color(23, 162, 184));
+        headerPanel.setPreferredSize(new Dimension(900, 60));
+        JLabel lblTitle = new JLabel("THÔNG TIN CHI TIẾT SẢN PHẨM");
+        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        lblTitle.setForeground(Color.WHITE);
+        headerPanel.add(lblTitle);
+        
+        // Body panel - chứa 2 cột: thông tin bên trái, hình ảnh bên phải
+        JPanel bodyPanel = new JPanel(new BorderLayout(20, 0));
+        bodyPanel.setBackground(Color.WHITE);
+        bodyPanel.setBorder(BorderFactory.createEmptyBorder(20, 30, 20, 30));
+        
+        // Panel bên trái - Thông tin chi tiết
+        JPanel infoPanel = new JPanel();
+        infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.Y_AXIS));
+        infoPanel.setBackground(Color.WHITE);
+        
+        // Thêm thông tin sản phẩm
+        addDetailRow(infoPanel, "Mã sản phẩm:", sp.getMaSanPham());
+        addDetailRow(infoPanel, "Tên sản phẩm:", sp.getTenSanPham());
+        addDetailRow(infoPanel, "Số đăng ký:", sp.getSoDangKy());
+        addDetailRow(infoPanel, "Hoạt chất:", sp.getHoatChat());
+        addDetailRow(infoPanel, "Liều dùng:", sp.getLieuDung());
+        addDetailRow(infoPanel, "Cách đóng gói:", sp.getCachDongGoi());
+        addDetailRow(infoPanel, "Nhà sản xuất:", sp.getNhaSanXuat());
+        addDetailRow(infoPanel, "Quốc gia sản xuất:", sp.getQuocGiaSanXuat());
+        addDetailRow(infoPanel, "Giá nhập:", String.format("%,d VNĐ", (int) sp.getGiaNhap()));
+        addDetailRow(infoPanel, "Giá bán:", String.format("%,d VNĐ", (int) sp.getGiaBan()));
+        
+        if (sp.getLoaiSanPham() != null) {
+            addDetailRow(infoPanel, "Loại sản phẩm:", getLoaiSanPhamDisplay(sp.getLoaiSanPham()));
+        }
+        
+        if (sp.getDonViTinh() != null) {
+            addDetailRow(infoPanel, "Đơn vị tính:", sp.getDonViTinh().getTenDonVi());
+        }
+        
+        // Tính tổng tồn kho từ các lô hàng
+        List<LoHang> danhSachLoHang = loHangDAO.findByMaSanPham(sp.getMaSanPham());
+        int tongTonKho = danhSachLoHang.stream()
+                .mapToInt(LoHang::getTonKho)
+                .sum();
+        addDetailRow(infoPanel, "Tổng tồn kho:", String.valueOf(tongTonKho));
+        addDetailRow(infoPanel, "Số lượng lô hàng:", String.valueOf(danhSachLoHang.size()));
+        
+        // Panel bên phải - Hình ảnh sản phẩm
+        JPanel imagePanel = new JPanel();
+        imagePanel.setBackground(Color.WHITE);
+        imagePanel.setBorder(BorderFactory.createTitledBorder("Hình ảnh sản phẩm"));
+        imagePanel.setPreferredSize(new Dimension(200, 200));
+        
+        if (sp.getHinhAnh() != null && !sp.getHinhAnh().isEmpty()) {
+            try {
+                // Thử load từ resources
+                java.net.URL imageUrl = getClass().getResource("/img/" + sp.getHinhAnh());
+                
+                if (imageUrl != null) {
+                    ImageIcon imageIcon = new ImageIcon(imageUrl);
+                    Image scaledImage = imageIcon.getImage().getScaledInstance(170, 170, Image.SCALE_SMOOTH);
+                    JLabel lblImage = new JLabel(new ImageIcon(scaledImage));
+                    lblImage.setBorder(BorderFactory.createLineBorder(new Color(200, 200, 200)));
+                    imagePanel.add(lblImage);
+                    System.out.println("✅ Đã load hình ảnh: " + sp.getHinhAnh());
+                } else {
+                    // Thử load từ đường dẫn trực tiếp
+                    String imagePath = "src/main/resources/img/" + sp.getHinhAnh();
+                    File imageFile = new File(imagePath);
+                    if (imageFile.exists()) {
+                        ImageIcon imageIcon = new ImageIcon(imagePath);
+                        Image scaledImage = imageIcon.getImage().getScaledInstance(170, 170, Image.SCALE_SMOOTH);
+                        JLabel lblImage = new JLabel(new ImageIcon(scaledImage));
+                        lblImage.setBorder(BorderFactory.createLineBorder(new Color(200, 200, 200)));
+                        imagePanel.add(lblImage);
+                        System.out.println("✅ Đã load hình ảnh từ file: " + imagePath);
+                    } else {
+                        JLabel lblNoImage = new JLabel("Không tìm thấy hình ảnh");
+                        lblNoImage.setForeground(Color.GRAY);
+                        imagePanel.add(lblNoImage);
+                        System.err.println("❌ Không tìm thấy file: " + imagePath);
+                    }
+                }
+            } catch (Exception e) {
+                JLabel lblError = new JLabel("Lỗi load hình ảnh");
+                lblError.setForeground(Color.RED);
+                imagePanel.add(lblError);
+                System.err.println("❌ Lỗi load hình ảnh: " + e.getMessage());
+                e.printStackTrace();
+            }
+        } else {
+            JLabel lblNoImage = new JLabel("Chưa có hình ảnh");
+            lblNoImage.setForeground(Color.GRAY);
+            imagePanel.add(lblNoImage);
+        }
+        
+        // Thêm các panel vào bodyPanel
+        bodyPanel.add(infoPanel, BorderLayout.CENTER);   // Thông tin bên trái
+        bodyPanel.add(imagePanel, BorderLayout.EAST);    // Hình ảnh bên phải
+        
+        JScrollPane scrollPane = new JScrollPane(bodyPanel);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setBorder(null);
+        
+        // Button panel
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        buttonPanel.setBackground(Color.WHITE);
+        JButton btnClose = new JButton("Đóng");
+        btnClose.setPreferredSize(new Dimension(100, 35));
+        btnClose.setBackground(new Color(220, 53, 69));
+        btnClose.setForeground(Color.WHITE);
+        btnClose.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btnClose.addActionListener(e -> detailDialog.dispose());
+        buttonPanel.add(btnClose);
+        
+        // Add components to main panel
+        mainPanel.add(headerPanel, BorderLayout.NORTH);
+        mainPanel.add(scrollPane, BorderLayout.CENTER);
+        mainPanel.add(buttonPanel, BorderLayout.SOUTH);
+        
+        detailDialog.add(mainPanel);
+        detailDialog.setVisible(true);
+    }
+    
+    private void addDetailRow(JPanel panel, String label, String value) {
+        JPanel rowPanel = new JPanel(new BorderLayout(10, 0));
+        rowPanel.setBackground(Color.WHITE);
+        rowPanel.setBorder(BorderFactory.createEmptyBorder(8, 0, 8, 0));
+        
+        JLabel lblKey = new JLabel(label);
+        lblKey.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lblKey.setPreferredSize(new Dimension(180, 25));
+        
+        JLabel lblValue = new JLabel(value != null ? value : "N/A");
+        lblValue.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        
+        rowPanel.add(lblKey, BorderLayout.WEST);
+        rowPanel.add(lblValue, BorderLayout.CENTER);
+        
+        panel.add(rowPanel);
+    }
 
     private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddActionPerformed
         modelProductAdd.setLocationRelativeTo(this);
@@ -2269,6 +2536,7 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
     private javax.swing.JButton btnExitProductADD1;
     private javax.swing.JButton btnOpenModalAddSup;
     private javax.swing.JButton btnUpdate;
+    private javax.swing.JButton btnViewDetail;
     private javax.swing.JComboBox<String> cbbProductTypeAdd;
     private javax.swing.JComboBox<String> cbbProductTypeEdit;
     private javax.swing.JComboBox<String> comboUnitAdd;

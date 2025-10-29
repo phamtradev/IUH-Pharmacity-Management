@@ -6,14 +6,23 @@ package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlykhuy
 
 import com.formdev.flatlaf.FlatClientProperties;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.KhuyenMaiBUS;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.SanPhamBUS;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.ChiTietKhuyenMaiSanPhamBUS;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.DonHangBUS;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.SanPhamDAO;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.ChiTietKhuyenMaiSanPhamDAO;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.constant.LoaiKhuyenMai;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhuyenMai;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietKhuyenMaiSanPham;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonHang;
 import raven.toast.Notifications;
 
 import javax.swing.*;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Dialog để sửa khuyến mãi
@@ -22,12 +31,22 @@ import java.util.Date;
 public class SuaKhuyenMaiDialog extends javax.swing.JDialog {
 
     private final KhuyenMaiBUS khuyenMaiBUS;
+    private final SanPhamBUS sanPhamBUS;
+    private final ChiTietKhuyenMaiSanPhamBUS chiTietKhuyenMaiSanPhamBUS;
+    private final DonHangBUS donHangBUS;
     private boolean suaThanhCong = false;
     private KhuyenMai khuyenMai;
+    private SanPham sanPhamHienTai = null;
+    private LoaiKhuyenMai loaiKhuyenMaiBanDau; // Lưu loại khuyến mãi ban đầu
+    private boolean daTungCoSanPham = false; // Đánh dấu khuyến mãi đã từng được gắn cho sản phẩm
+    private boolean daDuocSuDungTrongDonHang = false; // Đánh dấu khuyến mãi đã được sử dụng trong đơn hàng
 
     public SuaKhuyenMaiDialog(java.awt.Frame parent, boolean modal, KhuyenMai km) {
         super(parent, modal);
         this.khuyenMaiBUS = new KhuyenMaiBUS();
+        this.sanPhamBUS = new SanPhamBUS(new SanPhamDAO());
+        this.chiTietKhuyenMaiSanPhamBUS = new ChiTietKhuyenMaiSanPhamBUS(new ChiTietKhuyenMaiSanPhamDAO());
+        this.donHangBUS = new DonHangBUS();
         this.khuyenMai = km;
         initComponents();
         setLocationRelativeTo(parent);
@@ -39,20 +58,101 @@ public class SuaKhuyenMaiDialog extends javax.swing.JDialog {
         // Placeholder text
         txtTenKhuyenMai.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập tên khuyến mãi");
         txtGiamGia.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "VD: 0.1 (10%)");
+        txtSoDangKy.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập số đăng ký sản phẩm");
         
         // Thiết lập date chooser
         dateNgayBatDau.setMinSelectableDate(new Date());
         dateNgayKetThuc.setMinSelectableDate(new Date());
         
-        // Thiết lập combo box
-        cboLoaiKhuyenMai.setModel(new DefaultComboBoxModel<>(new String[]{"Sản phẩm", "Đơn hàng"}));
+        // Thiết lập combo box - Mặc định "Đơn hàng"
+        cboLoaiKhuyenMai.setModel(new DefaultComboBoxModel<>(new String[]{"Đơn hàng", "Sản phẩm"}));
         
         // Disable mã khuyến mãi
         txtMaKhuyenMai.setEnabled(false);
+        
+        // Set txtTenSanPham không thể chỉnh sửa
+        txtTenSanPham.setEditable(false);
+        txtTenSanPham.setFocusable(false);
+        
+        // Thêm document listener cho txtSoDangKy để tự động tìm sản phẩm
+        txtSoDangKy.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            @Override
+            public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                timSanPhamTheoSoDangKy();
+            }
+            
+            @Override
+            public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                timSanPhamTheoSoDangKy();
+            }
+            
+            @Override
+            public void changedUpdate(javax.swing.event.DocumentEvent e) {
+                timSanPhamTheoSoDangKy();
+            }
+        });
+        
+        // Thêm action listener cho combo box loại khuyến mãi
+        cboLoaiKhuyenMai.addActionListener(e -> {
+            String loaiKM = (String) cboLoaiKhuyenMai.getSelectedItem();
+            
+            // Kiểm tra nếu khuyến mãi đã được gắn cho sản phẩm và người dùng cố thay đổi loại
+            if (daTungCoSanPham && loaiKhuyenMaiBanDau != null) {
+                String loaiMoiStr = (String) cboLoaiKhuyenMai.getSelectedItem();
+                LoaiKhuyenMai loaiMoi = loaiMoiStr.equals("Sản phẩm") ? LoaiKhuyenMai.SAN_PHAM : LoaiKhuyenMai.DON_HANG;
+                
+                // Nếu thay đổi loại khuyến mãi
+                if (loaiMoi != loaiKhuyenMaiBanDau) {
+                    Notifications.getInstance().show(Notifications.Type.ERROR, 
+                        "Không thể thay đổi loại khuyến mãi! Khuyến mãi này đã được gắn cho sản phẩm.");
+                    // Đặt lại giá trị cũ
+                    SwingUtilities.invokeLater(() -> {
+                        cboLoaiKhuyenMai.setSelectedItem(
+                            loaiKhuyenMaiBanDau == LoaiKhuyenMai.SAN_PHAM ? "Sản phẩm" : "Đơn hàng"
+                        );
+                    });
+                    return;
+                }
+            }
+            
+            boolean isProductPromotion = "Sản phẩm".equals(loaiKM);
+            lblSoDangKy.setVisible(isProductPromotion);
+            txtSoDangKy.setVisible(isProductPromotion);
+            lblTenSanPham.setVisible(isProductPromotion);
+            txtTenSanPham.setVisible(isProductPromotion);
+            
+            // Resize dialog
+            pack();
+        });
+    }
+    
+    private void timSanPhamTheoSoDangKy() {
+        String soDangKy = txtSoDangKy.getText().trim();
+        if (soDangKy.isEmpty()) {
+            txtTenSanPham.setText("");
+            sanPhamHienTai = null;
+            return;
+        }
+        
+        // Tìm sản phẩm theo số đăng ký
+        List<SanPham> danhSach = sanPhamBUS.layTatCaSanPham();
+        sanPhamHienTai = danhSach.stream()
+            .filter(sp -> sp.getSoDangKy().equalsIgnoreCase(soDangKy))
+            .findFirst()
+            .orElse(null);
+        
+        if (sanPhamHienTai != null) {
+            txtTenSanPham.setText(sanPhamHienTai.getTenSanPham());
+        } else {
+            txtTenSanPham.setText("Không tìm thấy sản phẩm");
+        }
     }
 
     private void loadData() {
         if (khuyenMai != null) {
+            // Lưu loại khuyến mãi ban đầu
+            loaiKhuyenMaiBanDau = khuyenMai.getLoaiKhuyenMai();
+            
             txtMaKhuyenMai.setText(khuyenMai.getMaKhuyenMai());
             txtTenKhuyenMai.setText(khuyenMai.getTenKhuyenMai());
             
@@ -68,6 +168,81 @@ public class SuaKhuyenMaiDialog extends javax.swing.JDialog {
             cboLoaiKhuyenMai.setSelectedItem(
                 khuyenMai.getLoaiKhuyenMai() == LoaiKhuyenMai.SAN_PHAM ? "Sản phẩm" : "Đơn hàng"
             );
+            
+            // Kiểm tra xem khuyến mãi đã được gắn cho sản phẩm chưa
+            try {
+                List<ChiTietKhuyenMaiSanPham> chiTietList = chiTietKhuyenMaiSanPhamBUS.timTheoMaKhuyenMai(khuyenMai.getMaKhuyenMai());
+                System.out.println("DEBUG: Số lượng chi tiết khuyến mãi sản phẩm: " + chiTietList.size());
+                
+                if (!chiTietList.isEmpty()) {
+                    daTungCoSanPham = true;
+                    ChiTietKhuyenMaiSanPham chiTiet = chiTietList.get(0);
+                    SanPham spPartial = chiTiet.getSanPham();
+                    
+                    if (spPartial != null && spPartial.getMaSanPham() != null) {
+                        // DAO chỉ load mã sản phẩm, phải tìm lại sản phẩm đầy đủ từ SanPhamBUS
+                        String maSanPham = spPartial.getMaSanPham();
+                        System.out.println("DEBUG: Mã sản phẩm từ DB: " + maSanPham);
+                        
+                        // Tìm sản phẩm đầy đủ
+                        SanPham sanPhamDayDu = sanPhamBUS.laySanPhamTheoMa(maSanPham);
+                        
+                        if (sanPhamDayDu != null) {
+                            System.out.println("DEBUG: Sản phẩm đầy đủ tìm thấy: " + sanPhamDayDu.getSoDangKy() + " - " + sanPhamDayDu.getTenSanPham());
+                            txtSoDangKy.setText(sanPhamDayDu.getSoDangKy());
+                            txtTenSanPham.setText(sanPhamDayDu.getTenSanPham());
+                            sanPhamHienTai = sanPhamDayDu;
+                        } else {
+                            System.err.println("ERROR: Không tìm thấy sản phẩm có mã: " + maSanPham);
+                        }
+                    } else {
+                        System.err.println("ERROR: getSanPham() trả về null hoặc không có mã!");
+                    }
+                }
+            } catch (Exception e) {
+                System.err.println("ERROR khi load sản phẩm: " + e.getMessage());
+                e.printStackTrace();
+            }
+            
+            // Kiểm tra xem khuyến mãi đã được sử dụng trong đơn hàng chưa
+            try {
+                List<DonHang> danhSachDonHang = donHangBUS.layTatCaDonHang();
+                long soLuongDonHang = danhSachDonHang.stream()
+                    .filter(dh -> dh.getKhuyenMai() != null && dh.getKhuyenMai().getMaKhuyenMai().equals(khuyenMai.getMaKhuyenMai()))
+                    .count();
+                
+                if (soLuongDonHang > 0) {
+                    daDuocSuDungTrongDonHang = true;
+                    System.out.println("Khuyến mãi " + khuyenMai.getMaKhuyenMai() + " đã được sử dụng trong " + soLuongDonHang + " đơn hàng");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            
+            // Update visibility sau khi load
+            String loaiKM = (String) cboLoaiKhuyenMai.getSelectedItem();
+            boolean isProductPromotion = "Sản phẩm".equals(loaiKM);
+            lblSoDangKy.setVisible(isProductPromotion);
+            txtSoDangKy.setVisible(isProductPromotion);
+            lblTenSanPham.setVisible(isProductPromotion);
+            txtTenSanPham.setVisible(isProductPromotion);
+            
+            // Nếu khuyến mãi đã được sử dụng trong đơn hàng, disable các field và hiển thị thông báo
+            if (daDuocSuDungTrongDonHang) {
+                txtTenKhuyenMai.setEnabled(false);
+                dateNgayBatDau.setEnabled(false);
+                dateNgayKetThuc.setEnabled(false);
+                txtGiamGia.setEnabled(false);
+                cboLoaiKhuyenMai.setEnabled(false);
+                txtSoDangKy.setEnabled(false);
+                btnCapNhat.setEnabled(false);
+                
+                // Hiển thị thông báo cảnh báo
+                SwingUtilities.invokeLater(() -> {
+                    Notifications.getInstance().show(Notifications.Type.WARNING, 
+                        "Khuyến mãi này đã được sử dụng trong đơn hàng, không thể chỉnh sửa!");
+                });
+            }
         }
     }
 
@@ -92,6 +267,10 @@ public class SuaKhuyenMaiDialog extends javax.swing.JDialog {
         txtGiamGia = new javax.swing.JTextField();
         jLabel6 = new javax.swing.JLabel();
         cboLoaiKhuyenMai = new javax.swing.JComboBox<>();
+        lblSoDangKy = new javax.swing.JLabel();
+        txtSoDangKy = new javax.swing.JTextField();
+        lblTenSanPham = new javax.swing.JLabel();
+        txtTenSanPham = new javax.swing.JTextField();
         jPanel3 = new javax.swing.JPanel();
         btnCapNhat = new javax.swing.JButton();
         btnHuy = new javax.swing.JButton();
@@ -154,6 +333,16 @@ public class SuaKhuyenMaiDialog extends javax.swing.JDialog {
 
         cboLoaiKhuyenMai.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
+        lblSoDangKy.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        lblSoDangKy.setText("Số đăng ký:");
+
+        txtSoDangKy.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+
+        lblTenSanPham.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        lblTenSanPham.setText("Tên sản phẩm:");
+
+        txtTenSanPham.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -165,7 +354,9 @@ public class SuaKhuyenMaiDialog extends javax.swing.JDialog {
                     .addComponent(jLabel3)
                     .addComponent(jLabel4)
                     .addComponent(jLabel5)
-                    .addComponent(jLabel6))
+                    .addComponent(jLabel6)
+                    .addComponent(lblSoDangKy)
+                    .addComponent(lblTenSanPham))
                 .addGap(30, 30, 30)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(txtMaKhuyenMai)
@@ -173,7 +364,9 @@ public class SuaKhuyenMaiDialog extends javax.swing.JDialog {
                     .addComponent(dateNgayBatDau, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(dateNgayKetThuc, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(txtGiamGia)
-                    .addComponent(cboLoaiKhuyenMai, 0, 330, Short.MAX_VALUE)))
+                    .addComponent(cboLoaiKhuyenMai, 0, 350, Short.MAX_VALUE)
+                    .addComponent(txtSoDangKy)
+                    .addComponent(txtTenSanPham)))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -201,6 +394,14 @@ public class SuaKhuyenMaiDialog extends javax.swing.JDialog {
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel6)
                     .addComponent(cboLoaiKhuyenMai, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(20, 20, 20)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblSoDangKy)
+                    .addComponent(txtSoDangKy, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(20, 20, 20)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblTenSanPham)
+                    .addComponent(txtTenSanPham, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(0, 20, Short.MAX_VALUE))
         );
 
@@ -273,6 +474,13 @@ public class SuaKhuyenMaiDialog extends javax.swing.JDialog {
 
     private void btnCapNhatActionPerformed(java.awt.event.ActionEvent evt) {
         try {
+            // Kiểm tra xem khuyến mãi đã được sử dụng trong đơn hàng chưa
+            if (daDuocSuDungTrongDonHang) {
+                Notifications.getInstance().show(Notifications.Type.ERROR, 
+                    "Không thể cập nhật khuyến mãi! Khuyến mãi này đã được sử dụng trong đơn hàng.");
+                return;
+            }
+            
             // Validate input
             String tenKM = txtTenKhuyenMai.getText().trim();
             if (tenKM.isEmpty()) {
@@ -324,18 +532,70 @@ public class SuaKhuyenMaiDialog extends javax.swing.JDialog {
                 return;
             }
 
+            String loaiKM = (String) cboLoaiKhuyenMai.getSelectedItem();
+            
+            // Kiểm tra nếu khuyến mãi đã được gắn cho sản phẩm và người dùng cố thay đổi loại
+            if (daTungCoSanPham && loaiKhuyenMaiBanDau != null) {
+                LoaiKhuyenMai loaiMoi = loaiKM.equals("Sản phẩm") ? LoaiKhuyenMai.SAN_PHAM : LoaiKhuyenMai.DON_HANG;
+                if (loaiMoi != loaiKhuyenMaiBanDau) {
+                    Notifications.getInstance().show(Notifications.Type.ERROR, 
+                        "Không thể thay đổi loại khuyến mãi! Khuyến mãi này đã được gắn cho sản phẩm.");
+                    return;
+                }
+            }
+            
+            // Nếu là khuyến mãi sản phẩm, kiểm tra đã nhập số đăng ký chưa
+            if (loaiKM.equals("Sản phẩm")) {
+                String soDangKy = txtSoDangKy.getText().trim();
+                if (soDangKy.isEmpty()) {
+                    Notifications.getInstance().show(Notifications.Type.WARNING, "Vui lòng nhập số đăng ký sản phẩm!");
+                    txtSoDangKy.requestFocus();
+                    return;
+                }
+                
+                if (sanPhamHienTai == null) {
+                    Notifications.getInstance().show(Notifications.Type.WARNING, "Không tìm thấy sản phẩm với số đăng ký này!");
+                    txtSoDangKy.requestFocus();
+                    return;
+                }
+            }
+
             // Cập nhật đối tượng KhuyenMai
             khuyenMai.setTenKhuyenMai(tenKM);
             khuyenMai.setNgayBatDau(ngayBatDau);
             khuyenMai.setNgayKetThuc(ngayKetThuc);
             khuyenMai.setGiamGia(giamGia);
-
-            String loaiKM = (String) cboLoaiKhuyenMai.getSelectedItem();
             khuyenMai.setLoaiKhuyenMai(loaiKM.equals("Sản phẩm") ? LoaiKhuyenMai.SAN_PHAM : LoaiKhuyenMai.DON_HANG);
 
             // Cập nhật vào database
             boolean success = khuyenMaiBUS.capNhatKhuyenMai(khuyenMai);
             if (success) {
+                // Nếu là khuyến mãi sản phẩm, cập nhật bảng ChiTietKhuyenMaiSanPham
+                if (loaiKM.equals("Sản phẩm") && sanPhamHienTai != null) {
+                    try {
+                        // Xóa chi tiết cũ
+                        List<ChiTietKhuyenMaiSanPham> chiTietCu = chiTietKhuyenMaiSanPhamBUS.timTheoMaKhuyenMai(khuyenMai.getMaKhuyenMai());
+                        for (ChiTietKhuyenMaiSanPham ct : chiTietCu) {
+                            chiTietKhuyenMaiSanPhamBUS.xoaChiTietKhuyenMaiSanPham(ct.getSanPham().getMaSanPham(), khuyenMai.getMaKhuyenMai());
+                        }
+                        
+                        // Thêm chi tiết mới
+                        ChiTietKhuyenMaiSanPham ctkmsp = new ChiTietKhuyenMaiSanPham();
+                        ctkmsp.setSanPham(sanPhamHienTai);
+                        ctkmsp.setKhuyenMai(khuyenMai);
+                        
+                        boolean successDetail = chiTietKhuyenMaiSanPhamBUS.taoChiTietKhuyenMaiSanPham(ctkmsp);
+                        if (!successDetail) {
+                            Notifications.getInstance().show(Notifications.Type.WARNING, 
+                                "Cập nhật khuyến mãi thành công nhưng không thể liên kết với sản phẩm!");
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        Notifications.getInstance().show(Notifications.Type.WARNING, 
+                            "Cập nhật khuyến mãi thành công nhưng lỗi khi liên kết sản phẩm: " + e.getMessage());
+                    }
+                }
+                
                 Notifications.getInstance().show(Notifications.Type.SUCCESS, "Cập nhật khuyến mãi thành công!");
                 suaThanhCong = true;
                 dispose();
@@ -364,12 +624,15 @@ public class SuaKhuyenMaiDialog extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel lblSoDangKy;
+    private javax.swing.JLabel lblTenSanPham;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JTextField txtGiamGia;
     private javax.swing.JTextField txtMaKhuyenMai;
+    private javax.swing.JTextField txtSoDangKy;
     private javax.swing.JTextField txtTenKhuyenMai;
+    private javax.swing.JTextField txtTenSanPham;
     // End of variables declaration
 }
-
