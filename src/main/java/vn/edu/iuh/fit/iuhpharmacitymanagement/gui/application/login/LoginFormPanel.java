@@ -34,7 +34,8 @@ public class LoginFormPanel extends javax.swing.JPanel {
      * Creates new form LoginFormPanel
      */
     private Image backgroundImage;
-
+    
+   
     public LoginFormPanel() {
         initComponents();
         backgroundImage = new ImageIcon(getClass().getResource("/img/LoginImage.png")).getImage();
@@ -43,6 +44,9 @@ public class LoginFormPanel extends javax.swing.JPanel {
         contentPanel.setBackground(new java.awt.Color(255, 255, 255, 180));
         contentPanel.putClientProperty(FlatClientProperties.STYLE,
                 "background:rgba(255,255,255,0.7); border:20, #FFFFFFAA;");
+//contentPanel.putClientProperty(FlatClientProperties.STYLE,
+//    "background:rgba(255,255,255,178); border:20, #FFFFFFAA;");
+
         contentPanel.setBorder(javax.swing.BorderFactory.createCompoundBorder(
                 javax.swing.BorderFactory.createLineBorder(new java.awt.Color(200, 200, 200), 1, true),
                 javax.swing.BorderFactory.createEmptyBorder(20, 20, 20, 20)
@@ -289,7 +293,7 @@ public class LoginFormPanel extends javax.swing.JPanel {
                 }
             });
 
-        } else if (optVaiTro.get().equalsIgnoreCase("Nhân viên") || optVaiTro.get().equalsIgnoreCase("Thu ngân")) {
+        } else if (optVaiTro.get().equalsIgnoreCase("Nhân viên")) {
             // Đăng nhập cho Nhân viên
             Notifications.getInstance().setJFrame(new LoginFrame());
             Notifications.getInstance().show(
@@ -300,7 +304,9 @@ public class LoginFormPanel extends javax.swing.JPanel {
             //để xử lý sau
             try {
                     setupLookAndFeel();
-                    new MainForm().showForm(new WelcomeFormNhanVien());
+                    //new MainForm().showForm(new WelcomeFormNhanVien());
+                   
+                    new MenuForm().setVisible(true);
                     this.setVisible(false);
                 } catch (Exception e) {
                     e.printStackTrace();
