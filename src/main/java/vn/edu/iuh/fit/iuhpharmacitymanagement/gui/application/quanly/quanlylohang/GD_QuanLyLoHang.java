@@ -132,23 +132,43 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
         
         try {
             String soDangKy = barcode.trim();
+            
+            // 🔍 DEBUG: In ra console để kiểm tra
+            System.out.println("=================================");
+            System.out.println("🔍 ĐANG TÌM KIẾM SẢN PHẨM:");
+            System.out.println("   - Input gốc: '" + barcode + "' (length: " + barcode.length() + ")");
+            System.out.println("   - Sau trim: '" + soDangKy + "' (length: " + soDangKy.length() + ")");
+            System.out.println("   - Byte array: " + java.util.Arrays.toString(soDangKy.getBytes()));
+            
             // Tìm sản phẩm theo số đăng ký (như bán hàng)
             java.util.Optional<SanPham> optionalSP = sanPhamBUS.timSanPhamTheoSoDangKy(soDangKy);
             
             if (optionalSP.isPresent()) {
                 SanPham sanPham = optionalSP.get();
+                System.out.println("✅ TÌM THẤY: " + sanPham.getTenSanPham());
+                System.out.println("   - Mã SP: " + sanPham.getMaSanPham());
+                System.out.println("   - Số ĐK: " + sanPham.getSoDangKy());
+                System.out.println("=================================");
+                
                 lblProductName.setText("✓ " + sanPham.getTenSanPham());
                 lblProductName.setForeground(new java.awt.Color(34, 139, 34)); // Màu xanh lá
                 return sanPham;
             } else {
-                lblProductName.setText("❌ Không tìm thấy sản phẩm với số ĐK: " + soDangKy);
+                System.out.println("❌ KHÔNG TÌM THẤY sản phẩm với số ĐK: '" + soDangKy + "'");
+                System.out.println("   - Hãy kiểm tra database xem có sản phẩm nào với số đăng ký này không");
+                System.out.println("=================================");
+                
+                lblProductName.setText("❌ Không tìm thấy SP (số ĐK: " + soDangKy + ")");
                 lblProductName.setForeground(new java.awt.Color(220, 53, 69)); // Màu đỏ
                 return null;
             }
         } catch (Exception e) {
+            System.out.println("❌ LỖI KHI TÌM KIẾM: " + e.getMessage());
+            e.printStackTrace();
+            System.out.println("=================================");
+            
             lblProductName.setText("❌ Lỗi: " + e.getMessage());
             lblProductName.setForeground(new java.awt.Color(220, 53, 69));
-            e.printStackTrace();
             return null;
         }
     }
@@ -700,6 +720,15 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
                 return;
             }
             
+            // ✅ KIỂM TRA TÊN LÔ HÀNG TRÙNG
+            if (loHangBUS.isTenLoHangExists(tenLH)) {
+                Notifications.getInstance().show(Notifications.Type.WARNING, 
+                    "Tên lô hàng \"" + tenLH + "\" đã tồn tại! Vui lòng nhập tên khác.");
+                txtBatchNameAdd.requestFocus();
+                txtBatchNameAdd.selectAll();
+                return;
+            }
+            
             if (hanSD == null) {
                 Notifications.getInstance().show(Notifications.Type.WARNING, "Vui lòng chọn hạn sử dụng!");
                 return;
@@ -721,8 +750,8 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
             int tonKho;
             try {
                 tonKho = Integer.parseInt(tonKhoStr);
-                if (tonKho < 0) {
-                    Notifications.getInstance().show(Notifications.Type.WARNING, "Tồn kho phải lớn hơn hoặc bằng 0!");
+                if (tonKho <= 0) {
+                    Notifications.getInstance().show(Notifications.Type.WARNING, "Tồn kho phải lớn hơn 0!");
                     txtStockAdd.requestFocus();
                     return;
                 }
@@ -732,6 +761,59 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
                 return;
             }
             
+            // ✅ KIỂM TRA LÔ HÀNG CÓ CÙNG SẢN PHẨM VÀ HẠN SỬ DỤNG → CỘNG DỒN
+            java.util.Optional<LoHang> loHangCuOpt = loHangBUS.findByMaSanPhamAndHanSuDung(
+                sanPham.getMaSanPham(), hanSuDung);
+            
+            if (loHangCuOpt.isPresent()) {
+                // Đã có lô hàng cùng sản phẩm và hạn sử dụng → Cộng dồn
+                LoHang loHangCu = loHangCuOpt.get();
+                
+                int confirm = javax.swing.JOptionPane.showConfirmDialog(
+                    modalAddBatch,
+                    String.format(
+                        "Đã tồn tại lô hàng \"%s\" với cùng sản phẩm và hạn sử dụng (HSD: %s).\n" +
+                        "Tồn kho hiện tại: %d\n" +
+                        "Bạn có muốn cộng dồn %d vào lô này không?\n" +
+                        "→ Tồn kho mới sẽ là: %d",
+                        loHangCu.getTenLoHang(),
+                        loHangCu.getHanSuDung(),
+                        loHangCu.getTonKho(),
+                        tonKho,
+                        loHangCu.getTonKho() + tonKho
+                    ),
+                    "Xác nhận cộng dồn lô hàng",
+                    javax.swing.JOptionPane.YES_NO_OPTION,
+                    javax.swing.JOptionPane.QUESTION_MESSAGE
+                );
+                
+                if (confirm == javax.swing.JOptionPane.YES_OPTION) {
+                    // Cộng dồn vào lô cũ
+                    boolean success = loHangBUS.updateTonKho(loHangCu.getMaLoHang(), tonKho);
+                    
+                    if (success) {
+                        Notifications.getInstance().show(Notifications.Type.SUCCESS, 
+                            String.format("Đã cộng dồn %d vào lô \"%s\"! Tồn kho mới: %d", 
+                                tonKho, loHangCu.getTenLoHang(), loHangCu.getTonKho() + tonKho));
+                        
+                        // Clear form và đóng modal
+                        clearData(txtBatchNameAdd, txtStockAdd, txtBarcodeAdd);
+                        dateExpiryAdd.setDate(null);
+                        selectedProductAdd = null;
+                        lblProductNameAdd.setText("Chưa quét mã");
+                        lblProductNameAdd.setForeground(new java.awt.Color(150, 150, 150));
+                        modalAddBatch.dispose();
+                        
+                        // Refresh bảng
+                        loadBatchData();
+                    } else {
+                        Notifications.getInstance().show(Notifications.Type.ERROR, "Lỗi khi cộng dồn lô hàng!");
+                    }
+                }
+                return; // Kết thúc xử lý
+            }
+            
+            // Không có lô cùng sản phẩm + HSD → Tạo lô mới
             // Tự động xác định trạng thái dựa trên hạn sử dụng
             boolean trangThai = !hanSuDung.isBefore(LocalDate.now());
             
@@ -926,12 +1008,16 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
     }//GEN-LAST:event_btnAddActionPerformed
 
     private void txtBarcodeAddKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtBarcodeAddKeyReleased
-        String barcode = txtBarcodeAdd.getText().trim();
+        // Loại bỏ ký tự đặc biệt từ barcode scanner (\r, \n, \t)
+        String barcode = txtBarcodeAdd.getText().trim().replaceAll("[\\r\\n\\t]", "");
+        txtBarcodeAdd.setText(barcode); // Cập nhật lại textfield với giá trị đã làm sạch
         selectedProductAdd = findProductByBarcode(barcode, lblProductNameAdd);
     }//GEN-LAST:event_txtBarcodeAddKeyReleased
 
     private void txtBarcodeEditKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtBarcodeEditKeyReleased
-        String barcode = txtBarcodeEdit.getText().trim();
+        // Loại bỏ ký tự đặc biệt từ barcode scanner (\r, \n, \t)
+        String barcode = txtBarcodeEdit.getText().trim().replaceAll("[\\r\\n\\t]", "");
+        txtBarcodeEdit.setText(barcode); // Cập nhật lại textfield với giá trị đã làm sạch
         selectedProductEdit = findProductByBarcode(barcode, lblProductNameEdit);
     }//GEN-LAST:event_txtBarcodeEditKeyReleased
 

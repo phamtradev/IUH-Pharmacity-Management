@@ -340,6 +340,9 @@ public class GD_BanHang extends javax.swing.JPanel {
         // Lấy và làm sạch input (trim, loại bỏ ký tự đặc biệt có thể có từ barcode scanner)
         String soDangKy = txtTimSanPham.getText().trim().replaceAll("[\\r\\n\\t]", "");
         
+        // Cập nhật lại textfield với giá trị đã làm sạch
+        txtTimSanPham.setText(soDangKy);
+        
         // Debug: In ra console để kiểm tra
         System.out.println("🔍 Đang tìm sản phẩm với số đăng ký: '" + soDangKy + "' (length: " + soDangKy.length() + ")");
         
@@ -389,20 +392,115 @@ public class GD_BanHang extends javax.swing.JPanel {
     
     /**
      * Thêm sản phẩm vào giỏ hàng (container panel)
+     * - Nếu sản phẩm đã có trong giỏ → cộng dồn số lượng
+     * - Nếu chưa có → tạo mới
+     * - Luôn kiểm tra tồn kho từ TẤT CẢ lô hàng (FIFO)
      */
     private void themSanPhamVaoGioHang(SanPham sanPham) {
-        // Tạo panel chi tiết sản phẩm với dữ liệu thực
-        Panel_ChiTietSanPham panelChiTiet = new Panel_ChiTietSanPham(sanPham);
+        // 1. Kiểm tra xem sản phẩm đã có trong giỏ hàng chưa
+        Panel_ChiTietSanPham panelDaTonTai = null;
+        for (Component comp : containerPanel.getComponents()) {
+            if (comp instanceof Panel_ChiTietSanPham) {
+                Panel_ChiTietSanPham panel = (Panel_ChiTietSanPham) comp;
+                if (panel.getSanPham().getMaSanPham().equals(sanPham.getMaSanPham())) {
+                    panelDaTonTai = panel;
+                    break;
+                }
+            }
+        }
         
-        // Thêm listener để cập nhật tổng tiền khi có thay đổi
-        panelChiTiet.addPropertyChangeListener("tongTien", evt -> capNhatTongTien());
-        panelChiTiet.addPropertyChangeListener("sanPhamXoa", evt -> capNhatTongTien());
+        // 2. Lấy TẤT CẢ lô hàng của sản phẩm và áp dụng FIFO
+        vn.edu.iuh.fit.iuhpharmacitymanagement.bus.LoHangBUS loHangBUS = 
+            new vn.edu.iuh.fit.iuhpharmacitymanagement.bus.LoHangBUS();
+        java.util.List<vn.edu.iuh.fit.iuhpharmacitymanagement.entity.LoHang> danhSachLoHangGoc = 
+            loHangBUS.getLoHangBySanPham(sanPham);
         
-        containerPanel.add(panelChiTiet);
-        containerPanel.revalidate();
-        containerPanel.repaint();
+        // FIFO: Lọc + Sắp xếp theo HẠN SỬ DỤNG TĂNG DẦN (hết hạn sớm nhất → bán trước)
+        java.util.List<vn.edu.iuh.fit.iuhpharmacitymanagement.entity.LoHang> danhSachLoHangFIFO = 
+            danhSachLoHangGoc.stream()
+                .filter(lh -> lh.getTonKho() > 0 && lh.isTrangThai()) // ① Lọc: Còn hàng + Còn hạn
+                .sorted(java.util.Comparator.comparing(
+                    vn.edu.iuh.fit.iuhpharmacitymanagement.entity.LoHang::getHanSuDung)) // ② FIFO: Sắp xếp
+                .collect(java.util.stream.Collectors.toList());
         
-        // Cập nhật tổng tiền ngay sau khi thêm
+        // Tính tổng tồn kho từ các lô FIFO
+        int tongTonKho = danhSachLoHangFIFO.stream()
+            .mapToInt(vn.edu.iuh.fit.iuhpharmacitymanagement.entity.LoHang::getTonKho)
+            .sum();
+        
+        // DEBUG: In ra thứ tự lô hàng theo FIFO
+        if (!danhSachLoHangFIFO.isEmpty()) {
+            System.out.println("📦 FIFO - Thứ tự bán lô hàng cho: " + sanPham.getTenSanPham());
+            for (int i = 0; i < danhSachLoHangFIFO.size(); i++) {
+                vn.edu.iuh.fit.iuhpharmacitymanagement.entity.LoHang lh = danhSachLoHangFIFO.get(i);
+                System.out.println("  " + (i+1) + ". " + lh.getTenLoHang() + 
+                    " | HSD: " + lh.getHanSuDung() + 
+                    " | Tồn: " + lh.getTonKho());
+            }
+        }
+        
+        // 3. Xác định số lượng cần thêm
+        int soLuongCanThem = 1; // Mặc định thêm 1
+        int soLuongHienTai = 0;
+        
+        if (panelDaTonTai != null) {
+            soLuongHienTai = panelDaTonTai.getSoLuong();
+            soLuongCanThem = soLuongHienTai + 1; // Cộng dồn
+        }
+        
+        // 4. Kiểm tra tồn kho
+        if (tongTonKho <= 0) {
+            Notifications.getInstance().show(
+                Notifications.Type.ERROR, 
+                Notifications.Location.TOP_CENTER,
+                "❌ Sản phẩm '" + sanPham.getTenSanPham() + "' đã HẾT HÀNG!"
+            );
+            return;
+        }
+        
+        if (soLuongCanThem > tongTonKho) {
+            Notifications.getInstance().show(
+                Notifications.Type.WARNING, 
+                Notifications.Location.TOP_CENTER,
+                "⚠️ Chỉ còn " + tongTonKho + " " + 
+                (sanPham.getDonViTinh() != null ? sanPham.getDonViTinh().getTenDonVi() : "sản phẩm") + 
+                " '" + sanPham.getTenSanPham() + "' trong kho!"
+            );
+            return;
+        }
+        
+        // 5. Thêm hoặc cộng dồn
+        if (panelDaTonTai != null) {
+            // Sản phẩm đã có → cộng dồn số lượng
+            final Panel_ChiTietSanPham panelFinal = panelDaTonTai; // Final để dùng trong lambda
+            panelFinal.setSoLuong(soLuongCanThem);
+            
+            // Highlight panel để người dùng biết đã cộng dồn
+            panelFinal.setBackground(new java.awt.Color(200, 255, 200)); // Màu xanh nhạt
+            javax.swing.Timer timer = new javax.swing.Timer(500, e -> {
+                panelFinal.setBackground(java.awt.Color.WHITE);
+            });
+            timer.setRepeats(false);
+            timer.start();
+            
+            System.out.println("✅ Cộng dồn: " + sanPham.getTenSanPham() + 
+                " | SL: " + soLuongHienTai + " → " + soLuongCanThem);
+        } else {
+            // Sản phẩm chưa có → tạo panel mới
+            Panel_ChiTietSanPham panelChiTiet = new Panel_ChiTietSanPham(sanPham);
+            
+            // Thêm listener để cập nhật tổng tiền khi có thay đổi
+            panelChiTiet.addPropertyChangeListener("tongTien", evt -> capNhatTongTien());
+            panelChiTiet.addPropertyChangeListener("sanPhamXoa", evt -> capNhatTongTien());
+            
+            containerPanel.add(panelChiTiet);
+            containerPanel.revalidate();
+            containerPanel.repaint();
+            
+            System.out.println("✅ Thêm mới: " + sanPham.getTenSanPham() + " | SL: 1");
+        }
+        
+        // 6. Cập nhật tổng tiền
         capNhatTongTien();
     }
     

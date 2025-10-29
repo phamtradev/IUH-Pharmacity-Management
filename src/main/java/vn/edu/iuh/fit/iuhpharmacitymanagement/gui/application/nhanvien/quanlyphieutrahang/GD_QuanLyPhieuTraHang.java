@@ -6,8 +6,6 @@ package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlyph
 
 import com.formdev.flatlaf.FlatClientProperties;
 
-import javax.swing.JTextField;
-
 /**
  *
  * @author PhamTra
@@ -419,31 +417,37 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnTaoPhieuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTaoPhieuActionPerformed
-        createOrder();
+        taoPhieuTraHang();
     }//GEN-LAST:event_btnTaoPhieuActionPerformed
-
-    private void createOrder() {
-
-    }
-
-    private void setTxtEmpty(JTextField... textFields) {
-
-    }
-
-    private void clearPnOrderDetail() {
-
-    }
 
     private void jLabel2AncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST:event_jLabel2AncestorAdded
         // TODO add your handling code here:
     }//GEN-LAST:event_jLabel2AncestorAdded
 
     private void txtSearchOrderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtSearchOrderActionPerformed
-
+        // Xử lý tìm kiếm hóa đơn khi nhấn Enter
+        String maDonHang = txtSearchOrder.getText().trim();
+        if (!maDonHang.isEmpty()) {
+            timKiemVaHienThiDonHang(maDonHang);
+        } else {
+            raven.toast.Notifications.getInstance().show(
+                raven.toast.Notifications.Type.WARNING, 
+                "Vui lòng nhập mã hóa đơn!"
+            );
+        }
     }//GEN-LAST:event_txtSearchOrderActionPerformed
 
     private void btnOpenModalAddUnitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOpenModalAddUnitActionPerformed
-
+        // Nút tìm kiếm
+        String maDonHang = txtSearchOrder.getText().trim();
+        if (!maDonHang.isEmpty()) {
+            timKiemVaHienThiDonHang(maDonHang);
+        } else {
+            raven.toast.Notifications.getInstance().show(
+                raven.toast.Notifications.Type.WARNING, 
+                "Vui lòng nhập mã hóa đơn!"
+            );
+        }
     }//GEN-LAST:event_btnOpenModalAddUnitActionPerformed
 
     private void jLabel4AncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST:event_jLabel4AncestorAdded
@@ -455,9 +459,12 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
     }//GEN-LAST:event_jLabel5AncestorAdded
 
     private void btnTaoPhieuKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_btnTaoPhieuKeyPressed
-
+        if (evt.getKeyCode() == java.awt.event.KeyEvent.VK_ENTER) {
+            taoPhieuTraHang();
+        }
     }//GEN-LAST:event_btnTaoPhieuKeyPressed
-    private double tongTienHang;
+    
+    private vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonHang currentDonHang;
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnOpenModalAddUnit;
     private javax.swing.JButton btnTaoPhieu;
@@ -489,58 +496,6 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
     private javax.swing.JTextField txtReturnTotal;
     private javax.swing.JTextField txtSearchOrder;
     // End of variables declaration//GEN-END:variables
-    
-    // Thêm các biến để lưu trữ dữ liệu
-    private java.util.List<Object> orderItems = new java.util.ArrayList<>();
-    private java.util.List<Object> returnItems = new java.util.ArrayList<>();
-    
-    // Method để thêm sản phẩm vào danh sách trả hàng
-    private void addItemToReturn(Object item) {
-        returnItems.add(item);
-        updateReturnPanel();
-    }
-    
-    // Method để cập nhật panel trả hàng
-    private void updateReturnPanel() {
-        // Lưu lại header (component đầu tiên)
-        java.awt.Component header = null;
-        if (pnHaveReturn.getComponentCount() > 0) {
-            header = pnHaveReturn.getComponent(0);
-        }
-        
-        pnHaveReturn.removeAll();
-        
-        // Thêm lại header nếu có
-        if (header != null) {
-            pnHaveReturn.add(header);
-        }
-        
-        for (Object item : returnItems) {
-            // Tạo component hiển thị sản phẩm cần trả
-            // Bạn có thể tùy chỉnh component này theo ý muốn
-        }
-        pnHaveReturn.revalidate();
-        pnHaveReturn.repaint();
-    }
-    
-    // Method để load sản phẩm từ hóa đơn
-    private void loadOrderItems(String orderId) {
-        // Load sản phẩm từ database dựa trên orderId
-        // orderItems.clear();
-        // ... code load từ database
-        updateOrderPanel();
-    }
-    
-    // Method để cập nhật panel hóa đơn
-    private void updateOrderPanel() {
-        pnHaveOrder.removeAll();
-        for (Object item : orderItems) {
-            // Tạo component hiển thị sản phẩm đã mua với click listener
-            // Bạn có thể tùy chỉnh component này theo ý muốn
-        }
-        pnHaveOrder.revalidate();
-        pnHaveOrder.repaint();
-    }
 
     private void addHeaderRowForOrder() {
         // Tạo panel header cho danh sách sản phẩm đã mua
@@ -762,10 +717,6 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
         returnProduct.setSoLuongTra(productPanel.getSoLuong()); // Mặc định trả hết
         returnProduct.setDonGia(productPanel.getDonGia());
         
-        // Debug: In ra console để kiểm tra
-        System.out.println("Adding product to return: " + productPanel.getTenSanPham());
-        System.out.println("Current components in pnHaveReturn: " + pnHaveReturn.getComponentCount());
-        
         // Thêm vào danh sách trả hàng
         pnHaveReturn.add(returnProduct);
         
@@ -781,9 +732,6 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
             jScrollPane3.getViewport().scrollRectToVisible(bounds);
         });
         
-        // Debug: Kiểm tra sau khi thêm
-        System.out.println("After adding - components in pnHaveReturn: " + pnHaveReturn.getComponentCount());
-        
         // Có thể thêm hiệu ứng visual để người dùng biết đã chọn
         productPanel.setBackground(new java.awt.Color(200, 255, 200)); // Màu xanh nhạt
         javax.swing.Timer timer = new javax.swing.Timer(1000, e -> {
@@ -791,6 +739,351 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
         });
         timer.setRepeats(false);
         timer.start();
+        
+        // Cập nhật tổng tiền trả
+        capNhatTongTienTra();
+    }
+
+    /**
+     * Tìm kiếm và hiển thị đơn hàng theo mã
+     */
+    private void timKiemVaHienThiDonHang(String maDonHang) {
+        try {
+            // Tìm đơn hàng từ database
+            vn.edu.iuh.fit.iuhpharmacitymanagement.dao.DonHangDAO donHangDAO = 
+                new vn.edu.iuh.fit.iuhpharmacitymanagement.dao.DonHangDAO();
+            
+            java.util.Optional<vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonHang> optDonHang = 
+                donHangDAO.findById(maDonHang);
+            
+            if (!optDonHang.isPresent()) {
+                raven.toast.Notifications.getInstance().show(
+                    raven.toast.Notifications.Type.ERROR, 
+                    "Không tìm thấy hóa đơn: " + maDonHang
+                );
+                return;
+            }
+            
+            currentDonHang = optDonHang.get();
+            
+            // Hiển thị thông tin đơn hàng
+            txtOrderId.setText(currentDonHang.getMaDonHang());
+            
+            if (currentDonHang.getKhachHang() != null) {
+                txtCusName.setText(currentDonHang.getKhachHang().getTenKhachHang());
+                txtCusPhone.setText(currentDonHang.getKhachHang().getSoDienThoai());
+            } else {
+                txtCusName.setText("Khách vãng lai");
+                txtCusPhone.setText("N/A");
+            }
+            
+            // Hiển thị tên nhân viên hiện tại
+            vn.edu.iuh.fit.iuhpharmacitymanagement.util.UserSession userSession = 
+                vn.edu.iuh.fit.iuhpharmacitymanagement.util.UserSession.getInstance();
+            if (userSession.getNhanVien() != null) {
+                txtEmpName.setText(userSession.getNhanVien().getTenNhanVien());
+            }
+            
+            // Load chi tiết đơn hàng
+            vn.edu.iuh.fit.iuhpharmacitymanagement.dao.ChiTietDonHangDAO chiTietDAO = 
+                new vn.edu.iuh.fit.iuhpharmacitymanagement.dao.ChiTietDonHangDAO();
+            
+            java.util.ArrayList<vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonHang> chiTietList = 
+                chiTietDAO.findByIdList(maDonHang);
+            
+            // Xóa các sản phẩm cũ (giữ lại header)
+            java.awt.Component header = pnHaveOrder.getComponent(0);
+            pnHaveOrder.removeAll();
+            pnHaveOrder.add(header);
+            
+            // Xóa các sản phẩm trả cũ (giữ lại header)
+            java.awt.Component headerReturn = pnHaveReturn.getComponent(0);
+            pnHaveReturn.removeAll();
+            pnHaveReturn.add(headerReturn);
+            
+            // Hiển thị các sản phẩm đã mua
+            for (vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonHang chiTiet : chiTietList) {
+                Panel_ChiTietSanPhamDaMua productPanel = new Panel_ChiTietSanPhamDaMua();
+                
+                vn.edu.iuh.fit.iuhpharmacitymanagement.entity.LoHang loHang = chiTiet.getLoHang();
+                vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham sanPham = 
+                    loHang != null ? loHang.getSanPham() : null;
+                
+                if (sanPham != null) {
+                    productPanel.setTenSanPham(sanPham.getTenSanPham());
+                    productPanel.setDonVi(sanPham.getDonViTinh() != null ? 
+                        sanPham.getDonViTinh().getTenDonVi() : "N/A");
+                    productPanel.setSoLuong(chiTiet.getSoLuong());
+                    productPanel.setDonGia(chiTiet.getDonGia());
+                    productPanel.setProductClickListener(this::onProductClicked);
+                    
+                    pnHaveOrder.add(productPanel);
+                }
+            }
+            
+            pnHaveOrder.revalidate();
+            pnHaveOrder.repaint();
+            pnHaveReturn.revalidate();
+            pnHaveReturn.repaint();
+            
+            // Reset tổng tiền
+            txtReturnTotal.setText("0 ₫");
+            
+            raven.toast.Notifications.getInstance().show(
+                raven.toast.Notifications.Type.SUCCESS, 
+                "Tải hóa đơn thành công!"
+            );
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            raven.toast.Notifications.getInstance().show(
+                raven.toast.Notifications.Type.ERROR, 
+                "Lỗi khi tải hóa đơn: " + e.getMessage()
+            );
+        }
+    }
+    
+    /**
+     * Cập nhật tổng tiền trả
+     */
+    private void capNhatTongTienTra() {
+        double tongTien = 0;
+        
+        // Duyệt qua tất cả các panel trả hàng
+        for (java.awt.Component comp : pnHaveReturn.getComponents()) {
+            if (comp instanceof Panel_ChiTietSanPhamTraHang) {
+                Panel_ChiTietSanPhamTraHang panel = (Panel_ChiTietSanPhamTraHang) comp;
+                try {
+                    int soLuong = panel.getSoLuongTra();
+                    double donGia = panel.getDonGia();
+                    tongTien += soLuong * donGia;
+                } catch (Exception e) {
+                    System.err.println("Error calculating return total: " + e.getMessage());
+                }
+            }
+        }
+        
+        txtReturnTotal.setText(String.format("%,.0f ₫", tongTien));
+    }
+    
+    /**
+     * Tạo phiếu trả hàng và xem trước PDF
+     */
+    private void taoPhieuTraHang() {
+        try {
+            // Kiểm tra đã có đơn hàng chưa
+            if (currentDonHang == null) {
+                raven.toast.Notifications.getInstance().show(
+                    raven.toast.Notifications.Type.WARNING, 
+                    "Vui lòng tìm kiếm hóa đơn trước!"
+                );
+                return;
+            }
+            
+            // Kiểm tra có sản phẩm trả không
+            boolean coSanPhamTra = false;
+            for (java.awt.Component comp : pnHaveReturn.getComponents()) {
+                if (comp instanceof Panel_ChiTietSanPhamTraHang) {
+                    coSanPhamTra = true;
+                    break;
+                }
+            }
+            
+            if (!coSanPhamTra) {
+                raven.toast.Notifications.getInstance().show(
+                    raven.toast.Notifications.Type.WARNING, 
+                    "Vui lòng chọn ít nhất một sản phẩm để trả!"
+                );
+                return;
+            }
+            
+            // Kiểm tra tất cả sản phẩm trả đều có lý do
+            for (java.awt.Component comp : pnHaveReturn.getComponents()) {
+                if (comp instanceof Panel_ChiTietSanPhamTraHang) {
+                    Panel_ChiTietSanPhamTraHang panel = (Panel_ChiTietSanPhamTraHang) comp;
+                    if (panel.getLyDoTraHang() == null || panel.getLyDoTraHang().trim().isEmpty()) {
+                        raven.toast.Notifications.getInstance().show(
+                            raven.toast.Notifications.Type.WARNING, 
+                            "Vui lòng nhập lý do trả cho tất cả sản phẩm!"
+                        );
+                        return;
+                    }
+                }
+            }
+            
+            // Tạo đơn trả hàng
+            vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonTraHang donTraHang = 
+                new vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonTraHang();
+            
+            // Tạo mã đơn trả hàng mới
+            vn.edu.iuh.fit.iuhpharmacitymanagement.dao.DonTraHangDAO donTraHangDAO = 
+                new vn.edu.iuh.fit.iuhpharmacitymanagement.dao.DonTraHangDAO();
+            
+            // Tính tổng tiền
+            double tongTien = 0;
+            String tongTienStr = txtReturnTotal.getText().replaceAll("[^0-9]", "");
+            if (!tongTienStr.isEmpty()) {
+                tongTien = Double.parseDouble(tongTienStr);
+            }
+            
+            donTraHang.setngayTraHang(java.time.LocalDate.now());
+            donTraHang.setThanhTien(tongTien);
+            donTraHang.setDonHang(currentDonHang);
+            donTraHang.setNhanVien(vn.edu.iuh.fit.iuhpharmacitymanagement.util.UserSession.getInstance().getNhanVien());
+            
+            // Lưu đơn trả hàng vào database
+            boolean insertSuccess = donTraHangDAO.insert(donTraHang);
+            
+            if (!insertSuccess) {
+                raven.toast.Notifications.getInstance().show(
+                    raven.toast.Notifications.Type.ERROR, 
+                    "Lỗi khi lưu đơn trả hàng vào database!"
+                );
+                return;
+            }
+            
+            // Lấy lại đơn trả hàng với mã đã được tạo
+            java.util.List<vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonTraHang> danhSach = 
+                donTraHangDAO.findAll();
+            if (danhSach.isEmpty()) {
+                raven.toast.Notifications.getInstance().show(
+                    raven.toast.Notifications.Type.ERROR, 
+                    "Không thể lấy mã đơn trả hàng!"
+                );
+                return;
+            }
+            
+            donTraHang = danhSach.get(danhSach.size() - 1); // Lấy đơn mới nhất
+            
+            // Tạo danh sách chi tiết đơn trả hàng
+            java.util.List<vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonTraHang> chiTietList = 
+                new java.util.ArrayList<>();
+            
+            vn.edu.iuh.fit.iuhpharmacitymanagement.dao.SanPhamDAO sanPhamDAO = 
+                new vn.edu.iuh.fit.iuhpharmacitymanagement.dao.SanPhamDAO();
+            
+            for (java.awt.Component comp : pnHaveReturn.getComponents()) {
+                if (comp instanceof Panel_ChiTietSanPhamTraHang) {
+                    Panel_ChiTietSanPhamTraHang panel = (Panel_ChiTietSanPhamTraHang) comp;
+                    
+                    // Tìm sản phẩm từ tên
+                    String tenSanPham = panel.getTenSanPham();
+                    java.util.List<vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham> dsSanPham = 
+                        sanPhamDAO.findAll();
+                    
+                    vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham sanPham = null;
+                    for (vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham sp : dsSanPham) {
+                        if (sp.getTenSanPham().equals(tenSanPham)) {
+                            sanPham = sp;
+                            break;
+                        }
+                    }
+                    
+                    if (sanPham != null) {
+                        vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonTraHang chiTiet = 
+                            new vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonTraHang();
+                        
+                        chiTiet.setSoLuong(panel.getSoLuongTra());
+                        chiTiet.setDonGia(panel.getDonGia());
+                        chiTiet.setLyDoTra(panel.getLyDoTraHang());
+                        chiTiet.setThanhTien(panel.getSoLuongTra() * panel.getDonGia());
+                        chiTiet.setSanPham(sanPham);
+                        chiTiet.setDonTraHang(donTraHang);
+                        
+                        chiTietList.add(chiTiet);
+                    }
+                }
+            }
+            
+            // Lưu chi tiết đơn trả hàng
+            vn.edu.iuh.fit.iuhpharmacitymanagement.dao.ChiTietDonTraHangDAO chiTietDonTraHangDAO = 
+                new vn.edu.iuh.fit.iuhpharmacitymanagement.dao.ChiTietDonTraHangDAO();
+            
+            for (vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonTraHang chiTiet : chiTietList) {
+                chiTietDonTraHangDAO.insert(chiTiet);
+            }
+            
+            // Xuất PDF
+            String pdfPath = vn.edu.iuh.fit.iuhpharmacitymanagement.util.XuatHoaDonTraHangPDF
+                .xuatHoaDonTraHangTuDong(donTraHang, chiTietList);
+            
+            if (pdfPath != null) {
+                raven.toast.Notifications.getInstance().show(
+                    raven.toast.Notifications.Type.SUCCESS, 
+                    "Tạo phiếu trả hàng thành công! Mã: " + donTraHang.getMaDonTraHang()
+                );
+                
+                // Xem trước PDF
+                xemTruocPDF(pdfPath);
+                
+                // Reset form
+                resetForm();
+            } else {
+                raven.toast.Notifications.getInstance().show(
+                    raven.toast.Notifications.Type.WARNING, 
+                    "Lưu phiếu thành công nhưng không thể tạo PDF!"
+                );
+            }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            raven.toast.Notifications.getInstance().show(
+                raven.toast.Notifications.Type.ERROR, 
+                "Lỗi khi tạo phiếu trả hàng: " + e.getMessage()
+            );
+        }
+    }
+    
+    /**
+     * Xem trước PDF
+     */
+    private void xemTruocPDF(String pdfPath) {
+        try {
+            java.io.File file = new java.io.File(pdfPath);
+            if (file.exists()) {
+                if (java.awt.Desktop.isDesktopSupported()) {
+                    java.awt.Desktop.getDesktop().open(file);
+                } else {
+                    raven.toast.Notifications.getInstance().show(
+                        raven.toast.Notifications.Type.INFO, 
+                        "PDF đã được lưu tại: " + pdfPath
+                    );
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            raven.toast.Notifications.getInstance().show(
+                raven.toast.Notifications.Type.WARNING, 
+                "Không thể mở PDF. File đã được lưu tại: " + pdfPath
+            );
+        }
+    }
+    
+    /**
+     * Reset form sau khi tạo phiếu thành công
+     */
+    private void resetForm() {
+        txtSearchOrder.setText("");
+        txtOrderId.setText("");
+        txtCusName.setText("");
+        txtCusPhone.setText("");
+        txtReturnTotal.setText("0 ₫");
+        
+        // Xóa sản phẩm đã mua (giữ header)
+        java.awt.Component headerOrder = pnHaveOrder.getComponent(0);
+        pnHaveOrder.removeAll();
+        pnHaveOrder.add(headerOrder);
+        pnHaveOrder.revalidate();
+        pnHaveOrder.repaint();
+        
+        // Xóa sản phẩm trả (giữ header)
+        java.awt.Component headerReturn = pnHaveReturn.getComponent(0);
+        pnHaveReturn.removeAll();
+        pnHaveReturn.add(headerReturn);
+        pnHaveReturn.revalidate();
+        pnHaveReturn.repaint();
+        
+        currentDonHang = null;
     }
 
 }

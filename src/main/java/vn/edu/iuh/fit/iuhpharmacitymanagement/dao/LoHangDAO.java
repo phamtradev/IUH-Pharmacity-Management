@@ -99,7 +99,11 @@ public class LoHangDAO implements DAOInterface<LoHang, String> {
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
-                return Optional.of(mapResultSetToLoHang(rs));
+                LoHang loHang = mapResultSetToLoHang(rs);
+                // Chỉ return nếu không null
+                if (loHang != null) {
+                    return Optional.of(loHang);
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -118,7 +122,11 @@ public class LoHangDAO implements DAOInterface<LoHang, String> {
              ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
-                danhSachLoHang.add(mapResultSetToLoHang(rs));
+                LoHang loHang = mapResultSetToLoHang(rs);
+                // Chỉ thêm vào danh sách nếu không null (bỏ qua lô hàng có dữ liệu không hợp lệ)
+                if (loHang != null) {
+                    danhSachLoHang.add(loHang);
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -143,9 +151,22 @@ public class LoHangDAO implements DAOInterface<LoHang, String> {
 
         //lấy mã sản phẩm từ CSDL và dùng SanPhamDAO để tìm đối tượng SanPham tương ứng
         String maSanPham = rs.getString("maSanPham");
-        SanPhamDAO sanPhamDAO = new SanPhamDAO(); // Giả định SanPhamDAO đã tồn tại
+        
+        // Kiểm tra maSanPham có NULL không
+        if (maSanPham == null || maSanPham.trim().isEmpty()) {
+            System.err.println("⚠️ Lô hàng " + loHang.getMaLoHang() + " có maSanPham NULL - BỎ QUA");
+            return null; // Return null để skip lô hàng này
+        }
+        
+        SanPhamDAO sanPhamDAO = new SanPhamDAO();
         Optional<SanPham> sanPhamOpt = sanPhamDAO.findById(maSanPham);
-        loHang.setSanPham(sanPhamOpt.orElse(null)); // Nếu không tìm thấy, gán null
+        
+        if (!sanPhamOpt.isPresent()) {
+            System.err.println("⚠️ Không tìm thấy sản phẩm " + maSanPham + " cho lô hàng " + loHang.getMaLoHang() + " - BỎ QUA");
+            return null; // Return null để skip lô hàng này
+        }
+        
+        loHang.setSanPham(sanPhamOpt.get()); // Chỉ set khi tìm thấy sản phẩm
 
         return loHang;
     }
@@ -159,7 +180,11 @@ public class LoHangDAO implements DAOInterface<LoHang, String> {
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
-                danhSachLoHang.add(mapResultSetToLoHang(rs));
+                LoHang loHang = mapResultSetToLoHang(rs);
+                // Chỉ thêm vào danh sách nếu không null
+                if (loHang != null) {
+                    danhSachLoHang.add(loHang);
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -179,7 +204,11 @@ public class LoHangDAO implements DAOInterface<LoHang, String> {
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
-                danhSachLoHang.add(mapResultSetToLoHang(rs));
+                LoHang loHang = mapResultSetToLoHang(rs);
+                // Chỉ thêm vào danh sách nếu không null
+                if (loHang != null) {
+                    danhSachLoHang.add(loHang);
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -232,5 +261,72 @@ public class LoHangDAO implements DAOInterface<LoHang, String> {
             e.printStackTrace();
         }
         return 0;
+    }
+    
+    /**
+     * Kiểm tra tên lô hàng đã tồn tại chưa
+     */
+    public boolean isTenLoHangExists(String tenLoHang) {
+        String sql = "SELECT COUNT(*) as total FROM LoHang WHERE tenLoHang = ?";
+        
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(sql)) {
+            
+            stmt.setString(1, tenLoHang);
+            ResultSet rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                return rs.getInt("total") > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+    
+    /**
+     * Tìm lô hàng theo sản phẩm và hạn sử dụng (để cộng dồn)
+     */
+    public Optional<LoHang> findByMaSanPhamAndHanSuDung(String maSanPham, java.time.LocalDate hanSuDung) {
+        String sql = "SELECT * FROM LoHang WHERE maSanPham = ? AND hanSuDung = ?";
+        
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(sql)) {
+            
+            stmt.setString(1, maSanPham);
+            stmt.setDate(2, java.sql.Date.valueOf(hanSuDung));
+            ResultSet rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                LoHang loHang = mapResultSetToLoHang(rs);
+                if (loHang != null) {
+                    return Optional.of(loHang);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (Exception ex) {
+            System.getLogger(LoHangDAO.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        }
+        return Optional.empty();
+    }
+    
+    /**
+     * Cập nhật tồn kho của lô hàng (cộng dồn)
+     */
+    public boolean updateTonKho(String maLoHang, int themSoLuong) {
+        String sql = "UPDATE LoHang SET tonKho = tonKho + ? WHERE maLoHang = ?";
+        
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(sql)) {
+            
+            stmt.setInt(1, themSoLuong);
+            stmt.setString(2, maLoHang);
+            
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 }

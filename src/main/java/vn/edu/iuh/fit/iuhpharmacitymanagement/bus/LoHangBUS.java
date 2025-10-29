@@ -88,4 +88,25 @@ public class LoHangBUS {
             loHang.setTrangThai(false);
         }
     }
+    
+    /**
+     * Kiểm tra tên lô hàng đã tồn tại chưa
+     */
+    public boolean isTenLoHangExists(String tenLoHang) {
+        return loHangDAO.isTenLoHangExists(tenLoHang);
+    }
+    
+    /**
+     * Tìm lô hàng theo sản phẩm và hạn sử dụng (để cộng dồn)
+     */
+    public Optional<LoHang> findByMaSanPhamAndHanSuDung(String maSanPham, LocalDate hanSuDung) {
+        return loHangDAO.findByMaSanPhamAndHanSuDung(maSanPham, hanSuDung);
+    }
+    
+    /**
+     * Cập nhật tồn kho (cộng dồn)
+     */
+    public boolean updateTonKho(String maLoHang, int themSoLuong) {
+        return loHangDAO.updateTonKho(maLoHang, themSoLuong);
+    }
 }

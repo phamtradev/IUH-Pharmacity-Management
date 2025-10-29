@@ -201,10 +201,10 @@ public class Panel_ChiTietSanPhamDaMua extends javax.swing.JPanel {
         gbc.weightx = 0.0;
         add(txtTongTien, gbc);
 
-        // 7. Icon trạng thái (checkmark)
+        // 7. Icon trạng thái (checkmark màu xanh lá)
         javax.swing.JLabel lblStatus = new javax.swing.JLabel();
         lblStatus.setFont(new java.awt.Font("Segoe UI", 1, 20));
-        lblStatus.setForeground(new java.awt.Color(255, 193, 7));
+        lblStatus.setForeground(new java.awt.Color(34, 197, 94)); // Màu xanh lá
         lblStatus.setText("✓");
         lblStatus.setPreferredSize(new java.awt.Dimension(50, 100));
         lblStatus.setMinimumSize(new java.awt.Dimension(50, 100));

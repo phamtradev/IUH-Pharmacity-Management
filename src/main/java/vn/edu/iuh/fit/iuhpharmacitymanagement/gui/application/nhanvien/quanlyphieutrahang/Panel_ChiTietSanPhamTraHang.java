@@ -24,21 +24,35 @@ public class Panel_ChiTietSanPhamTraHang extends javax.swing.JPanel {
     public void setSoLuongTra(int soLuong) {
         spinnerSoLuongTra.setValue(soLuong);
     }
+    
+    private String tenSanPham = "";
+    private String donVi = "";
+    private double donGia = 0;
+
+    public String getTenSanPham() {
+        return tenSanPham;
+    }
 
     public void setTenSanPham(String ten) {
+        this.tenSanPham = ten;
         // Tìm và cập nhật label tên sản phẩm
         for (int i = 0; i < getComponentCount(); i++) {
             if (getComponent(i) instanceof javax.swing.JLabel) {
                 javax.swing.JLabel label = (javax.swing.JLabel) getComponent(i);
-                if (label.getText().equals("Tên sản phẩm")) {
+                if (label.getText().equals("Tên sản phẩm") || label.getText().isEmpty() || label.getText().equals("")) {
                     label.setText(ten);
                     break;
                 }
             }
         }
     }
+    
+    public String getDonVi() {
+        return donVi;
+    }
 
     public void setDonVi(String donVi) {
+        this.donVi = donVi;
         // Tìm và cập nhật label đơn vị
         for (int i = 0; i < getComponentCount(); i++) {
             if (getComponent(i) instanceof javax.swing.JLabel) {
@@ -50,8 +64,13 @@ public class Panel_ChiTietSanPhamTraHang extends javax.swing.JPanel {
             }
         }
     }
+    
+    public double getDonGia() {
+        return donGia;
+    }
 
     public void setDonGia(double donGia) {
+        this.donGia = donGia;
         txtDonGia.setText(String.format("%,.0f ₫", donGia));
         updateTongTienTra();
     }

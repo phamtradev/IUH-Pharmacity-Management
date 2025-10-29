@@ -119,6 +119,17 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
         return (int) spinnerSoLuong.getValue();
     }
     
+    /**
+     * Set số lượng cho sản phẩm (dùng khi cộng dồn số lượng)
+     * @param soLuong số lượng mới
+     */
+    public void setSoLuong(int soLuong) {
+        if (soLuong >= 1 && soLuong <= 1000) {
+            spinnerSoLuong.setValue(soLuong);
+            spinnerSoLuongStateChanged(null); // Trigger update tổng tiền
+        }
+    }
+    
     public SanPham getSanPham() {
         return sanPham;
     }
