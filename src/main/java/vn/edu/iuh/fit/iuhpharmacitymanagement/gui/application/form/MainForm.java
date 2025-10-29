@@ -30,6 +30,7 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlyphi
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlyphieutrahang.GD_QuanLyPhieuTraHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlysanpham.GD_QuanLySanPham;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlyxuathuy.GD_QuanLyXuatHuy;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.thongtinnhanvien.GD_ThongTinCaNhan;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlynhaphang.GD_QuanLyNhapHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlytrahang.GD_QuanLyTraHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlydonhang.GD_QuanLyDonHang;
@@ -43,7 +44,7 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlythuch
  */
 public class MainForm extends JLayeredPane {
 
-    private int type = 1;//1 nv 2 ql
+    private int type = 2;//1 nv 2 ql
 
     public MainForm() {
         init();
@@ -132,6 +133,7 @@ public class MainForm extends JLayeredPane {
     private void initMenuEvent() {
         menu.addMenuEvent((int index, int subIndex, MenuAction action) -> {
             // Application.mainForm.showForm(new DefaultForm("Form : " + index + " " + subIndex));
+            try{
             if (getType() == 1) {
                 // Type 1 = Nhân viên (index từ 20-30)
                 if (index == 20) {
@@ -151,8 +153,8 @@ public class MainForm extends JLayeredPane {
                 } else if (index == 27) {
                     // Thống kê cá nhân (Dashboard nhân viên)
                     showForm(new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.dashboard.GD_DashBoard());
-//                } else if (index == 28) {
-//                    showForm(new TABPersonalInformation());
+                } else if (index == 28) {
+                    showForm(new GD_ThongTinCaNhan(false));
 //                } else if (index == 29) {
 //                    showForm(new ViewPdfPanel(1));
                 } else if (index == 30) { 
@@ -202,9 +204,9 @@ public class MainForm extends JLayeredPane {
                 } else if (index == 12) {
                     // Quản lý khuyến mãi
                     showForm(new GD_QuanLyKhuyenMai());
-//                } else if (index == 13) {
-//                    // Thông tin cá nhân
-//                    showForm(new TABPersonalInformation());
+                } else if (index == 13) {
+                    // Thông tin cá nhân
+                    showForm(new GD_ThongTinCaNhan(true));
 //                } else if (index == 14) {
 //                    // Trợ giúp
 //                    showForm(new ViewPdfPanel(2));
@@ -214,6 +216,18 @@ public class MainForm extends JLayeredPane {
                 } else {
                     action.cancel();
                 }
+            }
+            }catch(Exception e){
+                System.err.println("ĐÃ XẢY RA LỖI NGHIÊM TRỌNG KHI TẠO FORM:");
+            e.printStackTrace();
+            
+            // Hiển thị lỗi cho người dùng
+            javax.swing.JOptionPane.showMessageDialog(
+                this, 
+                "Không thể mở form. Đã xảy ra lỗi:\n" + e.getMessage(), 
+                "Lỗi Giao Diện", 
+                javax.swing.JOptionPane.ERROR_MESSAGE
+            );
             }
 
         });

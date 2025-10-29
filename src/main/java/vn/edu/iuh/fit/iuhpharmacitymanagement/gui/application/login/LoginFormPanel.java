@@ -18,12 +18,15 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import raven.toast.Notifications;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.NhanVienBUS;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.connectDB.ConnectDB;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.TaiKhoanDAO;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhanVien;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.form.MainForm;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.form.MenuForm;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.form.WelcomeFormNhanVien;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.menu.Menu;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.session.SessionManager;
 
 /**
  *
@@ -240,90 +243,146 @@ public class LoginFormPanel extends javax.swing.JPanel {
         UIManager.put("Viewport.background", Color.WHITE);
     }
     private void btnDangNhapActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDangNhapActionPerformed
-        System.out.println("đã nhấn");
-        
-        // Lấy parent frame hiện tại thay vì tạo mới
+//        System.out.println("đã nhấn");
+//        
+//        // Lấy parent frame hiện tại thay vì tạo mới
+//        javax.swing.JFrame parentFrame = (javax.swing.JFrame) SwingUtilities.getWindowAncestor(this);
+//        
+//        try {
+//            ConnectDB.getConnection();
+//        } catch (SQLException ex) {
+//            System.getLogger(LoginFormPanel.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+//        }
+//        if (txtTenDangNhap.getText().trim().isEmpty() || txtTenDangNhap.getText().trim().length() == 0) {
+//            Notifications.getInstance().setJFrame(parentFrame);
+//            Notifications.getInstance().show(
+//                    Notifications.Type.ERROR,
+//                    Notifications.Location.TOP_CENTER,
+//                    "Hãy nhập tên đăng nhập!"
+//            );
+//            txtTenDangNhap.requestFocus();
+//            return;
+//        }
+//        if (String.valueOf(txtMatKhau.getPassword()).trim().isEmpty() || String.valueOf(txtMatKhau.getPassword()).trim().length() == 0) {
+//            Notifications.getInstance().setJFrame(parentFrame);
+//            Notifications.getInstance().show(
+//                    Notifications.Type.ERROR,
+//                    Notifications.Location.TOP_CENTER,
+//                    "Hãy nhập mật đăng nhập!"
+//            );
+//            txtMatKhau.requestFocus();
+//            return;
+//        }
+//        Optional<String> optVaiTro = tkDao.tonTaiTaiKhoanKhiLogin(txtTenDangNhap.getText(), String.valueOf(txtMatKhau.getPassword()));
+//        if (optVaiTro.isEmpty()) {
+//            Notifications.getInstance().setJFrame(parentFrame);
+//            Notifications.getInstance().show(
+//                    Notifications.Type.ERROR,
+//                    Notifications.Location.TOP_CENTER,
+//                    "Sai tên đăng nhập hoặc mật khẩu hãy nhập lại!"
+//            );
+//            txtTenDangNhap.requestFocus();
+//            return;
+//        }
+//        if (optVaiTro.get().equalsIgnoreCase("Nhân viên")) {
+//            SwingUtilities.invokeLater(() -> {
+//                try {
+//                    setupLookAndFeel();
+//                    MenuForm menuForm = new MenuForm(1);
+//                    menuForm.setVisible(true);
+//                    
+//                    // Đóng LoginFrame sau khi mở MenuForm
+//                    if (parentFrame != null) {
+//                        parentFrame.dispose();
+//                    }
+//                    
+//                    Notifications.getInstance().setJFrame(menuForm);
+//                    Notifications.getInstance().show(Notifications.Type.INFO,
+//                            Notifications.Location.TOP_CENTER,
+//                            "Đăng nhập thành công! Xin chào nhân viên");
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+//            });
+//
+//        } else if (optVaiTro.get().equalsIgnoreCase("Quản lý")) {
+//            try {
+//                setupLookAndFeel();
+//                MenuForm menuForm = new MenuForm(2);
+//                menuForm.setVisible(true);
+//                
+//                // Đóng LoginFrame sau khi mở MenuForm
+//                if (parentFrame != null) {
+//                    parentFrame.dispose();
+//                }
+//                
+//                Notifications.getInstance().setJFrame(menuForm);
+//                Notifications.getInstance().show(
+//                        Notifications.Type.SUCCESS,
+//                        Notifications.Location.TOP_CENTER,
+//                        "Đăng nhập thành công! Xin chào quản lý!"
+//                );
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//        }
+
+// Lấy dữ liệu từ form
+        String tenDangNhap = txtTenDangNhap.getText().trim();
+        String matKhau = String.valueOf(txtMatKhau.getPassword()).trim();
         javax.swing.JFrame parentFrame = (javax.swing.JFrame) SwingUtilities.getWindowAncestor(this);
-        
-        try {
-            ConnectDB.getConnection();
-        } catch (SQLException ex) {
-            System.getLogger(LoginFormPanel.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
-        }
-        if (txtTenDangNhap.getText().trim().isEmpty() || txtTenDangNhap.getText().trim().length() == 0) {
+
+        //kiểm tra rỗng hoặc còn placeholder
+        if (tenDangNhap.isEmpty() || tenDangNhap.equals("Tên đăng nhập")) {
             Notifications.getInstance().setJFrame(parentFrame);
-            Notifications.getInstance().show(
-                    Notifications.Type.ERROR,
-                    Notifications.Location.TOP_CENTER,
-                    "Hãy nhập tên đăng nhập!"
-            );
+            Notifications.getInstance().show(Notifications.Type.ERROR, "Vui lòng nhập tên đăng nhập!");
             txtTenDangNhap.requestFocus();
             return;
         }
-        if (String.valueOf(txtMatKhau.getPassword()).trim().isEmpty() || String.valueOf(txtMatKhau.getPassword()).trim().length() == 0) {
+        if (matKhau.isEmpty() || matKhau.equals("Nhập mật khẩu")) {
             Notifications.getInstance().setJFrame(parentFrame);
-            Notifications.getInstance().show(
-                    Notifications.Type.ERROR,
-                    Notifications.Location.TOP_CENTER,
-                    "Hãy nhập mật đăng nhập!"
-            );
+            Notifications.getInstance().show(Notifications.Type.ERROR, "Vui lòng nhập mật khẩu!");
             txtMatKhau.requestFocus();
             return;
         }
-        Optional<String> optVaiTro = tkDao.tonTaiTaiKhoanKhiLogin(txtTenDangNhap.getText(), String.valueOf(txtMatKhau.getPassword()));
-        if (optVaiTro.isEmpty()) {
+
+        //Gọi BUS để xác thực và lấy về đối tượng NhanVien
+        NhanVienBUS nhanVienBUS = new NhanVienBUS();
+        NhanVien nguoiDung = nhanVienBUS.xacThucNguoiDung(tenDangNhap, matKhau);
+
+        if (nguoiDung == null) {
+            //đăng nhập k thành công
             Notifications.getInstance().setJFrame(parentFrame);
-            Notifications.getInstance().show(
-                    Notifications.Type.ERROR,
-                    Notifications.Location.TOP_CENTER,
-                    "Sai tên đăng nhập hoặc mật khẩu hãy nhập lại!"
-            );
+            Notifications.getInstance().show(Notifications.Type.ERROR, "Sai tên đăng nhập hoặc mật khẩu!");
             txtTenDangNhap.requestFocus();
-            return;
-        }
-        if (optVaiTro.get().equalsIgnoreCase("Nhân viên")) {
-            SwingUtilities.invokeLater(() -> {
-                try {
-                    setupLookAndFeel();
-                    MenuForm menuForm = new MenuForm(1);
-                    menuForm.setVisible(true);
-                    
-                    // Đóng LoginFrame sau khi mở MenuForm
-                    if (parentFrame != null) {
-                        parentFrame.dispose();
-                    }
-                    
-                    Notifications.getInstance().setJFrame(menuForm);
-                    Notifications.getInstance().show(Notifications.Type.INFO,
-                            Notifications.Location.TOP_CENTER,
-                            "Đăng nhập thành công! Xin chào nhân viên");
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            });
+        } else {
+            //Lưu thông tin nv vào session
+            SessionManager.getInstance().setCurrentUser(nguoiDung);
 
-        } else if (optVaiTro.get().equalsIgnoreCase("Quản lý")) {
-            try {
-                setupLookAndFeel();
-                MenuForm menuForm = new MenuForm(2);
-                menuForm.setVisible(true);
-                
-                // Đóng LoginFrame sau khi mở MenuForm
-                if (parentFrame != null) {
-                    parentFrame.dispose();
-                }
-                
-                Notifications.getInstance().setJFrame(menuForm);
-                Notifications.getInstance().show(
-                        Notifications.Type.SUCCESS,
-                        Notifications.Location.TOP_CENTER,
-                        "Đăng nhập thành công! Xin chào quản lý!"
-                );
-            } catch (Exception e) {
-                e.printStackTrace();
+            //Xác định vai trò để mở form chính
+            int userType;
+            String welcomeMessage;
+
+            if (nguoiDung.getVaiTro().equalsIgnoreCase("Quản lý")) {
+                userType = 2; // 2 là Quản lý
+                welcomeMessage = "Đăng nhập thành công! Xin chào Quản lý " + nguoiDung.getTenNhanVien();
+            } else {
+                userType = 1; // 1 là Nhân viên
+                welcomeMessage = "Đăng nhập thành công! Xin chào Nhân viên " + nguoiDung.getTenNhanVien();
             }
-        }
 
+            //Mở MenuForm với đúng loại người dùng
+            MenuForm menuForm = new MenuForm(userType);
+            menuForm.setVisible(true);
+
+            //Đóng cửa sổ đăng nhập hiện tại
+            if (parentFrame != null) {
+                parentFrame.dispose();
+            }
+
+            Notifications.getInstance().setJFrame(menuForm);
+            Notifications.getInstance().show(Notifications.Type.SUCCESS, welcomeMessage);
+        }
     }//GEN-LAST:event_btnDangNhapActionPerformed
     public void addPlayhoder(JTextField txt) {
         Font font = txt.getFont();

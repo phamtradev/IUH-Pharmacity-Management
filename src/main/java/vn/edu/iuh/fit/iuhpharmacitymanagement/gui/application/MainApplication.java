@@ -30,21 +30,21 @@ public class MainApplication {
                 UIManager.put("Button.arc", 10); // bo tròn các JButton
                 UIManager.put("Component.arc", 10); // Bo tròn góc cho TẤT CẢ component
                 UIManager.put("TextComponent.arc", 10); // Cụ thể hơn cho JTextField, JPasswordField...
-                
+
                 //Thay đổi cho process bar
                 UIManager.put("ProgressBar.arc", 10);
                 UIManager.put("ProgressBar.height", 12);
                 UIManager.put("ProgressBar.foreground", new java.awt.Color(0, 153, 255));
-                UIManager.put("ProgressBar.background", new java.awt.Color(220, 220, 220)); 
-                
+                UIManager.put("ProgressBar.background", new java.awt.Color(220, 220, 220));
+
                 //Thay đổi cho JtextField
                 UIManager.put("Component.borderWidth", 1);
                 UIManager.put("Component.borderColor", new java.awt.Color(150, 180, 255));
-                
+
                 // Khi người dùng click vào JTextField, đường viền màu xanh sẽ xuất hiện, báo hiệu rằng ô này đang hoạt động.
                 UIManager.put("Component.focusColor", UIManager.getColor("Component.accentColor"));
                 UIManager.put("Component.focusWidth", 2);
-                
+
                 // Thiết lập Look and Feel
                 FlatLightLaf.setup();
                 // Test kết nối database
@@ -60,8 +60,8 @@ public class MainApplication {
 
                 // Khởi tạo ứng dụng - chạy vào giao diện chính luôn
                 //new MenuForm().setVisible(true);
-//                    new LoginFrame().setVisible(true);
-          new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.loading.SplashScreen().setVisible(true);
+                new LoginFrame().setVisible(true);
+                //new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.loading.SplashScreen().setVisible(true);
 
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(null,
