@@ -19,10 +19,17 @@ public class LoginFrame extends javax.swing.JFrame {
      */
     public LoginFrame() {
         initComponents();
-    setExtendedState(javax.swing.JFrame.MAXIMIZED_BOTH);
-
-    setResizable(true); // Nên để true để người dùng có thể thu nhỏ lại cửa sổ
-
+        setExtendedState(javax.swing.JFrame.MAXIMIZED_BOTH);
+        setResizable(true); // Nên để true để người dùng có thể thu nhỏ lại cửa sổ
+        
+        // Đảm bảo form login được focus khi frame hiển thị
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowOpened(java.awt.event.WindowEvent e) {
+                // Frame đã mở, panel sẽ tự động focus thông qua ComponentListener
+                loginFormPanel1.setVisible(true);
+            }
+        });
     }
 
     /**

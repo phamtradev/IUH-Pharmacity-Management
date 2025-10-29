@@ -63,6 +63,36 @@ public class LoginFormPanel extends javax.swing.JPanel {
         contentPanel.requestFocusInWindow();
         addPlayhoder(txtTenDangNhap);
         addPlayhoder(txtMatKhau);
+        
+        // Tự động focus vào ô tài khoản khi panel được hiển thị
+        addComponentListener(new java.awt.event.ComponentAdapter() {
+            @Override
+            public void componentShown(java.awt.event.ComponentEvent evt) {
+                // Sử dụng Timer để đảm bảo form đã render hoàn toàn
+                javax.swing.Timer timer = new javax.swing.Timer(50, e -> {
+                    txtTenDangNhap.requestFocus();
+                });
+                timer.setRepeats(false);
+                timer.start();
+            }
+        });
+        
+        // Thêm HierarchyListener để đảm bảo focus khi form được thêm vào container
+        addHierarchyListener(e -> {
+            if ((e.getChangeFlags() & java.awt.event.HierarchyEvent.SHOWING_CHANGED) != 0 
+                && isShowing()) {
+                SwingUtilities.invokeLater(() -> txtTenDangNhap.requestFocus());
+            }
+        });
+        
+        // Thêm KeyListener cho ô mật khẩu để bắt Enter
+        txtMatKhau.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                if (evt.getKeyCode() == java.awt.event.KeyEvent.VK_ENTER) {
+                    btnDangNhap.doClick();
+                }
+            }
+        });
     }
 
     @Override
@@ -397,7 +427,8 @@ public class LoginFormPanel extends javax.swing.JPanel {
         txt.setFont(font);
     }
     private void txtTenDangNhapActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtTenDangNhapActionPerformed
-        // TODO add your handling code here:
+        // Khi bấm Enter ở ô tài khoản, chuyển focus sang ô mật khẩu
+        txtMatKhau.requestFocusInWindow();
     }//GEN-LAST:event_txtTenDangNhapActionPerformed
 
     private void txtTenDangNhapFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtTenDangNhapFocusGained
