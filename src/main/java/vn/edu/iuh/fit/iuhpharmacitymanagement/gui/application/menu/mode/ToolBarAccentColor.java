@@ -91,7 +91,16 @@ public class ToolBarAccentColor extends JPanel {
         for (int i = 0; i < accentColorNames.length; i++) {
             String key = accentColorKeys[i];
             JToggleButton tbutton = new JToggleButton(new AccentColorIcon(key));
-            tbutton.setSelected(UIManager.getColor("Component.accentColor").equals(UIManager.getColor(key))); 
+            //tbutton.setSelected(UIManager.getColor("Component.accentColor").equals(UIManager.getColor(key))); 
+            Color accent = UIManager.getColor("Component.accentColor");
+            Color keyColor = UIManager.getColor(key);
+
+            if (accent != null && keyColor != null) {
+                tbutton.setSelected(accent.equals(keyColor));
+            } else {
+                tbutton.setSelected(false);
+            }
+
             tbutton.addActionListener((ActionEvent e) -> {
                 colorAccentChanged(key);
             });

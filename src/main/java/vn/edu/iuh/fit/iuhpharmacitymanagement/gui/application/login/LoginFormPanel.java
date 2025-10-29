@@ -23,6 +23,7 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.TaiKhoanDAO;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.form.MainForm;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.form.MenuForm;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.form.WelcomeFormNhanVien;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.menu.Menu;
 
 /**
  *
@@ -34,8 +35,7 @@ public class LoginFormPanel extends javax.swing.JPanel {
      * Creates new form LoginFormPanel
      */
     private Image backgroundImage;
-    
-   
+
     public LoginFormPanel() {
         initComponents();
         backgroundImage = new ImageIcon(getClass().getResource("/img/LoginImage.png")).getImage();
@@ -53,10 +53,11 @@ public class LoginFormPanel extends javax.swing.JPanel {
         ));
 
         btnDangNhap.putClientProperty("JButton.buttonType", "primary"); // không hoạt động nhưng mà đừng xóa :v        
-        txtTenDangNhap.putClientProperty(FlatClientProperties.TEXT_FIELD_LEADING_ICON, new com.formdev.flatlaf.extras.FlatSVGIcon("img/user_icon.svg"));
-        txtMatKhau.putClientProperty(FlatClientProperties.TEXT_FIELD_LEADING_ICON, new com.formdev.flatlaf.extras.FlatSVGIcon("img/password_icon.svg"));
+        //txtTenDangNhap.putClientProperty(FlatClientProperties.TEXT_FIELD_LEADING_ICON, new com.formdev.flatlaf.extras.FlatSVGIcon("img/user_icon.svg"));
+        //txtMatKhau.putClientProperty(FlatClientProperties.TEXT_FIELD_LEADING_ICON, new com.formdev.flatlaf.extras.FlatSVGIcon("img/password_icon.svg"));
         txtTenDangNhap.setText("Tên đăng nhập");
-        //txtMatKhau = new JPasswordField("Nhập mật khẩu");
+        txtMatKhau.setText("Nhập mật khẩu");
+        txtMatKhau.setEchoChar((char) 0);
         contentPanel.setFocusable(true);
         contentPanel.requestFocusInWindow();
         addPlayhoder(txtTenDangNhap);
@@ -112,6 +113,7 @@ public class LoginFormPanel extends javax.swing.JPanel {
         contentPanel.add(lblTieuDe, gridBagConstraints);
 
         txtTenDangNhap.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        txtTenDangNhap.setText("Tên đăng nhập");
         txtTenDangNhap.setPreferredSize(new java.awt.Dimension(300, 45));
         txtTenDangNhap.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
@@ -253,11 +255,10 @@ public class LoginFormPanel extends javax.swing.JPanel {
                     Notifications.Location.TOP_CENTER,
                     "Hãy nhập tên đăng nhập!"
             );
-            System.out.println("áđâsdâsdâsda");
             txtTenDangNhap.requestFocus();
             return;
         }
-        if (txtMatKhau.getText().trim().isEmpty() || txtMatKhau.getText().trim().length() == 0) {
+        if (String.valueOf(txtMatKhau.getPassword()).trim().isEmpty() || String.valueOf(txtMatKhau.getPassword()).trim().length() == 0) {
             Notifications.getInstance().setJFrame(new LoginFrame());
             Notifications.getInstance().show(
                     Notifications.Type.ERROR,
@@ -267,7 +268,7 @@ public class LoginFormPanel extends javax.swing.JPanel {
             txtMatKhau.requestFocus();
             return;
         }
-        Optional<String> optVaiTro = tkDao.tonTaiTaiKhoanKhiLogin(txtTenDangNhap.getText(), txtMatKhau.getText());
+        Optional<String> optVaiTro = tkDao.tonTaiTaiKhoanKhiLogin(txtTenDangNhap.getText(), String.valueOf(txtMatKhau.getPassword()));
         if (optVaiTro.isEmpty()) {
             Notifications.getInstance().setJFrame(new LoginFrame());
             Notifications.getInstance().show(
@@ -278,40 +279,46 @@ public class LoginFormPanel extends javax.swing.JPanel {
             txtTenDangNhap.requestFocus();
             return;
         }
-        if (optVaiTro.get().equalsIgnoreCase("Quản lý")) {
+        if (optVaiTro.get().equalsIgnoreCase("Nhân viên")) {
             SwingUtilities.invokeLater(() -> {
                 Notifications.getInstance().setJFrame(new LoginFrame());
                 Notifications.getInstance().show(Notifications.Type.INFO,
                         Notifications.Location.TOP_CENTER,
-                        "Đăng nhập thành công! xin chào Quản lý");
+                        "Đăng nhập thành công! xin chào nhân viên");
                 try {
                     setupLookAndFeel();
-                    new MenuForm().setVisible(true);
+                    //new WelcomeFormNhanVien().setVisible(true);
+                    MainForm mainForm = new MainForm(1);
+                    System.out.println(mainForm.getType());
+                    Menu menu = new Menu(1);
+                    System.out.println(menu.getType());
+                    MenuForm menuForm = new MenuForm(1);
+                    menuForm.setVisible(true);
                     this.setVisible(false);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             });
 
-        } else if (optVaiTro.get().equalsIgnoreCase("Nhân viên")) {
+        } else if (optVaiTro.get().equalsIgnoreCase("Quản lý")) {
             // Đăng nhập cho Nhân viên
             Notifications.getInstance().setJFrame(new LoginFrame());
             Notifications.getInstance().show(
                     Notifications.Type.SUCCESS,
                     Notifications.Location.TOP_CENTER,
-                    "Đăng nhập thành công! Xin chào Nhân viên!"
+                    "Đăng nhập thành công! Xin chào quản lý!"
             );
             //để xử lý sau
             try {
-                    setupLookAndFeel();
-                    //new MainForm().showForm(new WelcomeFormNhanVien());
-                   
-                    new MenuForm().setVisible(true);
-                    this.setVisible(false);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }            
-//            this.setVisible(false);
+                setupLookAndFeel();
+                MainForm mainForm = new MainForm(2);                
+                Menu menu = new Menu(2);                
+                MenuForm menuForm = new MenuForm(2);
+                menuForm.setVisible(true);
+                this.setVisible(false);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
     }//GEN-LAST:event_btnDangNhapActionPerformed
@@ -324,7 +331,7 @@ public class LoginFormPanel extends javax.swing.JPanel {
 
     public void removePlayhoder(JTextField txt) {
         Font font = txt.getFont();
-        font = font.deriveFont(Font.PLAIN | Font.BOLD);
+        font = font.deriveFont(Font.PLAIN);
         txt.setFont(font);
     }
     private void txtTenDangNhapActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtTenDangNhapActionPerformed
@@ -364,8 +371,12 @@ public class LoginFormPanel extends javax.swing.JPanel {
 
     private void chkHienMatKhauActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chkHienMatKhauActionPerformed
         if (chkHienMatKhau.isSelected()) {
-            if (!String.valueOf(txtMatKhau.getPassword()).isEmpty()) {
+            txtMatKhau.setEchoChar((char) 0);
+        } else {
+            if (String.valueOf(txtMatKhau.getPassword()).equals("Nhập mật khẩu")) {
                 txtMatKhau.setEchoChar((char) 0);
+            } else {
+                txtMatKhau.setEchoChar('*');
             }
         }
     }//GEN-LAST:event_chkHienMatKhauActionPerformed
@@ -374,6 +385,8 @@ public class LoginFormPanel extends javax.swing.JPanel {
         if (String.valueOf(txtMatKhau.getPassword()).equals("Nhập mật khẩu")) {
             txtMatKhau.setText("");
             txtMatKhau.setEchoChar('*');
+            txtMatKhau.requestFocus();
+            removePlayhoder(txtMatKhau);
         }
     }//GEN-LAST:event_txtMatKhauFocusGained
 

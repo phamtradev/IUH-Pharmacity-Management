@@ -27,7 +27,13 @@ public class MenuForm extends javax.swing.JFrame {
         setupWindow();
         setupMainForm();
     }
-
+    
+     public MenuForm(int type) {
+        initComponents();
+        setupWindow();
+        setupMainForm(type);
+    }
+     
     private void setupWindow() {
         // Configure title bar
         getRootPane().putClientProperty("JRootPane.titleBarBackground", WHITE);
@@ -52,7 +58,10 @@ public class MenuForm extends javax.swing.JFrame {
         mainForm = new MainForm();
         setContentPane(mainForm);
     }
-
+      private void setupMainForm(int type) {
+        mainForm = new MainForm(type);
+        setContentPane(mainForm);
+    }
     /**
      * Entry point chính của ứng dụng - tích hợp từ MainApplication
      */
@@ -91,7 +100,7 @@ public class MenuForm extends javax.swing.JFrame {
         UIManager.put("ScrollPane.background", WHITE);
         UIManager.put("Viewport.background", WHITE);
     }
-
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always

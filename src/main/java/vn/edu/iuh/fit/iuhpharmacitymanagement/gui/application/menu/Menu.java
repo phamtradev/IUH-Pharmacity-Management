@@ -71,7 +71,9 @@ public class Menu extends JPanel {
         this.type = type;
         init();
     }
-
+    public int getType(){
+        return this.type;
+    }
     public boolean isMenuFull() {
         return menuFull;
     }
@@ -348,4 +350,5 @@ public class Menu extends JPanel {
             }
         }
     }
+ 
 }

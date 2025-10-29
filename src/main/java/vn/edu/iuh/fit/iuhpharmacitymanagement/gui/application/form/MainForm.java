@@ -43,10 +43,23 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlythuch
  */
 public class MainForm extends JLayeredPane {
 
-    private int type = 1;
+    private int type = 1;//1 nv 2 ql
 
     public MainForm() {
         init();
+    }
+     public MainForm(int type) {
+        this.type = type;
+        this.menu = new Menu(type);
+        init();
+    }
+    
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
     }
 
     private void init() {
@@ -75,13 +88,13 @@ public class MainForm extends JLayeredPane {
         });
 //        initMenuEvent();
         setLayer(menuButton, JLayeredPane.POPUP_LAYER);
-        add(menuButton);
-        add(menu);
+        add(menu);        
         add(panelBody);
+        add(menuButton);       
         initMenuEvent();
 
         // Hiển thị giao diện chào mừng tương ứng với type khi khởi động
-        if (type == 1) {
+        if (getType() == 1) {
             // Nhân viên - Hiển thị giao diện chào mừng
             showForm(new WelcomeFormNhanVien());
         } else {
@@ -119,7 +132,7 @@ public class MainForm extends JLayeredPane {
     private void initMenuEvent() {
         menu.addMenuEvent((int index, int subIndex, MenuAction action) -> {
             // Application.mainForm.showForm(new DefaultForm("Form : " + index + " " + subIndex));
-            if (type == 1) {
+            if (getType() == 1) {
                 // Type 1 = Nhân viên (index từ 20-30)
                 if (index == 20) {
                     showForm(new GD_BanHang());
@@ -147,7 +160,7 @@ public class MainForm extends JLayeredPane {
                 } else {
                     action.cancel();
                 }
-            } else if (type == 2) {
+            } else if (getType() == 2) {
                 // Type 2 = Quản lý (index từ 0-14)
                 if (index == 0) {
                     // Thống kê (Dashboard quản lý)
@@ -334,4 +347,5 @@ public class MainForm extends JLayeredPane {
             }
         }
     }
+    
 }
