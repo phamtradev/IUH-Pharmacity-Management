@@ -151,13 +151,31 @@ public class DonHangDAO implements DAOInterface<DonHang, String> {
         nv.setMaNhanVien(rs.getString("maNhanVien"));
         donHang.setNhanVien(nv);
 
-        KhachHang kh = new KhachHang();
-        kh.setMaKhachHang(rs.getString("maKhachHang"));
-        donHang.setKhachHang(kh);
+        // Xử lý mã khách hàng có thể NULL hoặc không hợp lệ
+        String maKhachHang = rs.getString("maKhachHang");
+        if (maKhachHang != null && !maKhachHang.trim().isEmpty()) {
+            try {
+                KhachHang kh = new KhachHang();
+                kh.setMaKhachHang(maKhachHang);
+                donHang.setKhachHang(kh);
+            } catch (Exception e) {
+                // Nếu mã không hợp lệ, bỏ qua và để null
+                System.err.println("Mã khách hàng không hợp lệ: " + maKhachHang);
+            }
+        }
 
-        KhuyenMai km = new KhuyenMai();
-        km.setMaKhuyenMai(rs.getString("maKhuyenMai"));
-        donHang.setKhuyenMai(km);
+        // Xử lý mã khuyến mãi có thể NULL
+        String maKhuyenMai = rs.getString("maKhuyenMai");
+        if (maKhuyenMai != null && !maKhuyenMai.trim().isEmpty()) {
+            try {
+                KhuyenMai km = new KhuyenMai();
+                km.setMaKhuyenMai(maKhuyenMai);
+                donHang.setKhuyenMai(km);
+            } catch (Exception e) {
+                // Nếu mã không hợp lệ, bỏ qua và để null
+                System.err.println("Mã khuyến mãi không hợp lệ: " + maKhuyenMai);
+            }
+        }
 
         return donHang;
     }

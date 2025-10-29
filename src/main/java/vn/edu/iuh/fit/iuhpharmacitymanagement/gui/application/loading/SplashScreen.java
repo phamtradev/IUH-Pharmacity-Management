@@ -60,20 +60,16 @@ public class SplashScreen extends javax.swing.JFrame {
                 connectDatabase();
                 Thread.sleep(500);
 
-                updateProgress("Chuẩn bị gd...", 30);
-                
-
+                updateProgress("Chuẩn bị giao diện...", 30);
                 Thread.sleep(500);
 
-                updateProgress("Chuẩn bị gd...", 50);
-                openFrameForMana();
+                updateProgress("Đang tải tài nguyên...", 50);
                 Thread.sleep(500);
 
-                updateProgress("Chuẩn bị gd...", 70);
-                openFrameForEmp();
+                updateProgress("Chuẩn bị hoàn tất...", 70);
                 Thread.sleep(500);
 
-                updateProgress("Chuẩn bị hoàn tất...", 90);
+                updateProgress("Hoàn tất...", 90);
                 Thread.sleep(500);
                 updateProgress("Hoàn tất! Đang vào hệ thống...", 100);
                 Thread.sleep(500);

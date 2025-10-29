@@ -43,9 +43,7 @@ public class LoginFormPanel extends javax.swing.JPanel {
         contentPanel.setOpaque(true);
         contentPanel.setBackground(new java.awt.Color(255, 255, 255, 180));
         contentPanel.putClientProperty(FlatClientProperties.STYLE,
-                "background:rgba(255,255,255,0.7); border:20, #FFFFFFAA;");
-//contentPanel.putClientProperty(FlatClientProperties.STYLE,
-//    "background:rgba(255,255,255,178); border:20, #FFFFFFAA;");
+                "background:rgba(255,255,255,178)");
 
         contentPanel.setBorder(javax.swing.BorderFactory.createCompoundBorder(
                 javax.swing.BorderFactory.createLineBorder(new java.awt.Color(200, 200, 200), 1, true),
@@ -243,13 +241,17 @@ public class LoginFormPanel extends javax.swing.JPanel {
     }
     private void btnDangNhapActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDangNhapActionPerformed
         System.out.println("đã nhấn");
+        
+        // Lấy parent frame hiện tại thay vì tạo mới
+        javax.swing.JFrame parentFrame = (javax.swing.JFrame) SwingUtilities.getWindowAncestor(this);
+        
         try {
             ConnectDB.getConnection();
         } catch (SQLException ex) {
             System.getLogger(LoginFormPanel.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
         }
         if (txtTenDangNhap.getText().trim().isEmpty() || txtTenDangNhap.getText().trim().length() == 0) {
-            Notifications.getInstance().setJFrame(new LoginFrame());
+            Notifications.getInstance().setJFrame(parentFrame);
             Notifications.getInstance().show(
                     Notifications.Type.ERROR,
                     Notifications.Location.TOP_CENTER,
@@ -259,7 +261,7 @@ public class LoginFormPanel extends javax.swing.JPanel {
             return;
         }
         if (String.valueOf(txtMatKhau.getPassword()).trim().isEmpty() || String.valueOf(txtMatKhau.getPassword()).trim().length() == 0) {
-            Notifications.getInstance().setJFrame(new LoginFrame());
+            Notifications.getInstance().setJFrame(parentFrame);
             Notifications.getInstance().show(
                     Notifications.Type.ERROR,
                     Notifications.Location.TOP_CENTER,
@@ -270,7 +272,7 @@ public class LoginFormPanel extends javax.swing.JPanel {
         }
         Optional<String> optVaiTro = tkDao.tonTaiTaiKhoanKhiLogin(txtTenDangNhap.getText(), String.valueOf(txtMatKhau.getPassword()));
         if (optVaiTro.isEmpty()) {
-            Notifications.getInstance().setJFrame(new LoginFrame());
+            Notifications.getInstance().setJFrame(parentFrame);
             Notifications.getInstance().show(
                     Notifications.Type.ERROR,
                     Notifications.Location.TOP_CENTER,
@@ -281,41 +283,42 @@ public class LoginFormPanel extends javax.swing.JPanel {
         }
         if (optVaiTro.get().equalsIgnoreCase("Nhân viên")) {
             SwingUtilities.invokeLater(() -> {
-                Notifications.getInstance().setJFrame(new LoginFrame());
-                Notifications.getInstance().show(Notifications.Type.INFO,
-                        Notifications.Location.TOP_CENTER,
-                        "Đăng nhập thành công! xin chào nhân viên");
                 try {
                     setupLookAndFeel();
-                    //new WelcomeFormNhanVien().setVisible(true);
-                    MainForm mainForm = new MainForm(1);
-                    System.out.println(mainForm.getType());
-                    Menu menu = new Menu(1);
-                    System.out.println(menu.getType());
                     MenuForm menuForm = new MenuForm(1);
                     menuForm.setVisible(true);
-                    this.setVisible(false);
+                    
+                    // Đóng LoginFrame sau khi mở MenuForm
+                    if (parentFrame != null) {
+                        parentFrame.dispose();
+                    }
+                    
+                    Notifications.getInstance().setJFrame(menuForm);
+                    Notifications.getInstance().show(Notifications.Type.INFO,
+                            Notifications.Location.TOP_CENTER,
+                            "Đăng nhập thành công! Xin chào nhân viên");
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             });
 
         } else if (optVaiTro.get().equalsIgnoreCase("Quản lý")) {
-            // Đăng nhập cho Nhân viên
-            Notifications.getInstance().setJFrame(new LoginFrame());
-            Notifications.getInstance().show(
-                    Notifications.Type.SUCCESS,
-                    Notifications.Location.TOP_CENTER,
-                    "Đăng nhập thành công! Xin chào quản lý!"
-            );
-            //để xử lý sau
             try {
                 setupLookAndFeel();
-                MainForm mainForm = new MainForm(2);                
-                Menu menu = new Menu(2);                
                 MenuForm menuForm = new MenuForm(2);
                 menuForm.setVisible(true);
-                this.setVisible(false);
+                
+                // Đóng LoginFrame sau khi mở MenuForm
+                if (parentFrame != null) {
+                    parentFrame.dispose();
+                }
+                
+                Notifications.getInstance().setJFrame(menuForm);
+                Notifications.getInstance().show(
+                        Notifications.Type.SUCCESS,
+                        Notifications.Location.TOP_CENTER,
+                        "Đăng nhập thành công! Xin chào quản lý!"
+                );
             } catch (Exception e) {
                 e.printStackTrace();
             }

@@ -155,8 +155,9 @@ public class MainForm extends JLayeredPane {
 //                    showForm(new TABPersonalInformation());
 //                } else if (index == 29) {
 //                    showForm(new ViewPdfPanel(1));
-//                } else if (index == 30) { 
-//                    Application.logout();
+                } else if (index == 30) { 
+                    // Đăng xuất nhân viên
+                    handleLogout();
                 } else {
                     action.cancel();
                 }
@@ -207,9 +208,9 @@ public class MainForm extends JLayeredPane {
 //                } else if (index == 14) {
 //                    // Trợ giúp
 //                    showForm(new ViewPdfPanel(2));
-//                } else if (index == 15) {
-//                    // Đăng xuất
-//                    Application.logout();
+                } else if (index == 15) {
+                    // Đăng xuất quản lý
+                    handleLogout();
                 } else {
                     action.cancel();
                 }
@@ -218,6 +219,44 @@ public class MainForm extends JLayeredPane {
         });
     }
 
+    // Xử lý đăng xuất
+    private void handleLogout() {
+        int confirm = javax.swing.JOptionPane.showConfirmDialog(
+            this,
+            "Bạn có chắc chắn muốn đăng xuất?",
+            "Xác nhận đăng xuất",
+            javax.swing.JOptionPane.YES_NO_OPTION,
+            javax.swing.JOptionPane.QUESTION_MESSAGE
+        );
+        
+        if (confirm == javax.swing.JOptionPane.YES_OPTION) {
+            // Xóa session người dùng
+            vn.edu.iuh.fit.iuhpharmacitymanagement.util.UserSession.getInstance().logout();
+            
+            // Tìm MenuForm chứa MainForm này và đóng nó
+            javax.swing.SwingUtilities.invokeLater(() -> {
+                java.awt.Window window = javax.swing.SwingUtilities.getWindowAncestor(this);
+                if (window != null) {
+                    window.dispose();
+                }
+                
+                // Mở lại LoginFrame
+                try {
+                    vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.login.LoginFrame loginFrame = 
+                        new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.login.LoginFrame();
+                    loginFrame.setVisible(true);
+                    
+                    raven.toast.Notifications.getInstance().show(
+                        raven.toast.Notifications.Type.SUCCESS,
+                        "Đăng xuất thành công!"
+                    );
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
+        }
+    }
+    
     private void setMenuFull(boolean full) {
         String icon;
         if (getComponentOrientation().isLeftToRight()) {

@@ -21,6 +21,9 @@ import java.util.Locale;
 import javax.swing.JTable;
 import javax.swing.UIManager;
 import raven.toast.Notifications;
+import javax.swing.JButton;
+import javax.swing.table.DefaultTableCellRenderer;
+import java.awt.Component;
 
 /**
  *
@@ -55,12 +58,17 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
     }
 
     private void fillTable() {
-        String[] headers = {"Mã phiếu trả", "Mã hóa đơn", "Ngày trả", "Nhân viên", "Tổng tiền"};
-        List<Integer> tableWidths = Arrays.asList(200, 200, 200, 250, 200);
+        String[] headers = {"Mã phiếu trả", "Mã hóa đơn", "Ngày trả", "Nhân viên", "Tổng tiền", "Trạng thái", "Thao tác"};
+        List<Integer> tableWidths = Arrays.asList(150, 150, 120, 200, 150, 120, 120);
         tableDesign = new TableDesign(headers, tableWidths);
         scrollTable.setViewportView(tableDesign.getTable());
         scrollTable.setBorder(BorderFactory.createEmptyBorder(15, 20, 20, 20));
-        List<DonTraHang> danhSach = donTraHangBUS.layTatCaDonTraHang();
+        
+        // Tùy chỉnh renderer cho cột Thao tác
+        setupActionColumn();
+        
+        // Lấy dữ liệu hoặc tạo dữ liệu giả lập
+        List<DonTraHang> danhSach = layDuLieuDonTraHang();
         fillContent(danhSach);
     }
 
@@ -71,12 +79,17 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
             String maDonHang = dth.getDonHang() != null ? dth.getDonHang().getMaDonHang() : "N/A";
             String tenNV = dth.getNhanVien() != null ? dth.getNhanVien().getMaNhanVien() : "N/A";
             
+            // Tạo trạng thái ngẫu nhiên cho demo
+            String trangThai = "Chưa xử lý";
+            
             tableDesign.getModelTable().addRow(new Object[]{
                 dth.getMaDonTraHang(), 
                 maDonHang,
                 formatDate(dth.getngayTraHang()),
                 tenNV,
-                formatToVND(dth.getThanhTien())
+                formatToVND(dth.getThanhTien()),
+                trangThai,
+                "Xem chi tiết" // Placeholder, sẽ được thay bằng button
             });
         }
     }
@@ -125,6 +138,310 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
     private String formatToVND(double amount) {
         NumberFormat formatter = NumberFormat.getCurrencyInstance(new Locale("vi", "VN"));
         return formatter.format(amount);
+    }
+    
+    // Tạo dữ liệu giả lập cho đơn trả hàng
+    private List<DonTraHang> layDuLieuDonTraHang() {
+        try {
+            List<DonTraHang> danhSach = donTraHangBUS.layTatCaDonTraHang();
+            if (danhSach != null && !danhSach.isEmpty()) {
+                return danhSach;
+            }
+        } catch (Exception e) {
+            System.err.println("Không lấy được dữ liệu từ database, tạo dữ liệu giả lập...");
+        }
+        
+        // Tạo dữ liệu giả lập
+        List<DonTraHang> danhSachGiaLap = new ArrayList<>();
+        LocalDate today = LocalDate.now();
+        
+        for (int i = 1; i <= 5; i++) {
+            try {
+                DonTraHang dth = new DonTraHang();
+                String maDTH = "DT" + today.minusDays(i).format(DateTimeFormatter.ofPattern("ddMMyyyy")) 
+                        + String.format("%04d", i);
+                dth.setMaDonTraHang(maDTH);
+                dth.setngayTraHang(today.minusDays(i));
+                dth.setThanhTien(500000 + (i * 100000));
+                
+                // Tạo nhân viên giả
+                NhanVien nv = new NhanVien();
+                nv.setMaNhanVien("NV" + String.format("%05d", i));
+                dth.setNhanVien(nv);
+                
+                // Tạo đơn hàng giả
+                DonHang dh = new DonHang();
+                String maDH = "DH" + today.format(DateTimeFormatter.ofPattern("ddMMyyyy")) 
+                        + String.format("%04d", i);
+                dh.setMaDonHang(maDH);
+                dth.setDonHang(dh);
+                
+                danhSachGiaLap.add(dth);
+            } catch (Exception e) {
+                System.err.println("Lỗi tạo dữ liệu giả lập: " + e.getMessage());
+            }
+        }
+        
+        return danhSachGiaLap;
+    }
+    
+    // Thiết lập cột Thao tác với button
+    private void setupActionColumn() {
+        JTable table = tableDesign.getTable();
+        
+        // Đảm bảo có thể click vào button
+        table.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                int row = table.rowAtPoint(evt.getPoint());
+                int col = table.columnAtPoint(evt.getPoint());
+                
+                // Kiểm tra nếu click vào cột Thao tác (cột index 6)
+                if (col == 6 && row >= 0) {
+                    String maDonTraHang = (String) table.getValueAt(row, 0);
+                    System.out.println("Clicked on row " + row + ", maDonTraHang: " + maDonTraHang);
+                    xemChiTietDonTraHang(maDonTraHang);
+                }
+            }
+        });
+        
+        // Renderer cho cột Thao tác
+        table.getColumnModel().getColumn(6).setCellRenderer(new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value,
+                    boolean isSelected, boolean hasFocus, int row, int column) {
+                JButton btnAction = new JButton("Xem chi tiết");
+                btnAction.putClientProperty(FlatClientProperties.STYLE, ""
+                        + "background:#17A2B8;"
+                        + "foreground:#000000;"
+                        + "hoverBackground:#138496;"
+                        + "pressedBackground:#0F6674;"
+                        + "arc:8;"
+                        + "borderWidth:0");
+                btnAction.setFocusPainted(false);
+                btnAction.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+                return btnAction;
+            }
+        });
+    }
+    
+    // Xem chi tiết đơn trả hàng
+    private void xemChiTietDonTraHang(String maDonTraHang) {
+        // Tạo dialog chi tiết
+        showChiTietDonTraHangDialog(maDonTraHang);
+    }
+    
+    // Hiển thị dialog chi tiết đơn trả hàng
+    private void showChiTietDonTraHangDialog(String maDonTraHang) {
+        javax.swing.JDialog dialog = new javax.swing.JDialog();
+        dialog.setTitle("Xem đơn trả");
+        dialog.setSize(1400, 700);
+        dialog.setLocationRelativeTo(null);
+        dialog.setModal(true);
+        
+        // Main panel
+        javax.swing.JPanel mainPanel = new javax.swing.JPanel();
+        mainPanel.setLayout(new java.awt.BorderLayout(0, 10));
+        mainPanel.setBackground(java.awt.Color.WHITE);
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        
+        // === HEADER PANEL - Thông tin đơn trả hàng ===
+        javax.swing.JPanel headerPanel = new javax.swing.JPanel();
+        headerPanel.setLayout(new java.awt.GridLayout(3, 4, 20, 15));
+        headerPanel.setBackground(java.awt.Color.WHITE);
+        headerPanel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new java.awt.Color(220, 220, 220), 1),
+            BorderFactory.createEmptyBorder(20, 20, 20, 20)
+        ));
+        
+        // Giả lập dữ liệu
+        String nguoiTao = "Tra";
+        String thoiGianTao = "12/12/2024 06:37";
+        String trangThai = "Chờ xử lý";
+        String maHoaDon = "HD" + LocalDate.now().format(DateTimeFormatter.ofPattern("ddMMyyyy")) + "0001";
+        
+        // Row 1
+        addInfoField(headerPanel, "Mã phiếu trả", maDonTraHang);
+        addInfoField(headerPanel, "Người tạo", nguoiTao);
+        
+        // Row 2
+        addInfoField(headerPanel, "Thời gian tạo", thoiGianTao);
+        addInfoField(headerPanel, "Trạng thái", trangThai);
+        
+        // Row 3
+        addInfoField(headerPanel, "Mã hóa đơn", maHoaDon);
+        headerPanel.add(new javax.swing.JLabel()); // Empty cell
+        
+        mainPanel.add(headerPanel, java.awt.BorderLayout.NORTH);
+        
+        // === TABLE PANEL - Chi tiết sản phẩm trả ===
+        String[] columns = {"Mã hàng", "Tên hàng", "Đơn vị tính", "Số lượng", 
+                           "Giá trả hàng", "Lý do trả", "Lý do xử lý", "Thao tác"};
+        List<Integer> columnWidths = Arrays.asList(100, 180, 100, 80, 120, 150, 150, 150);
+        
+        TableDesign tableChiTiet = new TableDesign(columns, columnWidths);
+        javax.swing.JScrollPane scrollPane = new javax.swing.JScrollPane(tableChiTiet.getTable());
+        scrollPane.setBorder(BorderFactory.createLineBorder(new java.awt.Color(220, 220, 220), 1));
+        
+        // Giả lập dữ liệu chi tiết sản phẩm
+        giaDinhDuLieuChiTiet(tableChiTiet);
+        
+        // Thiết lập cột Thao tác với 2 button
+        setupActionColumnForDetail(tableChiTiet.getTable());
+        
+        mainPanel.add(scrollPane, java.awt.BorderLayout.CENTER);
+        
+        // === BOTTOM PANEL - Button Xác nhận ===
+        javax.swing.JPanel bottomPanel = new javax.swing.JPanel();
+        bottomPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 10, 10));
+        bottomPanel.setBackground(java.awt.Color.WHITE);
+        
+        javax.swing.JButton btnXacNhan = new javax.swing.JButton("Xác nhận");
+        btnXacNhan.setPreferredSize(new java.awt.Dimension(120, 40));
+        btnXacNhan.putClientProperty(FlatClientProperties.STYLE, ""
+                + "background:#17C3B2;"
+                + "foreground:#000000;"
+                + "hoverBackground:#14A895;"
+                + "arc:10;"
+                + "borderWidth:0");
+        btnXacNhan.addActionListener(e -> {
+            Notifications.getInstance().show(Notifications.Type.SUCCESS, "Đã xác nhận đơn trả!");
+            dialog.dispose();
+        });
+        
+        bottomPanel.add(btnXacNhan);
+        mainPanel.add(bottomPanel, java.awt.BorderLayout.SOUTH);
+        
+        dialog.add(mainPanel);
+        dialog.setVisible(true);
+    }
+    
+    // Thêm field thông tin vào panel
+    private void addInfoField(javax.swing.JPanel panel, String label, String value) {
+        javax.swing.JPanel fieldPanel = new javax.swing.JPanel();
+        fieldPanel.setLayout(new java.awt.BorderLayout(5, 0));
+        fieldPanel.setBackground(java.awt.Color.WHITE);
+        
+        javax.swing.JLabel lblLabel = new javax.swing.JLabel(label);
+        lblLabel.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 13));
+        lblLabel.setForeground(new java.awt.Color(80, 80, 80));
+        
+        javax.swing.JLabel lblValue = new javax.swing.JLabel(value);
+        lblValue.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 13));
+        
+        fieldPanel.add(lblLabel, java.awt.BorderLayout.NORTH);
+        fieldPanel.add(lblValue, java.awt.BorderLayout.CENTER);
+        
+        panel.add(fieldPanel);
+    }
+    
+    // Giả định dữ liệu chi tiết sản phẩm
+    private void giaDinhDuLieuChiTiet(TableDesign tableDesign) {
+        String[][] duLieuGia = {
+            {"SP00001", "Terpinzoat", "Hộp", "2", "33,000 đ", "Dị ứng", "", ""},
+            {"SP00002", "Paracetamol 500mg", "Viên", "10", "50,000 đ", "Hết hạn", "", ""},
+            {"SP00003", "Vitamin C", "Hộp", "1", "120,000 đ", "Lỗi sản phẩm", "", ""}
+        };
+        
+        for (String[] row : duLieuGia) {
+            tableDesign.getModelTable().addRow(row);
+        }
+    }
+    
+    // Thiết lập cột Thao tác cho bảng chi tiết với 2 button
+    private void setupActionColumnForDetail(JTable table) {
+        // Renderer cho cột Thao tác
+        table.getColumnModel().getColumn(7).setCellRenderer(new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value,
+                    boolean isSelected, boolean hasFocus, int row, int column) {
+                
+                javax.swing.JPanel panel = new javax.swing.JPanel();
+                panel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 5, 2));
+                panel.setBackground(java.awt.Color.WHITE);
+                
+                // Button Thêm
+                JButton btnThem = new JButton("Thêm");
+                btnThem.putClientProperty(FlatClientProperties.STYLE, ""
+                        + "background:#28A745;"
+                        + "foreground:#FFFFFF;"
+                        + "hoverBackground:#218838;"
+                        + "arc:5;"
+                        + "borderWidth:0");
+                btnThem.setPreferredSize(new java.awt.Dimension(60, 30));
+                btnThem.setFocusPainted(false);
+                
+                // Button Hủy
+                JButton btnHuy = new JButton("Hủy");
+                btnHuy.putClientProperty(FlatClientProperties.STYLE, ""
+                        + "background:#DC3545;"
+                        + "foreground:#FFFFFF;"
+                        + "hoverBackground:#C82333;"
+                        + "arc:5;"
+                        + "borderWidth:0");
+                btnHuy.setPreferredSize(new java.awt.Dimension(60, 30));
+                btnHuy.setFocusPainted(false);
+                
+                panel.add(btnThem);
+                panel.add(btnHuy);
+                
+                return panel;
+            }
+        });
+        
+        // Editor cho cột Thao tác
+        table.getColumnModel().getColumn(7).setCellEditor(new javax.swing.DefaultCellEditor(new javax.swing.JCheckBox()) {
+            private javax.swing.JPanel panel;
+            private int currentRow;
+            
+            {
+                panel = new javax.swing.JPanel();
+                panel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 5, 2));
+                
+                JButton btnThem = new JButton("Thêm");
+                btnThem.putClientProperty(FlatClientProperties.STYLE, ""
+                        + "background:#28A745;"
+                        + "foreground:#FFFFFF;"
+                        + "hoverBackground:#218838;"
+                        + "arc:5;"
+                        + "borderWidth:0");
+                btnThem.setPreferredSize(new java.awt.Dimension(60, 30));
+                btnThem.setFocusPainted(false);
+                btnThem.addActionListener(e -> {
+                    fireEditingStopped();
+                    Notifications.getInstance().show(Notifications.Type.INFO, 
+                        "Thêm sản phẩm tại dòng " + (currentRow + 1));
+                });
+                
+                JButton btnHuy = new JButton("Hủy");
+                btnHuy.putClientProperty(FlatClientProperties.STYLE, ""
+                        + "background:#DC3545;"
+                        + "foreground:#FFFFFF;"
+                        + "hoverBackground:#C82333;"
+                        + "arc:5;"
+                        + "borderWidth:0");
+                btnHuy.setPreferredSize(new java.awt.Dimension(60, 30));
+                btnHuy.setFocusPainted(false);
+                btnHuy.addActionListener(e -> {
+                    fireEditingStopped();
+                    Notifications.getInstance().show(Notifications.Type.WARNING, 
+                        "Hủy sản phẩm tại dòng " + (currentRow + 1));
+                });
+                
+                panel.add(btnThem);
+                panel.add(btnHuy);
+            }
+            
+            @Override
+            public Component getTableCellEditorComponent(JTable table, Object value,
+                    boolean isSelected, int row, int column) {
+                currentRow = row;
+                return panel;
+            }
+        });
+        
+        // Tăng chiều cao hàng để button hiển thị đẹp hơn
+        table.setRowHeight(40);
     }
 
     /**
