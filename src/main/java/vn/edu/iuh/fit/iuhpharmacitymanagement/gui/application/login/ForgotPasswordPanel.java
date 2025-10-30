@@ -16,6 +16,8 @@ import javax.swing.ImageIcon;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.NhanVienDAO;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.util.EmailUtil;
 
 /**
  *
@@ -237,7 +239,9 @@ public class ForgotPasswordPanel extends javax.swing.JPanel {
         UIManager.put("Viewport.background", Color.WHITE);
     }
     private void btnDangNhapActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDangNhapActionPerformed
-
+        new EmailUtil().guiEmailCapPass(new NhanVienDAO().findById(txtTenDangNhap.getText()).get());
+        this.setVisible(false);
+        new LoginFrame().setVisible(true);
     }//GEN-LAST:event_btnDangNhapActionPerformed
     public void addPlayhoder(JTextField txt) {
         Font font = txt.getFont();

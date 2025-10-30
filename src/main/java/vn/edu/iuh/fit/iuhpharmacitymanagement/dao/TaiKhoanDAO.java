@@ -8,6 +8,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.util.EmailUtil;
 
 public class TaiKhoanDAO implements DAOInterface<TaiKhoan, String> {
 
@@ -79,6 +80,26 @@ public class TaiKhoanDAO implements DAOInterface<TaiKhoan, String> {
             stmt.setString(2, taiKhoan.getNhanVien() != null ? taiKhoan.getNhanVien().getMaNhanVien() : null);
             stmt.setString(3, taiKhoan.getTenDangNhap());
 
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean updatePass(TaiKhoan taiKhoan, NhanVien nv, String newPass) {
+        //lay pass tư ham ỏ email phat sinh
+        EmailUtil email = new EmailUtil();
+        //String newPass = email.ramdomPass(nv);        
+        System.out.println(newPass);
+        String sql = "UPDATE tk "
+                + " set tk.matKhau = ? "
+                + " from taikhoan tk "
+                + " JOIN nhanvien nv on tk.maNhanVien = nv.maNhanVien "
+                + " WHERE nv.maNhanVien = ?";
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(sql)) {
+            stmt.setString(1, newPass);
+            stmt.setString(2, nv.getMaNhanVien());            
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();

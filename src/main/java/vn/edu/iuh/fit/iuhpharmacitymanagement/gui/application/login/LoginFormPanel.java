@@ -517,6 +517,7 @@ public class LoginFormPanel extends javax.swing.JPanel {
             parentFrame.dispose();
         }
     }
+    
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnDangNhap;

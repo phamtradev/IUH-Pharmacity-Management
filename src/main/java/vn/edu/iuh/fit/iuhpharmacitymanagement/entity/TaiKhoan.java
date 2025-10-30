@@ -43,9 +43,9 @@ public class TaiKhoan {
     }
 
     public void setTenDangNhap(String tenDangNhap) throws Exception {
-        if (!tenDangNhap.matches(TEN_DANG_NHAP_REGEX)) {
-            throw new Exception(TEN_DANG_NHAP_SAI);
-        }
+//        if (!tenDangNhap.matches(TEN_DANG_NHAP_REGEX)) {
+//            throw new Exception(TEN_DANG_NHAP_SAI);
+//        }
         this.tenDangNhap = tenDangNhap;
     }
 
