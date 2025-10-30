@@ -12,6 +12,7 @@ import java.awt.event.KeyEvent;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -1212,7 +1213,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
         
         // Format cho số tiền và ngày tháng
         DecimalFormat currencyFormat = new DecimalFormat("#,###");
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         
         // === HEADER ===
         javax.swing.JPanel headerPanel = new javax.swing.JPanel();
@@ -1235,7 +1236,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
         String tenNhanVien = nhanVien != null ? nhanVien.getTenNhanVien() : "N/A";
         infoPanel.add(createInfoLabel("Nhân viên: ", tenNhanVien, false));
         
-        String ngayDat = dateFormat.format(java.sql.Date.valueOf(donHang.getNgayDatHang()));
+        String ngayDat = donHang.getNgayDatHang().format(dateFormatter);
         infoPanel.add(createInfoLabel("Ngày lập: ", ngayDat, false));
         
         KhachHang khachHang = donHang.getKhachHang();
