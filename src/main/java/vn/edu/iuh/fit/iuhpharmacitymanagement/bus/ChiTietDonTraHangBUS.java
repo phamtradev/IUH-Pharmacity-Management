@@ -122,7 +122,7 @@ public class ChiTietDonTraHangBUS {
         }
         return false;
     }
-    
+
     /**
      * Lấy danh sách chi tiết đơn trả hàng theo mã đơn trả
      *
@@ -136,5 +136,10 @@ public class ChiTietDonTraHangBUS {
             System.out.println("Lỗi khi lấy chi tiết đơn trả hàng: " + e.getMessage());
             return new ArrayList<>();
         }
+    }
+
+   //Lấy tất cả các sản phẩm bị trả hàng để hiển thị lên form xuất hủy.
+    public List<ChiTietDonTraHang> layTatCaChiTietCanHuy() {
+        return chiTietDonTraHangDAO.findAllWithDetails();
     }
 }

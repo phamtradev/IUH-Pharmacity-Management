@@ -27,15 +27,14 @@ public class ChiTietDonTraHangDAO implements DAOInterface<ChiTietDonTraHang, Str
     public boolean insert(ChiTietDonTraHang t) {
         String sql = "INSERT into chitietdontrahang(donGia, lyDoTra, soLuong, thanhTien, maDonTra, maSanPham) "
                 + " VALUES(?, ?, ?, ?, ?, ?)";
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement pre = con.prepareStatement(sql)) {
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement pre = con.prepareStatement(sql)) {
             pre.setDouble(1, t.getDonGia());
             pre.setString(2, t.getLyDoTra());
             pre.setInt(3, t.getSoLuong());
             pre.setDouble(4, t.getThanhTien());
             pre.setString(5, t.getDonTraHang().getMaDonTraHang());
             pre.setString(6, t.getSanPham().getMaSanPham());
-            
+
             int rowsAffected = pre.executeUpdate();
             System.out.println("      [DAO] Rows affected: " + rowsAffected);
             return rowsAffected > 0;
@@ -54,8 +53,7 @@ public class ChiTietDonTraHangDAO implements DAOInterface<ChiTietDonTraHang, Str
         String sql = "update chitietdontrahang "
                 + " set donGia = ?, lyDoTra = ?, soLuong = ?, thanhTien = ? "
                 + " WHERE maDonTra = ? and maSanPham = ? ";
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement pre = con.prepareStatement(sql)) {
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement pre = con.prepareStatement(sql)) {
             pre.setDouble(1, t.getDonGia());
             pre.setString(2, t.getLyDoTra());
             pre.setInt(3, t.getSoLuong());
@@ -74,8 +72,7 @@ public class ChiTietDonTraHangDAO implements DAOInterface<ChiTietDonTraHang, Str
         ChiTietDonTraHang ct = new ChiTietDonTraHang();
         String sql = "select * from chitietdontrahang "
                 + " WHERE maDonTra = ? ";
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement pre = con.prepareStatement(sql)) {
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement pre = con.prepareStatement(sql)) {
             pre.setString(1, id);
             ResultSet rs = pre.executeQuery();
             if (rs.next()) {
@@ -96,9 +93,7 @@ public class ChiTietDonTraHangDAO implements DAOInterface<ChiTietDonTraHang, Str
     @Override
     public List<ChiTietDonTraHang> findAll() {
         List<ChiTietDonTraHang> dsCt = new ArrayList<>();
-        try (Connection con = ConnectDB.getConnection();
-             Statement stm = con.createStatement();
-             ResultSet rs = stm.executeQuery("select * from chitietdontrahang")) {
+        try (Connection con = ConnectDB.getConnection(); Statement stm = con.createStatement(); ResultSet rs = stm.executeQuery("select * from chitietdontrahang")) {
             while (rs.next()) {
                 double donGia = rs.getDouble("donGia");
                 String lyDo = rs.getString("lyDoTra");
@@ -114,25 +109,25 @@ public class ChiTietDonTraHangDAO implements DAOInterface<ChiTietDonTraHang, Str
         }
         return dsCt;
     }
-    
+
     /**
      * Lấy danh sách chi tiết đơn trả hàng theo mã đơn trả
+     *
      * @param maDonTra Mã đơn trả hàng
      * @return Danh sách chi tiết đơn trả hàng với thông tin sản phẩm đầy đủ
      */
     public List<ChiTietDonTraHang> findByMaDonTra(String maDonTra) {
         List<ChiTietDonTraHang> dsCt = new ArrayList<>();
-        String sql = "SELECT ct.*, sp.tenSanPham, dv.tenDonVi, dv.maDonVi " +
-                     "FROM chitietdontrahang ct " +
-                     "LEFT JOIN SanPham sp ON ct.maSanPham = sp.maSanPham " +
-                     "LEFT JOIN DonViTinh dv ON sp.maDonVi = dv.maDonVi " +
-                     "WHERE ct.maDonTra = ?";
-        
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement pre = con.prepareStatement(sql)) {
+        String sql = "SELECT ct.*, sp.tenSanPham, dv.tenDonVi, dv.maDonVi "
+                + "FROM chitietdontrahang ct "
+                + "LEFT JOIN SanPham sp ON ct.maSanPham = sp.maSanPham "
+                + "LEFT JOIN DonViTinh dv ON sp.maDonVi = dv.maDonVi "
+                + "WHERE ct.maDonTra = ?";
+
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement pre = con.prepareStatement(sql)) {
             pre.setString(1, maDonTra);
             ResultSet rs = pre.executeQuery();
-            
+
             while (rs.next()) {
                 double donGia = rs.getDouble("donGia");
                 String lyDo = rs.getString("lyDoTra");
@@ -140,11 +135,11 @@ public class ChiTietDonTraHangDAO implements DAOInterface<ChiTietDonTraHang, Str
                 double thanhTien = rs.getDouble("thanhTien");
                 String maDonTraResult = rs.getString("maDonTra");
                 String masp = rs.getString("maSanPham");
-                
+
                 // Tạo sản phẩm với thông tin đầy đủ
                 SanPham sp = new SanPham(masp);
                 sp.setTenSanPham(rs.getString("tenSanPham"));
-                
+
                 // Tạo đơn vị tính
                 String maDonVi = rs.getString("maDonVi");
                 if (maDonVi != null && !maDonVi.trim().isEmpty()) {
@@ -153,8 +148,8 @@ public class ChiTietDonTraHangDAO implements DAOInterface<ChiTietDonTraHang, Str
                     dvt.setTenDonVi(rs.getString("tenDonVi"));
                     sp.setDonViTinh(dvt);
                 }
-                
-                ChiTietDonTraHang ct = new ChiTietDonTraHang(sl, donGia, lyDo, thanhTien, 
+
+                ChiTietDonTraHang ct = new ChiTietDonTraHang(sl, donGia, lyDo, thanhTien,
                         sp, new DonTraHang(maDonTraResult));
                 dsCt.add(ct);
             }
@@ -163,5 +158,48 @@ public class ChiTietDonTraHangDAO implements DAOInterface<ChiTietDonTraHang, Str
         }
         return dsCt;
     }
-    
+
+    // Lấy tất cả sản phẩm trong đơn trả
+    public List<ChiTietDonTraHang> findAllWithDetails() {
+        List<ChiTietDonTraHang> danhSach = new ArrayList<>();
+        String sql = "SELECT ct.*, sp.tenSanPham, sp.giaNhap, dv.tenDonVi "
+                + "FROM chitietdontrahang ct "
+                + "JOIN SanPham sp ON ct.maSanPham = sp.maSanPham "
+                + "JOIN DonViTinh dv ON sp.maDonVi = dv.maDonVi";
+
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                SanPham sanPham = new SanPham();
+                sanPham.setMaSanPham(rs.getString("maSanPham"));
+                sanPham.setTenSanPham(rs.getString("tenSanPham"));
+                sanPham.setGiaNhap(rs.getDouble("giaNhap"));
+
+                DonViTinh dvt = new DonViTinh();
+                dvt.setTenDonVi(rs.getString("tenDonVi"));
+                sanPham.setDonViTinh(dvt);
+
+                // Tạo đối tượng ChiTietDonTraHang
+                ChiTietDonTraHang ctdt = new ChiTietDonTraHang();
+                ctdt.setSanPham(sanPham);
+                ctdt.setSoLuong(rs.getInt("soLuong"));
+                ctdt.setLyDoTra(rs.getString("lyDoTra"));
+                ctdt.setDonGia(rs.getDouble("donGia"));
+                ctdt.setThanhTien(rs.getDouble("thanhTien"));
+
+                // Tạo đối tượng DonTraHang (chỉ cần mã)
+                String maDonTra = rs.getString("maDonTra");
+                if (maDonTra != null) {
+                    ctdt.setDonTraHang(new DonTraHang(maDonTra));
+                }
+
+                danhSach.add(ctdt);
+            }
+            System.out.println("[DAO] da tim thay " + danhSach.size() + " chi tiet dontra han");
+        } catch (Exception e) {
+            System.err.println("[DAO] loi khi thuc hien findAllWithDetails: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return danhSach;
+    }
 }

@@ -11,13 +11,13 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
  *
  * @author User
  */
-
 public class LoHangBUS {
 
     private final LoHangDAO loHangDAO;
@@ -70,17 +70,17 @@ public class LoHangBUS {
         if (loHang.getTonKho() > 0) {
             throw new Exception("Không thể xóa lô hàng vì vẫn còn " + loHang.getTonKho() + " sản phẩm tồn kho.");
         }
-        
+
         //Không được xóa lô hàng nếu đã từng được bán.
         long soLuongGiaoDich = chiTietDonHangDAO.countByLoHang(maLoHang);
         if (soLuongGiaoDich > 0) {
             throw new Exception("Không thể xóa lô hàng này vì đã có lịch sử giao dịch.");
         }
-        
+
         // Nếu tất cả các điềi kiện đều được thỏa mãn --> xóa
         return loHangDAO.delete(maLoHang);
     }
-    
+
     //tự động cập nhật trạng thái của lô hàng.
     private void capNhatTrangThaiTuDong(LoHang loHang) {
         //Tự động cập nhật trạng thái hết hạn
@@ -88,25 +88,33 @@ public class LoHangBUS {
             loHang.setTrangThai(false);
         }
     }
-    
+
     /**
      * Kiểm tra tên lô hàng đã tồn tại chưa
      */
     public boolean isTenLoHangExists(String tenLoHang) {
         return loHangDAO.isTenLoHangExists(tenLoHang);
     }
-    
+
     /**
      * Tìm lô hàng theo sản phẩm và hạn sử dụng (để cộng dồn)
      */
     public Optional<LoHang> findByMaSanPhamAndHanSuDung(String maSanPham, LocalDate hanSuDung) {
         return loHangDAO.findByMaSanPhamAndHanSuDung(maSanPham, hanSuDung);
     }
-    
+
     /**
      * Cập nhật tồn kho (cộng dồn)
      */
     public boolean updateTonKho(String maLoHang, int themSoLuong) {
         return loHangDAO.updateTonKho(maLoHang, themSoLuong);
+    }
+
+    public List<LoHang> layTatCaLoHangHetHan() {
+        return loHangDAO.timSanPhamHetHan();
+    }
+
+    public List<Map<String, Object>> layDanhSachCanHuyTuDonTra() {
+        return loHangDAO.findForDisposalFromReturns();
     }
 }

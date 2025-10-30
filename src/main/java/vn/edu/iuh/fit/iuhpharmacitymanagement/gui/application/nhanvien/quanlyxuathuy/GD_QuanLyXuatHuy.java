@@ -27,6 +27,13 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.ChiTietDonTraHangBUS;
+//import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.LoHangBUS;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonTraHang;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.LoHang;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhanVien;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.session.SessionManager;
 
 /**
  *
@@ -34,12 +41,31 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
  */
 public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
 
+    //private LoHangBUS loHangBUS; đừng xóa
+    private ChiTietDonTraHangBUS ctdthBUS;
+
     /**
      * Creates new form TabHoaDon
      */
     public GD_QuanLyXuatHuy() {
+        //this.loHangBUS = new LoHangBUS(); đừng xóa
+        this.ctdthBUS = new ChiTietDonTraHangBUS();
         initComponents();
         fillContent();
+
+        loadUserData();
+    }
+
+    private void loadUserData() {
+        // Lấy nhân viên hiện tại từ Session
+        NhanVien currentUser = SessionManager.getInstance().getCurrentUser();
+
+        if (currentUser != null) {
+            txtEmpName.setText(currentUser.getTenNhanVien());
+        } else { // không đăng nhập thì hiện này để test
+            txtEmpName.setText("Không xác định");
+            System.err.println("Er: khong co gnuoi dung trong Session!");
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -316,13 +342,60 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
                 JOptionPane.INFORMATION_MESSAGE);
     }//GEN-LAST:event_btnTaoPhieuActionPerformed
 
-    /**
-     * Load tự động các sản phẩm hết hạn khi mở màn hình
-     */
+    //Load tự động các sản phẩm hết hạn khi mở màn hình
     private void loadSanPhamHetHan() {
-        // TODO: Truy vấn database để lấy danh sách sản phẩm hết hạn
-        // Tạm thời dùng dữ liệu mẫu
-        themSanPhamMau();
+        // Xóa các sản phẩm cũ
+        pnContent.removeAll();
+        // Thêm lại 2 header
+        createTitleHeader();
+        createProductListHeader();
+
+        java.awt.Component[] components = pnContent.getComponents();
+        for (java.awt.Component comp : components) {
+            if (comp instanceof Panel_ChiTietSanPhamXuatHuy || comp instanceof javax.swing.JLabel) {
+                pnContent.remove(comp);
+            }
+        }
+    
+        try {
+            System.out.println("DEBUG GUI: goi BUS de lay don tra");
+            // Gọi BUS mới để lấy danh sách
+            List<ChiTietDonTraHang> danhSachTraHang = ctdthBUS.layTatCaChiTietCanHuy();
+            System.out.println("DEBUG GUI: BUS da tra ve " + danhSachTraHang.size() + " muc");
+
+            if (danhSachTraHang.isEmpty()) {
+                JLabel lblEmpty = new JLabel("Hiện không có sản phẩm nào được trả lại cần xuất hủy.");
+                lblEmpty.setFont(new java.awt.Font("Segoe UI", java.awt.Font.ITALIC, 16));
+                lblEmpty.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+                pnContent.add(lblEmpty);
+            } else {
+                for (ChiTietDonTraHang ctdt : danhSachTraHang) {
+                    SanPham sanPham = ctdt.getSanPham();
+                    
+                    Panel_ChiTietSanPhamXuatHuy panel = new Panel_ChiTietSanPhamXuatHuy();
+                    
+                    panel.setTenSanPham(sanPham.getTenSanPham());
+                    // Không có thông tin lô, hiển thị N/A
+                    panel.setLoHang("N/A", "N/A", ctdt.getSoLuong()); 
+                    
+                    panel.setDonVi(sanPham.getDonViTinh().getTenDonVi());
+                    panel.setDonGia(sanPham.getGiaNhap());
+                    panel.setSoLuongHuy(ctdt.getSoLuong());
+                    panel.setLyDoXuatHuy(ctdt.getLyDoTra());
+                    
+                    pnContent.add(panel);
+                }
+            }
+            
+            // Vẽ lại giao diện
+            pnContent.revalidate();
+            pnContent.repaint();
+            updateTongTien();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Lỗi khi tải danh sách sản phẩm từ đơn trả: " + e.getMessage());
+        }
     }
 
     /**

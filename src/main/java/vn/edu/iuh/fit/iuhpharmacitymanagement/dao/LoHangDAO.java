@@ -5,37 +5,40 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.LoHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham;
 
 import java.sql.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonViTinh;
 
 public class LoHangDAO implements DAOInterface<LoHang, String> {
 
-    private final String SQL_THEM =
-            "INSERT INTO LoHang (maLoHang, tenLoHang, hanSuDung, tonKho, trangThai, maSanPham) VALUES (?, ?, ?, ?, ?, ?)";
+    private final String SQL_THEM
+            = "INSERT INTO LoHang (maLoHang, tenLoHang, hanSuDung, tonKho, trangThai, maSanPham) VALUES (?, ?, ?, ?, ?, ?)";
 
-    private final String SQL_CAP_NHAT =
-            "UPDATE LoHang SET tenLoHang = ?, hanSuDung = ?, tonKho = ?, trangThai = ?, maSanPham = ? WHERE maLoHang = ?";
+    private final String SQL_CAP_NHAT
+            = "UPDATE LoHang SET tenLoHang = ?, hanSuDung = ?, tonKho = ?, trangThai = ?, maSanPham = ? WHERE maLoHang = ?";
 
-    private final String SQL_TIM_THEO_MA =
-            "SELECT * FROM LoHang WHERE maLoHang = ?";
+    private final String SQL_TIM_THEO_MA
+            = "SELECT * FROM LoHang WHERE maLoHang = ?";
 
-    private final String SQL_TIM_TAT_CA =
-            "SELECT * FROM LoHang";
-            
-    private final String SQL_TIM_THEO_MA_SP =
-            "SELECT * FROM LoHang WHERE maSanPham = ?";
+    private final String SQL_TIM_TAT_CA
+            = "SELECT * FROM LoHang";
 
-    private final String SQL_TIM_THEO_TEN_GAN_DUNG =
-            "SELECT * FROM LoHang WHERE tenLoHang LIKE ?";
+    private final String SQL_TIM_THEO_MA_SP
+            = "SELECT * FROM LoHang WHERE maSanPham = ?";
 
-    private final String SQL_LAY_MA_CUOI =
-            "SELECT TOP 1 maLoHang FROM LoHang ORDER BY maLoHang DESC";
+    private final String SQL_TIM_THEO_TEN_GAN_DUNG
+            = "SELECT * FROM LoHang WHERE tenLoHang LIKE ?";
+
+    private final String SQL_LAY_MA_CUOI
+            = "SELECT TOP 1 maLoHang FROM LoHang ORDER BY maLoHang DESC";
 
     @Override
     public boolean insert(LoHang loHang) {
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement stmt = con.prepareStatement(SQL_THEM)) {
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(SQL_THEM)) {
 
             if (loHang.getMaLoHang() == null || loHang.getMaLoHang().trim().isEmpty()) {
                 loHang.setMaLoHang(taoMaLoHang());
@@ -60,8 +63,7 @@ public class LoHangDAO implements DAOInterface<LoHang, String> {
 
     @Override
     public boolean update(LoHang loHang) {
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement stmt = con.prepareStatement(SQL_CAP_NHAT)) {
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(SQL_CAP_NHAT)) {
 
             stmt.setString(1, loHang.getTenLoHang());
             stmt.setDate(2, Date.valueOf(loHang.getHanSuDung()));
@@ -76,11 +78,10 @@ public class LoHangDAO implements DAOInterface<LoHang, String> {
             return false;
         }
     }
-    
+
     public boolean delete(String maLoHang) {
         String sql = "DELETE FROM LoHang WHERE maLoHang = ?";
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement stmt = con.prepareStatement(sql)) {
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(sql)) {
 
             stmt.setString(1, maLoHang);
             return stmt.executeUpdate() > 0;
@@ -92,8 +93,7 @@ public class LoHangDAO implements DAOInterface<LoHang, String> {
 
     @Override
     public Optional<LoHang> findById(String maLoHang) {
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement stmt = con.prepareStatement(SQL_TIM_THEO_MA)) {
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(SQL_TIM_THEO_MA)) {
 
             stmt.setString(1, maLoHang);
             ResultSet rs = stmt.executeQuery();
@@ -117,9 +117,7 @@ public class LoHangDAO implements DAOInterface<LoHang, String> {
     public List<LoHang> findAll() {
         List<LoHang> danhSachLoHang = new ArrayList<>();
 
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement stmt = con.prepareStatement(SQL_TIM_TAT_CA);
-             ResultSet rs = stmt.executeQuery()) {
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(SQL_TIM_TAT_CA); ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
                 LoHang loHang = mapResultSetToLoHang(rs);
@@ -141,40 +139,38 @@ public class LoHangDAO implements DAOInterface<LoHang, String> {
 
         loHang.setMaLoHang(rs.getString("maLoHang"));
         loHang.setTenLoHang(rs.getString("tenLoHang"));
-        
+
         // Không đọc ngaySanXuat vì cột này không tồn tại trong database
         // loHang.setNgaySanXuat(rs.getDate("ngaySanXuat").toLocalDate());
-        
         loHang.setHanSuDung(rs.getDate("hanSuDung").toLocalDate());
         loHang.setTonKho(rs.getInt("tonKho"));
         loHang.setTrangThai(rs.getBoolean("trangThai"));
 
         //lấy mã sản phẩm từ CSDL và dùng SanPhamDAO để tìm đối tượng SanPham tương ứng
         String maSanPham = rs.getString("maSanPham");
-        
+
         // Kiểm tra maSanPham có NULL không
         if (maSanPham == null || maSanPham.trim().isEmpty()) {
             System.err.println("⚠️ Lô hàng " + loHang.getMaLoHang() + " có maSanPham NULL - BỎ QUA");
             return null; // Return null để skip lô hàng này
         }
-        
+
         SanPhamDAO sanPhamDAO = new SanPhamDAO();
         Optional<SanPham> sanPhamOpt = sanPhamDAO.findById(maSanPham);
-        
+
         if (!sanPhamOpt.isPresent()) {
             System.err.println("⚠️ Không tìm thấy sản phẩm " + maSanPham + " cho lô hàng " + loHang.getMaLoHang() + " - BỎ QUA");
             return null; // Return null để skip lô hàng này
         }
-        
+
         loHang.setSanPham(sanPhamOpt.get()); // Chỉ set khi tìm thấy sản phẩm
 
         return loHang;
     }
-    
+
     public List<LoHang> findByMaSanPham(String maSanPham) {
         List<LoHang> danhSachLoHang = new ArrayList<>();
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement stmt = con.prepareStatement(SQL_TIM_THEO_MA_SP)) {
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(SQL_TIM_THEO_MA_SP)) {
 
             stmt.setString(1, maSanPham);
             ResultSet rs = stmt.executeQuery();
@@ -197,8 +193,7 @@ public class LoHangDAO implements DAOInterface<LoHang, String> {
     public List<LoHang> findByNameSearch(String tenLoHang) throws Exception {
         List<LoHang> danhSachLoHang = new ArrayList<>();
 
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement stmt = con.prepareStatement(SQL_TIM_THEO_TEN_GAN_DUNG)) {
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(SQL_TIM_THEO_TEN_GAN_DUNG)) {
 
             stmt.setString(1, "%" + tenLoHang + "%");
             ResultSet rs = stmt.executeQuery();
@@ -217,9 +212,7 @@ public class LoHangDAO implements DAOInterface<LoHang, String> {
     }
 
     private String taoMaLoHang() {
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement stmt = con.prepareStatement(SQL_LAY_MA_CUOI);
-             ResultSet rs = stmt.executeQuery()) {
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(SQL_LAY_MA_CUOI); ResultSet rs = stmt.executeQuery()) {
 
             if (rs.next()) {
                 String maCuoi = rs.getString("maLoHang");
@@ -234,9 +227,7 @@ public class LoHangDAO implements DAOInterface<LoHang, String> {
     }
 
     public String getLastMaLoHang() {
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement stmt = con.prepareStatement(SQL_LAY_MA_CUOI);
-             ResultSet rs = stmt.executeQuery()) {
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(SQL_LAY_MA_CUOI); ResultSet rs = stmt.executeQuery()) {
 
             if (rs.next()) {
                 return rs.getString("maLoHang");
@@ -246,13 +237,11 @@ public class LoHangDAO implements DAOInterface<LoHang, String> {
         }
         return null;
     }
-    
+
     public int count() {
         String sql = "SELECT COUNT(*) as total FROM LoHang";
 
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement stmt = con.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
 
             if (rs.next()) {
                 return rs.getInt("total");
@@ -262,19 +251,18 @@ public class LoHangDAO implements DAOInterface<LoHang, String> {
         }
         return 0;
     }
-    
+
     /**
      * Kiểm tra tên lô hàng đã tồn tại chưa
      */
     public boolean isTenLoHangExists(String tenLoHang) {
         String sql = "SELECT COUNT(*) as total FROM LoHang WHERE tenLoHang = ?";
-        
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement stmt = con.prepareStatement(sql)) {
-            
+
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(sql)) {
+
             stmt.setString(1, tenLoHang);
             ResultSet rs = stmt.executeQuery();
-            
+
             if (rs.next()) {
                 return rs.getInt("total") > 0;
             }
@@ -283,20 +271,19 @@ public class LoHangDAO implements DAOInterface<LoHang, String> {
         }
         return false;
     }
-    
+
     /**
      * Tìm lô hàng theo sản phẩm và hạn sử dụng (để cộng dồn)
      */
     public Optional<LoHang> findByMaSanPhamAndHanSuDung(String maSanPham, java.time.LocalDate hanSuDung) {
         String sql = "SELECT * FROM LoHang WHERE maSanPham = ? AND hanSuDung = ?";
-        
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement stmt = con.prepareStatement(sql)) {
-            
+
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(sql)) {
+
             stmt.setString(1, maSanPham);
             stmt.setDate(2, java.sql.Date.valueOf(hanSuDung));
             ResultSet rs = stmt.executeQuery();
-            
+
             if (rs.next()) {
                 LoHang loHang = mapResultSetToLoHang(rs);
                 if (loHang != null) {
@@ -310,23 +297,133 @@ public class LoHangDAO implements DAOInterface<LoHang, String> {
         }
         return Optional.empty();
     }
-    
+
     /**
      * Cập nhật tồn kho của lô hàng (cộng dồn)
      */
     public boolean updateTonKho(String maLoHang, int themSoLuong) {
         String sql = "UPDATE LoHang SET tonKho = tonKho + ? WHERE maLoHang = ?";
-        
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement stmt = con.prepareStatement(sql)) {
-            
+
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(sql)) {
+
             stmt.setInt(1, themSoLuong);
             stmt.setString(2, maLoHang);
-            
+
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
         }
+    }
+
+    // Lọc sp hết hsd
+    public List<LoHang> timSanPhamHetHan() {
+        List<LoHang> danhSach = new ArrayList<>();
+        //join cả 3 bảng LoHang, SanPham, và DonViTinh
+        String sql = "SELECT lh.maLoHang, lh.tenLoHang, lh.hanSuDung, lh.tonKho, "
+                + "       sp.maSanPham, sp.tenSanPham, sp.giaNhap, "
+                + "       dvt.tenDonVi "
+                + "FROM LoHang lh "
+                + "JOIN SanPham sp ON lh.maSanPham = sp.maSanPham "
+                + "JOIN DonViTinh dvt ON sp.maDonVi = dvt.maDonVi "
+                + "WHERE lh.hanSuDung <= DATEADD(month, 6, GETDATE()) AND lh.tonKho > 0";
+
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                // Tạo đối tượng DonViTinh
+                DonViTinh dvt = new DonViTinh();
+                dvt.setTenDonVi(rs.getString("tenDonVi"));
+
+                // Tạo đối tượng SanPham
+                SanPham sanPham = new SanPham();
+                sanPham.setMaSanPham(rs.getString("maSanPham"));
+                sanPham.setTenSanPham(rs.getString("tenSanPham"));
+                sanPham.setGiaNhap(rs.getDouble("giaNhap"));
+                sanPham.setDonViTinh(dvt);
+
+                // Tạo đối tượng LoHang
+                LoHang loHang = new LoHang();
+                loHang.setMaLoHang(rs.getString("maLoHang"));
+                loHang.setTenLoHang(rs.getString("tenLoHang"));
+                loHang.setHanSuDung(rs.getDate("hanSuDung").toLocalDate());
+                loHang.setTonKho(rs.getInt("tonKho"));
+                loHang.setSanPham(sanPham); // Gán sản phẩm vào lô hàng
+
+                danhSach.add(loHang);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (Exception ex) {
+            System.getLogger(LoHangDAO.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        }
+        return danhSach;
+    }
+
+    public List<Map<String, Object>> findForDisposalFromReturns() {
+        List<Map<String, Object>> danhSach = new ArrayList<>();
+        String sql = "WITH ReturnedProducts AS ("
+                + "    SELECT DISTINCT maSanPham, lyDoTra "
+                + "    FROM chitietdontrahang"
+                + "), "
+                + "RankedBatches AS ("
+                + "    SELECT "
+                + "        lh.maLoHang, "
+                + "        lh.maSanPham, "
+                + "        rp.lyDoTra, "
+                + "        ROW_NUMBER() OVER(PARTITION BY lh.maSanPham ORDER BY lh.hanSuDung ASC) as rn "
+                + "    FROM lohang lh "
+                + "    INNER JOIN ReturnedProducts rp ON lh.maSanPham = rp.maSanPham "
+                + "    WHERE lh.tonKho > 0"
+                + ") "
+                + "SELECT "
+                + "    rb.lyDoTra, "
+                + "    lh.maLoHang, lh.tenLoHang, lh.hanSuDung, lh.tonKho, "
+                + "    sp.maSanPham, sp.tenSanPham, sp.giaNhap, "
+                + "    dvt.tenDonVi "
+                + "FROM RankedBatches rb "
+                + "JOIN lohang lh ON rb.maLoHang = lh.maLoHang "
+                + "JOIN sanpham sp ON lh.maSanPham = sp.maSanPham "
+                + "JOIN donViTinh dvt ON sp.maDonVi = dvt.maDonVi "
+                + "WHERE rb.rn = 1";
+
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
+
+            System.out.println("--- DEBUG DAO: Đang truy vấn sản phẩm bị trả hàng ---");
+            while (rs.next()) {
+                // Map dữ liệu vào các đối tượng
+                DonViTinh dvt = new DonViTinh();
+                dvt.setTenDonVi(rs.getString("tenDonVi"));
+
+                SanPham sanPham = new SanPham();
+                sanPham.setMaSanPham(rs.getString("maSanPham"));
+                sanPham.setTenSanPham(rs.getString("tenSanPham"));
+                sanPham.setGiaNhap(rs.getDouble("giaNhap"));
+                sanPham.setDonViTinh(dvt);
+
+                LoHang loHang = new LoHang();
+                loHang.setMaLoHang(rs.getString("maLoHang"));
+                loHang.setTenLoHang(rs.getString("tenLoHang"));
+                loHang.setHanSuDung(rs.getDate("hanSuDung").toLocalDate());
+                loHang.setTonKho(rs.getInt("tonKho"));
+                loHang.setSanPham(sanPham);
+
+                String lyDoTra = rs.getString("lyDoTra");
+
+                // Đóng gói kết quả vào một Map
+                Map<String, Object> item = new HashMap<>();
+                item.put("loHang", loHang);
+                item.put("lyDo", lyDoTra);
+                danhSach.add(item);
+            }
+            System.out.println("DEBUG DAO: SQL Query da tim thay " + danhSach.size() + " san pham can huy tu don tra");
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (Exception ex) {
+            System.getLogger(LoHangDAO.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        }
+        return danhSach;
     }
 }
