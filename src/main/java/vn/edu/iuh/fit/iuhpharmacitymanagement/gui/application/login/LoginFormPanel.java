@@ -56,14 +56,14 @@ public class LoginFormPanel extends javax.swing.JPanel {
         btnDangNhap.putClientProperty("JButton.buttonType", "primary"); // không hoạt động nhưng mà đừng xóa :v        
         //txtTenDangNhap.putClientProperty(FlatClientProperties.TEXT_FIELD_LEADING_ICON, new com.formdev.flatlaf.extras.FlatSVGIcon("img/user_icon.svg"));
         //txtMatKhau.putClientProperty(FlatClientProperties.TEXT_FIELD_LEADING_ICON, new com.formdev.flatlaf.extras.FlatSVGIcon("img/password_icon.svg"));
-        txtTenDangNhap.setText("Tên đăng nhập");
-        txtMatKhau.setText("Nhập mật khẩu");
+        //txtTenDangNhap.setText("Tên đăng nhập");
+        //txtMatKhau.setText("Nhập mật khẩu");
         txtMatKhau.setEchoChar((char) 0);
         contentPanel.setFocusable(true);
         contentPanel.requestFocusInWindow();
         addPlayhoder(txtTenDangNhap);
         addPlayhoder(txtMatKhau);
-        
+
         // Tự động focus vào ô tài khoản khi panel được hiển thị
         addComponentListener(new java.awt.event.ComponentAdapter() {
             @Override
@@ -76,21 +76,28 @@ public class LoginFormPanel extends javax.swing.JPanel {
                 timer.start();
             }
         });
-        
+
         // Thêm HierarchyListener để đảm bảo focus khi form được thêm vào container
         addHierarchyListener(e -> {
-            if ((e.getChangeFlags() & java.awt.event.HierarchyEvent.SHOWING_CHANGED) != 0 
-                && isShowing()) {
+            if ((e.getChangeFlags() & java.awt.event.HierarchyEvent.SHOWING_CHANGED) != 0
+                    && isShowing()) {
                 SwingUtilities.invokeLater(() -> txtTenDangNhap.requestFocus());
             }
         });
-        
+
         // Thêm KeyListener cho ô mật khẩu để bắt Enter
         txtMatKhau.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
                 if (evt.getKeyCode() == java.awt.event.KeyEvent.VK_ENTER) {
                     btnDangNhap.doClick();
                 }
+            }
+        });
+
+        lblQuenMatKhau.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                // Gọi đến phương thức xử lý
+                openForgotPasswordFrame();
             }
         });
     }
@@ -144,7 +151,6 @@ public class LoginFormPanel extends javax.swing.JPanel {
         contentPanel.add(lblTieuDe, gridBagConstraints);
 
         txtTenDangNhap.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        txtTenDangNhap.setText("Tên đăng nhập");
         txtTenDangNhap.setPreferredSize(new java.awt.Dimension(300, 45));
         txtTenDangNhap.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
@@ -191,6 +197,7 @@ public class LoginFormPanel extends javax.swing.JPanel {
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.insets = new java.awt.Insets(0, 310, 0, 0);
         contentPanel.add(txtMatKhau, gridBagConstraints);
+        txtMatKhau.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Mật khẩu");
 
         pnlDangNhap.setBackground(javax.swing.UIManager.getDefaults().getColor("Component.success.borderColor"));
         pnlDangNhap.setOpaque(false);
@@ -489,6 +496,27 @@ public class LoginFormPanel extends javax.swing.JPanel {
             txtMatKhau.setEchoChar((char) 0);
         }
     }//GEN-LAST:event_txtMatKhauFocusLost
+
+    private void lblQuenMatKhauMouseClicked(java.awt.event.MouseEvent evt) {
+        ForgotPasswordFrame forgotPasswordFrame = new ForgotPasswordFrame();
+        forgotPasswordFrame.setVisible(true);
+
+        //Đóng cửa sổ đăng nhập hiện tại
+        javax.swing.JFrame parentFrame = (javax.swing.JFrame) SwingUtilities.getWindowAncestor(this);
+        if (parentFrame != null) {
+            parentFrame.dispose();
+        }
+    }
+
+    private void openForgotPasswordFrame() {
+        ForgotPasswordFrame forgotPasswordFrame = new ForgotPasswordFrame();
+        forgotPasswordFrame.setVisible(true);
+
+        javax.swing.JFrame parentFrame = (javax.swing.JFrame) SwingUtilities.getWindowAncestor(this);
+        if (parentFrame != null) {
+            parentFrame.dispose();
+        }
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnDangNhap;
