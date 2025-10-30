@@ -146,7 +146,7 @@ public class BaoCaoBUS {
         List<DonTraHang> result = new ArrayList<>();
         List<DonTraHang> all = donTraHangDAO.findAll();
         for (DonTraHang dth : all) {
-            if (!dth.getngayTraHang().isBefore(start) && !dth.getngayTraHang().isAfter(end)) {
+            if (!dth.getNgayTraHang().isBefore(start) && !dth.getNgayTraHang().isAfter(end)) {
                 result.add(dth);
             }
         }
@@ -174,7 +174,7 @@ public class BaoCaoBUS {
         if (obj instanceof DonHang donHang) {
             return donHang.getNgayDatHang();
         } else if (obj instanceof DonTraHang donTraHang) {
-            return donTraHang.getngayTraHang();
+            return donTraHang.getNgayTraHang();
         } else if (obj instanceof DonNhapHang donNhapHang) {
             return donNhapHang.getNgayNhap();
         } else if (obj instanceof HangHong hangHong) {

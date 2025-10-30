@@ -71,7 +71,7 @@ public class Panel_TongQuan extends javax.swing.JPanel {
 
         // Lấy dữ liệu đơn trả hàng
         List<DonTraHang> danhSachTraHang = donTraHangBUS.layTatCaDonTraHang().stream()
-                .filter(dth -> dth.getngayTraHang() != null && dth.getngayTraHang().equals(today))
+                .filter(dth -> dth.getNgayTraHang() != null && dth.getNgayTraHang().equals(today))
                 .collect(Collectors.toList());
         
         int soLuongTraHang = danhSachTraHang.size();

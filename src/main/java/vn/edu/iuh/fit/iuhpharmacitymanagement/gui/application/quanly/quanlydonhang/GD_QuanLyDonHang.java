@@ -70,7 +70,7 @@ public class GD_QuanLyDonHang extends javax.swing.JPanel {
         for (DonHang donHang : donHangs) {
             String khachHang = "Khách vãng lai";
             if (donHang.getKhachHang() != null) {
-                khachHang = donHang.getKhachHang().getMaKhachHang();
+                khachHang = donHang.getKhachHang().getTenKhachHang();
             }
             String khuyenMai = "Không có";
             if (donHang.getKhuyenMai() != null) {
@@ -83,7 +83,7 @@ public class GD_QuanLyDonHang extends javax.swing.JPanel {
                 DinhDangSo.dinhDangTien(donHang.getThanhTien()),
                 donHang.getPhuongThucThanhToan() == PhuongThucThanhToan.CHUYEN_KHOAN_NGAN_HANG ? "Ngân hàng" : "Tiền mặt",
                 khachHang,
-                donHang.getNhanVien() != null ? donHang.getNhanVien().getMaNhanVien() : ""
+                donHang.getNhanVien() != null ? donHang.getNhanVien().getTenNhanVien() : ""
             });
         }
     }
@@ -393,13 +393,13 @@ public class GD_QuanLyDonHang extends javax.swing.JPanel {
         
         String tenNV = "N/A";
         if (donHang.getNhanVien() != null) {
-            tenNV = donHang.getNhanVien().getMaNhanVien();
+            tenNV = donHang.getNhanVien().getTenNhanVien();
         }
         addInfoField(headerPanel, "Nhân viên:", tenNV);
         
         String tenKH = "Khách vãng lai";
         if (donHang.getKhachHang() != null) {
-            tenKH = donHang.getKhachHang().getMaKhachHang();
+            tenKH = donHang.getKhachHang().getTenKhachHang();
         }
         addInfoField(headerPanel, "Khách hàng:", tenKH);
         

@@ -4,6 +4,7 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.ChiTietDonTraHangDAO;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonTraHang;
 
 import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Business logic layer for ChiTietDonTraHang
@@ -120,5 +121,20 @@ public class ChiTietDonTraHangBUS {
             }
         }
         return false;
+    }
+    
+    /**
+     * Lấy danh sách chi tiết đơn trả hàng theo mã đơn trả
+     *
+     * @param maDonTraHang Mã đơn trả hàng
+     * @return Danh sách chi tiết đơn trả hàng
+     */
+    public List<ChiTietDonTraHang> layChiTietTheoMaDonTra(String maDonTraHang) {
+        try {
+            return chiTietDonTraHangDAO.findByMaDonTra(maDonTraHang);
+        } catch (Exception e) {
+            System.out.println("Lỗi khi lấy chi tiết đơn trả hàng: " + e.getMessage());
+            return new ArrayList<>();
+        }
     }
 }

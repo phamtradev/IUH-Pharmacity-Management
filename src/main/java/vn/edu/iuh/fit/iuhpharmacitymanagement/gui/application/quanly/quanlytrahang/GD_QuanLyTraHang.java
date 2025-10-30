@@ -5,6 +5,9 @@
 package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlytrahang;
 
 import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.DonTraHangBUS;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.ChiTietDonTraHangBUS;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.LoHangBUS;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.LoHangDAO;
 import com.formdev.flatlaf.FlatClientProperties;
 import java.util.Arrays;
 import java.util.List;
@@ -22,8 +25,11 @@ import javax.swing.JTable;
 import javax.swing.UIManager;
 import raven.toast.Notifications;
 import javax.swing.JButton;
+import javax.swing.JPanel;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellRenderer;
 import java.awt.Component;
+import java.awt.FlowLayout;
 
 /**
  *
@@ -32,10 +38,16 @@ import java.awt.Component;
 public class GD_QuanLyTraHang extends javax.swing.JPanel {
 
     private final DonTraHangBUS donTraHangBUS;
+    private final ChiTietDonTraHangBUS chiTietDonTraHangBUS;
+    private final LoHangBUS loHangBUS;
+    private final LoHangDAO loHangDAO;
     private TableDesign tableDesign;
 
     public GD_QuanLyTraHang() {
         donTraHangBUS = new DonTraHangBUS();
+        chiTietDonTraHangBUS = new ChiTietDonTraHangBUS();
+        loHangBUS = new LoHangBUS();
+        loHangDAO = new LoHangDAO();
         initComponents();
         setUIManager();
         fillTable();
@@ -79,13 +91,13 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
             String maDonHang = dth.getDonHang() != null ? dth.getDonHang().getMaDonHang() : "N/A";
             String tenNV = dth.getNhanVien() != null ? dth.getNhanVien().getMaNhanVien() : "N/A";
             
-            // Tạo trạng thái ngẫu nhiên cho demo
-            String trangThai = "Chưa xử lý";
+            // Lấy trạng thái từ đơn trả hàng
+            String trangThai = dth.getTrangThaiXuLy() != null ? dth.getTrangThaiXuLy() : "Chưa xử lý";
             
             tableDesign.getModelTable().addRow(new Object[]{
                 dth.getMaDonTraHang(), 
                 maDonHang,
-                formatDate(dth.getngayTraHang()),
+                formatDate(dth.getNgayTraHang()),
                 tenNV,
                 formatToVND(dth.getThanhTien()),
                 trangThai,
@@ -99,7 +111,7 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
         List<DonTraHang> result = new ArrayList<>();
         
         for (DonTraHang dth : all) {
-            LocalDate ngayTra = dth.getngayTraHang();
+            LocalDate ngayTra = dth.getNgayTraHang();
             
             // Lọc theo ngày
             if (ngayTra.isBefore(dateFrom) || ngayTra.isAfter(dateTo)) {
@@ -140,7 +152,7 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
         return formatter.format(amount);
     }
     
-    // Tạo dữ liệu giả lập cho đơn trả hàng
+    // Lấy dữ liệu đơn trả hàng từ database
     private List<DonTraHang> layDuLieuDonTraHang() {
         try {
             List<DonTraHang> danhSach = donTraHangBUS.layTatCaDonTraHang();
@@ -148,41 +160,10 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
                 return danhSach;
             }
         } catch (Exception e) {
-            System.err.println("Không lấy được dữ liệu từ database, tạo dữ liệu giả lập...");
+            System.err.println("Không lấy được dữ liệu từ database: " + e.getMessage());
         }
         
-        // Tạo dữ liệu giả lập
-        List<DonTraHang> danhSachGiaLap = new ArrayList<>();
-        LocalDate today = LocalDate.now();
-        
-        for (int i = 1; i <= 5; i++) {
-            try {
-                DonTraHang dth = new DonTraHang();
-                String maDTH = "DT" + today.minusDays(i).format(DateTimeFormatter.ofPattern("ddMMyyyy")) 
-                        + String.format("%04d", i);
-                dth.setMaDonTraHang(maDTH);
-                dth.setngayTraHang(today.minusDays(i));
-                dth.setThanhTien(500000 + (i * 100000));
-                
-                // Tạo nhân viên giả
-                NhanVien nv = new NhanVien();
-                nv.setMaNhanVien("NV" + String.format("%05d", i));
-                dth.setNhanVien(nv);
-                
-                // Tạo đơn hàng giả
-                DonHang dh = new DonHang();
-                String maDH = "DH" + today.format(DateTimeFormatter.ofPattern("ddMMyyyy")) 
-                        + String.format("%04d", i);
-                dh.setMaDonHang(maDH);
-                dth.setDonHang(dh);
-                
-                danhSachGiaLap.add(dth);
-            } catch (Exception e) {
-                System.err.println("Lỗi tạo dữ liệu giả lập: " + e.getMessage());
-            }
-        }
-        
-        return danhSachGiaLap;
+        return new ArrayList<>();
     }
     
     // Thiết lập cột Thao tác với button
@@ -233,87 +214,150 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
     
     // Hiển thị dialog chi tiết đơn trả hàng
     private void showChiTietDonTraHangDialog(String maDonTraHang) {
-        javax.swing.JDialog dialog = new javax.swing.JDialog();
-        dialog.setTitle("Xem đơn trả");
-        dialog.setSize(1400, 700);
-        dialog.setLocationRelativeTo(null);
-        dialog.setModal(true);
-        
-        // Main panel
-        javax.swing.JPanel mainPanel = new javax.swing.JPanel();
-        mainPanel.setLayout(new java.awt.BorderLayout(0, 10));
-        mainPanel.setBackground(java.awt.Color.WHITE);
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-        
-        // === HEADER PANEL - Thông tin đơn trả hàng ===
-        javax.swing.JPanel headerPanel = new javax.swing.JPanel();
-        headerPanel.setLayout(new java.awt.GridLayout(3, 4, 20, 15));
-        headerPanel.setBackground(java.awt.Color.WHITE);
-        headerPanel.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(new java.awt.Color(220, 220, 220), 1),
-            BorderFactory.createEmptyBorder(20, 20, 20, 20)
-        ));
-        
-        // Giả lập dữ liệu
-        String nguoiTao = "Tra";
-        String thoiGianTao = "12/12/2024 06:37";
-        String trangThai = "Chờ xử lý";
-        String maHoaDon = "HD" + LocalDate.now().format(DateTimeFormatter.ofPattern("ddMMyyyy")) + "0001";
-        
-        // Row 1
-        addInfoField(headerPanel, "Mã phiếu trả", maDonTraHang);
-        addInfoField(headerPanel, "Người tạo", nguoiTao);
-        
-        // Row 2
-        addInfoField(headerPanel, "Thời gian tạo", thoiGianTao);
-        addInfoField(headerPanel, "Trạng thái", trangThai);
-        
-        // Row 3
-        addInfoField(headerPanel, "Mã hóa đơn", maHoaDon);
-        headerPanel.add(new javax.swing.JLabel()); // Empty cell
-        
-        mainPanel.add(headerPanel, java.awt.BorderLayout.NORTH);
-        
-        // === TABLE PANEL - Chi tiết sản phẩm trả ===
-        String[] columns = {"Mã hàng", "Tên hàng", "Đơn vị tính", "Số lượng", 
-                           "Giá trả hàng", "Lý do trả", "Lý do xử lý", "Thao tác"};
-        List<Integer> columnWidths = Arrays.asList(100, 180, 100, 80, 120, 150, 150, 150);
-        
-        TableDesign tableChiTiet = new TableDesign(columns, columnWidths);
-        javax.swing.JScrollPane scrollPane = new javax.swing.JScrollPane(tableChiTiet.getTable());
-        scrollPane.setBorder(BorderFactory.createLineBorder(new java.awt.Color(220, 220, 220), 1));
-        
-        // Giả lập dữ liệu chi tiết sản phẩm
-        giaDinhDuLieuChiTiet(tableChiTiet);
-        
-        // Thiết lập cột Thao tác với 2 button
-        setupActionColumnForDetail(tableChiTiet.getTable());
-        
-        mainPanel.add(scrollPane, java.awt.BorderLayout.CENTER);
-        
-        // === BOTTOM PANEL - Button Xác nhận ===
-        javax.swing.JPanel bottomPanel = new javax.swing.JPanel();
-        bottomPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 10, 10));
-        bottomPanel.setBackground(java.awt.Color.WHITE);
-        
-        javax.swing.JButton btnXacNhan = new javax.swing.JButton("Xác nhận");
-        btnXacNhan.setPreferredSize(new java.awt.Dimension(120, 40));
-        btnXacNhan.putClientProperty(FlatClientProperties.STYLE, ""
-                + "background:#17C3B2;"
-                + "foreground:#000000;"
-                + "hoverBackground:#14A895;"
-                + "arc:10;"
-                + "borderWidth:0");
-        btnXacNhan.addActionListener(e -> {
-            Notifications.getInstance().show(Notifications.Type.SUCCESS, "Đã xác nhận đơn trả!");
-            dialog.dispose();
-        });
-        
-        bottomPanel.add(btnXacNhan);
-        mainPanel.add(bottomPanel, java.awt.BorderLayout.SOUTH);
-        
-        dialog.add(mainPanel);
-        dialog.setVisible(true);
+        try {
+            // Lấy thông tin đơn trả hàng từ database
+            DonTraHang donTraHang = donTraHangBUS.layDonTraHangTheoMa(maDonTraHang);
+            if (donTraHang == null) {
+                Notifications.getInstance().show(Notifications.Type.ERROR, 
+                    "Không tìm thấy đơn trả hàng với mã: " + maDonTraHang);
+                return;
+            }
+            
+            // Lấy chi tiết đơn trả hàng
+            List<ChiTietDonTraHang> chiTietList = chiTietDonTraHangBUS.layChiTietTheoMaDonTra(maDonTraHang);
+            
+            // Debug: Kiểm tra số lượng chi tiết
+            System.out.println("=== DEBUG: Chi tiết đơn trả hàng ===");
+            System.out.println("Mã đơn trả: " + maDonTraHang);
+            System.out.println("Số lượng chi tiết: " + (chiTietList != null ? chiTietList.size() : 0));
+            if (chiTietList != null) {
+                for (ChiTietDonTraHang ct : chiTietList) {
+                    System.out.println("  - Sản phẩm: " + (ct.getSanPham() != null ? ct.getSanPham().getMaSanPham() : "NULL"));
+                    System.out.println("    Tên: " + (ct.getSanPham() != null ? ct.getSanPham().getTenSanPham() : "NULL"));
+                    System.out.println("    Số lượng: " + ct.getSoLuong());
+                    System.out.println("    Đơn giá: " + ct.getDonGia());
+                    System.out.println("    Lý do: " + ct.getLyDoTra());
+                }
+            }
+            System.out.println("=====================================");
+            
+            javax.swing.JDialog dialog = new javax.swing.JDialog();
+            dialog.setTitle("Xem đơn trả - " + maDonTraHang);
+            dialog.setSize(1400, 700);
+            dialog.setLocationRelativeTo(null);
+            dialog.setModal(true);
+            
+            // Main panel
+            javax.swing.JPanel mainPanel = new javax.swing.JPanel();
+            mainPanel.setLayout(new java.awt.BorderLayout(0, 10));
+            mainPanel.setBackground(java.awt.Color.WHITE);
+            mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+            
+            // === HEADER PANEL - Thông tin đơn trả hàng ===
+            javax.swing.JPanel headerPanel = new javax.swing.JPanel();
+            headerPanel.setLayout(new java.awt.GridLayout(4, 2, 20, 15));
+            headerPanel.setBackground(java.awt.Color.WHITE);
+            headerPanel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new java.awt.Color(220, 220, 220), 1),
+                BorderFactory.createEmptyBorder(20, 20, 20, 20)
+            ));
+            
+            // Lấy thông tin từ database
+            String nguoiTao = donTraHang.getNhanVien() != null ? 
+                donTraHang.getNhanVien().getTenNhanVien() : "N/A";
+            String thoiGianTao = formatDate(donTraHang.getNgayTraHang());
+            String maHoaDon = donTraHang.getDonHang() != null ? 
+                donTraHang.getDonHang().getMaDonHang() : "N/A";
+            String tenKhachHang = "N/A";
+            String soDienThoai = "N/A";
+            
+            // Lấy thông tin khách hàng nếu có
+            if (donTraHang.getDonHang() != null && donTraHang.getDonHang().getKhachHang() != null) {
+                KhachHang kh = donTraHang.getDonHang().getKhachHang();
+                tenKhachHang = kh.getTenKhachHang() != null ? kh.getTenKhachHang() : "N/A";
+                soDienThoai = kh.getSoDienThoai() != null ? kh.getSoDienThoai() : "N/A";
+            }
+            
+            // Row 1
+            addInfoField(headerPanel, "Mã phiếu trả", maDonTraHang);
+            addInfoField(headerPanel, "Người tạo", nguoiTao);
+            
+            // Row 2
+            addInfoField(headerPanel, "Thời gian tạo", thoiGianTao);
+            
+            // Hiển thị trạng thái từ database (chỉ đọc, không cho sửa)
+            String trangThai = donTraHang.getTrangThaiXuLy() != null ? 
+                donTraHang.getTrangThaiXuLy() : "Chưa xử lý";
+            addInfoField(headerPanel, "Trạng thái", trangThai);
+            
+            // Row 3
+            addInfoField(headerPanel, "Mã hóa đơn", maHoaDon);
+            addInfoField(headerPanel, "Tên khách hàng", tenKhachHang);
+            
+            // Row 4
+            addInfoField(headerPanel, "Số điện thoại", soDienThoai);
+            addInfoField(headerPanel, "Tổng tiền", formatToVND(donTraHang.getThanhTien()));
+            
+            mainPanel.add(headerPanel, java.awt.BorderLayout.NORTH);
+            
+            // === TABLE PANEL - Chi tiết sản phẩm trả ===
+            String[] columns = {"Mã hàng", "Tên hàng", "Đơn vị tính", "Số lượng", 
+                               "Giá trả hàng", "Thành tiền", "Lý do trả", "Thao tác"};
+            List<Integer> columnWidths = Arrays.asList(100, 200, 100, 80, 120, 120, 200, 200);
+            // Chỉ cho phép edit cột "Thao tác" (cột cuối cùng)
+            List<Boolean> canEdit = Arrays.asList(false, false, false, false, false, false, false, true);
+            
+            TableDesign tableChiTiet = new TableDesign(columns, columnWidths, canEdit);
+            javax.swing.JScrollPane scrollPane = new javax.swing.JScrollPane(tableChiTiet.getTable());
+            scrollPane.setBorder(BorderFactory.createLineBorder(new java.awt.Color(220, 220, 220), 1));
+            
+            // Điền dữ liệu chi tiết từ database
+            fillChiTietData(tableChiTiet, chiTietList);
+            
+            // Hiển thị thông báo nếu không có chi tiết
+            if (chiTietList == null || chiTietList.isEmpty()) {
+                Notifications.getInstance().show(Notifications.Type.WARNING, 
+                    "Đơn trả hàng này chưa có chi tiết sản phẩm!");
+            }
+            
+            // Tăng chiều cao hàng
+            tableChiTiet.getTable().setRowHeight(45);
+            
+            // Thiết lập renderer và editor cho cột Thao tác
+            setupActionColumnForChiTiet(tableChiTiet.getTable(), chiTietList, donTraHang);
+            
+            mainPanel.add(scrollPane, java.awt.BorderLayout.CENTER);
+            
+            // === BOTTOM PANEL - Buttons ===
+            javax.swing.JPanel bottomPanel = new javax.swing.JPanel();
+            bottomPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 10, 10));
+            bottomPanel.setBackground(java.awt.Color.WHITE);
+            
+            javax.swing.JButton btnDong = new javax.swing.JButton("Đóng");
+            btnDong.setPreferredSize(new java.awt.Dimension(120, 40));
+            btnDong.putClientProperty(FlatClientProperties.STYLE, ""
+                    + "background:#6C757D;"
+                    + "foreground:#FFFFFF;"
+                    + "hoverBackground:#5A6268;"
+                    + "arc:10;"
+                    + "borderWidth:0");
+            btnDong.addActionListener(e -> {
+                dialog.dispose();
+                // Refresh lại bảng ngoài để cập nhật trạng thái mới nhất (không hiện notification)
+                reloadTableData();
+            });
+            
+            bottomPanel.add(btnDong);
+            mainPanel.add(bottomPanel, java.awt.BorderLayout.SOUTH);
+            
+            dialog.add(mainPanel);
+            dialog.setVisible(true);
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            Notifications.getInstance().show(Notifications.Type.ERROR, 
+                "Lỗi khi hiển thị chi tiết đơn trả hàng: " + e.getMessage());
+        }
     }
     
     // Thêm field thông tin vào panel
@@ -335,113 +379,299 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
         panel.add(fieldPanel);
     }
     
-    // Giả định dữ liệu chi tiết sản phẩm
-    private void giaDinhDuLieuChiTiet(TableDesign tableDesign) {
-        String[][] duLieuGia = {
-            {"SP00001", "Terpinzoat", "Hộp", "2", "33,000 đ", "Dị ứng", "", ""},
-            {"SP00002", "Paracetamol 500mg", "Viên", "10", "50,000 đ", "Hết hạn", "", ""},
-            {"SP00003", "Vitamin C", "Hộp", "1", "120,000 đ", "Lỗi sản phẩm", "", ""}
-        };
+    // Điền dữ liệu chi tiết đơn trả hàng vào bảng
+    private void fillChiTietData(TableDesign tableDesign, List<ChiTietDonTraHang> chiTietList) {
+        tableDesign.getModelTable().setRowCount(0); // Xóa dữ liệu cũ
         
-        for (String[] row : duLieuGia) {
-            tableDesign.getModelTable().addRow(row);
+        if (chiTietList == null || chiTietList.isEmpty()) {
+            return;
+        }
+        
+        for (ChiTietDonTraHang ct : chiTietList) {
+            String maSP = ct.getSanPham() != null ? ct.getSanPham().getMaSanPham() : "N/A";
+            String tenSP = ct.getSanPham() != null ? ct.getSanPham().getTenSanPham() : "N/A";
+            String donVi = "N/A";
+            if (ct.getSanPham() != null && ct.getSanPham().getDonViTinh() != null) {
+                donVi = ct.getSanPham().getDonViTinh().getTenDonVi();
+            }
+            String soLuong = String.valueOf(ct.getSoLuong());
+            String donGia = formatToVND(ct.getDonGia());
+            String thanhTien = formatToVND(ct.getThanhTien());
+            String lyDoTra = ct.getLyDoTra() != null ? ct.getLyDoTra() : "N/A";
+            
+            // Không lưu trạng thái ở chi tiết nữa, mặc định là button
+            tableDesign.getModelTable().addRow(new Object[]{
+                maSP, tenSP, donVi, soLuong, donGia, thanhTien, lyDoTra, ""
+            });
         }
     }
     
     // Thiết lập cột Thao tác cho bảng chi tiết với 2 button
-    private void setupActionColumnForDetail(JTable table) {
-        // Renderer cho cột Thao tác
-        table.getColumnModel().getColumn(7).setCellRenderer(new DefaultTableCellRenderer() {
+    private void setupActionColumnForChiTiet(JTable table, List<ChiTietDonTraHang> chiTietList, DonTraHang donTraHang) {
+        // Renderer cho cột Thao tác (index 7)
+        table.getColumnModel().getColumn(7).setCellRenderer(new TableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value,
                     boolean isSelected, boolean hasFocus, int row, int column) {
+                JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 3));
+                panel.setBackground(isSelected ? table.getSelectionBackground() : java.awt.Color.WHITE);
+                panel.setOpaque(true);
                 
-                javax.swing.JPanel panel = new javax.swing.JPanel();
-                panel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 5, 2));
-                panel.setBackground(java.awt.Color.WHITE);
+                // Kiểm tra trạng thái đơn trả hàng
+                String trangThaiDon = donTraHang.getTrangThaiXuLy() != null ? 
+                    donTraHang.getTrangThaiXuLy() : "Chưa xử lý";
                 
-                // Button Thêm
-                JButton btnThem = new JButton("Thêm");
-                btnThem.putClientProperty(FlatClientProperties.STYLE, ""
-                        + "background:#28A745;"
-                        + "foreground:#FFFFFF;"
-                        + "hoverBackground:#218838;"
-                        + "arc:5;"
-                        + "borderWidth:0");
-                btnThem.setPreferredSize(new java.awt.Dimension(60, 30));
-                btnThem.setFocusPainted(false);
-                
-                // Button Hủy
-                JButton btnHuy = new JButton("Hủy");
-                btnHuy.putClientProperty(FlatClientProperties.STYLE, ""
-                        + "background:#DC3545;"
-                        + "foreground:#FFFFFF;"
-                        + "hoverBackground:#C82333;"
-                        + "arc:5;"
-                        + "borderWidth:0");
-                btnHuy.setPreferredSize(new java.awt.Dimension(60, 30));
-                btnHuy.setFocusPainted(false);
-                
-                panel.add(btnThem);
-                panel.add(btnHuy);
+                if ("Đã xử lý".equals(trangThaiDon)) {
+                    // Hiển thị label thông báo đã xử lý
+                    javax.swing.JLabel lblStatus = new javax.swing.JLabel("✓ Đã xử lý");
+                    lblStatus.setForeground(new java.awt.Color(40, 167, 69)); // Màu xanh lá
+                    lblStatus.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 12));
+                    panel.add(lblStatus);
+                } else {
+                    // Tạo 2 button
+                    JButton btnThemVaoKho = new JButton("Thêm vào kho");
+                    btnThemVaoKho.setPreferredSize(new java.awt.Dimension(110, 32));
+                    btnThemVaoKho.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 11));
+                    btnThemVaoKho.putClientProperty(FlatClientProperties.STYLE, ""
+                            + "background:#28A745;"
+                            + "foreground:#FFFFFF;"
+                            + "hoverBackground:#218838;"
+                            + "arc:6;"
+                            + "borderWidth:0");
+                    btnThemVaoKho.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+                    
+                    JButton btnXuatHuy = new JButton("Xuất hủy");
+                    btnXuatHuy.setPreferredSize(new java.awt.Dimension(90, 32));
+                    btnXuatHuy.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 11));
+                    btnXuatHuy.putClientProperty(FlatClientProperties.STYLE, ""
+                            + "background:#DC3545;"
+                            + "foreground:#FFFFFF;"
+                            + "hoverBackground:#C82333;"
+                            + "arc:6;"
+                            + "borderWidth:0");
+                    btnXuatHuy.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+                    
+                    panel.add(btnThemVaoKho);
+                    panel.add(btnXuatHuy);
+                }
                 
                 return panel;
             }
         });
         
-        // Editor cho cột Thao tác
+        // Editor cho cột Thao tác - quan trọng để button có thể click được
         table.getColumnModel().getColumn(7).setCellEditor(new javax.swing.DefaultCellEditor(new javax.swing.JCheckBox()) {
-            private javax.swing.JPanel panel;
+            private JPanel panel;
+            private JButton btnThemVaoKho;
+            private JButton btnXuatHuy;
             private int currentRow;
             
-            {
-                panel = new javax.swing.JPanel();
-                panel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 5, 2));
+            @Override
+            public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+                this.currentRow = row;
                 
-                JButton btnThem = new JButton("Thêm");
-                btnThem.putClientProperty(FlatClientProperties.STYLE, ""
-                        + "background:#28A745;"
-                        + "foreground:#FFFFFF;"
-                        + "hoverBackground:#218838;"
-                        + "arc:5;"
-                        + "borderWidth:0");
-                btnThem.setPreferredSize(new java.awt.Dimension(60, 30));
-                btnThem.setFocusPainted(false);
-                btnThem.addActionListener(e -> {
-                    fireEditingStopped();
-                    Notifications.getInstance().show(Notifications.Type.INFO, 
-                        "Thêm sản phẩm tại dòng " + (currentRow + 1));
-                });
+                panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 3));
+                panel.setBackground(java.awt.Color.WHITE);
                 
-                JButton btnHuy = new JButton("Hủy");
-                btnHuy.putClientProperty(FlatClientProperties.STYLE, ""
-                        + "background:#DC3545;"
-                        + "foreground:#FFFFFF;"
-                        + "hoverBackground:#C82333;"
-                        + "arc:5;"
-                        + "borderWidth:0");
-                btnHuy.setPreferredSize(new java.awt.Dimension(60, 30));
-                btnHuy.setFocusPainted(false);
-                btnHuy.addActionListener(e -> {
-                    fireEditingStopped();
-                    Notifications.getInstance().show(Notifications.Type.WARNING, 
-                        "Hủy sản phẩm tại dòng " + (currentRow + 1));
-                });
+                // Kiểm tra trạng thái đơn trả hàng
+                String trangThaiDon = donTraHang.getTrangThaiXuLy() != null ? 
+                    donTraHang.getTrangThaiXuLy() : "Chưa xử lý";
                 
-                panel.add(btnThem);
-                panel.add(btnHuy);
+                if ("Đã xử lý".equals(trangThaiDon)) {
+                    // Không cho phép edit nếu đã xử lý
+                    javax.swing.JLabel lblStatus = new javax.swing.JLabel("✓ Đã xử lý");
+                    lblStatus.setForeground(new java.awt.Color(40, 167, 69));
+                    lblStatus.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 12));
+                    panel.add(lblStatus);
+                } else {
+                    // Tạo 2 button với action listener
+                    btnThemVaoKho = new JButton("Thêm vào kho");
+                    btnThemVaoKho.setPreferredSize(new java.awt.Dimension(110, 32));
+                    btnThemVaoKho.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 11));
+                    btnThemVaoKho.putClientProperty(FlatClientProperties.STYLE, ""
+                            + "background:#28A745;"
+                            + "foreground:#FFFFFF;"
+                            + "hoverBackground:#218838;"
+                            + "arc:6;"
+                            + "borderWidth:0");
+                    btnThemVaoKho.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+                    btnThemVaoKho.setFocusable(false);
+                    
+                    btnXuatHuy = new JButton("Xuất hủy");
+                    btnXuatHuy.setPreferredSize(new java.awt.Dimension(90, 32));
+                    btnXuatHuy.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 11));
+                    btnXuatHuy.putClientProperty(FlatClientProperties.STYLE, ""
+                            + "background:#DC3545;"
+                            + "foreground:#FFFFFF;"
+                            + "hoverBackground:#C82333;"
+                            + "arc:6;"
+                            + "borderWidth:0");
+                    btnXuatHuy.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+                    btnXuatHuy.setFocusable(false);
+                    
+                    // Add action listeners
+                    btnThemVaoKho.addActionListener(e -> {
+                        ChiTietDonTraHang chiTiet = chiTietList.get(currentRow);
+                        xuLyThemVaoKho(chiTiet, table, currentRow, donTraHang);
+                        fireEditingStopped();
+                    });
+                    
+                    btnXuatHuy.addActionListener(e -> {
+                        ChiTietDonTraHang chiTiet = chiTietList.get(currentRow);
+                        xuLyXuatHuy(chiTiet, table, currentRow, donTraHang);
+                        fireEditingStopped();
+                    });
+                    
+                    panel.add(btnThemVaoKho);
+                    panel.add(btnXuatHuy);
+                }
+                
+                return panel;
             }
             
             @Override
-            public Component getTableCellEditorComponent(JTable table, Object value,
-                    boolean isSelected, int row, int column) {
-                currentRow = row;
-                return panel;
+            public Object getCellEditorValue() {
+                return table.getValueAt(currentRow, 7);
             }
         });
-        
-        // Tăng chiều cao hàng để button hiển thị đẹp hơn
-        table.setRowHeight(40);
+    }
+    
+    // Xử lý thêm sản phẩm trả về vào kho
+    private void xuLyThemVaoKho(ChiTietDonTraHang chiTiet, JTable table, int row, DonTraHang donTraHang) {
+        try {
+            String maSanPham = chiTiet.getSanPham().getMaSanPham();
+            String tenSanPham = chiTiet.getSanPham().getTenSanPham();
+            int soLuong = chiTiet.getSoLuong();
+            
+            // Xác nhận từ người dùng
+            int confirm = javax.swing.JOptionPane.showConfirmDialog(
+                null,
+                String.format("Bạn có chắc muốn thêm %d sản phẩm '%s' vào kho?",
+                    soLuong, tenSanPham),
+                "Xác nhận thêm vào kho",
+                javax.swing.JOptionPane.YES_NO_OPTION,
+                javax.swing.JOptionPane.QUESTION_MESSAGE
+            );
+            
+            if (confirm != javax.swing.JOptionPane.YES_OPTION) {
+                return; // Người dùng chọn NO hoặc đóng dialog
+            }
+            
+            // Lấy danh sách lô hàng của sản phẩm
+            List<LoHang> danhSachLoHang = loHangDAO.findByMaSanPham(maSanPham);
+            
+            if (danhSachLoHang.isEmpty()) {
+                Notifications.getInstance().show(Notifications.Type.WARNING, 
+                    "Không tìm thấy lô hàng cho sản phẩm này!\nVui lòng tạo lô hàng mới trước.");
+                return;
+            }
+            
+            // Tìm lô hàng còn hạn và có tồn kho (ưu tiên lô có ngày hết hạn gần nhất)
+            LoHang loHangPhongHop = null;
+            LocalDate today = LocalDate.now();
+            
+            for (LoHang lh : danhSachLoHang) {
+                if (lh.getHanSuDung().isAfter(today) && lh.isTrangThai()) {
+                    if (loHangPhongHop == null || lh.getHanSuDung().isBefore(loHangPhongHop.getHanSuDung())) {
+                        loHangPhongHop = lh;
+                    }
+                }
+            }
+            
+            // Nếu không tìm thấy lô còn hạn, cho phép chọn lô khác
+            if (loHangPhongHop == null && !danhSachLoHang.isEmpty()) {
+                loHangPhongHop = danhSachLoHang.get(0); // Lấy lô đầu tiên
+            }
+            
+            if (loHangPhongHop == null) {
+                Notifications.getInstance().show(Notifications.Type.ERROR, 
+                    "Không thể xác định lô hàng phù hợp!");
+                return;
+            }
+            
+            // Cập nhật tồn kho
+            boolean success = loHangBUS.updateTonKho(loHangPhongHop.getMaLoHang(), soLuong);
+            
+            if (success) {
+                // Cập nhật trạng thái đơn trả hàng
+                donTraHang.setTrangThaiXuLy("Đã xử lý");
+                donTraHangBUS.capNhatDonTraHang(donTraHang);
+                
+                // Cập nhật trạng thái CHỈ cho hàng hiện tại trong dialog
+                table.setValueAt("✓ Đã xử lý", row, 7);
+                table.repaint();
+                
+                // Refresh bảng ngoài để cập nhật trạng thái
+                reloadTableData();
+                
+                Notifications.getInstance().show(Notifications.Type.SUCCESS, 
+                    String.format("Đã thêm %d sản phẩm vào lô '%s'", 
+                        soLuong, loHangPhongHop.getTenLoHang()));
+            } else {
+                Notifications.getInstance().show(Notifications.Type.ERROR, 
+                    "Lỗi khi cập nhật tồn kho!");
+            }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            Notifications.getInstance().show(Notifications.Type.ERROR, 
+                "Lỗi: " + e.getMessage());
+        }
+    }
+    
+    // Xử lý xuất hủy sản phẩm (không thêm lại vào kho)
+    private void xuLyXuatHuy(ChiTietDonTraHang chiTiet, JTable table, int row, DonTraHang donTraHang) {
+        try {
+            String tenSanPham = chiTiet.getSanPham().getTenSanPham();
+            int soLuong = chiTiet.getSoLuong();
+            
+            // Xác nhận từ người dùng
+            int confirm = javax.swing.JOptionPane.showConfirmDialog(
+                null,
+                String.format("Bạn có chắc muốn xuất hủy %d sản phẩm '%s'?\nSản phẩm sẽ KHÔNG được thêm vào kho.",
+                    soLuong, tenSanPham),
+                "Xác nhận xuất hủy",
+                javax.swing.JOptionPane.YES_NO_OPTION,
+                javax.swing.JOptionPane.WARNING_MESSAGE
+            );
+            
+            if (confirm == javax.swing.JOptionPane.YES_OPTION) {
+                // Cập nhật trạng thái đơn trả hàng
+                donTraHang.setTrangThaiXuLy("Đã xử lý");
+                donTraHangBUS.capNhatDonTraHang(donTraHang);
+                
+                // Cập nhật trạng thái CHỈ cho hàng hiện tại trong dialog
+                table.setValueAt("✓ Đã xử lý", row, 7);
+                table.repaint();
+                
+                // Refresh bảng ngoài để cập nhật trạng thái
+                reloadTableData();
+                
+                Notifications.getInstance().show(Notifications.Type.INFO, 
+                    String.format("Đã xuất hủy %d sản phẩm '%s'", soLuong, tenSanPham));
+            }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            Notifications.getInstance().show(Notifications.Type.ERROR, 
+                "Lỗi: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Làm mới dữ liệu bảng đơn trả hàng (hiển thị notification)
+     */
+    public void refreshData() {
+        reloadTableData();
+        Notifications.getInstance().show(Notifications.Type.SUCCESS, "Đã làm mới dữ liệu!");
+    }
+    
+    /**
+     * Reload dữ liệu bảng (không hiển thị notification)
+     */
+    private void reloadTableData() {
+        List<DonTraHang> danhSach = layDuLieuDonTraHang();
+        fillContent(danhSach);
     }
 
     /**
@@ -687,13 +917,7 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
             Notifications.getInstance().show(Notifications.Type.WARNING, "Hãy chọn phiếu trả hàng cần xem chi tiết!");
         } else {
             String maDTH = (String) table.getValueAt(selectedRow, 0);
-            
-            // TODO: Hiển thị chi tiết phiếu trả hàng
-            Notifications.getInstance().show(Notifications.Type.INFO, "Xem chi tiết phiếu: " + maDTH);
-            
-            // Có thể mở modal ở đây sau khi implement đầy đủ
-            // modalOrderDetail.setLocationRelativeTo(null);
-            // modalOrderDetail.setVisible(true);
+            xemChiTietDonTraHang(maDTH);
         }
     }//GEN-LAST:event_btnViewActionPerformed
 

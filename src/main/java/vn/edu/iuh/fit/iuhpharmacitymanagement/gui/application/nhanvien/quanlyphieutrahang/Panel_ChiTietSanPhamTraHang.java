@@ -12,9 +12,20 @@ package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlyph
 public class Panel_ChiTietSanPhamTraHang extends javax.swing.JPanel {
 
     private String lyDoTraHang = "";
+    private PanelDeleteListener deleteListener;
 
     public Panel_ChiTietSanPhamTraHang() {
         initComponents();
+    }
+    
+    // Interface để thông báo khi panel bị xóa
+    public interface PanelDeleteListener {
+        void onPanelDeleted();
+    }
+    
+    // Setter cho listener
+    public void setDeleteListener(PanelDeleteListener listener) {
+        this.deleteListener = listener;
     }
 
     public int getSoLuongTra() {
@@ -24,53 +35,61 @@ public class Panel_ChiTietSanPhamTraHang extends javax.swing.JPanel {
     public void setSoLuongTra(int soLuong) {
         spinnerSoLuongTra.setValue(soLuong);
     }
-    
-    private String tenSanPham = "";
-    private String donVi = "";
-    private double donGia = 0;
 
     public String getTenSanPham() {
-        return tenSanPham;
+        return lblTenSP.getText();
     }
 
     public void setTenSanPham(String ten) {
-        this.tenSanPham = ten;
-        // Tìm và cập nhật label tên sản phẩm
-        for (int i = 0; i < getComponentCount(); i++) {
-            if (getComponent(i) instanceof javax.swing.JLabel) {
-                javax.swing.JLabel label = (javax.swing.JLabel) getComponent(i);
-                if (label.getText().equals("Tên sản phẩm") || label.getText().isEmpty() || label.getText().equals("")) {
-                    label.setText(ten);
-                    break;
-                }
-            }
-        }
+        System.out.println("DEBUG Panel_ChiTietSanPhamTraHang.setTenSanPham: '" + ten + "'");
+        lblTenSP.setText(ten);
     }
     
     public String getDonVi() {
-        return donVi;
+        return lblDonVi.getText();
     }
 
     public void setDonVi(String donVi) {
-        this.donVi = donVi;
-        // Tìm và cập nhật label đơn vị
-        for (int i = 0; i < getComponentCount(); i++) {
-            if (getComponent(i) instanceof javax.swing.JLabel) {
-                javax.swing.JLabel label = (javax.swing.JLabel) getComponent(i);
-                if (label.getText().equals("Đơn vị")) {
-                    label.setText(donVi);
-                    break;
+        System.out.println("DEBUG Panel_ChiTietSanPhamTraHang.setDonVi: '" + donVi + "'");
+        lblDonVi.setText(donVi);
+    }
+    
+    public void setHinhAnh(String imagePath) {
+        System.out.println("DEBUG Panel_ChiTietSanPhamTraHang.setHinhAnh: '" + imagePath + "'");
+        if (imagePath != null && !imagePath.isEmpty()) {
+            try {
+                java.io.File imgFile = new java.io.File(imagePath);
+                System.out.println("DEBUG: File exists? " + imgFile.exists() + " - Absolute path: " + imgFile.getAbsolutePath());
+                if (imgFile.exists()) {
+                    javax.swing.ImageIcon imageIcon = new javax.swing.ImageIcon(imagePath);
+                    java.awt.Image image = imageIcon.getImage().getScaledInstance(80, 80, java.awt.Image.SCALE_SMOOTH);
+                    lblHinh.setIcon(new javax.swing.ImageIcon(image));
+                    lblHinh.setText("");
+                    System.out.println("DEBUG: Đã set icon thành công");
+                } else {
+                    lblHinh.setText("No Img");
+                    System.out.println("DEBUG: File không tồn tại");
                 }
+            } catch (Exception e) {
+                lblHinh.setText("Error");
+                System.err.println("Error loading image: " + e.getMessage());
+                e.printStackTrace();
             }
+        } else {
+            System.out.println("DEBUG: imagePath null hoặc rỗng");
+            lblHinh.setText("No Img");
         }
     }
     
     public double getDonGia() {
-        return donGia;
+        try {
+            return Double.parseDouble(txtDonGia.getText().replaceAll("[^0-9.]", ""));
+        } catch (Exception e) {
+            return 0;
+        }
     }
 
     public void setDonGia(double donGia) {
-        this.donGia = donGia;
         txtDonGia.setText(String.format("%,.0f ₫", donGia));
         updateTongTienTra();
     }
@@ -121,7 +140,7 @@ public class Panel_ChiTietSanPhamTraHang extends javax.swing.JPanel {
         gbc.weighty = 1.0;
 
         // 1. Hình ảnh sản phẩm
-        javax.swing.JLabel lblHinh = new javax.swing.JLabel();
+        lblHinh = new javax.swing.JLabel();
         lblHinh.setPreferredSize(new java.awt.Dimension(80, 80));
         lblHinh.setMinimumSize(new java.awt.Dimension(80, 80));
         lblHinh.setMaximumSize(new java.awt.Dimension(80, 80));
@@ -136,7 +155,7 @@ public class Panel_ChiTietSanPhamTraHang extends javax.swing.JPanel {
         add(lblHinh, gbc);
 
         // 2. Tên sản phẩm
-        javax.swing.JLabel lblTenSP = new javax.swing.JLabel();
+        lblTenSP = new javax.swing.JLabel();
         lblTenSP.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         lblTenSP.setText("");
         lblTenSP.setPreferredSize(new java.awt.Dimension(180, 80));
@@ -147,7 +166,7 @@ public class Panel_ChiTietSanPhamTraHang extends javax.swing.JPanel {
         add(lblTenSP, gbc);
 
         // 3. Đơn vị
-        javax.swing.JLabel lblDonVi = new javax.swing.JLabel();
+        lblDonVi = new javax.swing.JLabel();
         lblDonVi.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         lblDonVi.setText("");
         lblDonVi.setPreferredSize(new java.awt.Dimension(80, 80));
@@ -158,7 +177,7 @@ public class Panel_ChiTietSanPhamTraHang extends javax.swing.JPanel {
         gbc.weightx = 0.0;
         add(lblDonVi, gbc);
 
-        // 4. Số lượng (Spinner) - Cột riêng
+        // 4. Số lượng (Spinner) - Cột riêng - KHÔNG CHO CHỈNH SỬA
         javax.swing.JPanel pnSpinner = new javax.swing.JPanel();
         pnSpinner.setBackground(java.awt.Color.WHITE);
         pnSpinner.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 22));
@@ -166,6 +185,7 @@ public class Panel_ChiTietSanPhamTraHang extends javax.swing.JPanel {
         spinnerSoLuongTra.setFont(new java.awt.Font("Segoe UI", 0, 14));
         spinnerSoLuongTra.setModel(new javax.swing.SpinnerNumberModel(1, 1, 1000, 1));
         spinnerSoLuongTra.setPreferredSize(new java.awt.Dimension(60, 35));
+        spinnerSoLuongTra.setEnabled(false); // Không cho chỉnh sửa số lượng
         spinnerSoLuongTra.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 spinnerSoLuongTraStateChanged(evt);
@@ -269,6 +289,11 @@ public class Panel_ChiTietSanPhamTraHang extends javax.swing.JPanel {
             parent.remove(this);
             parent.revalidate();
             parent.repaint();
+            
+            // Thông báo cho listener để cập nhật tổng tiền
+            if (deleteListener != null) {
+                deleteListener.onPanelDeleted();
+            }
         }
     }//GEN-LAST:event_btnXoaActionPerformed
 
@@ -303,5 +328,8 @@ public class Panel_ChiTietSanPhamTraHang extends javax.swing.JPanel {
     private javax.swing.JLabel txtDonGia;
     private javax.swing.JLabel txtTongTienTra;
     private javax.swing.JButton btnLyDo;
+    private javax.swing.JLabel lblHinh;
+    private javax.swing.JLabel lblTenSP;
+    private javax.swing.JLabel lblDonVi;
     // End of variables declaration//GEN-END:variables
 }

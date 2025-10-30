@@ -103,7 +103,7 @@ public class GD_BaoCaoThuChi extends javax.swing.JPanel {
             } else if (obj instanceof DonTraHang donTraHang) {
                 tableDesign.getModelTable().addRow(new Object[]{
                     donTraHang.getMaDonTraHang(), 
-                    DinhDangNgay.dinhDangNgay(donTraHang.getngayTraHang()),
+                    DinhDangNgay.dinhDangNgay(donTraHang.getNgayTraHang()),
                     "Trả hàng", 
                     donTraHang.getNhanVien() != null ? donTraHang.getNhanVien().getMaNhanVien() : "N/A",
                     "-" + DinhDangSo.dinhDangTien(donTraHang.getThanhTien())

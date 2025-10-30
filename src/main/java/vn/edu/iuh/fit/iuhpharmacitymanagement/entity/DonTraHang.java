@@ -20,6 +20,7 @@ public class DonTraHang {
     private NhanVien nhanVien;
     private DonHang donHang;
     private List<ChiTietDonTraHang> chiTietDonTraHang;
+    private String trangThaiXuLy;
     public static final String MA_DON_TRA_HANG_SAI ="Mã đơn trả hàng phải bắt đầu bằng DTddMMyyyyxxxx (dd là ngày trả, mm là tháng trả, yyyy là năm trả, xxxx là 4 số dương)";
     private static final String REGEX_MA_DON_TRA_HANG =
     "^DT(0[1-9]|[12][0-9]|3[01])" + 
@@ -29,15 +30,18 @@ public class DonTraHang {
     public static final String NGAY_TRA_HANG_SAI ="Ngày trả hàng phải nhỏ hơn hoặc bằng ngày hiện tại";
     public static final String NGAY_TRA_HANG_NULL ="Ngày trả hàng không được rỗng";
     public DonTraHang() {
+        this.trangThaiXuLy = "Chưa xử lý";
     }
 
     public DonTraHang(String maDonTra, LocalDate ngayTraHang) {
         this.maDonTraHang = maDonTra;
         this.ngayTraHang = ngayTraHang;
+        this.trangThaiXuLy = "Chưa xử lý";
     }
 
     public DonTraHang(String maDonTraHang) {
         this.maDonTraHang = maDonTraHang;
+        this.trangThaiXuLy = "Chưa xử lý";
     }
     
 
@@ -52,11 +56,11 @@ public class DonTraHang {
     this.maDonTraHang = maDonTraHang;
 }
 
-    public LocalDate getngayTraHang() {
+    public LocalDate getNgayTraHang() {
         return ngayTraHang;
     }
 
-    public void setngayTraHang(LocalDate ngayTraHang) throws Exception {
+    public void setNgayTraHang(LocalDate ngayTraHang) throws Exception {
         if(ngayTraHang==null){
             throw new Exception(NGAY_TRA_HANG_NULL);
         }
@@ -103,6 +107,14 @@ public class DonTraHang {
         this.chiTietDonTraHang = chiTietDonTraHang;
     }
 
+    public String getTrangThaiXuLy() {
+        return trangThaiXuLy;
+    }
+
+    public void setTrangThaiXuLy(String trangThaiXuLy) {
+        this.trangThaiXuLy = trangThaiXuLy;
+    }
+
     @Override
     public int hashCode() {
         return Objects.hash(maDonTraHang, ngayTraHang);
@@ -128,13 +140,4 @@ return Objects.equals(maDonTraHang, other.maDonTraHang) &&
                 ", chiTietDonTraHang=" + (chiTietDonTraHang != null ? chiTietDonTraHang.size() : 0) +
                 '}';
     }
-
-    public void setNgayTraHang(LocalDate toLocalDate) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
-
-    public String getNgayTraHang() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
-  
 }

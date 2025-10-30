@@ -46,9 +46,6 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
         // Add header rows for both panels
         addHeaderRowForOrder();
         addHeaderRowForReturn();
-        
-        // Add sample purchased products
-        addSamplePurchasedProducts();
     }
 
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -677,45 +674,54 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
         pnHaveReturn.add(headerPanel);
     }
 
-    private void addSamplePurchasedProducts() {
-        // Thêm các sản phẩm mẫu đã mua
-        Panel_ChiTietSanPhamDaMua product1 = new Panel_ChiTietSanPhamDaMua();
-        product1.setTenSanPham("Terpinzoat");
-        product1.setDonVi("Hộp");
-        product1.setSoLuong(3);
-        product1.setDonGia(16500);
-        product1.setProductClickListener(this::onProductClicked);
-        pnHaveOrder.add(product1);
-
-        Panel_ChiTietSanPhamDaMua product2 = new Panel_ChiTietSanPhamDaMua();
-        product2.setTenSanPham("Methorphan");
-        product2.setDonVi("Hộp");
-        product2.setSoLuong(3);
-        product2.setDonGia(27500);
-        product2.setProductClickListener(this::onProductClicked);
-        pnHaveOrder.add(product2);
-
-        Panel_ChiTietSanPhamDaMua product3 = new Panel_ChiTietSanPhamDaMua();
-        product3.setTenSanPham("Povidine");
-        product3.setDonVi("Lọ");
-        product3.setSoLuong(1);
-        product3.setDonGia(13200);
-        product3.setProductClickListener(this::onProductClicked);
-        pnHaveOrder.add(product3);
-
-        pnHaveOrder.revalidate();
-        pnHaveOrder.repaint();
-    }
 
     private void onProductClicked(Panel_ChiTietSanPhamDaMua productPanel) {
         // Tạo panel trả hàng từ sản phẩm đã mua
         Panel_ChiTietSanPhamTraHang returnProduct = new Panel_ChiTietSanPhamTraHang();
         
+        String tenSP = productPanel.getTenSanPham();
+        String donVi = productPanel.getDonVi();
+        
+        System.out.println("DEBUG onProductClicked: Tên SP = '" + tenSP + "', Đơn vị = '" + donVi + "'");
+        
         // Copy thông tin từ sản phẩm đã mua
-        returnProduct.setTenSanPham(productPanel.getTenSanPham());
-        returnProduct.setDonVi(productPanel.getDonVi());
+        returnProduct.setTenSanPham(tenSP);
+        returnProduct.setDonVi(donVi);
         returnProduct.setSoLuongTra(productPanel.getSoLuong()); // Mặc định trả hết
         returnProduct.setDonGia(productPanel.getDonGia());
+        
+        // Copy hình ảnh nếu có - tìm sản phẩm từ database để lấy đường dẫn hình ảnh
+        try {
+            vn.edu.iuh.fit.iuhpharmacitymanagement.dao.SanPhamDAO sanPhamDAO = 
+                new vn.edu.iuh.fit.iuhpharmacitymanagement.dao.SanPhamDAO();
+            java.util.List<vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham> dsSanPham = 
+                sanPhamDAO.findAll();
+            
+            boolean found = false;
+            for (vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham sp : dsSanPham) {
+                if (sp.getTenSanPham().equals(tenSP)) {
+                    String hinhAnh = sp.getHinhAnh();
+                    System.out.println("DEBUG: Tìm thấy SP trong DB - Hình: " + hinhAnh);
+                    if (hinhAnh != null && !hinhAnh.isEmpty()) {
+                        // Chuyển đổi đường dẫn tương đối thành đường dẫn đầy đủ
+                        String fullPath = "src/main/resources/img/" + hinhAnh;
+                        returnProduct.setHinhAnh(fullPath);
+                        System.out.println("DEBUG: Đã set hình cho panel trả hàng với đường dẫn: " + fullPath);
+                    }
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                System.out.println("DEBUG: KHÔNG tìm thấy sản phẩm '" + tenSP + "' trong DB");
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi load hình ảnh: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        // Thiết lập listener để cập nhật tổng tiền khi xóa
+        returnProduct.setDeleteListener(() -> capNhatTongTienTra());
         
         // Thêm vào danh sách trả hàng
         pnHaveReturn.add(returnProduct);
@@ -766,22 +772,115 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
             
             currentDonHang = optDonHang.get();
             
+            // Kiểm tra xem đơn hàng này đã có đơn trả chưa
+            vn.edu.iuh.fit.iuhpharmacitymanagement.dao.DonTraHangDAO donTraHangDAO = 
+                new vn.edu.iuh.fit.iuhpharmacitymanagement.dao.DonTraHangDAO();
+            
+            java.util.List<vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonTraHang> danhSachDonTra = 
+                donTraHangDAO.findByDonHang(maDonHang);
+            
+            // Kiểm tra trạng thái đơn trả
+            boolean daTonTaiDonTraChuaXuLy = false;
+            boolean daTonTaiDonTraDaXuLy = false;
+            
+            if (danhSachDonTra != null && !danhSachDonTra.isEmpty()) {
+                for (vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonTraHang donTra : danhSachDonTra) {
+                    String trangThai = donTra.getTrangThaiXuLy();
+                    if (trangThai != null && trangThai.equals("Đã xử lý")) {
+                        daTonTaiDonTraDaXuLy = true;
+                        break;
+                    } else if (trangThai == null || trangThai.equals("Chưa xử lý")) {
+                        daTonTaiDonTraChuaXuLy = true;
+                    }
+                }
+            }
+            
+            // Nếu đơn hàng đã được tạo phiếu trả và đã xử lý
+            if (daTonTaiDonTraDaXuLy) {
+                raven.toast.Notifications.getInstance().show(
+                    raven.toast.Notifications.Type.INFO, 
+                    raven.toast.Notifications.Location.TOP_CENTER,
+                    "Đơn hàng này đã được tạo phiếu trả và đã được xử lý bởi quản lý!"
+                );
+                // Reset form
+                txtOrderId.setText("");
+                txtCusName.setText("");
+                txtCusPhone.setText("");
+                txtReturnTotal.setText("0");
+                currentDonHang = null;
+                
+                // Xóa danh sách sản phẩm
+                java.awt.Component header = pnHaveOrder.getComponent(0);
+                pnHaveOrder.removeAll();
+                pnHaveOrder.add(header);
+                pnHaveOrder.revalidate();
+                pnHaveOrder.repaint();
+                
+                java.awt.Component headerReturn = pnHaveReturn.getComponent(0);
+                pnHaveReturn.removeAll();
+                pnHaveReturn.add(headerReturn);
+                pnHaveReturn.revalidate();
+                pnHaveReturn.repaint();
+                
+                return;
+            }
+            
+            // Nếu đơn hàng đã được tạo phiếu trả nhưng chưa xử lý
+            if (daTonTaiDonTraChuaXuLy) {
+                raven.toast.Notifications.getInstance().show(
+                    raven.toast.Notifications.Type.WARNING, 
+                    raven.toast.Notifications.Location.TOP_CENTER,
+                    "Đơn hàng này đã được tạo phiếu trả nhưng chưa được xử lý bởi quản lý!"
+                );
+                // Reset form
+                txtOrderId.setText("");
+                txtCusName.setText("");
+                txtCusPhone.setText("");
+                txtReturnTotal.setText("0");
+                currentDonHang = null;
+                
+                // Xóa danh sách sản phẩm
+                java.awt.Component header = pnHaveOrder.getComponent(0);
+                pnHaveOrder.removeAll();
+                pnHaveOrder.add(header);
+                pnHaveOrder.revalidate();
+                pnHaveOrder.repaint();
+                
+                java.awt.Component headerReturn = pnHaveReturn.getComponent(0);
+                pnHaveReturn.removeAll();
+                pnHaveReturn.add(headerReturn);
+                pnHaveReturn.revalidate();
+                pnHaveReturn.repaint();
+                
+                return;
+            }
+            
             // Hiển thị thông tin đơn hàng
             txtOrderId.setText(currentDonHang.getMaDonHang());
             
+            // Hiển thị thông tin khách hàng
             if (currentDonHang.getKhachHang() != null) {
-                txtCusName.setText(currentDonHang.getKhachHang().getTenKhachHang());
-                txtCusPhone.setText(currentDonHang.getKhachHang().getSoDienThoai());
+                String tenKH = currentDonHang.getKhachHang().getTenKhachHang();
+                String sdtKH = currentDonHang.getKhachHang().getSoDienThoai();
+                txtCusName.setText(tenKH != null && !tenKH.trim().isEmpty() ? tenKH : "Khách vãng lai");
+                txtCusPhone.setText(sdtKH != null && !sdtKH.trim().isEmpty() ? sdtKH : "N/A");
+                System.out.println("DEBUG: Khách hàng - Tên: " + tenKH + ", SĐT: " + sdtKH);
             } else {
                 txtCusName.setText("Khách vãng lai");
                 txtCusPhone.setText("N/A");
+                System.out.println("DEBUG: Không có thông tin khách hàng");
             }
             
             // Hiển thị tên nhân viên hiện tại
-            vn.edu.iuh.fit.iuhpharmacitymanagement.util.UserSession userSession = 
-                vn.edu.iuh.fit.iuhpharmacitymanagement.util.UserSession.getInstance();
-            if (userSession.getNhanVien() != null) {
-                txtEmpName.setText(userSession.getNhanVien().getTenNhanVien());
+            vn.edu.iuh.fit.iuhpharmacitymanagement.session.SessionManager sessionManager = 
+                vn.edu.iuh.fit.iuhpharmacitymanagement.session.SessionManager.getInstance();
+            if (sessionManager.getCurrentUser() != null) {
+                String tenNV = sessionManager.getCurrentUser().getTenNhanVien();
+                String sdtNV = sessionManager.getCurrentUser().getSoDienThoai();
+                txtEmpName.setText(tenNV);
+                System.out.println("DEBUG: Nhân viên lập: " + tenNV + " - SĐT: " + sdtNV);
+            } else {
+                System.out.println("DEBUG: Không có thông tin nhân viên trong session");
             }
             
             // Load chi tiết đơn hàng
@@ -816,6 +915,18 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
                     productPanel.setSoLuong(chiTiet.getSoLuong());
                     productPanel.setDonGia(chiTiet.getDonGia());
                     productPanel.setProductClickListener(this::onProductClicked);
+                    
+                    // Thiết lập hình ảnh sản phẩm
+                    String hinhAnh = sanPham.getHinhAnh();
+                    System.out.println("DEBUG: Sản phẩm '" + sanPham.getTenSanPham() + "' - Đường dẫn hình: " + hinhAnh);
+                    if (hinhAnh != null && !hinhAnh.isEmpty()) {
+                        // Chuyển đổi đường dẫn tương đối thành đường dẫn đầy đủ
+                        String fullPath = "src/main/resources/img/" + hinhAnh;
+                        productPanel.setHinhAnh(fullPath);
+                        System.out.println("DEBUG: Đã gọi setHinhAnh() với đường dẫn: " + fullPath);
+                    } else {
+                        System.out.println("DEBUG: Không có hình ảnh cho sản phẩm này");
+                    }
                     
                     pnHaveOrder.add(productPanel);
                 }
@@ -926,10 +1037,10 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
                 tongTien = Double.parseDouble(tongTienStr);
             }
             
-            donTraHang.setngayTraHang(java.time.LocalDate.now());
+            donTraHang.setNgayTraHang(java.time.LocalDate.now());
             donTraHang.setThanhTien(tongTien);
             donTraHang.setDonHang(currentDonHang);
-            donTraHang.setNhanVien(vn.edu.iuh.fit.iuhpharmacitymanagement.util.UserSession.getInstance().getNhanVien());
+            donTraHang.setNhanVien(vn.edu.iuh.fit.iuhpharmacitymanagement.session.SessionManager.getInstance().getCurrentUser());
             
             // Lưu đơn trả hàng vào database
             boolean insertSuccess = donTraHangDAO.insert(donTraHang);
@@ -942,18 +1053,21 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
                 return;
             }
             
-            // Lấy lại đơn trả hàng với mã đã được tạo
-            java.util.List<vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonTraHang> danhSach = 
-                donTraHangDAO.findAll();
-            if (danhSach.isEmpty()) {
+            // Debug: Kiểm tra mã đơn trả đã được tạo
+            System.out.println("=== DEBUG: Đơn trả hàng đã lưu ===");
+            System.out.println("Mã đơn trả: " + donTraHang.getMaDonTraHang());
+            System.out.println("Ngày trả: " + donTraHang.getNgayTraHang());
+            System.out.println("Thành tiền: " + donTraHang.getThanhTien());
+            System.out.println("===================================");
+            
+            // Kiểm tra mã đơn trả hàng đã được tạo chưa
+            if (donTraHang.getMaDonTraHang() == null || donTraHang.getMaDonTraHang().trim().isEmpty()) {
                 raven.toast.Notifications.getInstance().show(
                     raven.toast.Notifications.Type.ERROR, 
-                    "Không thể lấy mã đơn trả hàng!"
+                    "Không thể tạo mã đơn trả hàng!"
                 );
                 return;
             }
-            
-            donTraHang = danhSach.get(danhSach.size() - 1); // Lấy đơn mới nhất
             
             // Tạo danh sách chi tiết đơn trả hàng
             java.util.List<vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonTraHang> chiTietList = 
@@ -999,22 +1113,57 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
             vn.edu.iuh.fit.iuhpharmacitymanagement.dao.ChiTietDonTraHangDAO chiTietDonTraHangDAO = 
                 new vn.edu.iuh.fit.iuhpharmacitymanagement.dao.ChiTietDonTraHangDAO();
             
+            System.out.println("=== DEBUG: Lưu chi tiết đơn trả hàng ===");
+            System.out.println("Số lượng chi tiết cần lưu: " + chiTietList.size());
+            
+            int successCount = 0;
             for (vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonTraHang chiTiet : chiTietList) {
-                chiTietDonTraHangDAO.insert(chiTiet);
+                System.out.println("  - Đang lưu chi tiết: " + chiTiet.getSanPham().getTenSanPham());
+                System.out.println("    Mã đơn trả: " + chiTiet.getDonTraHang().getMaDonTraHang());
+                System.out.println("    Mã sản phẩm: " + chiTiet.getSanPham().getMaSanPham());
+                System.out.println("    Số lượng: " + chiTiet.getSoLuong());
+                System.out.println("    Đơn giá: " + chiTiet.getDonGia());
+                System.out.println("    Lý do: " + chiTiet.getLyDoTra());
+                
+                boolean success = chiTietDonTraHangDAO.insert(chiTiet);
+                if (success) {
+                    successCount++;
+                    System.out.println("    ✓ Lưu thành công!");
+                } else {
+                    System.out.println("    ✗ Lưu THẤT BẠI!");
+                }
+            }
+            
+            System.out.println("Kết quả: " + successCount + "/" + chiTietList.size() + " chi tiết được lưu thành công");
+            System.out.println("==========================================");
+            
+            if (successCount == 0) {
+                raven.toast.Notifications.getInstance().show(
+                    raven.toast.Notifications.Type.ERROR, 
+                    "Không thể lưu chi tiết đơn trả hàng! Vui lòng kiểm tra lại."
+                );
+                return;
+            } else if (successCount < chiTietList.size()) {
+                raven.toast.Notifications.getInstance().show(
+                    raven.toast.Notifications.Type.WARNING, 
+                    "Chỉ lưu được " + successCount + "/" + chiTietList.size() + " chi tiết!"
+                );
             }
             
             // Xuất PDF
             String pdfPath = vn.edu.iuh.fit.iuhpharmacitymanagement.util.XuatHoaDonTraHangPDF
                 .xuatHoaDonTraHangTuDong(donTraHang, chiTietList);
             
+            // Hiển thị hóa đơn trả hàng
+            hienThiHoaDonTraHang(donTraHang, chiTietList);
+            
+            // Thông báo thành công với đường dẫn PDF
             if (pdfPath != null) {
                 raven.toast.Notifications.getInstance().show(
                     raven.toast.Notifications.Type.SUCCESS, 
-                    "Tạo phiếu trả hàng thành công! Mã: " + donTraHang.getMaDonTraHang()
+                    "Tạo phiếu trả hàng thành công! Mã: " + donTraHang.getMaDonTraHang() + 
+                    "\nPDF đã lưu tại: " + pdfPath
                 );
-                
-                // Xem trước PDF
-                xemTruocPDF(pdfPath);
                 
                 // Reset form
                 resetForm();
@@ -1032,6 +1181,204 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
                 "Lỗi khi tạo phiếu trả hàng: " + e.getMessage()
             );
         }
+    }
+    
+    /**
+     * Hiển thị preview hóa đơn trả hàng
+     */
+    private void hienThiHoaDonTraHang(vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonTraHang donTraHang, 
+            java.util.List<vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonTraHang> danhSachChiTiet) {
+        javax.swing.JDialog dialog = new javax.swing.JDialog();
+        dialog.setTitle("Hóa đơn trả hàng");
+        dialog.setModal(true);
+        dialog.setSize(900, 650);
+        dialog.setLocationRelativeTo(null); // Hiển thị giữa màn hình
+        
+        // Panel chính
+        javax.swing.JPanel mainPanel = new javax.swing.JPanel();
+        mainPanel.setLayout(new java.awt.BorderLayout(10, 10));
+        mainPanel.setBackground(java.awt.Color.WHITE);
+        mainPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(20, 30, 20, 30));
+        
+        // Format cho số tiền và ngày tháng
+        java.text.DecimalFormat currencyFormat = new java.text.DecimalFormat("#,###");
+        java.text.SimpleDateFormat dateFormat = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm");
+        
+        // === HEADER ===
+        javax.swing.JPanel headerPanel = new javax.swing.JPanel();
+        headerPanel.setLayout(new javax.swing.BoxLayout(headerPanel, javax.swing.BoxLayout.Y_AXIS));
+        headerPanel.setBackground(java.awt.Color.WHITE);
+        
+        javax.swing.JLabel lblTitle = new javax.swing.JLabel("HÓA ĐƠN TRẢ HÀNG");
+        lblTitle.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 24));
+        lblTitle.setAlignmentX(java.awt.Component.CENTER_ALIGNMENT);
+        headerPanel.add(lblTitle);
+        headerPanel.add(javax.swing.Box.createVerticalStrut(20));
+        
+        // Thông tin đơn trả hàng
+        javax.swing.JPanel infoPanel = new javax.swing.JPanel(new java.awt.GridLayout(6, 2, 10, 8));
+        infoPanel.setBackground(java.awt.Color.WHITE);
+        
+        infoPanel.add(createInfoLabel("Mã hóa đơn: ", donTraHang.getMaDonTraHang(), true));
+        
+        vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhanVien nhanVien = donTraHang.getNhanVien();
+        String tenNhanVien = nhanVien != null ? nhanVien.getTenNhanVien() + " (" + nhanVien.getMaNhanVien() + ")" : "N/A";
+        infoPanel.add(createInfoLabel("Nhân viên: ", tenNhanVien, false));
+        
+        // SĐT nhân viên
+        String sdtNhanVien = nhanVien != null && nhanVien.getSoDienThoai() != null ? 
+                nhanVien.getSoDienThoai() : "N/A";
+        infoPanel.add(createInfoLabel("SĐT NV: ", sdtNhanVien, false));
+        
+        String ngayTra = dateFormat.format(java.sql.Date.valueOf(donTraHang.getNgayTraHang()));
+        infoPanel.add(createInfoLabel("Ngày trả: ", ngayTra, false));
+        
+        // Ngày đặt hàng gốc
+        String ngayDat = currentDonHang != null && currentDonHang.getNgayDatHang() != null ? 
+                dateFormat.format(java.sql.Date.valueOf(currentDonHang.getNgayDatHang())) : "N/A";
+        infoPanel.add(createInfoLabel("Ngày đặt: ", ngayDat, false));
+        
+        vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhachHang khachHang = 
+                currentDonHang != null ? currentDonHang.getKhachHang() : null;
+        String tenKhachHang = khachHang != null ? khachHang.getTenKhachHang() : "Khách vãng lai";
+        infoPanel.add(createInfoLabel("Khách hàng: ", tenKhachHang, true));
+        
+        // SĐT khách hàng
+        String sdtKhachHang = khachHang != null && khachHang.getSoDienThoai() != null ? 
+                khachHang.getSoDienThoai() : "N/A";
+        infoPanel.add(createInfoLabel("SĐT: ", sdtKhachHang, false));
+        
+        String phuongThuc = currentDonHang != null && currentDonHang.getPhuongThucThanhToan() != null ? 
+                currentDonHang.getPhuongThucThanhToan().toString() : "TIEN_MAT";
+        infoPanel.add(createInfoLabel("Phương thức: ", phuongThuc, false));
+        
+        headerPanel.add(infoPanel);
+        headerPanel.add(javax.swing.Box.createVerticalStrut(10));
+        
+        // Đường phân cách
+        javax.swing.JSeparator separator1 = new javax.swing.JSeparator();
+        headerPanel.add(separator1);
+        
+        mainPanel.add(headerPanel, java.awt.BorderLayout.NORTH);
+        
+        // === BODY - Bảng chi tiết sản phẩm ===
+        javax.swing.JPanel bodyPanel = new javax.swing.JPanel(new java.awt.BorderLayout());
+        bodyPanel.setBackground(java.awt.Color.WHITE);
+        
+        javax.swing.JLabel lblChiTiet = new javax.swing.JLabel("Chi tiết sản phẩm");
+        lblChiTiet.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 16));
+        lblChiTiet.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 0, 10, 0));
+        bodyPanel.add(lblChiTiet, java.awt.BorderLayout.NORTH);
+        
+        String[] columnNames = {"STT", "Tên sản phẩm", "Đơn vị", "Số lượng", "Đơn giá", "Thành tiền"};
+        javax.swing.table.DefaultTableModel tableModel = new javax.swing.table.DefaultTableModel(columnNames, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        
+        javax.swing.JTable table = new javax.swing.JTable(tableModel);
+        table.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 14));
+        table.setRowHeight(30);
+        table.getTableHeader().setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 14));
+        table.getTableHeader().setBackground(new java.awt.Color(240, 240, 240));
+        
+        // Set column widths
+        table.getColumnModel().getColumn(0).setPreferredWidth(50);  // STT
+        table.getColumnModel().getColumn(1).setPreferredWidth(300); // Tên SP
+        table.getColumnModel().getColumn(2).setPreferredWidth(80);  // Đơn vị
+        table.getColumnModel().getColumn(3).setPreferredWidth(80);  // Số lượng
+        table.getColumnModel().getColumn(4).setPreferredWidth(120); // Đơn giá
+        table.getColumnModel().getColumn(5).setPreferredWidth(150); // Thành tiền
+        
+        // Thêm dữ liệu vào bảng
+        int stt = 1;
+        for (vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonTraHang chiTiet : danhSachChiTiet) {
+            vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham sanPham = chiTiet.getSanPham();
+            
+            tableModel.addRow(new Object[]{
+                stt++,
+                sanPham.getTenSanPham(),
+                sanPham.getDonViTinh() != null ? sanPham.getDonViTinh().getTenDonVi() : "Tuýp",
+                chiTiet.getSoLuong(),
+                currencyFormat.format(chiTiet.getDonGia()) + " đ",
+                currencyFormat.format(chiTiet.getThanhTien()) + " đ"
+            });
+        }
+        
+        javax.swing.JScrollPane scrollPane = new javax.swing.JScrollPane(table);
+        scrollPane.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(200, 200, 200)));
+        bodyPanel.add(scrollPane, java.awt.BorderLayout.CENTER);
+        
+        mainPanel.add(bodyPanel, java.awt.BorderLayout.CENTER);
+        
+        // === FOOTER - Tổng tiền ===
+        javax.swing.JPanel footerPanel = new javax.swing.JPanel();
+        footerPanel.setLayout(new javax.swing.BoxLayout(footerPanel, javax.swing.BoxLayout.Y_AXIS));
+        footerPanel.setBackground(java.awt.Color.WHITE);
+        footerPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(15, 0, 0, 0));
+        
+        javax.swing.JSeparator separator2 = new javax.swing.JSeparator();
+        footerPanel.add(separator2);
+        footerPanel.add(javax.swing.Box.createVerticalStrut(15));
+        
+        // Thông tin khuyến mãi (nếu có)
+        if (currentDonHang != null && currentDonHang.getKhuyenMai() != null) {
+            javax.swing.JPanel kmPanel = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT));
+            kmPanel.setBackground(java.awt.Color.WHITE);
+            
+            javax.swing.JLabel lblKMText = new javax.swing.JLabel("Khuyến mãi: ");
+            lblKMText.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 14));
+            
+            javax.swing.JLabel lblKM = new javax.swing.JLabel(currentDonHang.getKhuyenMai().getTenKhuyenMai());
+            lblKM.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 14));
+            lblKM.setForeground(new java.awt.Color(255, 102, 0));
+            
+            kmPanel.add(lblKMText);
+            kmPanel.add(lblKM);
+            footerPanel.add(kmPanel);
+        }
+        
+        javax.swing.JPanel tongTienPanel = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT));
+        tongTienPanel.setBackground(java.awt.Color.WHITE);
+        
+        javax.swing.JLabel lblTongTienText = new javax.swing.JLabel("Tổng hóa đơn: ");
+        lblTongTienText.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 18));
+        
+        javax.swing.JLabel lblTongTien = new javax.swing.JLabel(currencyFormat.format(donTraHang.getThanhTien()) + " đ");
+        lblTongTien.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 20));
+        lblTongTien.setForeground(new java.awt.Color(220, 53, 69));
+        
+        tongTienPanel.add(lblTongTienText);
+        tongTienPanel.add(lblTongTien);
+        
+        footerPanel.add(tongTienPanel);
+        
+        mainPanel.add(footerPanel, java.awt.BorderLayout.SOUTH);
+        
+        dialog.add(mainPanel);
+        dialog.setVisible(true);
+    }
+    
+    /**
+     * Tạo JPanel với label thông tin
+     */
+    private javax.swing.JPanel createInfoLabel(String title, String value, boolean bold) {
+        javax.swing.JPanel panel = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 0, 0));
+        panel.setBackground(java.awt.Color.WHITE);
+        
+        javax.swing.JLabel lblTitle = new javax.swing.JLabel(title);
+        lblTitle.setFont(new java.awt.Font("Segoe UI", 
+                bold ? java.awt.Font.BOLD : java.awt.Font.PLAIN, 14));
+        
+        javax.swing.JLabel lblValue = new javax.swing.JLabel(value);
+        lblValue.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 14));
+        
+        panel.add(lblTitle);
+        panel.add(lblValue);
+        
+        return panel;
     }
     
     /**

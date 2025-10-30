@@ -89,6 +89,33 @@ public class Panel_ChiTietSanPhamDaMua extends javax.swing.JPanel {
     public double getTongTien() {
         return Double.parseDouble(txtTongTien.getText().replaceAll("[^0-9.]", ""));
     }
+    
+    public void setHinhAnh(String imagePath) {
+        System.out.println("DEBUG Panel_ChiTietSanPhamDaMua.setHinhAnh: '" + imagePath + "'");
+        if (imagePath != null && !imagePath.isEmpty()) {
+            try {
+                java.io.File imgFile = new java.io.File(imagePath);
+                System.out.println("DEBUG: File exists? " + imgFile.exists() + " - Absolute path: " + imgFile.getAbsolutePath());
+                if (imgFile.exists()) {
+                    javax.swing.ImageIcon imageIcon = new javax.swing.ImageIcon(imagePath);
+                    java.awt.Image image = imageIcon.getImage().getScaledInstance(80, 80, java.awt.Image.SCALE_SMOOTH);
+                    lblHinh.setIcon(new javax.swing.ImageIcon(image));
+                    lblHinh.setText("");
+                    System.out.println("DEBUG: Đã set icon thành công");
+                } else {
+                    lblHinh.setText("No Img");
+                    System.out.println("DEBUG: File không tồn tại");
+                }
+            } catch (Exception e) {
+                lblHinh.setText("Error");
+                System.err.println("Error loading image: " + e.getMessage());
+                e.printStackTrace();
+            }
+        } else {
+            System.out.println("DEBUG: imagePath null hoặc rỗng");
+            lblHinh.setText("No Img");
+        }
+    }
 
     private void updateTongTien() {
         try {
@@ -121,7 +148,7 @@ public class Panel_ChiTietSanPhamDaMua extends javax.swing.JPanel {
         gbc.weighty = 1.0;
 
         // 1. Hình ảnh sản phẩm
-        javax.swing.JLabel lblHinh = new javax.swing.JLabel();
+        lblHinh = new javax.swing.JLabel();
         lblHinh.setPreferredSize(new java.awt.Dimension(80, 80));
         lblHinh.setMinimumSize(new java.awt.Dimension(80, 80));
         lblHinh.setMaximumSize(new java.awt.Dimension(80, 80));
@@ -217,6 +244,7 @@ public class Panel_ChiTietSanPhamDaMua extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel lblHinh;
     private javax.swing.JLabel lblTenSP;
     private javax.swing.JLabel lblDonVi;
     private javax.swing.JSpinner spinnerSoLuong;

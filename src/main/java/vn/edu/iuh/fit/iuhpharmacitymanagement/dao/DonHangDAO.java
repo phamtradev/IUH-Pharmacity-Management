@@ -28,10 +28,17 @@ public class DonHangDAO implements DAOInterface<DonHang, String> {
             = "UPDATE DonHang SET ngayDatHang = ?, thanhTien = ?, phuongThucThanhToan = ?, maNhanVien = ?, maKhachHang = ?, maKhuyenMai = ? WHERE maDonHang = ?";
 
     private final String SQL_TIM_THEO_MA
-            = "SELECT * FROM DonHang WHERE maDonHang = ?";
+            = "SELECT dh.*, nv.tenNhanVien, kh.tenKhachHang, kh.soDienThoai " +
+              "FROM DonHang dh " +
+              "LEFT JOIN NhanVien nv ON dh.maNhanVien = nv.maNhanVien " +
+              "LEFT JOIN KhachHang kh ON dh.maKhachHang = kh.maKhachHang " +
+              "WHERE dh.maDonHang = ?";
 
     private final String SQL_TIM_TAT_CA
-            = "SELECT * FROM DonHang";
+            = "SELECT dh.*, nv.tenNhanVien, kh.tenKhachHang, kh.soDienThoai " +
+              "FROM DonHang dh " +
+              "LEFT JOIN NhanVien nv ON dh.maNhanVien = nv.maNhanVien " +
+              "LEFT JOIN KhachHang kh ON dh.maKhachHang = kh.maKhachHang";
 
     private final String SQL_LAY_MA_CUOI
             = "SELECT TOP 1 maDonHang FROM DonHang ORDER BY maDonHang DESC";
@@ -147,9 +154,14 @@ public class DonHangDAO implements DAOInterface<DonHang, String> {
         donHang.setThanhTien(rs.getDouble("thanhTien"));
         donHang.setPhuongThucThanhToan(PhuongThucThanhToan.valueOf(rs.getString("phuongThucThanhToan")));
 
-        NhanVien nv = new NhanVien();
-        nv.setMaNhanVien(rs.getString("maNhanVien"));
-        donHang.setNhanVien(nv);
+        // Load thông tin Nhân viên (bao gồm cả tên)
+        String maNhanVien = rs.getString("maNhanVien");
+        if (maNhanVien != null && !maNhanVien.trim().isEmpty()) {
+            NhanVien nv = new NhanVien();
+            nv.setMaNhanVien(maNhanVien);
+            nv.setTenNhanVien(rs.getString("tenNhanVien"));  // Load tên từ JOIN
+            donHang.setNhanVien(nv);
+        }
 
         // Xử lý mã khách hàng có thể NULL hoặc không hợp lệ
         String maKhachHang = rs.getString("maKhachHang");
@@ -157,6 +169,8 @@ public class DonHangDAO implements DAOInterface<DonHang, String> {
             try {
                 KhachHang kh = new KhachHang();
                 kh.setMaKhachHang(maKhachHang);
+                kh.setTenKhachHang(rs.getString("tenKhachHang"));  // Load tên từ JOIN
+                kh.setSoDienThoai(rs.getString("soDienThoai"));    // Load SĐT từ JOIN
                 donHang.setKhachHang(kh);
             } catch (Exception e) {
                 // Nếu mã không hợp lệ, bỏ qua và để null

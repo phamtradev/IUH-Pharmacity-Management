@@ -148,9 +148,6 @@ public class GD_DashBoard extends javax.swing.JPanel {
             cardDonHang.updateValue(String.valueOf(soDonHang) + " đơn");
             cardKhachHang.updateValue(String.valueOf(soKhachHang) + " khách");
             cardDonXuatHuy.updateValue(String.valueOf(soDonXuatHuy) + " đơn");
-
-            // Hiển thị đơn hàng mẫu
-            loadRecentOrders();
             
         } catch (Exception e) {
             e.printStackTrace();
@@ -161,35 +158,6 @@ public class GD_DashBoard extends javax.swing.JPanel {
         }
     }
 
-    /**
-     * Tải danh sách đơn hàng gần đây (dữ liệu mẫu)
-     */
-    private void loadRecentOrders() {
-        try {
-            // Xóa dữ liệu cũ
-            tableModel.setRowCount(0);
-
-            // Thêm dữ liệu mẫu
-            Object[][] sampleData = {
-                {"HD001", "24/10/2024 14:30", "Nguyễn Văn A", "Trần Thị B", currencyFormat.format(850000) + " đ"},
-                {"HD002", "24/10/2024 13:45", "Phạm Thị C", "Lê Văn D", currencyFormat.format(1250000) + " đ"},
-                {"HD003", "24/10/2024 12:20", "Nguyễn Văn A", "Hoàng Thị E", currencyFormat.format(450000) + " đ"},
-                {"HD004", "24/10/2024 11:15", "Trần Văn F", "Nguyễn Thị G", currencyFormat.format(2100000) + " đ"},
-                {"HD005", "24/10/2024 10:30", "Nguyễn Văn A", "Phạm Văn H", currencyFormat.format(680000) + " đ"},
-                {"HD006", "24/10/2024 09:45", "Phạm Thị C", "Lê Thị I", currencyFormat.format(920000) + " đ"},
-                {"HD007", "23/10/2024 16:20", "Nguyễn Văn A", "Trần Văn K", currencyFormat.format(1550000) + " đ"},
-                {"HD008", "23/10/2024 15:10", "Trần Văn F", "Nguyễn Thị L", currencyFormat.format(750000) + " đ"},
-                {"HD009", "23/10/2024 14:00", "Phạm Thị C", "Hoàng Văn M", currencyFormat.format(1100000) + " đ"},
-                {"HD010", "23/10/2024 13:30", "Nguyễn Văn A", "Lê Thị N", currencyFormat.format(580000) + " đ"}
-            };
-
-            for (Object[] row : sampleData) {
-                tableModel.addRow(row);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
     /**
      * Làm mới dữ liệu dashboard

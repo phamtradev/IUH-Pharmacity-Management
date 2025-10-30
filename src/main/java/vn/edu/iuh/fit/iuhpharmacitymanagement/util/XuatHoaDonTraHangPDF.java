@@ -165,7 +165,7 @@ public class XuatHoaDonTraHangPDF {
         document.add(returnCode);
         
         // Ngày trả
-        Paragraph date = new Paragraph("Ngay tra: " + donTraHang.getngayTraHang().format(DATE_FORMAT))
+        Paragraph date = new Paragraph("Ngay tra: " + donTraHang.getNgayTraHang().format(DATE_FORMAT))
                 .setFont(boldFont)
                 .setFontSize(10)
                 .setTextAlignment(TextAlignment.CENTER)
@@ -188,10 +188,18 @@ public class XuatHoaDonTraHangPDF {
         orderInfo.append("THONG TIN DON HANG GOC\n");
         if (donHang != null) {
             orderInfo.append("Ma don hang: ").append(donHang.getMaDonHang()).append("\n");
-            orderInfo.append("Ngay dat: ").append(donHang.getNgayDatHang() != null ? 
-                    donHang.getNgayDatHang().format(DATE_FORMAT) : "N/A").append("\n");
+            // Kiểm tra và format ngày đặt hàng
+            if (donHang.getNgayDatHang() != null) {
+                orderInfo.append("Ngay dat: ").append(donHang.getNgayDatHang().format(DATE_FORMAT)).append("\n");
+            } else {
+                orderInfo.append("Ngay dat: N/A\n");
+            }
             if (donHang.getKhachHang() != null) {
-                orderInfo.append("Khach hang: ").append(donHang.getKhachHang().getTenKhachHang());
+                orderInfo.append("Khach hang: ").append(donHang.getKhachHang().getTenKhachHang()).append("\n");
+                String sdtKH = donHang.getKhachHang().getSoDienThoai();
+                orderInfo.append("SDT: ").append(sdtKH != null && !sdtKH.trim().isEmpty() ? sdtKH : "N/A");
+            } else {
+                orderInfo.append("Khach hang: Khach vang lai\nSDT: N/A");
             }
         } else {
             orderInfo.append("Khong co thong tin");
@@ -207,10 +215,13 @@ public class XuatHoaDonTraHangPDF {
         NhanVien nhanVien = donTraHang.getNhanVien();
         StringBuilder employeeInfo = new StringBuilder();
         employeeInfo.append("NHAN VIEN XU LY\n");
-        employeeInfo.append("Ho ten: ").append(nhanVien != null ? nhanVien.getTenNhanVien() : "").append("\n");
         if (nhanVien != null) {
+            employeeInfo.append("Ho ten: ").append(nhanVien.getTenNhanVien()).append("\n");
             employeeInfo.append("Ma NV: ").append(nhanVien.getMaNhanVien()).append("\n");
-            employeeInfo.append("SDT: ").append(nhanVien.getSoDienThoai());
+            String sdtNV = nhanVien.getSoDienThoai();
+            employeeInfo.append("SDT: ").append(sdtNV != null && !sdtNV.trim().isEmpty() ? sdtNV : "null");
+        } else {
+            employeeInfo.append("Ho ten: N/A\nMa NV: N/A\nSDT: N/A");
         }
         
         Cell employeeCell = new Cell()
@@ -342,7 +353,7 @@ public class XuatHoaDonTraHangPDF {
     }
     
     /**
-     * Xuất hóa đơn trả tự động vào folder resources/img/hoadontrahang
+     * Xuất hóa đơn trả tự động vào folder resources/img/phieutrahang
      * @param donTraHang đơn trả hàng cần xuất
      * @param chiTietDonTraHangList danh sách chi tiết đơn trả hàng
      * @return đường dẫn file PDF đã lưu, hoặc null nếu thất bại
@@ -351,7 +362,7 @@ public class XuatHoaDonTraHangPDF {
         try {
             // Lấy đường dẫn tới thư mục resources
             String projectPath = System.getProperty("user.dir");
-            String folderPath = projectPath + "/src/main/resources/img/hoadontrahang";
+            String folderPath = projectPath + "/src/main/resources/img/phieutrahang";
             
             // Tạo thư mục nếu chưa tồn tại
             File folder = new File(folderPath);

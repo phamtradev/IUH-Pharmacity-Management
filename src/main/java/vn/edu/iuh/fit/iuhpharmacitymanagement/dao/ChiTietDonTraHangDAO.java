@@ -15,6 +15,7 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.connectDB.ConnectDB;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonTraHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonTraHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonViTinh;
 
 /**
  *
@@ -24,7 +25,7 @@ public class ChiTietDonTraHangDAO implements DAOInterface<ChiTietDonTraHang, Str
 
     @Override
     public boolean insert(ChiTietDonTraHang t) {
-        String sql = "INSERT into chitietdontrahang(donGia, lyDoTra, soLuong, thanhTien, return_order_id, maSanPham) "
+        String sql = "INSERT into chitietdontrahang(donGia, lyDoTra, soLuong, thanhTien, maDonTra, maSanPham) "
                 + " VALUES(?, ?, ?, ?, ?, ?)";
         try (Connection con = ConnectDB.getConnection();
              PreparedStatement pre = con.prepareStatement(sql)) {
@@ -34,8 +35,15 @@ public class ChiTietDonTraHangDAO implements DAOInterface<ChiTietDonTraHang, Str
             pre.setDouble(4, t.getThanhTien());
             pre.setString(5, t.getDonTraHang().getMaDonTraHang());
             pre.setString(6, t.getSanPham().getMaSanPham());
-            return pre.executeUpdate() > 0;
+            
+            int rowsAffected = pre.executeUpdate();
+            System.out.println("      [DAO] Rows affected: " + rowsAffected);
+            return rowsAffected > 0;
         } catch (Exception e) {
+            System.err.println("      [DAO] LỖI KHI INSERT CHI TIẾT ĐÔN TRẢ HÀNG:");
+            System.err.println("      - Mã đơn trả: " + (t.getDonTraHang() != null ? t.getDonTraHang().getMaDonTraHang() : "NULL"));
+            System.err.println("      - Mã sản phẩm: " + (t.getSanPham() != null ? t.getSanPham().getMaSanPham() : "NULL"));
+            System.err.println("      - Lý do: " + e.getMessage());
             e.printStackTrace();
         }
         return false;
@@ -45,7 +53,7 @@ public class ChiTietDonTraHangDAO implements DAOInterface<ChiTietDonTraHang, Str
     public boolean update(ChiTietDonTraHang t) {
         String sql = "update chitietdontrahang "
                 + " set donGia = ?, lyDoTra = ?, soLuong = ?, thanhTien = ? "
-                + " WHERE return_order_id = ? and maSanPham = ? ";
+                + " WHERE maDonTra = ? and maSanPham = ? ";
         try (Connection con = ConnectDB.getConnection();
              PreparedStatement pre = con.prepareStatement(sql)) {
             pre.setDouble(1, t.getDonGia());
@@ -65,7 +73,7 @@ public class ChiTietDonTraHangDAO implements DAOInterface<ChiTietDonTraHang, Str
     public Optional<ChiTietDonTraHang> findById(String id) {
         ChiTietDonTraHang ct = new ChiTietDonTraHang();
         String sql = "select * from chitietdontrahang "
-                + " WHERE return_order_id = ? ";
+                + " WHERE maDonTra = ? ";
         try (Connection con = ConnectDB.getConnection();
              PreparedStatement pre = con.prepareStatement(sql)) {
             pre.setString(1, id);
@@ -75,7 +83,7 @@ public class ChiTietDonTraHangDAO implements DAOInterface<ChiTietDonTraHang, Str
                 String lyDo = rs.getString("lyDoTra");
                 int sl = rs.getInt("soLuong");
                 double thanhTien = rs.getDouble("thanhTien");
-                String maDonTra = rs.getString("return_order_id");
+                String maDonTra = rs.getString("maDonTra");
                 String masp = rs.getString("maSanPham");
                 ct = new ChiTietDonTraHang(sl, donGia, lyDo, thanhTien, new SanPham(masp), new DonTraHang(maDonTra));
             }
@@ -96,9 +104,58 @@ public class ChiTietDonTraHangDAO implements DAOInterface<ChiTietDonTraHang, Str
                 String lyDo = rs.getString("lyDoTra");
                 int sl = rs.getInt("soLuong");
                 double thanhTien = rs.getDouble("thanhTien");
-                String maDonTra = rs.getString("return_order_id");
+                String maDonTra = rs.getString("maDonTra");
                 String masp = rs.getString("maSanPham");
                 ChiTietDonTraHang ct = new ChiTietDonTraHang(sl, donGia, lyDo, thanhTien, new SanPham(masp), new DonTraHang(maDonTra));
+                dsCt.add(ct);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return dsCt;
+    }
+    
+    /**
+     * Lấy danh sách chi tiết đơn trả hàng theo mã đơn trả
+     * @param maDonTra Mã đơn trả hàng
+     * @return Danh sách chi tiết đơn trả hàng với thông tin sản phẩm đầy đủ
+     */
+    public List<ChiTietDonTraHang> findByMaDonTra(String maDonTra) {
+        List<ChiTietDonTraHang> dsCt = new ArrayList<>();
+        String sql = "SELECT ct.*, sp.tenSanPham, dv.tenDonVi, dv.maDonVi " +
+                     "FROM chitietdontrahang ct " +
+                     "LEFT JOIN SanPham sp ON ct.maSanPham = sp.maSanPham " +
+                     "LEFT JOIN DonViTinh dv ON sp.maDonVi = dv.maDonVi " +
+                     "WHERE ct.maDonTra = ?";
+        
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement pre = con.prepareStatement(sql)) {
+            pre.setString(1, maDonTra);
+            ResultSet rs = pre.executeQuery();
+            
+            while (rs.next()) {
+                double donGia = rs.getDouble("donGia");
+                String lyDo = rs.getString("lyDoTra");
+                int sl = rs.getInt("soLuong");
+                double thanhTien = rs.getDouble("thanhTien");
+                String maDonTraResult = rs.getString("maDonTra");
+                String masp = rs.getString("maSanPham");
+                
+                // Tạo sản phẩm với thông tin đầy đủ
+                SanPham sp = new SanPham(masp);
+                sp.setTenSanPham(rs.getString("tenSanPham"));
+                
+                // Tạo đơn vị tính
+                String maDonVi = rs.getString("maDonVi");
+                if (maDonVi != null && !maDonVi.trim().isEmpty()) {
+                    DonViTinh dvt = new DonViTinh();
+                    dvt.setMaDonVi(maDonVi);
+                    dvt.setTenDonVi(rs.getString("tenDonVi"));
+                    sp.setDonViTinh(dvt);
+                }
+                
+                ChiTietDonTraHang ct = new ChiTietDonTraHang(sl, donGia, lyDo, thanhTien, 
+                        sp, new DonTraHang(maDonTraResult));
                 dsCt.add(ct);
             }
         } catch (Exception e) {
