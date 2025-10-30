@@ -259,15 +259,15 @@ public class XuatHoaDonPDF {
             table.addCell(createCell(String.valueOf(chiTiet.getSoLuong()), font, TextAlignment.CENTER));
             
             // Đơn giá
-            table.addCell(createCell(CURRENCY_FORMAT.format(chiTiet.getDonGia()) + " d", font, TextAlignment.RIGHT));
+            table.addCell(createCell(CURRENCY_FORMAT.format(chiTiet.getDonGia()) + " đ", font, TextAlignment.RIGHT));
             
             // Giảm giá
             String giamGia = chiTiet.getGiamGia() > 0 ? 
-                    "-" + CURRENCY_FORMAT.format(chiTiet.getGiamGia()) + " d" : "0 d";
+                    "-" + CURRENCY_FORMAT.format(chiTiet.getGiamGia()) + " đ" : "0 đ";
             table.addCell(createCell(giamGia, font, TextAlignment.RIGHT));
             
             // Thành tiền
-            table.addCell(createCell(CURRENCY_FORMAT.format(chiTiet.getThanhTien()) + " d", font, TextAlignment.RIGHT));
+            table.addCell(createCell(CURRENCY_FORMAT.format(chiTiet.getThanhTien()) + " đ", font, TextAlignment.RIGHT));
         }
         
         document.add(table);
@@ -294,12 +294,12 @@ public class XuatHoaDonPDF {
         
         // Tổng tiền hàng
         paymentTable.addCell(createPaymentCell("Tong tien hang:", font, false));
-        paymentTable.addCell(createPaymentCell(CURRENCY_FORMAT.format(tongTienHang) + " d", font, true));
+        paymentTable.addCell(createPaymentCell(CURRENCY_FORMAT.format(tongTienHang) + " đ", font, true));
         
         // Giảm giá sản phẩm (luôn hiển thị)
         paymentTable.addCell(createPaymentCell("Giam gia san pham:", font, false));
         if (tongGiamGia > 0) {
-            paymentTable.addCell(createPaymentCell("-" + CURRENCY_FORMAT.format(tongGiamGia) + " d", font, true));
+            paymentTable.addCell(createPaymentCell("-" + CURRENCY_FORMAT.format(tongGiamGia) + " đ", font, true));
         } else {
             paymentTable.addCell(createPaymentCell("Khong co", font, true));
         }
@@ -309,7 +309,7 @@ public class XuatHoaDonPDF {
         paymentTable.addCell(createPaymentCell("Giam gia hoa don:", font, false));
         if (khuyenMai != null && khuyenMai.getGiamGia() > 0) {
             double giamGiaHoaDon = (tongTienHang - tongGiamGia) * khuyenMai.getGiamGia() / 100;
-            paymentTable.addCell(createPaymentCell("-" + CURRENCY_FORMAT.format(giamGiaHoaDon) + " d (" + khuyenMai.getGiamGia() + "%)", font, true));
+            paymentTable.addCell(createPaymentCell("-" + CURRENCY_FORMAT.format(giamGiaHoaDon) + " đ (" + khuyenMai.getGiamGia() + "%)", font, true));
         } else {
             paymentTable.addCell(createPaymentCell("Khong co", font, true));
         }
@@ -323,7 +323,7 @@ public class XuatHoaDonPDF {
         paymentTable.addCell(thanhTienLabel);
         
         Cell thanhTienValue = new Cell()
-                .add(new Paragraph(CURRENCY_FORMAT.format(donHang.getThanhTien()) + " d")
+                .add(new Paragraph(CURRENCY_FORMAT.format(donHang.getThanhTien()) + " đ")
                         .setFont(boldFont)
                         .setFontSize(11)
                         .setFontColor(HEADER_COLOR))
