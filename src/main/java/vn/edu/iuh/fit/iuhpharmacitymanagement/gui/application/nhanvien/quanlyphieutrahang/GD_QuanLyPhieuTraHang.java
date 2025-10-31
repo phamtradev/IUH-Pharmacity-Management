@@ -1202,7 +1202,7 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
         
         // Format cho số tiền và ngày tháng
         java.text.DecimalFormat currencyFormat = new java.text.DecimalFormat("#,###");
-        java.text.SimpleDateFormat dateFormat = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm");
+        java.text.SimpleDateFormat dateFormat = new java.text.SimpleDateFormat("dd/MM/yyyy");
         
         // === HEADER ===
         javax.swing.JPanel headerPanel = new javax.swing.JPanel();

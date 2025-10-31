@@ -474,21 +474,28 @@ public class LoginFormPanel extends javax.swing.JPanel {
         if (chkHienMatKhau.isSelected()) {
             txtMatKhau.setEchoChar((char) 0);
         } else {
-            if (String.valueOf(txtMatKhau.getPassword()).equals("Mật khẩu")) {
-                txtMatKhau.setEchoChar((char) 0);
-            } else {
-                txtMatKhau.setEchoChar('*');
-            }
+            String text = String.valueOf(txtMatKhau.getPassword());
+        if (text.isEmpty() || text.equals("Mật khẩu")) {
+            txtMatKhau.setEchoChar((char) 0);
+        } else {
+            txtMatKhau.setEchoChar('\u2022'); 
         }
+    }
+        txtMatKhau.repaint();
     }//GEN-LAST:event_chkHienMatKhauActionPerformed
 
     private void txtMatKhauFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtMatKhauFocusGained
         if (String.valueOf(txtMatKhau.getPassword()).equals("Mật khẩu")) {
-            txtMatKhau.setText("");
-            txtMatKhau.setEchoChar('*');
-            txtMatKhau.setForeground(Color.BLACK);
-            removePlayhoder(txtMatKhau);
-        }
+        txtMatKhau.setText("");
+        txtMatKhau.setForeground(Color.BLACK);
+        removePlayhoder(txtMatKhau);
+    }
+    // Giữ chế độ hiện mật khẩu nếu checkbox đang bật
+    if (chkHienMatKhau.isSelected()) {
+        txtMatKhau.setEchoChar((char) 0);
+    } else {
+        txtMatKhau.setEchoChar('\u2022');
+    }
     }//GEN-LAST:event_txtMatKhauFocusGained
 
     private void txtMatKhauFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtMatKhauFocusLost

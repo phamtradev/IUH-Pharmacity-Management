@@ -2,3 +2,4 @@
 
 # Bảo vệ file cấu hình email (chứa API Key)
 src/main/resources/email.properties.DS_Store
+src/main/resources/img/hoadonbanhang/*.pdf 
