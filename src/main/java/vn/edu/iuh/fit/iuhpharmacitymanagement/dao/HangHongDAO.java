@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Optional;
 
 public class HangHongDAO implements DAOInterface<HangHong, String> {
+    
+    private final NhanVienDAO nhanVienDAO;
 
     private final String SQL_THEM =
             "INSERT INTO HangHong (maHangHong, ngayNhap, thanhTien, maNhanVien) VALUES (?, ?, ?, ?)";
@@ -23,9 +25,9 @@ public class HangHongDAO implements DAOInterface<HangHong, String> {
     private final String SQL_TIM_TAT_CA =
             "SELECT * FROM HangHong";
 
-    private final String SQL_LAY_MA_CUOI =
-            "SELECT TOP 1 maHangHong FROM HangHong ORDER BY maHangHong DESC";
-
+    public HangHongDAO() {
+        this.nhanVienDAO = new NhanVienDAO();
+    }
 
     @Override
     public boolean insert(HangHong hangHong) {
@@ -122,29 +124,56 @@ public class HangHongDAO implements DAOInterface<HangHong, String> {
         hh.setNgayNhap(rs.getDate("ngayNhap").toLocalDate());
         hh.setThanhTien(rs.getDouble("thanhTien"));
 
-        NhanVien nv = new NhanVien();
-        nv.setMaNhanVien(rs.getString("maNhanVien"));
-        hh.setNhanVien(nv);
+        // Load đầy đủ thông tin nhân viên từ database
+        String maNhanVien = rs.getString("maNhanVien");
+        if (maNhanVien != null) {
+            Optional<NhanVien> nhanVienOpt = nhanVienDAO.findById(maNhanVien);
+            if (nhanVienOpt.isPresent()) {
+                hh.setNhanVien(nhanVienOpt.get());
+            }
+        }
 
         return hh;
     }
 
 
     private String taoMaHangHongMoi() {
+        // Format: HHddmmyyyyxxxx
+        // HH = prefix
+        // ddmmyyyy = ngày tháng năm hiện tại
+        // xxxx = số thứ tự 4 chữ số
+        LocalDate ngayHienTai = LocalDate.now();
+        String ngayThangNam = String.format("%02d%02d%04d", 
+                ngayHienTai.getDayOfMonth(), 
+                ngayHienTai.getMonthValue(), 
+                ngayHienTai.getYear());
+        
+        String prefixHienTai = "HH" + ngayThangNam;
+        
         try (Connection con = ConnectDB.getConnection();
-             PreparedStatement stmt = con.prepareStatement(SQL_LAY_MA_CUOI);
-             ResultSet rs = stmt.executeQuery()) {
+             PreparedStatement stmt = con.prepareStatement(
+                     "SELECT TOP 1 maHangHong FROM HangHong WHERE maHangHong LIKE ? ORDER BY maHangHong DESC")) {
+            
+            stmt.setString(1, prefixHienTai + "%");
+            ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
                 String maCuoi = rs.getString("maHangHong");
-                int so = Integer.parseInt(maCuoi.substring(2)) + 1; // ví dụ: HH00001
-                return String.format("HH%05d", so);
+                try {
+                    // Lấy 4 số cuối: HHddmmyyyyxxxx -> xxxx
+                    String soSTT = maCuoi.substring(12); // "HH" (2) + "ddmmyyyy" (8) = 10 → lấy từ index 12
+                    int so = Integer.parseInt(soSTT) + 1;
+                    return prefixHienTai + String.format("%04d", so);
+                } catch (NumberFormatException | StringIndexOutOfBoundsException e) {
+                    System.err.println("Mã hàng hỏng không hợp lệ: " + maCuoi + ". Tạo mã mới.");
+                }
             }
 
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return "HH00001";
+        // Nếu chưa có phiếu nào trong ngày, tạo mã đầu tiên
+        return prefixHienTai + "0001";
     }
 
 

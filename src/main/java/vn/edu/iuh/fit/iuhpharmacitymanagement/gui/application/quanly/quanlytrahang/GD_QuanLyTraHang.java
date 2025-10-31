@@ -619,37 +619,27 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
         }
     }
     
-    // Xử lý xuất hủy sản phẩm (không thêm lại vào kho)
+    // Xử lý xuất hủy sản phẩm (KHÔNG cập nhật trạng thái, chỉ thông báo)
     private void xuLyXuatHuy(ChiTietDonTraHang chiTiet, JTable table, int row, DonTraHang donTraHang) {
         try {
             String tenSanPham = chiTiet.getSanPham().getTenSanPham();
             int soLuong = chiTiet.getSoLuong();
+            String maDonTra = donTraHang.getMaDonTraHang();
             
-            // Xác nhận từ người dùng
-            int confirm = javax.swing.JOptionPane.showConfirmDialog(
+            // Thông báo cho quản lý
+            javax.swing.JOptionPane.showMessageDialog(
                 null,
-                String.format("Bạn có chắc muốn xuất hủy %d sản phẩm '%s'?\nSản phẩm sẽ KHÔNG được thêm vào kho.",
-                    soLuong, tenSanPham),
-                "Xác nhận xuất hủy",
-                javax.swing.JOptionPane.YES_NO_OPTION,
-                javax.swing.JOptionPane.WARNING_MESSAGE
+                String.format(
+                    "Đơn trả hàng '%s' đã được đánh dấu.\n" +
+                    "Nhân viên sẽ tạo phiếu xuất hủy từ giao diện 'Phiếu xuất hủy'.\n\n" +
+                    "Sản phẩm: %s\n" +
+                    "Số lượng: %d\n\n" +
+                    "Trạng thái sẽ tự động chuyển thành 'Đã xử lý' sau khi nhân viên tạo phiếu xuất hủy.",
+                    maDonTra, tenSanPham, soLuong
+                ),
+                "Thông tin xuất hủy",
+                javax.swing.JOptionPane.INFORMATION_MESSAGE
             );
-            
-            if (confirm == javax.swing.JOptionPane.YES_OPTION) {
-                // Cập nhật trạng thái đơn trả hàng
-                donTraHang.setTrangThaiXuLy("Đã xử lý");
-                donTraHangBUS.capNhatDonTraHang(donTraHang);
-                
-                // Cập nhật trạng thái CHỈ cho hàng hiện tại trong dialog
-                table.setValueAt("✓ Đã xử lý", row, 7);
-                table.repaint();
-                
-                // Refresh bảng ngoài để cập nhật trạng thái
-                reloadTableData();
-                
-                Notifications.getInstance().show(Notifications.Type.INFO, 
-                    String.format("Đã xuất hủy %d sản phẩm '%s'", soLuong, tenSanPham));
-            }
             
         } catch (Exception e) {
             e.printStackTrace();

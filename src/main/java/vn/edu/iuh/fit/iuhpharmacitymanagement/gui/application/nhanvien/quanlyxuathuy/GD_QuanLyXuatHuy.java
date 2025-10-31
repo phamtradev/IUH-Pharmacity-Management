@@ -5,35 +5,25 @@
 package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlyxuathuy;
 
 import java.awt.Component;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.time.LocalDate;
 
-import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JTextField;
-import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.table.TableModel;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.Font;
-import org.apache.poi.ss.usermodel.IndexedColors;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.LoHangBUS;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.ChiTietDonTraHangBUS;
-//import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.LoHangBUS;
-import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonTraHang;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.HangHongBUS;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.ChiTietHangHongBUS;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.LoHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhanVien;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonTraHang;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.HangHong;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietHangHong;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.session.SessionManager;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.util.XuatPhieuXuatHuyPDF;
+import raven.toast.Notifications;
 
 /**
  *
@@ -41,15 +31,19 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.session.SessionManager;
  */
 public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
 
-    //private LoHangBUS loHangBUS; đừng xóa
-    private ChiTietDonTraHangBUS ctdthBUS;
+    private LoHangBUS loHangBUS;
+    private ChiTietDonTraHangBUS chiTietDonTraHangBUS;
+    private HangHongBUS hangHongBUS;
+    private ChiTietHangHongBUS chiTietHangHongBUS;
 
     /**
      * Creates new form TabHoaDon
      */
     public GD_QuanLyXuatHuy() {
-        //this.loHangBUS = new LoHangBUS(); đừng xóa
-        this.ctdthBUS = new ChiTietDonTraHangBUS();
+        this.loHangBUS = new LoHangBUS();
+        this.chiTietDonTraHangBUS = new ChiTietDonTraHangBUS();
+        this.hangHongBUS = new HangHongBUS();
+        this.chiTietHangHongBUS = new ChiTietHangHongBUS();
         initComponents();
         fillContent();
 
@@ -68,7 +62,6 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         }
     }
 
-    @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
@@ -277,7 +270,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         // 3. Lý do
         gbc.gridx = 2;
         gbc.weightx = 0.08;
-        headerProductPanel.add(createHeaderLabel("Lý do", 90, javax.swing.SwingConstants.LEFT), gbc);
+        headerProductPanel.add(createHeaderLabel("Lý do", 50, javax.swing.SwingConstants.LEFT), gbc);
 
         // 4. Đơn vị
         gbc.gridx = 3;
@@ -319,30 +312,164 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         return label;
     }
 
-    private static CellStyle createStyleForHeader(Sheet sheet) {
-        // Tạo font chữ
-        Font font = sheet.getWorkbook().createFont();
-        font.setFontName("Times New Roman");
-
-        font.setFontHeightInPoints((short) 14);
-
-        // Tạo CellStyle
-        CellStyle cellStyle = sheet.getWorkbook().createCellStyle();
-        cellStyle.setFont(font);
-        cellStyle.setFillForegroundColor(IndexedColors.WHITE.getIndex());
-
-        return cellStyle;
-    }
-
     private void btnTaoPhieuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTaoPhieuActionPerformed
-        // TODO: Logic lưu phiếu xuất hủy vào database (làm sau)
-        JOptionPane.showMessageDialog(this,
-                "Chức năng lưu phiếu xuất hủy sẽ được thực hiện sau!",
-                "Thông báo",
-                JOptionPane.INFORMATION_MESSAGE);
+        try {
+            // 1. Kiểm tra có sản phẩm nào trong danh sách không
+            List<Panel_ChiTietSanPhamXuatHuy> danhSachPanel = new ArrayList<>();
+            for (Component comp : pnContent.getComponents()) {
+                if (comp instanceof Panel_ChiTietSanPhamXuatHuy) {
+                    danhSachPanel.add((Panel_ChiTietSanPhamXuatHuy) comp);
+                }
+            }
+            
+            if (danhSachPanel.isEmpty()) {
+                Notifications.getInstance().show(
+                    Notifications.Type.WARNING, 
+                    "Không có sản phẩm nào để xuất hủy!"
+                );
+                return;
+            }
+            
+            // 2. Xác nhận với người dùng
+            int confirm = JOptionPane.showConfirmDialog(this,
+                    "Bạn có chắc chắn muốn tạo phiếu xuất hủy?\n" +
+                    "Tổng giá trị: " + txtTongTien.getText() + "\n" +
+                    "Số lượng sản phẩm: " + danhSachPanel.size(),
+                    "Xác nhận tạo phiếu",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.QUESTION_MESSAGE);
+            
+            if (confirm != JOptionPane.YES_OPTION) {
+                return;
+            }
+            
+            // 3. Lấy thông tin nhân viên hiện tại
+            NhanVien currentUser = SessionManager.getInstance().getCurrentUser();
+            if (currentUser == null) {
+                Notifications.getInstance().show(
+                    Notifications.Type.ERROR, 
+                    "Không thể xác định nhân viên đang đăng nhập!"
+                );
+                return;
+            }
+            
+            // 4. Tạo đối tượng HangHong (phiếu xuất hủy)
+            HangHong hangHong = new HangHong();
+            hangHong.setNgayNhap(LocalDate.now());
+            
+            // Tính tổng tiền
+            double tongTien = 0;
+            for (Panel_ChiTietSanPhamXuatHuy panel : danhSachPanel) {
+                tongTien += panel.getTongTienHuy();
+            }
+            hangHong.setThanhTien(tongTien);
+            hangHong.setNhanVien(currentUser);
+            
+            // 5. Lưu HangHong vào database (mã sẽ được tự động generate)
+            boolean successHangHong = hangHongBUS.taoHangHong(hangHong);
+            
+            if (!successHangHong) {
+                Notifications.getInstance().show(
+                    Notifications.Type.ERROR, 
+                    "Lỗi khi lưu phiếu xuất hủy vào database!"
+                );
+                return;
+            }
+            
+            // 6. Tạo danh sách ChiTietHangHong và track các đơn trả cần cập nhật
+            List<ChiTietHangHong> chiTietList = new ArrayList<>();
+            java.util.Set<String> danhSachDonTraDaXuLy = new java.util.HashSet<>();
+            
+            for (Panel_ChiTietSanPhamXuatHuy panel : danhSachPanel) {
+                ChiTietHangHong chiTiet = new ChiTietHangHong();
+                chiTiet.setSoLuong(panel.getSoLuongHuy());
+                chiTiet.setDonGia(panel.getDonGia());
+                chiTiet.setThanhTien(panel.getTongTienHuy());
+                chiTiet.setHangHong(hangHong);
+                
+                // Lấy lý do xuất hủy từ panel
+                String lyDoXuatHuy = panel.getLyDoXuatHuy();
+                if (lyDoXuatHuy != null && !lyDoXuatHuy.trim().isEmpty()) {
+                    chiTiet.setLyDoXuatHuy(lyDoXuatHuy);
+                } else {
+                    chiTiet.setLyDoXuatHuy("Chưa rõ lý do");
+                }
+                
+                // Lấy LoHang từ panel
+                LoHang loHang = panel.getLoHang();
+                if (loHang != null) {
+                    chiTiet.setLoHang(loHang);
+                } else {
+                    System.err.println("Warning: Panel không có thông tin lô hàng");
+                }
+                
+                chiTietList.add(chiTiet);
+                
+                // Lưu chi tiết vào database
+                boolean successChiTiet = chiTietHangHongBUS.taoChiTietHangHong(chiTiet);
+                if (!successChiTiet) {
+                    System.err.println("Lỗi khi lưu chi tiết hàng hỏng");
+                }
+                
+                // Track đơn trả cần cập nhật
+                if (panel.getChiTietDonTra() != null) {
+                    String maDonTra = panel.getChiTietDonTra().getDonTraHang().getMaDonTraHang();
+                    danhSachDonTraDaXuLy.add(maDonTra);
+                }
+            }
+            
+            // 6.5. Cập nhật trạng thái các đơn trả hàng đã xuất hủy
+            if (!danhSachDonTraDaXuLy.isEmpty()) {
+                vn.edu.iuh.fit.iuhpharmacitymanagement.bus.DonTraHangBUS donTraBUS = 
+                    new vn.edu.iuh.fit.iuhpharmacitymanagement.bus.DonTraHangBUS();
+                
+                for (String maDonTra : danhSachDonTraDaXuLy) {
+                    try {
+                        vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonTraHang donTra = 
+                            donTraBUS.timDonTraTheoMa(maDonTra);
+                        if (donTra != null) {
+                            donTra.setTrangThaiXuLy("Đã xử lý");
+                            donTraBUS.capNhatDonTraHang(donTra);
+                            System.out.println("Đã cập nhật trạng thái đơn trả: " + maDonTra);
+                        }
+                    } catch (Exception e) {
+                        System.err.println("Lỗi khi cập nhật trạng thái đơn trả " + maDonTra + ": " + e.getMessage());
+                    }
+                }
+            }
+            
+            // 7. Hiển thị preview hóa đơn
+            hienThiPhieuXuatHuy(hangHong, chiTietList);
+            
+            // 8. Xuất PDF phiếu xuất hủy
+            String pdfPath = XuatPhieuXuatHuyPDF.xuatPhieuXuatHuyTuDong(hangHong, chiTietList);
+            
+            if (pdfPath != null) {
+                Notifications.getInstance().show(
+                    Notifications.Type.SUCCESS, 
+                    "Tạo phiếu xuất hủy thành công! Mã: " + hangHong.getMaHangHong()
+                );
+                
+                // 9. Xóa trắng tất cả các sản phẩm đã tạo phiếu
+                xoaTrangDanhSachSanPham();
+                
+            } else {
+                Notifications.getInstance().show(
+                    Notifications.Type.WARNING, 
+                    "Đã lưu phiếu vào database nhưng không thể xuất PDF!"
+                );
+            }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            Notifications.getInstance().show(
+                Notifications.Type.ERROR, 
+                "Lỗi khi tạo phiếu xuất hủy: " + e.getMessage()
+            );
+        }
     }//GEN-LAST:event_btnTaoPhieuActionPerformed
 
-    //Load tự động các sản phẩm hết hạn khi mở màn hình
+    //Load tự động các sản phẩm hết hạn khi mở màn hình (còn <= 6 tháng HSD)
     private void loadSanPhamHetHan() {
         // Xóa các sản phẩm cũ
         pnContent.removeAll();
@@ -358,30 +485,83 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         }
     
         try {
-            System.out.println("DEBUG GUI: goi BUS de lay don tra");
-            // Gọi BUS mới để lấy danh sách
-            List<ChiTietDonTraHang> danhSachTraHang = ctdthBUS.layTatCaChiTietCanHuy();
-            System.out.println("DEBUG GUI: BUS da tra ve " + danhSachTraHang.size() + " muc");
+            System.out.println("DEBUG GUI: Đang tải sản phẩm xuất hủy");
+            
+            // 1. Lấy danh sách lô hàng hết hạn từ LoHangBUS
+            List<LoHang> danhSachLoHangHetHan = loHangBUS.layTatCaLoHangHetHan();
+            System.out.println("DEBUG GUI: Tìm thấy " + danhSachLoHangHetHan.size() + " lô hàng hết hạn");
 
-            if (danhSachTraHang.isEmpty()) {
-                JLabel lblEmpty = new JLabel("Hiện không có sản phẩm nào được trả lại cần xuất hủy.");
+            // 2. Lấy danh sách hàng bị trả từ ChiTietDonTraHangBUS
+            List<ChiTietDonTraHang> danhSachHangTra = chiTietDonTraHangBUS.layTatCaChiTietCanHuy();
+            System.out.println("DEBUG GUI: Tìm thấy " + danhSachHangTra.size() + " sản phẩm từ đơn trả hàng");
+
+            if (danhSachLoHangHetHan.isEmpty() && danhSachHangTra.isEmpty()) {
+                JLabel lblEmpty = new JLabel("Hiện không có sản phẩm nào cần xuất hủy.");
                 lblEmpty.setFont(new java.awt.Font("Segoe UI", java.awt.Font.ITALIC, 16));
                 lblEmpty.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
                 pnContent.add(lblEmpty);
             } else {
-                for (ChiTietDonTraHang ctdt : danhSachTraHang) {
-                    SanPham sanPham = ctdt.getSanPham();
+                // Load các lô hàng hết hạn (số lượng KHÔNG thể chỉnh)
+                for (LoHang loHang : danhSachLoHangHetHan) {
+                    SanPham sanPham = loHang.getSanPham();
                     
                     Panel_ChiTietSanPhamXuatHuy panel = new Panel_ChiTietSanPhamXuatHuy();
                     
                     panel.setTenSanPham(sanPham.getTenSanPham());
-                    // Không có thông tin lô, hiển thị N/A
-                    panel.setLoHang("N/A", "N/A", ctdt.getSoLuong()); 
+                    panel.setHinhAnh(sanPham.getHinhAnh()); // Load hình ảnh
+                    // Hiển thị thông tin lô hàng
+                    panel.setLoHang(
+                        loHang.getTenLoHang(), 
+                        loHang.getHanSuDung().toString(), 
+                        loHang.getTonKho()
+                    ); 
+                    
+                    // Lưu đối tượng LoHang vào panel
+                    panel.setLoHangObject(loHang);
                     
                     panel.setDonVi(sanPham.getDonViTinh().getTenDonVi());
                     panel.setDonGia(sanPham.getGiaNhap());
-                    panel.setSoLuongHuy(ctdt.getSoLuong());
-                    panel.setLyDoXuatHuy(ctdt.getLyDoTra());
+                    panel.setSoLuongHuy(loHang.getTonKho());
+                    panel.setLyDoXuatHuy("Hết hạn sử dụng (còn <= 6 tháng)");
+                    panel.setSoLuongEditable(false); // KHÔNG thể chỉnh số lượng
+                    
+                    pnContent.add(panel);
+                }
+                
+                // Load các sản phẩm từ đơn trả hàng (số lượng KHÔNG thể chỉnh)
+                for (ChiTietDonTraHang chiTiet : danhSachHangTra) {
+                    SanPham sanPham = chiTiet.getSanPham();
+                    
+                    Panel_ChiTietSanPhamXuatHuy panel = new Panel_ChiTietSanPhamXuatHuy();
+                    
+                    panel.setTenSanPham(sanPham.getTenSanPham());
+                    panel.setHinhAnh(sanPham.getHinhAnh()); // Load hình ảnh
+                    // Hiển thị thông tin đơn trả (không có lô hàng và HSD vì đây là hàng đã bán)
+                    panel.setLoHang(
+                        "Đơn trả: " + chiTiet.getDonTraHang().getMaDonTraHang(), 
+                        "N/A", // Không có HSD vì là hàng trả
+                        chiTiet.getSoLuong()
+                    ); 
+                    
+                    // Tạo LoHang giả cho hàng trả (để tránh NullPointerException)
+                    LoHang loHangGia = new LoHang();
+                    // Dùng mã LH00000 (mã đặc biệt cho hàng trả, không tồn tại trong DB)
+                    loHangGia.setMaLoHang("LH00000");
+                    loHangGia.setTenLoHang("Đơn trả: " + chiTiet.getDonTraHang().getMaDonTraHang());
+                    loHangGia.setTonKho(chiTiet.getSoLuong());
+                    loHangGia.setSanPham(sanPham); // QUAN TRỌNG: Set SanPham vào LoHang
+                    loHangGia.setHanSuDung(null); // Hàng trả không có HSD
+                    
+                    panel.setLoHangObject(loHangGia);
+                    
+                    // LƯU THÔNG TIN CHI TIẾT ĐƠN TRẢ VÀO PANEL
+                    panel.setChiTietDonTra(chiTiet);
+                    
+                    panel.setDonVi(sanPham.getDonViTinh().getTenDonVi());
+                    panel.setDonGia(chiTiet.getDonGia());
+                    panel.setSoLuongHuy(chiTiet.getSoLuong());
+                    panel.setLyDoXuatHuy(chiTiet.getLyDoTra()); // Lấy lý do từ đơn trả hàng
+                    panel.setSoLuongEditable(false); // KHÔNG thể chỉnh số lượng
                     
                     pnContent.add(panel);
                 }
@@ -394,49 +574,8 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
 
         } catch (Exception e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Lỗi khi tải danh sách sản phẩm từ đơn trả: " + e.getMessage());
+            JOptionPane.showMessageDialog(this, "Lỗi khi tải danh sách sản phẩm hết hạn: " + e.getMessage());
         }
-    }
-
-    /**
-     * Thêm sản phẩm mẫu (test)
-     */
-    private void themSanPhamMau() {
-        // Sản phẩm 1
-        Panel_ChiTietSanPhamXuatHuy panel1 = new Panel_ChiTietSanPhamXuatHuy();
-        panel1.setTenSanPham("Paracetamol 500mg");
-        panel1.setLoHang("LO001", "15/10/2024", 150);
-        panel1.setDonVi("Viên");
-        panel1.setDonGia(5000);
-        panel1.setSoLuongHuy(10);
-        panel1.setLyDoXuatHuy("Hết hạn sử dụng");
-        pnContent.add(panel1);
-
-        // Sản phẩm 2
-        Panel_ChiTietSanPhamXuatHuy panel2 = new Panel_ChiTietSanPhamXuatHuy();
-        panel2.setTenSanPham("Vitamin C 1000mg");
-        panel2.setLoHang("LO002", "20/09/2024", 80);
-        panel2.setDonVi("Viên");
-        panel2.setDonGia(8000);
-        panel2.setSoLuongHuy(5);
-        panel2.setLyDoXuatHuy("Hết hạn sử dụng");
-        pnContent.add(panel2);
-
-        // Sản phẩm 3
-        Panel_ChiTietSanPhamXuatHuy panel3 = new Panel_ChiTietSanPhamXuatHuy();
-        panel3.setTenSanPham("Amoxicillin 500mg");
-        panel3.setLoHang("LO003", "05/08/2024", 200);
-        panel3.setDonVi("Viên");
-        panel3.setDonGia(12000);
-        panel3.setSoLuongHuy(15);
-        panel3.setLyDoXuatHuy("Hết hạn sử dụng");
-        pnContent.add(panel3);
-
-        pnContent.revalidate();
-        pnContent.repaint();
-
-        // Cập nhật tổng tiền
-        updateTongTien();
     }
 
     /**
@@ -460,23 +599,158 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         return pnContent;
     }
 
-    private void setTxtEmpty(JTextField... labels) {
-
-    }
-
-    private void clearPnOrderDetail() {
-        setTxtEmpty(txtTongTien);
-        pnContent.removeAll();
-        pnContent.revalidate();
-        pnContent.repaint();
-    }
-
-    public void changeTongTienHoaDon() {
-
-    }
     private void jLabel5AncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST:event_jLabel5AncestorAdded
         // TODO add your handling code here:
     }//GEN-LAST:event_jLabel5AncestorAdded
+
+    /**
+     * Hiển thị preview phiếu xuất hủy
+     */
+    private void hienThiPhieuXuatHuy(HangHong hangHong, java.util.List<ChiTietHangHong> danhSachChiTiet) {
+        javax.swing.JDialog dialog = new javax.swing.JDialog();
+        dialog.setTitle("Phiếu xuất hủy");
+        dialog.setModal(true);
+        dialog.setSize(1000, 700);
+        dialog.setLocationRelativeTo(null);
+        
+        // Panel chính
+        javax.swing.JPanel mainPanel = new javax.swing.JPanel();
+        mainPanel.setLayout(new java.awt.BorderLayout(10, 10));
+        mainPanel.setBackground(java.awt.Color.WHITE);
+        mainPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(20, 30, 20, 30));
+        
+        // Format
+        java.text.DecimalFormat currencyFormat = new java.text.DecimalFormat("#,###");
+        java.text.SimpleDateFormat dateFormat = new java.text.SimpleDateFormat("dd/MM/yyyy");
+        
+        // === HEADER ===
+        javax.swing.JPanel headerPanel = new javax.swing.JPanel();
+        headerPanel.setLayout(new javax.swing.BoxLayout(headerPanel, javax.swing.BoxLayout.Y_AXIS));
+        headerPanel.setBackground(java.awt.Color.WHITE);
+        
+        javax.swing.JLabel lblTitle = new javax.swing.JLabel("PHIẾU XUẤT HỦY");
+        lblTitle.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 24));
+        lblTitle.setForeground(new java.awt.Color(220, 53, 69));
+        lblTitle.setAlignmentX(java.awt.Component.CENTER_ALIGNMENT);
+        headerPanel.add(lblTitle);
+        headerPanel.add(javax.swing.Box.createVerticalStrut(20));
+        
+        // Thông tin phiếu
+        headerPanel.add(createInfoLabel("Mã phiếu: ", hangHong.getMaHangHong(), true));
+        headerPanel.add(createInfoLabel("Ngày lập: ", dateFormat.format(java.sql.Date.valueOf(hangHong.getNgayNhap())), false));
+        headerPanel.add(createInfoLabel("Nhân viên: ", hangHong.getNhanVien().getTenNhanVien(), false));
+        
+        mainPanel.add(headerPanel, java.awt.BorderLayout.NORTH);
+        
+        // === CHI TIẾT SẢN PHẨM ===
+        String[] columnNames = {"STT", "Tên sản phẩm", "Lô", "HSD", "ĐV", "SL", "Đơn giá", "Thành tiền", "Lý do"};
+        javax.swing.table.DefaultTableModel modelDetail = new javax.swing.table.DefaultTableModel(columnNames, 0);
+        
+        int stt = 1;
+        for (ChiTietHangHong chiTiet : danhSachChiTiet) {
+            LoHang loHang = chiTiet.getLoHang();
+            if (loHang == null || loHang.getSanPham() == null) continue;
+            
+            SanPham sp = loHang.getSanPham();
+            String hsd = loHang.getHanSuDung() != null ? loHang.getHanSuDung().toString() : "N/A";
+            
+            // Lấy lý do từ ChiTietHangHong
+            String lyDo = chiTiet.getLyDoXuatHuy();
+            if (lyDo == null || lyDo.trim().isEmpty()) {
+                // Fallback nếu không có lý do
+                lyDo = getLyDoFromLoHang(loHang);
+            }
+            
+            modelDetail.addRow(new Object[]{
+                stt++,
+                sp.getTenSanPham(),
+                loHang.getTenLoHang() != null ? loHang.getTenLoHang() : loHang.getMaLoHang(),
+                hsd,
+                sp.getDonViTinh() != null ? sp.getDonViTinh().getTenDonVi() : "",
+                chiTiet.getSoLuong(),
+                currencyFormat.format(chiTiet.getDonGia()) + " ₫",
+                currencyFormat.format(chiTiet.getThanhTien()) + " ₫",
+                lyDo
+            });
+        }
+        
+        javax.swing.JTable tableDetail = new javax.swing.JTable(modelDetail);
+        tableDetail.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 12));
+        tableDetail.setRowHeight(30);
+        tableDetail.getTableHeader().setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 12));
+        
+        javax.swing.JScrollPane scrollPane = new javax.swing.JScrollPane(tableDetail);
+        mainPanel.add(scrollPane, java.awt.BorderLayout.CENTER);
+        
+        // === FOOTER ===
+        javax.swing.JPanel footerPanel = new javax.swing.JPanel();
+        footerPanel.setLayout(new java.awt.BorderLayout());
+        footerPanel.setBackground(java.awt.Color.WHITE);
+        footerPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 0, 0, 0));
+        
+        javax.swing.JPanel tongTienPanel = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT));
+        tongTienPanel.setBackground(java.awt.Color.WHITE);
+        
+        javax.swing.JLabel lblTongTien = new javax.swing.JLabel("TỔNG GIÁ TRỊ XUẤT HỦY:  " + currencyFormat.format(hangHong.getThanhTien()) + " ₫");
+        lblTongTien.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 18));
+        lblTongTien.setForeground(new java.awt.Color(220, 53, 69));
+        tongTienPanel.add(lblTongTien);
+        
+        footerPanel.add(tongTienPanel, java.awt.BorderLayout.NORTH);
+        
+        mainPanel.add(footerPanel, java.awt.BorderLayout.SOUTH);
+        
+        dialog.add(mainPanel);
+        dialog.setVisible(true);
+    }
+    
+    private javax.swing.JPanel createInfoLabel(String title, String value, boolean bold) {
+        javax.swing.JPanel panel = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 0, 5));
+        panel.setBackground(java.awt.Color.WHITE);
+        
+        javax.swing.JLabel lblTitle = new javax.swing.JLabel(title);
+        lblTitle.setFont(new java.awt.Font("Segoe UI", bold ? java.awt.Font.BOLD : java.awt.Font.PLAIN, 14));
+        
+        javax.swing.JLabel lblValue = new javax.swing.JLabel(value);
+        lblValue.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 14));
+        
+        panel.add(lblTitle);
+        panel.add(lblValue);
+        
+        return panel;
+    }
+    
+    private String getLyDoFromLoHang(LoHang loHang) {
+        if (loHang.getMaLoHang().startsWith("HANGTRA_")) {
+            return "Hàng trả lại";
+        }
+        
+        if (loHang.getHanSuDung() != null) {
+            LocalDate hsd = loHang.getHanSuDung();
+            LocalDate now = LocalDate.now();
+            long monthsUntilExpiry = java.time.temporal.ChronoUnit.MONTHS.between(now, hsd);
+            
+            if (monthsUntilExpiry <= 0) {
+                return "Hết hạn sử dụng";
+            } else if (monthsUntilExpiry <= 6) {
+                return "Gần hết hạn (" + monthsUntilExpiry + " tháng)";
+            }
+        }
+        return "Khác";
+    }
+    
+    /**
+     * Xóa trắng tất cả các sản phẩm trong danh sách (sau khi tạo phiếu thành công)
+     */
+    private void xoaTrangDanhSachSanPham() {
+        // Cập nhật lại tổng tiền = 0
+        txtTongTien.setText("0 ₫");
+        
+        // Load lại danh sách sản phẩm cần xuất hủy (loadSanPhamHetHan đã xóa và tạo lại header)
+        loadSanPhamHetHan();
+        
+        System.out.println("DEBUG: Đã xóa và load lại danh sách sản phẩm sau khi tạo phiếu");
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnTaoPhieu;

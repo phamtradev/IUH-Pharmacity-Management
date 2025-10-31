@@ -362,17 +362,34 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
 
         if (selectedRow < 0) {
             Notifications.getInstance().show(Notifications.Type.WARNING, "Hãy chọn phiếu xuất hủy cần xem chi tiết!");
-        } else {
-            String maHH = (String) table.getValueAt(selectedRow, 0);
+            return;
+        }
+        
+        String maHH = (String) table.getValueAt(selectedRow, 0);
 
-            String[] headers = {"Mã lô hàng", "Tên sản phẩm", "Đơn vị tính", "Số lượng", "Đơn giá", "Thành tiền"};
-            List<Integer> tableWidths = Arrays.asList(150, 250, 120, 120, 150, 150);
-            TableDesign tableDetail = new TableDesign(headers, tableWidths);
-            scrollTableDetail.setViewportView(tableDetail.getTable());
-            scrollTableDetail.setBorder(BorderFactory.createEmptyBorder(15, 20, 20, 20));
-
-            HangHong hangHong = hangHongBUS.layHangHongTheoMa(maHH);
-            List<ChiTietHangHong> chiTietHangHongs = chiTietHangHongBUS.layChiTietTheoHangHong(hangHong);
+        HangHong hangHong = hangHongBUS.layHangHongTheoMa(maHH);
+        
+        if (hangHong == null) {
+            Notifications.getInstance().show(Notifications.Type.ERROR, "Không tìm thấy phiếu xuất hủy với mã: " + maHH);
+            return;
+        }
+        
+        List<ChiTietHangHong> chiTietHangHongs = chiTietHangHongBUS.layChiTietTheoHangHong(hangHong);
+        
+        if (chiTietHangHongs == null || chiTietHangHongs.isEmpty()) {
+            Notifications.getInstance().show(Notifications.Type.WARNING, "Phiếu xuất hủy không có chi tiết sản phẩm!");
+            return;
+        }
+        
+        // Tạo header panel thông tin phiếu
+        javax.swing.JPanel headerInfoPanel = createHeaderInfoPanel(hangHong);
+        
+        // Tạo bảng chi tiết
+        String[] headers = {"Mã lô hàng", "Tên sản phẩm", "Đơn vị tính", "Số lượng", "Đơn giá", "Thành tiền"};
+        List<Integer> tableWidths = Arrays.asList(150, 250, 120, 120, 150, 150);
+        TableDesign tableDetail = new TableDesign(headers, tableWidths);
+        scrollTableDetail.setViewportView(tableDetail.getTable());
+        scrollTableDetail.setBorder(BorderFactory.createEmptyBorder(15, 20, 20, 20));
 
             // Sử dụng Map để cộng dồn các sản phẩm cùng mã
             Map<String, Object[]> productMap = new HashMap<>();
@@ -416,11 +433,62 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
                 productData[5] = formatToVND((double) productData[5]);
                 tableDetail.getModelTable().addRow(productData);
             }
+            
+            // Cập nhật jPanel1 với header và table
+            jPanel1.removeAll();
+            jPanel1.setLayout(new java.awt.BorderLayout());
+            jPanel1.add(headerInfoPanel, java.awt.BorderLayout.NORTH);
+            jPanel1.add(scrollTableDetail, java.awt.BorderLayout.CENTER);
+            jPanel1.revalidate();
+            jPanel1.repaint();
 
             modalPurchaseOrderDetail.setLocationRelativeTo(null);
             modalPurchaseOrderDetail.setVisible(true);
-        }
     }//GEN-LAST:event_btnViewActionPerformed
+    
+    /**
+     * Tạo panel thông tin phiếu xuất hủy cho dialog chi tiết
+     */
+    private javax.swing.JPanel createHeaderInfoPanel(HangHong hangHong) {
+        javax.swing.JPanel headerInfoPanel = new javax.swing.JPanel();
+        headerInfoPanel.setBackground(new java.awt.Color(240, 248, 255)); // Alice Blue
+        headerInfoPanel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createMatteBorder(0, 0, 2, 0, new java.awt.Color(23, 162, 184)),
+            BorderFactory.createEmptyBorder(15, 20, 15, 20)
+        ));
+        headerInfoPanel.setLayout(new java.awt.GridLayout(2, 2, 20, 10));
+        
+        // Thông tin phiếu
+        String maNV = hangHong.getNhanVien() != null ? hangHong.getNhanVien().getMaNhanVien() : "N/A";
+        String tenNV = hangHong.getNhanVien() != null ? hangHong.getNhanVien().getTenNhanVien() : "N/A";
+        
+        // Tạo các label thông tin
+        headerInfoPanel.add(createInfoLabel("Mã phiếu xuất hủy:", hangHong.getMaHangHong()));
+        headerInfoPanel.add(createInfoLabel("Ngày xuất hủy:", formatDate(hangHong.getNgayNhap())));
+        headerInfoPanel.add(createInfoLabel("Nhân viên:", maNV + " - " + tenNV));
+        headerInfoPanel.add(createInfoLabel("Tổng tiền:", formatToVND(hangHong.getThanhTien())));
+        
+        return headerInfoPanel;
+    }
+    
+    /**
+     * Tạo label thông tin với title và value
+     */
+    private javax.swing.JPanel createInfoLabel(String title, String value) {
+        javax.swing.JPanel panel = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 5, 0));
+        panel.setBackground(new java.awt.Color(240, 248, 255));
+        
+        javax.swing.JLabel lblTitle = new javax.swing.JLabel(title);
+        lblTitle.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 14));
+        
+        javax.swing.JLabel lblValue = new javax.swing.JLabel(value);
+        lblValue.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 14));
+        
+        panel.add(lblTitle);
+        panel.add(lblValue);
+        
+        return panel;
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnSearch;

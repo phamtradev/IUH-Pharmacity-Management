@@ -2,17 +2,17 @@ package vn.edu.iuh.fit.iuhpharmacitymanagement.entity;
 
 /**
  * @author PhamTra
+ * Chi tiết hàng hỏng - Composite key (maLoHang + maHangHong)
  */
 public class ChiTietHangHong {
-    private String maChiTietHangHong;
     private int soLuong;
     private double donGia;
     private double thanhTien;
+    private String lyDoXuatHuy; // Lý do xuất hủy
 
     private LoHang loHang;
     private HangHong hangHong;
     
-    public static final String MA_CHI_TIET_RONG = "Mã chi tiết hàng hỏng không được để trống";
     public static final String SO_LUONG_SAI = "Số lượng phải là số nguyên dương lớn hơn 0, không được rỗng";
     public static final String DON_GIA_SAI = "Đơn giá phải là số thực dương lớn hơn 0, không được rỗng";
     public static final String LO_HANG_RONG = "Lô hàng không được để trống";
@@ -21,24 +21,13 @@ public class ChiTietHangHong {
     public ChiTietHangHong() {
     }
 
-    public ChiTietHangHong(String maChiTietHangHong, int soLuong, double donGia, double thanhTien, LoHang loHang, HangHong hangHong) {
-        this.maChiTietHangHong = maChiTietHangHong;
+    public ChiTietHangHong(int soLuong, double donGia, double thanhTien, LoHang loHang, HangHong hangHong) {
         this.soLuong = soLuong;
         this.donGia = donGia;
         this.thanhTien = thanhTien;
         this.loHang = loHang;
         this.hangHong = hangHong;
-    }
-
-    public String getMaChiTietHangHong() {
-        return maChiTietHangHong;
-    }
-
-    public void setMaChiTietHangHong(String maChiTietHangHong) throws Exception {
-        if (maChiTietHangHong.isBlank()) {
-            throw new Exception(MA_CHI_TIET_RONG);
-        }
-        this.maChiTietHangHong = maChiTietHangHong;
+        this.lyDoXuatHuy = "";
     }
 
     public int getSoLuong() {
@@ -93,9 +82,17 @@ public class ChiTietHangHong {
         this.hangHong = hangHong;
     }
 
+    public String getLyDoXuatHuy() {
+        return lyDoXuatHuy;
+    }
+
+    public void setLyDoXuatHuy(String lyDoXuatHuy) {
+        this.lyDoXuatHuy = lyDoXuatHuy;
+    }
+
     @Override
     public String toString() {
-        return "ChiTietHangHong{" + "maChiTietHangHong=" + maChiTietHangHong + ", soLuong=" + soLuong + ", donGia=" + donGia + ", thanhTien=" + thanhTien + ", loHang=" + loHang + ", hangHong=" + hangHong + '}';
+        return "ChiTietHangHong{" + "soLuong=" + soLuong + ", donGia=" + donGia + ", thanhTien=" + thanhTien + ", loHang=" + (loHang != null ? loHang.getMaLoHang() : "null") + ", hangHong=" + (hangHong != null ? hangHong.getMaHangHong() : "null") + ", lyDoXuatHuy=" + lyDoXuatHuy + '}';
     }
 
     

@@ -125,7 +125,7 @@ public class LoHang {
                 ", ngaySanXuat=" + ngaySanXuat +
                 ", hanSuDung=" + hanSuDung +
                 ", tonKho=" + tonKho +
-                ", trangThai=" + (trangThai ? "Đang hoạt động" : "Ngừng hoạt động") +
+                ", trangThai=" + (trangThai ? "Đang bán" : "Ngưng bán") +
                 ", sanPham=" + (sanPham != null ? sanPham.getMaSanPham() : "null") +
                 '}';
     }

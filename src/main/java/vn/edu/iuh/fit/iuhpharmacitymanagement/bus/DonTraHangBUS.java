@@ -35,6 +35,11 @@ public class DonTraHangBUS {
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn trả hàng với mã = " + maDonTraHang));
     }
 
+    // Alias method cho layDonTraHangTheoMa
+    public DonTraHang timDonTraTheoMa(String maDonTraHang) {
+        return donTraHangDAO.findById(maDonTraHang).orElse(null);
+    }
+
     public List<DonTraHang> layTatCaDonTraHang() {
         return donTraHangDAO.findAll();
     }

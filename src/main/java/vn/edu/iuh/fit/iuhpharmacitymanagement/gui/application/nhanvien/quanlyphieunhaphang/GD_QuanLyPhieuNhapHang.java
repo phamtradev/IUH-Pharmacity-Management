@@ -340,15 +340,10 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
         pnLeft.setPreferredSize(new java.awt.Dimension(485, 650));
 
         btnConfirmPurchase.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
-        btnConfirmPurchase.setText("Nhập hàng ( F8 )");
+        btnConfirmPurchase.setText("Nhập hàng");
         btnConfirmPurchase.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnConfirmPurchaseActionPerformed(evt);
-            }
-        });
-        btnConfirmPurchase.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyPressed(java.awt.event.KeyEvent evt) {
-                btnConfirmPurchaseKeyPressed(evt);
             }
         });
 
@@ -636,7 +631,8 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
                 String header = getCellValueAsString(cell).trim().toLowerCase();
                 
                 // Các cột sản phẩm
-                if (header.contains("mã") && header.contains("sản phẩm")) {
+                if ((header.contains("số") && header.contains("đăng ký")) || 
+                    (header.contains("so") && header.contains("dang ky"))) {
                     colMaSP = i;
                 } else if (header.contains("tên") && header.contains("sản phẩm")) {
                     colTenSP = i;
@@ -667,7 +663,7 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
             if (colMaSP == -1 || colSoLuong == -1 || colDonGia == -1) {
                 Notifications.getInstance().show(Notifications.Type.ERROR, 
                     Notifications.Location.TOP_CENTER,
-                    "File Excel thiếu các cột bắt buộc: Mã sản phẩm, Số lượng, Đơn giá nhập!");
+                    "File Excel thiếu các cột bắt buộc: Số đăng ký, Số lượng, Đơn giá nhập!");
                 return;
             }
             
@@ -1196,10 +1192,6 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
     private void txtSearchProductKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtSearchProductKeyPressed
 
     }//GEN-LAST:event_txtSearchProductKeyPressed
-
-    private void btnConfirmPurchaseKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_btnConfirmPurchaseKeyPressed
-
-    }//GEN-LAST:event_btnConfirmPurchaseKeyPressed
     
     /**
      * Xóa toàn bộ sản phẩm khỏi panel

@@ -4,6 +4,9 @@
  */
 package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlyxuathuy;
 
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.LoHang;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonTraHang;
+
 /**
  *
  * @author PhamTra
@@ -11,6 +14,9 @@ package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlyxu
 public class Panel_ChiTietSanPhamXuatHuy extends javax.swing.JPanel {
 
     private String lyDoXuatHuy = "";
+    private LoHang loHang = null; // Lưu thông tin lô hàng
+    private ChiTietDonTraHang chiTietDonTra = null; // Lưu thông tin chi tiết đơn trả (nếu là từ đơn trả)
+    private javax.swing.JLabel lblHinh; // Lưu reference đến label hình ảnh
 
     public Panel_ChiTietSanPhamXuatHuy() {
         initComponents();
@@ -28,12 +34,79 @@ public class Panel_ChiTietSanPhamXuatHuy extends javax.swing.JPanel {
         lblTenSP.setText(ten);
     }
     
+    public void setHinhAnh(String hinhAnh) {
+        if (lblHinh != null) {
+            if (hinhAnh != null && !hinhAnh.trim().isEmpty()) {
+                try {
+                    // Thử đường dẫn gốc trước
+                    java.io.File file = new java.io.File(hinhAnh);
+                    if (file.exists()) {
+                        javax.swing.ImageIcon icon = new javax.swing.ImageIcon(hinhAnh);
+                        java.awt.Image img = icon.getImage();
+                        java.awt.Image scaledImg = img.getScaledInstance(80, 80, java.awt.Image.SCALE_SMOOTH);
+                        lblHinh.setIcon(new javax.swing.ImageIcon(scaledImg));
+                        lblHinh.setText("");
+                        return;
+                    }
+                    
+                    // Nếu không tìm thấy, thử với relative path từ thư mục gốc project
+                    file = new java.io.File("src/main/resources/" + hinhAnh);
+                    if (file.exists()) {
+                        javax.swing.ImageIcon icon = new javax.swing.ImageIcon(file.getAbsolutePath());
+                        java.awt.Image img = icon.getImage();
+                        java.awt.Image scaledImg = img.getScaledInstance(80, 80, java.awt.Image.SCALE_SMOOTH);
+                        lblHinh.setIcon(new javax.swing.ImageIcon(scaledImg));
+                        lblHinh.setText("");
+                        return;
+                    }
+                    
+                    // Thử load từ resources folder trong classpath
+                    try {
+                        java.net.URL imageURL = getClass().getResource("/" + hinhAnh);
+                        if (imageURL != null) {
+                            javax.swing.ImageIcon icon = new javax.swing.ImageIcon(imageURL);
+                            java.awt.Image img = icon.getImage();
+                            java.awt.Image scaledImg = img.getScaledInstance(80, 80, java.awt.Image.SCALE_SMOOTH);
+                            lblHinh.setIcon(new javax.swing.ImageIcon(scaledImg));
+                            lblHinh.setText("");
+                            return;
+                        }
+                    } catch (Exception ex) {
+                        System.err.println("Không thể load hình từ classpath: " + ex.getMessage());
+                    }
+                    
+                    // Nếu không tìm thấy ở đâu cả
+                    System.err.println("Không tìm thấy hình ảnh: " + hinhAnh);
+                    lblHinh.setIcon(null);
+                    lblHinh.setText("IMG");
+                } catch (Exception e) {
+                    System.err.println("Lỗi khi load hình ảnh: " + e.getMessage());
+                    lblHinh.setIcon(null);
+                    lblHinh.setText("IMG");
+                }
+            } else {
+                lblHinh.setIcon(null);
+                lblHinh.setText("IMG");
+            }
+        }
+    }
+    
     public void setLoHang(String tenLo, String hanSuDung, int tonKho) {
         if (lblLoHang != null) {
-            lblLoHang.setText("Lô: " + tenLo);
+            // Nếu đã có prefix "Đơn trả:" thì không thêm "Lô:" nữa
+            if (tenLo.startsWith("Đơn trả:")) {
+                lblLoHang.setText(tenLo);
+            } else {
+                lblLoHang.setText("Lô: " + tenLo);
+            }
         }
         if (lblHanSuDung != null) {
-            lblHanSuDung.setText("HSD: " + hanSuDung);
+            // Nếu HSD là "N/A" thì ẩn label hoặc hiển thị đặc biệt
+            if ("N/A".equals(hanSuDung) || hanSuDung == null || hanSuDung.isEmpty()) {
+                lblHanSuDung.setText(""); // Ẩn HSD
+            } else {
+                lblHanSuDung.setText("HSD: " + hanSuDung);
+            }
         }
         if (lblTonKho != null) {
             lblTonKho.setText("Tồn: " + tonKho);
@@ -81,6 +154,30 @@ public class Panel_ChiTietSanPhamXuatHuy extends javax.swing.JPanel {
             }
         }
     }
+    
+    // Method để enable/disable spinner số lượng
+    public void setSoLuongEditable(boolean editable) {
+        if (spinnerSoLuongHuy != null) {
+            spinnerSoLuongHuy.setEnabled(editable);
+        }
+    }
+    
+    // Getter và Setter cho LoHang
+    public LoHang getLoHang() {
+        return loHang;
+    }
+    
+    public void setLoHangObject(LoHang loHang) {
+        this.loHang = loHang;
+    }
+    
+    public ChiTietDonTraHang getChiTietDonTra() {
+        return chiTietDonTra;
+    }
+    
+    public void setChiTietDonTra(ChiTietDonTraHang chiTietDonTra) {
+        this.chiTietDonTra = chiTietDonTra;
+    }
 
     private void updateTongTienHuy() {
         try {
@@ -113,7 +210,7 @@ public class Panel_ChiTietSanPhamXuatHuy extends javax.swing.JPanel {
         gbc.weighty = 1.0;
 
         // 1. Hình ảnh sản phẩm
-        javax.swing.JLabel lblHinh = new javax.swing.JLabel();
+        lblHinh = new javax.swing.JLabel();
         lblHinh.setPreferredSize(new java.awt.Dimension(80, 80));
         lblHinh.setMinimumSize(new java.awt.Dimension(80, 80));
         lblHinh.setMaximumSize(new java.awt.Dimension(80, 80));
@@ -304,12 +401,35 @@ public class Panel_ChiTietSanPhamXuatHuy extends javax.swing.JPanel {
             parent.remove(this);
             parent.revalidate();
             parent.repaint();
+            
+            // Tìm GD_QuanLyXuatHuy parent để cập nhật tổng tiền
+            java.awt.Container topParent = parent;
+            while (topParent != null && !(topParent instanceof GD_QuanLyXuatHuy)) {
+                topParent = topParent.getParent();
+            }
+            
+            if (topParent instanceof GD_QuanLyXuatHuy) {
+                ((GD_QuanLyXuatHuy) topParent).updateTongTien();
+            }
         }
     }//GEN-LAST:event_btnXoaActionPerformed
 
     private void spinnerSoLuongHuyStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_spinnerSoLuongHuyStateChanged
         // Tính lại tổng tiền hủy khi thay đổi số lượng
         updateTongTienHuy();
+        
+        // Cập nhật tổng tiền của form cha
+        java.awt.Container parent = this.getParent();
+        if (parent != null) {
+            java.awt.Container topParent = parent;
+            while (topParent != null && !(topParent instanceof GD_QuanLyXuatHuy)) {
+                topParent = topParent.getParent();
+            }
+            
+            if (topParent instanceof GD_QuanLyXuatHuy) {
+                ((GD_QuanLyXuatHuy) topParent).updateTongTien();
+            }
+        }
     }//GEN-LAST:event_spinnerSoLuongHuyStateChanged
 
 

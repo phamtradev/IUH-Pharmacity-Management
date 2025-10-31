@@ -49,7 +49,6 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
     private String tenLoMoi = null;
     private Date hsdLoMoi = null;
     private int soLuongLoMoi = 1;
-    private double giaNhapLoMoi = 0.0;
 
     public Panel_ChiTietSanPhamNhap() {
         this.currencyFormat = new DecimalFormat("#,###");
@@ -328,10 +327,6 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
         return soLuongLoMoi;
     }
     
-    public double getGiaNhapLoMoi() {
-        return giaNhapLoMoi;
-    }
-    
     /**
      * Hiển thị dialog chọn lô hàng với 2 tab: Lô cũ & Tạo lô mới
      */
@@ -457,24 +452,9 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
         gbcTab2.weightx = 1.0;
         tabTaoLoMoi.add(spinnerSoLuongMoi, gbcTab2);
         
-        // Giá nhập
-        javax.swing.JLabel lblGiaNhapMoi = new javax.swing.JLabel("Giá nhập:");
-        lblGiaNhapMoi.setFont(new java.awt.Font("Segoe UI", 0, 14));
-        gbcTab2.gridx = 0;
-        gbcTab2.gridy = 3;
-        gbcTab2.weightx = 0.0;
-        tabTaoLoMoi.add(lblGiaNhapMoi, gbcTab2);
-        
-        javax.swing.JTextField txtGiaNhapMoi = new javax.swing.JTextField(20);
-        txtGiaNhapMoi.setFont(new java.awt.Font("Segoe UI", 0, 14));
-        txtGiaNhapMoi.setPreferredSize(new java.awt.Dimension(300, 35));
-        gbcTab2.gridx = 1;
-        gbcTab2.weightx = 1.0;
-        tabTaoLoMoi.add(txtGiaNhapMoi, gbcTab2);
-        
         // Spacer
         gbcTab2.gridx = 0;
-        gbcTab2.gridy = 4;
+        gbcTab2.gridy = 3;
         gbcTab2.weighty = 1.0;
         tabTaoLoMoi.add(new javax.swing.JLabel(), gbcTab2);
         
@@ -548,46 +528,14 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
                     return;
                 }
                 
-                // Lấy giá nhập
-                String giaNhapStr = txtGiaNhapMoi.getText().trim();
-                if (giaNhapStr.isEmpty()) {
-                    javax.swing.JOptionPane.showMessageDialog(dialog,
-                        "Vui lòng nhập giá nhập!",
-                        "Thiếu thông tin",
-                        javax.swing.JOptionPane.WARNING_MESSAGE);
-                    return;
-                }
-                
-                double giaNhap = 0.0;
-                try {
-                    // Loại bỏ dấu phẩy nếu có
-                    giaNhapStr = giaNhapStr.replaceAll(",", "");
-                    giaNhap = Double.parseDouble(giaNhapStr);
-                    if (giaNhap <= 0) {
-                        javax.swing.JOptionPane.showMessageDialog(dialog,
-                            "Giá nhập phải lớn hơn 0!",
-                            "Dữ liệu không hợp lệ",
-                            javax.swing.JOptionPane.WARNING_MESSAGE);
-                        return;
-                    }
-                } catch (NumberFormatException e) {
-                    javax.swing.JOptionPane.showMessageDialog(dialog,
-                        "Giá nhập không hợp lệ!",
-                        "Dữ liệu không hợp lệ",
-                        javax.swing.JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-                
                 // Lưu thông tin lô mới
                 tenLoMoi = tenLo;
                 hsdLoMoi = (Date) spinnerHSDMoi.getValue();
                 soLuongLoMoi = soLuong;
-                giaNhapLoMoi = giaNhap;
                 loHangDaChon = null; // Clear lô cũ nếu có
                 
-                // Cập nhật số lượng và giá nhập lên panel chính
+                // Cập nhật số lượng lên panel chính (giá nhập đã có sẵn từ Excel)
                 spinnerSoLuong.setValue(soLuong);
-                txtDonGia.setText(currencyFormat.format(giaNhap) + " đ");
                 updateTongTien(); // Cập nhật tổng tiền
                 
                 updateLoInfo();

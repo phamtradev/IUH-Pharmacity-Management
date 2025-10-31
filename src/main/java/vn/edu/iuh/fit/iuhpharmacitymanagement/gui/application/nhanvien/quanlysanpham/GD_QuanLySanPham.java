@@ -11,6 +11,7 @@ import java.awt.*;
 import java.io.File;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -228,7 +229,7 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
                 getLoaiSanPhamDisplay(sp.getLoaiSanPham()),
                 currencyFormat.format(sp.getGiaNhap()),
                 currencyFormat.format(sp.getGiaBan()),
-                sp.isHoatDong() ? "Đang hoạt động" : "Ngưng bán"
+                sp.isHoatDong() ? "Đang bán" : "Ngưng bán"
             };
             model.addRow(row);
         }
@@ -332,10 +333,20 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
                 .mapToInt(LoHang::getTonKho)
                 .sum();
 
+        // Kiểm tra có lô hàng còn hạn không (HSD > ngày hiện tại)
+        LocalDate today = LocalDate.now();
+        boolean coLoHangConHan = danhSachLoHang.stream()
+                .anyMatch(lh -> lh.getHanSuDung().isAfter(today) && lh.getTonKho() > 0);
+
         // Tạo panel chính chứa tất cả
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
         mainPanel.setBackground(Color.WHITE);
+
+        // Tạo panel hiển thị trạng thái sản phẩm
+        JPanel statusPanel = createStatusPanel(coLoHangConHan);
+        mainPanel.add(statusPanel);
+        mainPanel.add(Box.createVerticalStrut(15));
 
         // Tạo panel hiển thị tổng tồn kho ở đầu
         JPanel totalPanel = createTotalQuantityPanel(tongTonKho);
@@ -368,6 +379,45 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         ScrollPaneTab3.setViewportView(mainPanel);
         ScrollPaneTab3.revalidate();
         ScrollPaneTab3.repaint();
+    }
+
+    private JPanel createStatusPanel(boolean coLoHangConHan) {
+        JPanel panel = new JPanel();
+        panel.setLayout(new FlowLayout(FlowLayout.CENTER, 15, 10));
+        
+        if (coLoHangConHan) {
+            // Đang bán - màu xanh lá
+            panel.setBackground(new Color(220, 255, 220)); // Light Green
+            panel.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createLineBorder(new Color(34, 139, 34), 2),
+                    BorderFactory.createEmptyBorder(10, 20, 10, 20)
+            ));
+            
+            JLabel lblStatus = new JLabel("✓ ĐANG BÁN");
+            lblStatus.setFont(new Font("Segoe UI", Font.BOLD, 16));
+            lblStatus.setForeground(new Color(0, 128, 0)); // Dark Green
+            panel.add(lblStatus);
+        } else {
+            // Ngưng bán - màu đỏ
+            panel.setBackground(new Color(255, 220, 220)); // Light Red
+            panel.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createLineBorder(new Color(220, 20, 60), 2),
+                    BorderFactory.createEmptyBorder(10, 20, 10, 20)
+            ));
+            
+            JLabel lblStatus = new JLabel("✗ NGƯNG BÁN");
+            lblStatus.setFont(new Font("Segoe UI", Font.BOLD, 16));
+            lblStatus.setForeground(new Color(178, 34, 34)); // Fire Brick Red
+            panel.add(lblStatus);
+            
+            JLabel lblReason = new JLabel("(Không còn lô hàng còn hạn)");
+            lblReason.setFont(new Font("Segoe UI", Font.ITALIC, 13));
+            lblReason.setForeground(Color.GRAY);
+            panel.add(lblReason);
+        }
+        
+        panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 60));
+        return panel;
     }
 
     private JPanel createTotalQuantityPanel(int tongTonKho) {
@@ -1328,7 +1378,7 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         jPanel6.add(optionPdType);
 
         optionPdStatus.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        optionPdStatus.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Tất cả", "Đang hoạt động", "Ngưng bán" }));
+        optionPdStatus.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Tất cả", "Đang bán", "Ngưng bán" }));
         optionPdStatus.setMinimumSize(new java.awt.Dimension(170, 40));
         optionPdStatus.setPreferredSize(new java.awt.Dimension(170, 40));
         optionPdStatus.addActionListener(new java.awt.event.ActionListener() {
@@ -1491,7 +1541,7 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
 
         // Lọc theo trạng thái
         if (!"Tất cả".equals(trangThaiStr)) {
-            boolean hoatDong = "Đang hoạt động".equals(trangThaiStr);
+            boolean hoatDong = "Đang bán".equals(trangThaiStr);
             ketQua = ketQua.stream()
                     .filter(sp -> sp.isHoatDong() == hoatDong)
                     .collect(java.util.stream.Collectors.toList());
@@ -2428,6 +2478,13 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
             sanPham.setGiaBan(giaBan);
             sanPham.setLoaiSanPham(loaiSP);
             sanPham.setDonViTinh(donViTinh);
+
+            // Tự động cập nhật trạng thái dựa trên lô hàng
+            List<LoHang> danhSachLoHang = loHangDAO.findByMaSanPham(productEdit);
+            LocalDate today = LocalDate.now();
+            boolean coLoHangConHan = danhSachLoHang.stream()
+                    .anyMatch(lh -> lh.getHanSuDung().isAfter(today) && lh.getTonKho() > 0);
+            sanPham.setHoatDong(coLoHangConHan);
 
             // Xử lý hình ảnh nếu có thay đổi
             if (imageProductEdit != null) {
