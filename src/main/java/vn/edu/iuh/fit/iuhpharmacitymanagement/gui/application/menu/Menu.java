@@ -34,6 +34,7 @@ public class Menu extends JPanel {
         {"Quản lý đơn hàng"},
         {"Quản lý khuyến mãi"},
         {"Thông tin cá nhân"},
+        {"Chat Bot"},
         {"Trợ giúp"},
         {"Đăng xuất"}
     };
@@ -48,6 +49,7 @@ public class Menu extends JPanel {
         {"Phiếu xuất hủy"},
         {"Thống kê cá nhân"},
         {"Thông tin cá nhân"},
+        {"Chat Bot"},
         {"Trợ giúp"},
         {"Đăng xuất"}
     };

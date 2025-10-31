@@ -13,28 +13,30 @@ import java.util.List;
  * @author User
  */
 public class HangHong {
+
     private String maHangHong;
     private LocalDate ngayNhap;
     private double thanhTien;
     private NhanVien nhanVien;
     private List<ChiTietHangHong> chiTietHangHong;
-    public static final String MA_HANG_HONG_SAI ="Mã hàng hỏng không được rỗng và phải bắt đầu bằng HHddmmyyyyxxxx (dd là ngày phát hiện hàng hỏng, mm là tháng phát hiện hàng hỏng, yyyy là năm phát hiện hàng hỏng, xxxx  là 4 số dương)";
-       private static final String REGEX_MA_HANG_HONG =
-    "^HH(0[1-9]|[12][0-9]|3[01])" + 
-    "(0[1-9]|1[0-2])" +                
-    "(20)\\d{2}" +             
-    "(?!0000)\\d{4}$";  
-    
-    public static final String NGAY_NHAP_HANG_SAI ="Ngày nhập hàng hỏng phải nhỏ hơn hoặc bằng ngày hiện tại";
-    public static final String NGAY_NHAP_HANG_NULL ="Ngày nhập hàng hỏng không được rỗng";
-    
-    
-    
+
+    public static final String MA_HANG_HONG_SAI = "Mã hàng hỏng không được rỗng "
+            + "và phải bắt đầu bằng HHddmmyyyyxxxx (dd là ngày phát hiện hàng hỏng,"
+            + " mm là tháng phát hiện hàng hỏng, yyyy là năm phát hiện hàng hỏng, xxxx  là 4 số dương)";
+    private static final String REGEX_MA_HANG_HONG
+            = "^HH(0[1-9]|[12][0-9]|3[01])"
+            + "(0[1-9]|1[0-2])"
+            + "(20)\\d{2}"
+            + "(?!0000)\\d{4}$";
+
+    public static final String NGAY_NHAP_HANG_SAI = "Ngày nhập hàng hỏng phải nhỏ hơn hoặc bằng ngày hiện tại";
+    public static final String NGAY_NHAP_HANG_NULL = "Ngày nhập hàng hỏng không được rỗng";
+
     public HangHong() {
     }
 
     public HangHong(String maHangHong, LocalDate ngayNhap, double thanhTien,
-                    NhanVien nhanVien, List<ChiTietHangHong> chiTietHangHong) {
+            NhanVien nhanVien, List<ChiTietHangHong> chiTietHangHong) {
         this.maHangHong = maHangHong;
         this.ngayNhap = ngayNhap;
         this.thanhTien = thanhTien;
@@ -46,7 +48,7 @@ public class HangHong {
         return maHangHong;
     }
 
-     public void setMaHangHong(String maHangHong) throws Exception {      
+    public void setMaHangHong(String maHangHong) throws Exception {
         if (maHangHong == null || !maHangHong.matches(REGEX_MA_HANG_HONG) || maHangHong.isBlank()) {
             throw new Exception(MA_HANG_HONG_SAI);
         }
@@ -73,11 +75,11 @@ public class HangHong {
     }
 
     public void setNgayNhap(LocalDate ngayNhap) throws Exception {
-        if(ngayNhap==null){
+        if (ngayNhap == null) {
             throw new Exception(NGAY_NHAP_HANG_NULL);
         }
-        LocalDate hientai =LocalDate.now();
-        if(ngayNhap.isAfter(hientai)){
+        LocalDate hientai = LocalDate.now();
+        if (ngayNhap.isAfter(hientai)) {
             throw new Exception(NGAY_NHAP_HANG_SAI);
         }
         this.ngayNhap = ngayNhap;
@@ -88,7 +90,9 @@ public class HangHong {
     }
 
     public void setThanhTien(double thanhTien) throws Exception {
-        if(thanhTien<=0 ) throw new Exception("thành tiền phải lớn hơn 0, không được rỗng");
+        if (thanhTien <= 0) {
+            throw new Exception("thành tiền phải lớn hơn 0, không được rỗng");
+        }
         this.thanhTien = thanhTien;
     }
 
@@ -97,7 +101,9 @@ public class HangHong {
     }
 
     public void setNhanVien(NhanVien nhanVien) throws Exception {
-        if(nhanVien == null) throw new Exception("nhân viên không được rỗng");
+        if (nhanVien == null) {
+            throw new Exception("nhân viên không được rỗng");
+        }
         this.nhanVien = nhanVien;
     }
 
@@ -111,13 +117,13 @@ public class HangHong {
 
     @Override
     public String toString() {
-        return "HangHong{" +
-                "maHangHong='" + maHangHong + '\'' +
-                ", ngayNhap=" + ngayNhap +
-                ", thanhTien=" + thanhTien +
-                ", nhanVien=" + nhanVien +
-                ", chiTietHangHong=" + chiTietHangHong +
-                '}';
+        return "HangHong{"
+                + "maHangHong='" + maHangHong + '\''
+                + ", ngayNhap=" + ngayNhap
+                + ", thanhTien=" + thanhTien
+                + ", nhanVien=" + nhanVien
+                + ", chiTietHangHong=" + chiTietHangHong
+                + '}';
     }
- 
+
 }

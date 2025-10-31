@@ -37,6 +37,7 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlydonha
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlykhuyenmai.GD_QuanLyKhuyenMai;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlylohang.GD_QuanLyLoHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlythuchi.GD_BaoCaoThuChi;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.chatbot.GD_ChatBot;
 
 /**
  *
@@ -91,7 +92,7 @@ public class MainForm extends JLayeredPane {
         setLayer(menuButton, JLayeredPane.POPUP_LAYER);
         add(menu);        
         add(panelBody);
-        add(menuButton);       
+        add(menuButton);
         initMenuEvent();
 
         // Hiển thị giao diện chào mừng tương ứng với type khi khởi động
@@ -155,9 +156,13 @@ public class MainForm extends JLayeredPane {
                     showForm(new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.dashboard.GD_DashBoard());
                 } else if (index == 28) {
                     showForm(new GD_ThongTinCaNhan(false));
-//                } else if (index == 29) {
+                } else if (index == 29) {
+                    // Chat Bot
+                    showForm(new GD_ChatBot());
+//                } else if (index == 30) {
+//                    // Trợ giúp
 //                    showForm(new ViewPdfPanel(1));
-                } else if (index == 30) { 
+                } else if (index == 31) { 
                     // Đăng xuất nhân viên
                     handleLogout();
                 } else {
@@ -207,10 +212,13 @@ public class MainForm extends JLayeredPane {
                 } else if (index == 13) {
                     // Thông tin cá nhân
                     showForm(new GD_ThongTinCaNhan(true));
-//                } else if (index == 14) {
+                } else if (index == 14) {
+                    // Chat Bot
+                    showForm(new GD_ChatBot());
+//                } else if (index == 15) {
 //                    // Trợ giúp
 //                    showForm(new ViewPdfPanel(2));
-                } else if (index == 15) {
+                } else if (index == 16) {
                     // Đăng xuất quản lý
                     handleLogout();
                 } else {
@@ -339,6 +347,7 @@ public class MainForm extends JLayeredPane {
     public void setSelectedMenu(int index, int subIndex) {
         menu.setSelectedMenu(index, subIndex);
     }
+    
 
     private Menu menu;
     private JPanel panelBody;
