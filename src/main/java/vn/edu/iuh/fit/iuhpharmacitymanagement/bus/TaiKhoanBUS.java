@@ -16,10 +16,15 @@ public class TaiKhoanBUS {
   
     public boolean taoTaiKhoan(TaiKhoan taiKhoan) {
         try {
+            // Validate mật khẩu trước khi mã hóa
+            if (!taiKhoan.getMatKhau().matches(TaiKhoan.MAT_KHAU_REGEX)) {
+                throw new Exception(TaiKhoan.MAT_KHAU_SAI);
+            }
+            
             // Mã hóa mật khẩu trước khi lưu
             String matKhauGoc = taiKhoan.getMatKhau();
             String matKhauDaMaHoa = PasswordUtil.encode(matKhauGoc);
-            taiKhoan.setMatKhau(matKhauDaMaHoa);
+            taiKhoan.setMatKhauDaMaHoa(matKhauDaMaHoa);
             
             return taiKhoanDAO.insert(taiKhoan);
         } catch (Exception e) {
@@ -33,10 +38,17 @@ public class TaiKhoanBUS {
         try {
             // Kiểm tra xem có cập nhật mật khẩu không
             TaiKhoan taiKhoanCu = taiKhoanDAO.findById(taiKhoan.getTenDangNhap()).orElse(null);
+            
             if (taiKhoanCu != null && !taiKhoan.getMatKhau().equals(taiKhoanCu.getMatKhau())) {
+                // Validate mật khẩu mới trước khi mã hóa
+                if (!taiKhoan.getMatKhau().matches(TaiKhoan.MAT_KHAU_REGEX)) {
+                    throw new Exception(TaiKhoan.MAT_KHAU_SAI);
+                }
+                
                 // Nếu mật khẩu thay đổi, mã hóa mật khẩu mới
                 String matKhauDaMaHoa = PasswordUtil.encode(taiKhoan.getMatKhau());
-                taiKhoan.setMatKhau(matKhauDaMaHoa);
+                // Dùng setMatKhauDaMaHoa() để bypass validation
+                taiKhoan.setMatKhauDaMaHoa(matKhauDaMaHoa);
             }
             
             return taiKhoanDAO.update(taiKhoan);
@@ -96,9 +108,14 @@ public class TaiKhoanBUS {
                 return false;
             }
             
+            // Validate mật khẩu mới trước khi mã hóa
+            if (!matKhauMoi.matches(TaiKhoan.MAT_KHAU_REGEX)) {
+                throw new Exception(TaiKhoan.MAT_KHAU_SAI);
+            }
+            
             // Mã hóa và cập nhật mật khẩu mới
             String matKhauMoiDaMaHoa = PasswordUtil.encode(matKhauMoi);
-            taiKhoan.setMatKhau(matKhauMoiDaMaHoa);
+            taiKhoan.setMatKhauDaMaHoa(matKhauMoiDaMaHoa);
             
             return taiKhoanDAO.update(taiKhoan);
         } catch (Exception e) {
@@ -116,9 +133,14 @@ public class TaiKhoanBUS {
                 return false;
             }
             
+            // Validate mật khẩu mới trước khi mã hóa
+            if (!matKhauMacDinh.matches(TaiKhoan.MAT_KHAU_REGEX)) {
+                throw new Exception(TaiKhoan.MAT_KHAU_SAI);
+            }
+            
             // Mã hóa và cập nhật mật khẩu mới
             String matKhauDaMaHoa = PasswordUtil.encode(matKhauMacDinh);
-            taiKhoan.setMatKhau(matKhauDaMaHoa);
+            taiKhoan.setMatKhauDaMaHoa(matKhauDaMaHoa);
             
             return taiKhoanDAO.update(taiKhoan);
         } catch (Exception e) {

@@ -880,8 +880,13 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
         try {
             employeeIdUpdate = txtEmployeeIDRsPass.getText().trim();
             TaiKhoan acc = taiKhoanBUS.layTaiKhoanTheoMaNhanVien(employeeIdUpdate);
-            acc.setMatKhau(newPass);
-            taiKhoanBUS.capNhatTaiKhoan(acc);
+            
+            // Sử dụng phương thức resetMatKhau để tránh hash 2 lần
+            boolean success = taiKhoanBUS.resetMatKhau(acc.getTenDangNhap(), newPass);
+            
+            if (!success) {
+                throw new Exception("Không thể đặt lại mật khẩu. Vui lòng kiểm tra lại.");
+            }
 
             Notifications.getInstance().show(Notifications.Type.SUCCESS, "Đặt lại mật khẩu thành công.");
             txtResetPassword.setText("");

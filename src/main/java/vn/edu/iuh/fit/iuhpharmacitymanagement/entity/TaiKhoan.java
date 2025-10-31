@@ -59,6 +59,15 @@ public class TaiKhoan {
         }
         this.matKhau = matKhau;
     }
+    
+    /**
+     * Set mật khẩu đã được mã hóa (không validate)
+     * Dùng khi cập nhật mật khẩu đã mã hóa vào database
+     * @param matKhauDaMaHoa mật khẩu đã được mã hóa
+     */
+    public void setMatKhauDaMaHoa(String matKhauDaMaHoa) {
+        this.matKhau = matKhauDaMaHoa;
+    }
 
     public NhanVien getNhanVien() {
         return nhanVien;

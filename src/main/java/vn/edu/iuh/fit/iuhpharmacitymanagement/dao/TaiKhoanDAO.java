@@ -8,7 +8,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import vn.edu.iuh.fit.iuhpharmacitymanagement.util.EmailUtil;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.util.PasswordUtil;
 
 public class TaiKhoanDAO implements DAOInterface<TaiKhoan, String> {
 
@@ -89,16 +89,21 @@ public class TaiKhoanDAO implements DAOInterface<TaiKhoan, String> {
 
     public boolean updatePass(TaiKhoan taiKhoan, NhanVien nv, String newPass) {
         //lay pass tư ham ỏ email phat sinh
-        EmailUtil email = new EmailUtil();
+        //EmailUtil email = new EmailUtil();
         //String newPass = email.ramdomPass(nv);        
-        System.out.println(newPass);
+        System.out.println("Mật khẩu mới (plain text): " + newPass);
+        
+        // Hash mật khẩu trước khi lưu vào database
+        String hashedPassword = PasswordUtil.encode(newPass);
+        System.out.println("Mật khẩu đã hash: " + hashedPassword);
+        
         String sql = "UPDATE tk "
                 + " set tk.matKhau = ? "
                 + " from taikhoan tk "
                 + " JOIN nhanvien nv on tk.maNhanVien = nv.maNhanVien "
                 + " WHERE nv.maNhanVien = ?";
         try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(sql)) {
-            stmt.setString(1, newPass);
+            stmt.setString(1, hashedPassword);  // Lưu mật khẩu đã hash
             stmt.setString(2, nv.getMaNhanVien());
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -173,7 +178,8 @@ public class TaiKhoanDAO implements DAOInterface<TaiKhoan, String> {
             TaiKhoan taiKhoan = new TaiKhoan();
 
             taiKhoan.setTenDangNhap(rs.getString("tenDangNhap"));
-            taiKhoan.setMatKhau(rs.getString("matKhau"));
+            // Mật khẩu từ database đã được mã hóa, dùng setMatKhauDaMaHoa
+            taiKhoan.setMatKhauDaMaHoa(rs.getString("matKhau"));
 
             String maNhanVien = rs.getString("maNhanVien");
             if (maNhanVien != null) {
@@ -217,15 +223,18 @@ public class TaiKhoanDAO implements DAOInterface<TaiKhoan, String> {
         String sql = "select tk.tenDangNhap, tk.matKhau, tk.maNhanVien, nv.vaiTro "
                 + " from taikhoan tk "
                 + " JOIN nhanvien nv on tk.maNhanVien = nv.maNhanVien "
-                + " WHERE tk.tenDangNhap = ? AND tk.matKhau = ? ";
+                + " WHERE tk.tenDangNhap = ? ";
         try (Connection con = ConnectDB.getConnection(); PreparedStatement pre = con.prepareStatement(sql)) {
 
             pre.setString(1, tenDangNhap);
-            pre.setString(2, mk);
 
             try (ResultSet rs = pre.executeQuery()) {
                 if (rs.next()) {
-                    return Optional.ofNullable(rs.getString("vaiTro"));
+                    String matKhauHash = rs.getString("matKhau");
+                    // Xác thực mật khẩu bằng PasswordUtil
+                    if (vn.edu.iuh.fit.iuhpharmacitymanagement.util.PasswordUtil.verify(mk, matKhauHash)) {
+                        return Optional.ofNullable(rs.getString("vaiTro"));
+                    }
                 }
             }
         } catch (SQLException e) {
@@ -269,9 +278,24 @@ public class TaiKhoanDAO implements DAOInterface<TaiKhoan, String> {
         }
     }
 
-    public static void main(String[] args) {
-        TaiKhoanDAO tk = new TaiKhoanDAO();
-        System.out.println(tk.tonTaiTaiKhoanKhiLogin("nv00006", "Nv@2506") + "");
-
+    /**
+     * Method để reset mật khẩu về mật khẩu mặc định (dùng để fix mật khẩu bị hash 2 lần)
+     * @param tenDangNhap tên đăng nhập
+     * @param matKhauMoi mật khẩu mới (plain text)
+     * @return true nếu thành công
+     */
+    public boolean resetMatKhau(String tenDangNhap, String matKhauMoi) {
+        String sql = "UPDATE TaiKhoan SET matKhau = ? WHERE tenDangNhap = ?";
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement pre = con.prepareStatement(sql)) {
+            // Hash mật khẩu mới
+            String matKhauHash = vn.edu.iuh.fit.iuhpharmacitymanagement.util.PasswordUtil.encode(matKhauMoi);
+            pre.setString(1, matKhauHash);
+            pre.setString(2, tenDangNhap);
+            
+            return pre.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 }

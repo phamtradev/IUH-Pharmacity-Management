@@ -440,7 +440,7 @@ public class EmailUtil {
 
             // Tạo nội dung HTML     
             String pass = ramdomPass(nv);
-            String htmlContent = taoNoiDungEmailLayPassHTML(new NhanVienDAO().findById("NV00021").get(), pass);
+            String htmlContent = taoNoiDungEmailLayPassHTML(nv, pass);
             message.setContent(htmlContent, "text/html; charset=UTF-8");
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(nv.getEmail(), false));
             // Gửi email
