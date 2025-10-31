@@ -16,7 +16,9 @@ import javax.swing.ImageIcon;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import raven.toast.Notifications;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.NhanVienDAO;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.TaiKhoanDAO;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.util.EmailUtil;
 
 /**
@@ -84,6 +86,9 @@ public class ForgotPasswordPanel extends javax.swing.JPanel {
                 SwingUtilities.invokeLater(() -> txtTenDangNhap.requestFocus());
             }
         });
+        txtTenDangNhap.setForeground(Color.GRAY);
+        txtEmail.setForeground(Color.GRAY);
+        contentPanel.requestFocusInWindow();
 
     }
 
@@ -134,7 +139,8 @@ public class ForgotPasswordPanel extends javax.swing.JPanel {
         gridBagConstraints.gridwidth = 2;
         contentPanel.add(lblTieuDe, gridBagConstraints);
 
-        txtTenDangNhap.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        txtTenDangNhap.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        txtTenDangNhap.setText("Tên đăng nhập");
         txtTenDangNhap.setPreferredSize(new java.awt.Dimension(300, 45));
         txtTenDangNhap.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
@@ -165,7 +171,17 @@ public class ForgotPasswordPanel extends javax.swing.JPanel {
         contentPanel.add(txtTenDangNhap, gridBagConstraints);
         txtTenDangNhap.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Tên đăng nhập");
 
+        txtEmail.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        txtEmail.setText("Nhập Email của bạn");
         txtEmail.setPreferredSize(new java.awt.Dimension(300, 45));
+        txtEmail.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                txtEmailFocusGained(evt);
+            }
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                txtEmailFocusLost(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -238,8 +254,31 @@ public class ForgotPasswordPanel extends javax.swing.JPanel {
         UIManager.put("ScrollPane.background", Color.WHITE);
         UIManager.put("Viewport.background", Color.WHITE);
     }
+    javax.swing.JFrame parentFrame = (javax.swing.JFrame) SwingUtilities.getWindowAncestor(this);
     private void btnDangNhapActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDangNhapActionPerformed
-        new EmailUtil().guiEmailCapPass(new NhanVienDAO().findById(txtTenDangNhap.getText()).get());
+        if (txtTenDangNhap.getText().length() == 0 || txtTenDangNhap.getText().equals("Tên đăng nhập")) {
+            Notifications.getInstance().setJFrame(parentFrame);
+            Notifications.getInstance().show(Notifications.Type.ERROR, "Vui lòng nhập tên đăng nhập!");
+            txtTenDangNhap.requestFocus();
+            return;
+        }
+        if (txtEmail.getText().length() == 0 || txtEmail.getText().equals("Nhập Email của bạn")) {
+            Notifications.getInstance().setJFrame(parentFrame);
+            Notifications.getInstance().show(Notifications.Type.ERROR, "Vui lòng nhập email để cấp lại mật khẩu!");
+            txtEmail.requestFocus();
+            return;
+        }
+        if (!new TaiKhoanDAO().isTenDangNhap(txtTenDangNhap.getText())) {
+            Notifications.getInstance().setJFrame(parentFrame);
+            Notifications.getInstance().show(Notifications.Type.ERROR, "Không tìm thấy tài khoản có tên đăng nhập là " + txtTenDangNhap.getText());
+            txtTenDangNhap.requestFocus();
+            return;
+        }
+
+        if (new EmailUtil().guiEmailCapPass(new NhanVienDAO().findById(txtTenDangNhap.getText()).get())) {
+            Notifications.getInstance().setJFrame(parentFrame);
+            Notifications.getInstance().show(Notifications.Type.SUCCESS, "Gửi thành công mật khẩu mới đến email " + txtEmail.getText() + '!');
+        }
         this.setVisible(false);
         new LoginFrame().setVisible(true);
     }//GEN-LAST:event_btnDangNhapActionPerformed
@@ -247,6 +286,7 @@ public class ForgotPasswordPanel extends javax.swing.JPanel {
         Font font = txt.getFont();
         font = font.deriveFont(Font.ITALIC);
         txt.setFont(font);
+        txt.setForeground(Color.GRAY);
         txt.setBackground(Color.WHITE);
     }
 
@@ -255,12 +295,17 @@ public class ForgotPasswordPanel extends javax.swing.JPanel {
         font = font.deriveFont(Font.PLAIN);
         txt.setFont(font);
     }
+
     private void txtTenDangNhapActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtTenDangNhapActionPerformed
 
     }//GEN-LAST:event_txtTenDangNhapActionPerformed
 
     private void txtTenDangNhapFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtTenDangNhapFocusGained
-
+        if (txtTenDangNhap.getText().equals("Tên đăng nhập")) {
+            txtTenDangNhap.setText("");
+            txtTenDangNhap.setForeground(Color.BLACK);
+            removePlayhoder(txtTenDangNhap);
+        }
 
     }//GEN-LAST:event_txtTenDangNhapFocusGained
 
@@ -273,12 +318,31 @@ public class ForgotPasswordPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_txtTenDangNhapMouseClicked
 
     private void txtTenDangNhapFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtTenDangNhapFocusLost
+        if (txtTenDangNhap.getText().length() == 0) {
+            txtTenDangNhap.setText("Tên đăng nhập");
+            addPlayhoder(txtTenDangNhap);
+        }
 
     }//GEN-LAST:event_txtTenDangNhapFocusLost
 
     private void formFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_formFocusGained
 
     }//GEN-LAST:event_formFocusGained
+
+    private void txtEmailFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtEmailFocusGained
+        if (txtEmail.getText().equals("Nhập Email của bạn")) {
+            txtEmail.setText("");
+            txtEmail.setForeground(Color.BLACK);
+            removePlayhoder(txtEmail);
+        }
+    }//GEN-LAST:event_txtEmailFocusGained
+
+    private void txtEmailFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtEmailFocusLost
+        if (txtEmail.getText().length() == 0) {
+            txtEmail.setText("Nhập Email của bạn");
+            addPlayhoder(txtEmail);
+        }
+    }//GEN-LAST:event_txtEmailFocusLost
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

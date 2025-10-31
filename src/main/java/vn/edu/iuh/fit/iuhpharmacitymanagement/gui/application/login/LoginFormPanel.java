@@ -376,7 +376,7 @@ public class LoginFormPanel extends javax.swing.JPanel {
             txtTenDangNhap.requestFocus();
             return;
         }
-        if (matKhau.isEmpty() || matKhau.equals("Nhập mật khẩu")) {
+        if (matKhau.isEmpty() || matKhau.equals("Mật khẩu")) {
             Notifications.getInstance().setJFrame(parentFrame);
             Notifications.getInstance().show(Notifications.Type.ERROR, "Vui lòng nhập mật khẩu!");
             txtMatKhau.requestFocus();
@@ -425,6 +425,7 @@ public class LoginFormPanel extends javax.swing.JPanel {
         Font font = txt.getFont();
         font = font.deriveFont(Font.ITALIC);
         txt.setFont(font);
+        txt.setForeground(Color.GRAY);
         txt.setBackground(Color.WHITE);
     }
 
@@ -441,7 +442,7 @@ public class LoginFormPanel extends javax.swing.JPanel {
     private void txtTenDangNhapFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtTenDangNhapFocusGained
         if (txtTenDangNhap.getText().equals("Tên đăng nhập")) {
             txtTenDangNhap.setText("");
-            txtTenDangNhap.requestFocus();
+            txtTenDangNhap.setForeground(Color.BLACK);
             removePlayhoder(txtTenDangNhap);
         }
     }//GEN-LAST:event_txtTenDangNhapFocusGained
@@ -473,7 +474,7 @@ public class LoginFormPanel extends javax.swing.JPanel {
         if (chkHienMatKhau.isSelected()) {
             txtMatKhau.setEchoChar((char) 0);
         } else {
-            if (String.valueOf(txtMatKhau.getPassword()).equals("Nhập mật khẩu")) {
+            if (String.valueOf(txtMatKhau.getPassword()).equals("Mật khẩu")) {
                 txtMatKhau.setEchoChar((char) 0);
             } else {
                 txtMatKhau.setEchoChar('*');
@@ -482,17 +483,19 @@ public class LoginFormPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_chkHienMatKhauActionPerformed
 
     private void txtMatKhauFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtMatKhauFocusGained
-        if (String.valueOf(txtMatKhau.getPassword()).equals("Nhập mật khẩu")) {
+        if (String.valueOf(txtMatKhau.getPassword()).equals("Mật khẩu")) {
             txtMatKhau.setText("");
             txtMatKhau.setEchoChar('*');
-            txtMatKhau.requestFocus();
+            txtMatKhau.setForeground(Color.BLACK);
             removePlayhoder(txtMatKhau);
         }
     }//GEN-LAST:event_txtMatKhauFocusGained
 
     private void txtMatKhauFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtMatKhauFocusLost
         if (String.valueOf(txtMatKhau.getPassword()).isEmpty()) {
-            txtMatKhau.setText("Nhập mật khẩu");
+            txtMatKhau.setText("Mật khẩu");
+            txtMatKhau.setForeground(Color.GRAY);
+            addPlayhoder(txtMatKhau);
             txtMatKhau.setEchoChar((char) 0);
         }
     }//GEN-LAST:event_txtMatKhauFocusLost

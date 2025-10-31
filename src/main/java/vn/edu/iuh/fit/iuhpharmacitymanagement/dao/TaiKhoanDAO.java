@@ -99,7 +99,7 @@ public class TaiKhoanDAO implements DAOInterface<TaiKhoan, String> {
                 + " WHERE nv.maNhanVien = ?";
         try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(sql)) {
             stmt.setString(1, newPass);
-            stmt.setString(2, nv.getMaNhanVien());            
+            stmt.setString(2, nv.getMaNhanVien());
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -250,6 +250,23 @@ public class TaiKhoanDAO implements DAOInterface<TaiKhoan, String> {
             e.printStackTrace();
         }
         return 0;
+    }
+
+    //chk
+    public boolean isTenDangNhap(String tenDN) {
+        String sql = "select * From taikhoan "
+                + " where tenDangNhap = ? ";
+        try {
+            Connection con = ConnectDB.getConnection();
+            PreparedStatement pre= con.prepareStatement(sql);
+            pre.setString(1, tenDN);
+            ResultSet rs = pre.executeQuery();
+            if(rs.next()) return true;
+            return false;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     public static void main(String[] args) {
