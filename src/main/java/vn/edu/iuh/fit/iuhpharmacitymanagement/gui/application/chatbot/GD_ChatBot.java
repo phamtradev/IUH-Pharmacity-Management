@@ -22,7 +22,6 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.service.ChatBotDatabaseService;
 
 /**
  * Giao diện Chat Bot với AI
- *
  * @author PhamTra
  */
 public class GD_ChatBot extends javax.swing.JPanel {
@@ -35,7 +34,7 @@ public class GD_ChatBot extends javax.swing.JPanel {
     private DateTimeFormatter timeFormatter;
     private boolean isPlaceholder = true; // Trạng thái placeholder
     private ChatBotDatabaseService dbService; // Service truy vấn database
-
+    
     // Cấu hình API - OpenAI
     private static final String OPENAI_API_KEY = "AIzaSyBz23hMSqXdIi7uw9NGlETOXX8DbN3PL1I";
     private static final String API_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
@@ -43,7 +42,7 @@ public class GD_ChatBot extends javax.swing.JPanel {
     private static final int CONNECT_TIMEOUT = 10000; // 10 giây
     private static final int READ_TIMEOUT = 30000; // 30 giây
     private static final String PLACEHOLDER_TEXT = "Nhập câu hỏi của bạn...";
-
+    
     public GD_ChatBot() {
         timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
         dbService = new ChatBotDatabaseService(); // Khởi tạo service
@@ -51,73 +50,73 @@ public class GD_ChatBot extends javax.swing.JPanel {
         customUI();
         addWelcomeMessage();
     }
-
+    
     private void initComponents() {
         setLayout(new BorderLayout(0, 0));
         setBackground(Color.WHITE);
-
+        
         // ===== PANEL TIÊU ĐỀ =====
         JPanel headerPanel = createHeaderPanel();
         add(headerPanel, BorderLayout.NORTH);
-
+        
         // ===== VÙNG CHAT =====
         chatContainer = new JPanel();
         chatContainer.setLayout(new BoxLayout(chatContainer, BoxLayout.Y_AXIS));
         chatContainer.setBackground(new Color(245, 247, 250));
         chatContainer.setBorder(new EmptyBorder(20, 20, 20, 20));
-
+        
         scrollPane = new JScrollPane(chatContainer);
         scrollPane.setBorder(null);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
-
+        
         add(scrollPane, BorderLayout.CENTER);
-
+        
         // ===== PANEL NHẬP LIỆU =====
         JPanel inputPanel = createInputPanel();
         add(inputPanel, BorderLayout.SOUTH);
     }
-
+    
     private JPanel createHeaderPanel() {
         JPanel headerPanel = new JPanel(new BorderLayout());
         headerPanel.setBackground(new Color(70, 130, 255));
         headerPanel.setBorder(new EmptyBorder(20, 25, 20, 25));
-
+        
         // Phần bên trái - Thông tin Bot
         JPanel leftPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 0));
         leftPanel.setOpaque(false);
-
+        
         // Avatar Bot
         JLabel lblAvatar = new JLabel("🤖");
         lblAvatar.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 36));
         leftPanel.add(lblAvatar);
-
+        
         // Thông tin Bot
         JPanel infoPanel = new JPanel();
         infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.Y_AXIS));
         infoPanel.setOpaque(false);
-
+        
         JLabel lblBotName = new JLabel("Pharmacity AI Assistant");
         lblBotName.setFont(new Font("Segoe UI", Font.BOLD, 18));
         lblBotName.setForeground(Color.WHITE);
-
+        
         JLabel lblStatus = new JLabel("● Online - Sẵn sàng hỗ trợ bạn");
         lblStatus.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         lblStatus.setForeground(new Color(200, 230, 255));
-
+        
         infoPanel.add(lblBotName);
         infoPanel.add(Box.createVerticalStrut(4));
         infoPanel.add(lblStatus);
-
+        
         leftPanel.add(infoPanel);
-
+        
         headerPanel.add(leftPanel, BorderLayout.WEST);
-
+        
         // Phần bên phải - Nút xóa
         JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
         rightPanel.setOpaque(false);
-
+        
         btnClear = new JButton("Xóa lịch sử");
         btnClear.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         btnClear.setForeground(Color.WHITE);
@@ -125,25 +124,25 @@ public class GD_ChatBot extends javax.swing.JPanel {
         btnClear.setBorderPainted(false);
         btnClear.setContentAreaFilled(false);
         btnClear.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnClear.putClientProperty(FlatClientProperties.STYLE,
-                "arc: 8;"
-                + "background: rgba(255,255,255,26);"
-                + "hoverBackground: rgba(255,255,255,51);"
-                + "pressedBackground: rgba(255,255,255,38)");
-
+        btnClear.putClientProperty(FlatClientProperties.STYLE, 
+            "arc: 8;" +
+            "background: rgba(255,255,255,26);" +
+            "hoverBackground: rgba(255,255,255,51);" +
+            "pressedBackground: rgba(255,255,255,38)");
+        
         btnClear.addActionListener(e -> clearChat());
-
+        
         rightPanel.add(btnClear);
         headerPanel.add(rightPanel, BorderLayout.EAST);
-
+        
         return headerPanel;
     }
-
+    
     private JPanel createInputPanel() {
         JPanel inputPanel = new JPanel(new BorderLayout(12, 0));
         inputPanel.setBackground(Color.WHITE);
         inputPanel.setBorder(new EmptyBorder(15, 25, 20, 25));
-
+        
         // Vùng nhập văn bản
         txtInput = new JTextArea(1, 30);
         txtInput.setFont(new Font("Segoe UI", Font.PLAIN, 14));
@@ -152,12 +151,12 @@ public class GD_ChatBot extends javax.swing.JPanel {
         txtInput.setRows(2);
         txtInput.setBorder(new EmptyBorder(10, 15, 10, 15));
         txtInput.setBackground(new Color(250, 250, 250));
-
+        
         // Thêm hiệu ứng placeholder
         txtInput.setForeground(Color.GRAY);
         txtInput.setText(PLACEHOLDER_TEXT);
         isPlaceholder = true;
-
+        
         txtInput.addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(FocusEvent e) {
@@ -167,7 +166,7 @@ public class GD_ChatBot extends javax.swing.JPanel {
                     isPlaceholder = false;
                 }
             }
-
+            
             @Override
             public void focusLost(FocusEvent e) {
                 // Only restore placeholder if text is empty
@@ -178,7 +177,7 @@ public class GD_ChatBot extends javax.swing.JPanel {
                 }
             }
         });
-
+        
         // Xử lý phím Enter
         txtInput.addKeyListener(new KeyAdapter() {
             @Override
@@ -193,12 +192,12 @@ public class GD_ChatBot extends javax.swing.JPanel {
                 }
             }
         });
-
+        
         JScrollPane scrollInput = new JScrollPane(txtInput);
         scrollInput.setBorder(null);
         scrollInput.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         scrollInput.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-
+        
         // Nút gửi
         btnSend = new JButton("Gửi");
         btnSend.setFont(new Font("Segoe UI", Font.BOLD, 14));
@@ -206,67 +205,67 @@ public class GD_ChatBot extends javax.swing.JPanel {
         btnSend.setPreferredSize(new Dimension(100, 45));
         btnSend.setFocusPainted(false);
         btnSend.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
+        
         btnSend.putClientProperty(FlatClientProperties.STYLE,
-                "arc: 12;"
-                + "background: #4682FF;"
-                + "hoverBackground: #3A6FE6;"
-                + "pressedBackground: #2E5BD1");
-
+            "arc: 12;" +
+            "background: #4682FF;" +
+            "hoverBackground: #3A6FE6;" +
+            "pressedBackground: #2E5BD1");
+        
         btnSend.addActionListener(e -> sendMessage());
-
+        
         inputPanel.add(scrollInput, BorderLayout.CENTER);
         inputPanel.add(btnSend, BorderLayout.EAST);
-
+        
         return inputPanel;
     }
-
+    
     private void customUI() {
         putClientProperty(FlatClientProperties.STYLE,
-                "background: #FFFFFF;"
-                + "border: 0,0,0,0");
+            "background: #FFFFFF;" +
+            "border: 0,0,0,0");
     }
-
+    
     private void addWelcomeMessage() {
-        String welcomeText = "👋 Xin chào! Tôi là IUH Pharmacity AI Assistant.\n\n"
-                + "Tôi có thể giúp bạn:\n"
-                + "• Hướng dẫn sử dụng phần mềm\n"
-                + "• Kiểm tra tồn kho sản phẩm\n"
-                + "• Tìm kiếm thông tin thuốc\n"
-                + "• Xem sản phẩm sắp hết hạn\n"
-                + "• Thống kê tổng quan\n\n"
-                + "Hãy hỏi tôi bất cứ điều gì! 😊";
-
+        String welcomeText = "👋 Xin chào! Tôi là IUH Pharmacity AI Assistant.\n\n" +
+            "Tôi có thể giúp bạn:\n" +
+            "• Hướng dẫn sử dụng phần mềm\n" +
+            "• Kiểm tra tồn kho sản phẩm\n" +
+            "• Tìm kiếm thông tin thuốc\n" +
+            "• Xem sản phẩm sắp hết hạn\n" +
+            "• Thống kê tổng quan\n\n" +
+            "Hãy hỏi tôi bất cứ điều gì! 😊";
+        
         addBotMessage(welcomeText);
     }
-
+    
     private void sendMessage() {
         // Kiểm tra nếu là placeholder hoặc rỗng
         if (isPlaceholder || txtInput.getText().trim().isEmpty()) {
             Notifications.getInstance().show(
-                    Notifications.Type.WARNING,
-                    "Vui lòng nhập câu hỏi!"
+                Notifications.Type.WARNING,
+                "Vui lòng nhập câu hỏi!"
             );
             return;
         }
-
+        
         String message = txtInput.getText().trim();
-
+        
         // Thêm tin nhắn người dùng
         addUserMessage(message);
-
+        
         // Xóa ô nhập và giữ sẵn sàng cho tin nhắn tiếp theo
         txtInput.setText("");
         txtInput.setForeground(Color.BLACK);
         isPlaceholder = false; // Giữ false để người dùng có thể gõ ngay
-
+        
         // Mô phỏng bot đang gõ và phản hồi
         simulateBotResponse(message);
-
+        
         // Giữ focus ở ô nhập
         SwingUtilities.invokeLater(() -> txtInput.requestFocusInWindow());
     }
-
+    
     private void simulateBotResponse(String userMessage) {
         // Hiển thị chỉ báo đang gõ
         JPanel typingPanel = createTypingIndicator();
@@ -274,12 +273,12 @@ public class GD_ChatBot extends javax.swing.JPanel {
         chatContainer.revalidate();
         chatContainer.repaint();
         scrollToBottom();
-
+        
         // Gọi API trong luồng nền
         new Thread(() -> {
             try {
                 String response = callChatBotAPI(userMessage);
-
+                
                 // Cập nhật giao diện trên EDT
                 SwingUtilities.invokeLater(() -> {
                     chatContainer.remove(typingPanel);
@@ -288,10 +287,10 @@ public class GD_ChatBot extends javax.swing.JPanel {
                     chatContainer.repaint();
                     scrollToBottom();
                 });
-
+                
             } catch (Exception e) {
                 e.printStackTrace();
-
+                
                 // Hiển thị lỗi trên EDT
                 SwingUtilities.invokeLater(() -> {
                     chatContainer.remove(typingPanel);
@@ -303,7 +302,7 @@ public class GD_ChatBot extends javax.swing.JPanel {
             }
         }).start();
     }
-
+    
     /**
      * Gọi OpenAI-compatible API (Gemini via OpenAI endpoint)
      */
@@ -311,7 +310,7 @@ public class GD_ChatBot extends javax.swing.JPanel {
         try {
             // Kiểm tra xem câu hỏi có liên quan đến database không
             String databaseContext = checkAndQueryDatabase(message);
-
+            
             URL url = new URL(API_ENDPOINT);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
@@ -323,25 +322,25 @@ public class GD_ChatBot extends javax.swing.JPanel {
             conn.setReadTimeout(READ_TIMEOUT);
 
             // Tạo nội dung JSON request theo định dạng OpenAI Chat Completions
-            String systemMessage = "Bạn là trợ lý AI của hệ thống quản lý nhà thuốc IUH Pharmacity. "
-                    + "Hệ thống này được phát triển cho việc quản lý nhà thuốc bao gồm: "
-                    + "quản lý thuốc, quản lý nhân viên, quản lý khách hàng, quản lý đơn hàng, "
-                    + "quản lý hóa đơn, quản lý kho, thống kê báo cáo, và nhiều chức năng khác. "
-                    + "Hãy giúp người dùng giải đáp các thắc mắc về cách sử dụng phần mềm, "
-                    + "các chức năng của hệ thống, hoặc các vấn đề liên quan đến quản lý nhà thuốc. "
-                    + "Trả lời ngắn gọn, rõ ràng và hữu ích bằng tiếng Việt.";
-
+            String systemMessage = "Bạn là trợ lý AI của hệ thống quản lý nhà thuốc IUH Pharmacity. " +
+                "Hệ thống này được phát triển cho việc quản lý nhà thuốc bao gồm: " +
+                "quản lý thuốc, quản lý nhân viên, quản lý khách hàng, quản lý đơn hàng, " +
+                "quản lý hóa đơn, quản lý kho, thống kê báo cáo, và nhiều chức năng khác. " +
+                "Hãy giúp người dùng giải đáp các thắc mắc về cách sử dụng phần mềm, " +
+                "các chức năng của hệ thống, hoặc các vấn đề liên quan đến quản lý nhà thuốc. " +
+                "Trả lời ngắn gọn, rõ ràng và hữu ích bằng tiếng Việt.";
+            
             // Nếu có dữ liệu từ database, thêm vào context
             String userMessageWithContext = message;
             if (databaseContext != null && !databaseContext.isEmpty()) {
                 userMessageWithContext = message + "\n\n[Dữ liệu từ hệ thống]:\n" + databaseContext;
             }
-
+            
             String jsonInputString = String.format(
-                    "{\"model\":\"%s\",\"messages\":[{\"role\":\"system\",\"content\":\"%s\"},{\"role\":\"user\",\"content\":\"%s\"}]}",
-                    MODEL,
-                    escapeJson(systemMessage),
-                    escapeJson(userMessageWithContext)
+                "{\"model\":\"%s\",\"messages\":[{\"role\":\"system\",\"content\":\"%s\"},{\"role\":\"user\",\"content\":\"%s\"}]}",
+                MODEL,
+                escapeJson(systemMessage),
+                escapeJson(userMessageWithContext)
             );
 
             // Gửi yêu cầu
@@ -352,7 +351,7 @@ public class GD_ChatBot extends javax.swing.JPanel {
 
             // Đọc phản hồi
             int responseCode = conn.getResponseCode();
-
+            
             if (responseCode == HttpURLConnection.HTTP_OK) {
                 try (BufferedReader br = new BufferedReader(
                         new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))) {
@@ -361,7 +360,7 @@ public class GD_ChatBot extends javax.swing.JPanel {
                     while ((responseLine = br.readLine()) != null) {
                         response.append(responseLine.trim());
                     }
-
+                    
                     // Phân tích phản hồi theo định dạng OpenAI
                     return parseOpenAIResponse(response.toString());
                 }
@@ -383,138 +382,150 @@ public class GD_ChatBot extends javax.swing.JPanel {
             throw new Exception("Timeout khi gọi API. Vui lòng thử lại.");
         }
     }
-
+    
     /**
      * Kiểm tra và truy vấn database nếu câu hỏi liên quan
      */
     private String checkAndQueryDatabase(String message) {
-        String lowerMessage = message.toLowerCase(); //chuyển sang chữ thường để nó ko phân biệt hoa thường vd YOOSUN - yooosun
-
-        // Phát hiện câu hỏi về tồn kho
-        //đảm bảo bắt được mọi trường hợp của người dùng khi typing text 
-        if (lowerMessage.contains("tồn kho") || lowerMessage.contains("ton kho")
-                || lowerMessage.contains("còn bao nhiêu") || lowerMessage.contains("con bao nhieu")
-                || lowerMessage.contains("còn lại") || lowerMessage.contains("con lai")
-                || lowerMessage.contains("số lượng") || lowerMessage.contains("so luong")) {
-
-            // kiểm tra tên có hợp lệ không
+        String lowerMessage = message.toLowerCase(); 
+        
+        // Phát hiện câu hỏi về số lô hàng (ưu tiên cao - kiểm tra trước)
+        // Kiểm tra các cụm từ đặc trưng cho lô hàng
+        if (lowerMessage.contains("bao nhiêu lô") || lowerMessage.contains("bao nhieu lo") ||
+            lowerMessage.contains("mấy lô") || lowerMessage.contains("may lo") ||
+            lowerMessage.contains("số lô") || lowerMessage.contains("so lo") ||
+            lowerMessage.contains("có mấy lô") || lowerMessage.contains("co may lo") ||
+            lowerMessage.contains("có bao nhiêu lô") || lowerMessage.contains("co bao nhieu lo") ||
+            (lowerMessage.contains("lô") && (lowerMessage.contains("bao nhiêu") || lowerMessage.contains("bao nhieu") || lowerMessage.contains("mấy") || lowerMessage.contains("may"))) ||
+            (lowerMessage.contains("lo") && (lowerMessage.contains("bao nhiêu") || lowerMessage.contains("bao nhieu") || lowerMessage.contains("mấy") || lowerMessage.contains("may")))) {
+            
+            String tenSanPham = extractProductName(message);
+            if (tenSanPham != null && !tenSanPham.isEmpty()) {
+                return dbService.demSoLoHang(tenSanPham);
+            }
+        }
+        
+        // Phát hiện câu hỏi về tồn kho (không chứa từ "lô")
+        if (!lowerMessage.contains("lô") && !lowerMessage.contains("lo") &&
+            (lowerMessage.contains("tồn kho") || lowerMessage.contains("ton kho") || 
+             lowerMessage.contains("còn bao nhiêu") || lowerMessage.contains("con bao nhieu") ||
+             lowerMessage.contains("còn lại") || lowerMessage.contains("con lai") ||
+             lowerMessage.contains("số lượng") || lowerMessage.contains("so luong"))) {
+            
+            // Trích xuất tên sản phẩm từ câu hỏi
             String tenSanPham = extractProductName(message);
             if (tenSanPham != null && !tenSanPham.isEmpty()) {
                 return dbService.kiemTraTonKho(tenSanPham);
             }
         }
-
+        
         // Phát hiện câu hỏi tìm kiếm sản phẩm
-        //đảm bảo bắt được mọi trường hợp của người dùng khi typing text 
-        if (lowerMessage.contains("tìm") || lowerMessage.contains("tim")
-                || lowerMessage.contains("tìm kiếm") || lowerMessage.contains("tim kiem")
-                || lowerMessage.contains("có thuốc") || lowerMessage.contains("co thuoc")
-                || lowerMessage.contains("có sản phẩm") || lowerMessage.contains("co san pham")) {
-            // kiểm tra tên có hợp lệ không
+        if (lowerMessage.contains("tìm") || lowerMessage.contains("tim") ||
+            lowerMessage.contains("tìm kiếm") || lowerMessage.contains("tim kiem") ||
+            lowerMessage.contains("có thuốc") || lowerMessage.contains("co thuoc") ||
+            lowerMessage.contains("có sản phẩm") || lowerMessage.contains("co san pham")) {
+            
             String tenSanPham = extractProductName(message);
             if (tenSanPham != null && !tenSanPham.isEmpty()) {
                 return dbService.timKiemSanPham(tenSanPham);
             }
         }
-
+        
         // Phát hiện câu hỏi về sản phẩm sắp hết hạn
-        if (lowerMessage.contains("hết hạn") || lowerMessage.contains("het han")
-                || lowerMessage.contains("sắp hết hạn") || lowerMessage.contains("sap het han")
-                || lowerMessage.contains("hạn sử dụng") || lowerMessage.contains("han su dung")) {
+        if (lowerMessage.contains("hết hạn") || lowerMessage.contains("het han") ||
+            lowerMessage.contains("sắp hết hạn") || lowerMessage.contains("sap het han") ||
+            lowerMessage.contains("hạn sử dụng") || lowerMessage.contains("han su dung")) {
             return dbService.laySanPhamSapHetHan();
         }
-
+        
         // Phát hiện câu hỏi thống kê
-        if (lowerMessage.contains("thống kê") || lowerMessage.contains("thong ke")
-                || lowerMessage.contains("tổng quan") || lowerMessage.contains("tong quan")
-                || lowerMessage.contains("báo cáo") || lowerMessage.contains("bao cao")) {
+        if (lowerMessage.contains("thống kê") || lowerMessage.contains("thong ke") ||
+            lowerMessage.contains("tổng quan") || lowerMessage.contains("tong quan") ||
+            lowerMessage.contains("báo cáo") || lowerMessage.contains("bao cao")) {
             return dbService.layThongKeTongQuan();
         }
-
+        
         return null; // Không phải câu hỏi về database
     }
-
+    
     /**
      * Trích xuất tên sản phẩm từ câu hỏi
      */
     private String extractProductName(String message) {
-        String cleaned = message.toLowerCase() //lấy message của người dùng chuyển sang ngôn ngữ viết thường
-                .replaceAll("(thuốc|sản phẩm|san pham|sp|có|co|tìm|tim|kiếm|kiem|tồn kho|ton kho|còn|con|bao nhiêu|bao nhieu|lại|lai|số lượng|so luong)", "")
-                .trim(); //loại bỏ những từ như thuốc, sản phẩm,... vì ta chỉ muốn get lên được cái tên của sản phẩm 
-
+        // Loại bỏ các từ khóa phổ biến để lấy tên sản phẩm
+        String cleaned = message.toLowerCase()
+            .replaceAll("(thuốc|sản phẩm|san pham|sp|có|co|tìm|tim|kiếm|kiem|tồn kho|ton kho|còn|con|bao nhiêu|bao nhieu|lại|lai|số lượng|so luong|lô hàng|lo hang|lô|lo|mấy|may)", "")
+            .trim();
+        
         // Nếu còn lại ít nhất 2 ký tự thì coi đó là tên sản phẩm
         if (cleaned.length() >= 2) {
             return cleaned;
         }
-
+        
         return null;
     }
-
+    
     /**
      * Escape các ký tự đặc biệt trong JSON
      */
-    //trong json phải escape kí tự đặc biệt 
-    //trong json ko cho phép xuống dòng thật    
-    //vi dụ như bạn ấy nói "xin chào" => trong json ko hợp lệ
-    //phải escape \\ trước " => \"xin chào\"
     private String escapeJson(String input) {
         if (input == null) {
             return "";
         }
         return input.replace("\\", "\\\\")
-                .replace("\"", "\\\"")
-                .replace("\n", "\\n")
-                .replace("\r", "\\r")
-                .replace("\t", "\\t");
+                   .replace("\"", "\\\"")
+                   .replace("\n", "\\n")
+                   .replace("\r", "\\r")
+                   .replace("\t", "\\t");
     }
-
+    
     /**
-     * Phân tích phản hồi API theo định dạng OpenAI Định dạng:
-     * {"choices":[{"message":{"content":"..."}}]}
+     * Phân tích phản hồi API theo định dạng OpenAI
+     * Định dạng: {"choices":[{"message":{"content":"..."}}]}
      */
     private String parseOpenAIResponse(String response) {
         if (response == null || response.trim().isEmpty()) {
             return "Không nhận được phản hồi từ API.";
         }
-
+        
         String trimmed = response.trim();
-
+        
         try {
             // Tìm content trong choices[0].message.content
             int choicesIndex = trimmed.indexOf("\"choices\"");
             if (choicesIndex == -1) {
                 return "Lỗi: Không tìm thấy choices trong phản hồi.";
             }
-
+            
             int messageIndex = trimmed.indexOf("\"message\"", choicesIndex);
             if (messageIndex == -1) {
                 return "Lỗi: Không tìm thấy message trong phản hồi.";
             }
-
+            
             int contentIndex = trimmed.indexOf("\"content\"", messageIndex);
             if (contentIndex == -1) {
                 return "Lỗi: Không tìm thấy content trong phản hồi.";
             }
-
+            
             int colonIndex = trimmed.indexOf(":", contentIndex);
             int startQuote = trimmed.indexOf("\"", colonIndex);
             if (startQuote == -1) {
                 return "Lỗi: Không thể phân tích content từ phản hồi.";
             }
-
+            
             int endQuote = findClosingQuote(trimmed, startQuote + 1);
             if (endQuote == -1) {
                 return "Lỗi: Không thể tìm thấy dấu ngoặc kép đóng.";
             }
-
+            
             String text = trimmed.substring(startQuote + 1, endQuote);
             return unescapeJson(text);
-
+            
         } catch (Exception e) {
             return "Lỗi khi phân tích phản hồi: " + e.getMessage();
         }
     }
-
+    
     /**
      * Tìm dấu " đóng
      */
@@ -526,7 +537,7 @@ public class GD_ChatBot extends javax.swing.JPanel {
         }
         return -1;
     }
-
+    
     /**
      * Giải mã chuỗi JSON
      */
@@ -535,12 +546,12 @@ public class GD_ChatBot extends javax.swing.JPanel {
             return "";
         }
         return input.replace("\\\"", "\"")
-                .replace("\\\\", "\\")
-                .replace("\\n", "\n")
-                .replace("\\r", "\r")
-                .replace("\\t", "\t");
+                   .replace("\\\\", "\\")
+                   .replace("\\n", "\n")
+                   .replace("\\r", "\r")
+                   .replace("\\t", "\t");
     }
-
+    
     private void addUserMessage(String message) {
         JPanel messagePanel = createMessagePanel(message, true);
         chatContainer.add(messagePanel);
@@ -549,7 +560,7 @@ public class GD_ChatBot extends javax.swing.JPanel {
         chatContainer.repaint();
         scrollToBottom();
     }
-
+    
     private void addBotMessage(String message) {
         JPanel messagePanel = createMessagePanel(message, false);
         chatContainer.add(messagePanel);
@@ -558,26 +569,26 @@ public class GD_ChatBot extends javax.swing.JPanel {
         chatContainer.repaint();
         scrollToBottom();
     }
-
+    
     private JPanel createMessagePanel(String message, boolean isUser) {
         JPanel outerPanel = new JPanel();
         outerPanel.setLayout(new BoxLayout(outerPanel, BoxLayout.X_AXIS));
         outerPanel.setOpaque(false);
-
+        
         if (isUser) {
             outerPanel.add(Box.createHorizontalGlue());
         }
-
+        
         JPanel messagePanel = new JPanel(new BorderLayout(8, 4));
         messagePanel.setMaximumSize(new Dimension(450, Integer.MAX_VALUE));
         messagePanel.setBorder(new EmptyBorder(12, 16, 12, 16));
-
+        
         if (isUser) {
             messagePanel.setBackground(new Color(70, 130, 255));
         } else {
             messagePanel.setBackground(Color.WHITE);
         }
-
+        
         // Nội dung tin nhắn
         JTextArea txtMessage = new JTextArea(message);
         txtMessage.setEditable(false);
@@ -585,63 +596,62 @@ public class GD_ChatBot extends javax.swing.JPanel {
         txtMessage.setWrapStyleWord(true);
         txtMessage.setOpaque(false);
         txtMessage.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-
+        
         if (isUser) {
             txtMessage.setForeground(Color.WHITE);
         } else {
             txtMessage.setForeground(new Color(33, 33, 33));
         }
-
+        
         // Nhãn thời gian
         String timeStr = LocalDateTime.now().format(timeFormatter);
         JLabel lblTime = new JLabel(timeStr);
         lblTime.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-
+        
         if (isUser) {
             lblTime.setForeground(new Color(200, 220, 255));
         } else {
             lblTime.setForeground(new Color(150, 150, 150));
         }
-
+        
         messagePanel.add(txtMessage, BorderLayout.CENTER);
         messagePanel.add(lblTime, BorderLayout.SOUTH);
-
+        
         // Bo góc tròn
         messagePanel.putClientProperty(FlatClientProperties.STYLE,
-                "arc: 16");
-
+            "arc: 16");
+        
         outerPanel.add(messagePanel);
-
+        
         if (!isUser) {
             outerPanel.add(Box.createHorizontalGlue());
         }
-
+        
         return outerPanel;
     }
-
+    
     private JPanel createTypingIndicator() {
         JPanel outerPanel = new JPanel();
         outerPanel.setLayout(new BoxLayout(outerPanel, BoxLayout.X_AXIS));
         outerPanel.setOpaque(false);
-
+        
         JPanel typingPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 8));
         typingPanel.setMaximumSize(new Dimension(100, 50));
         typingPanel.setBackground(Color.WHITE);
         typingPanel.setBorder(new EmptyBorder(8, 12, 8, 12));
-
+        
         typingPanel.putClientProperty(FlatClientProperties.STYLE, "arc: 16");
-
+        
         // Hiệu ứng chấm động
         JLabel lblTyping = new JLabel("●●●");
         lblTyping.setFont(new Font("Segoe UI", Font.BOLD, 16));
         lblTyping.setForeground(new Color(150, 150, 150));
-
+        
         typingPanel.add(lblTyping);
-
+        
         // Hiệu ứng đơn giản
         Timer timer = new Timer(500, new ActionListener() {
             int count = 0;
-
             @Override
             public void actionPerformed(ActionEvent e) {
                 count = (count + 1) % 4;
@@ -649,63 +659,63 @@ public class GD_ChatBot extends javax.swing.JPanel {
             }
         });
         timer.start();
-
+        
         outerPanel.add(typingPanel);
         outerPanel.add(Box.createHorizontalGlue());
-
+        
         return outerPanel;
     }
-
+    
     private void clearChat() {
         int confirm = JOptionPane.showConfirmDialog(
-                this,
-                "Bạn có chắc chắn muốn xóa toàn bộ lịch sử chat?",
-                "Xác nhận xóa",
-                JOptionPane.YES_NO_OPTION,
-                JOptionPane.QUESTION_MESSAGE
+            this,
+            "Bạn có chắc chắn muốn xóa toàn bộ lịch sử chat?",
+            "Xác nhận xóa",
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.QUESTION_MESSAGE
         );
-
+        
         if (confirm == JOptionPane.YES_OPTION) {
             chatContainer.removeAll();
             addWelcomeMessage();
             chatContainer.revalidate();
             chatContainer.repaint();
-
+            
             // Reset input field to placeholder
             txtInput.setText(PLACEHOLDER_TEXT);
             txtInput.setForeground(Color.GRAY);
             isPlaceholder = true;
-
+            
             Notifications.getInstance().show(
-                    Notifications.Type.SUCCESS,
-                    "Đã xóa lịch sử chat"
+                Notifications.Type.SUCCESS,
+                "Đã xóa lịch sử chat"
             );
         }
     }
-
+    
     private void scrollToBottom() {
         SwingUtilities.invokeLater(() -> {
             JScrollBar vertical = scrollPane.getVerticalScrollBar();
             vertical.setValue(vertical.getMaximum());
         });
     }
-
+    
     // ===== PUBLIC METHODS FOR API INTEGRATION =====
+    
     /**
      * Gọi phương thức này từ ChatBotService để thêm response từ API
-     *
      * @param response Response từ AI API
      */
     public void addBotResponse(String response) {
         addBotMessage(response);
     }
-
+    
     /**
      * Hiển thị lỗi khi gọi API thất bại
-     *
      * @param errorMessage Thông báo lỗi
      */
     public void showError(String errorMessage) {
         addBotMessage("❌ Đã xảy ra lỗi: " + errorMessage + "\n\nVui lòng thử lại sau.");
     }
 }
+

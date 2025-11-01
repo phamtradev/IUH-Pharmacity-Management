@@ -68,6 +68,11 @@ public class ChatBotDatabaseService {
             for (SanPham sp : danhSachSP) {
                 List<LoHang> danhSachLoHang = loHangDAO.findByMaSanPham(sp.getMaSanPham());
                 
+                // Đếm số lô hàng còn hoạt động
+                long soLoHangHoatDong = danhSachLoHang.stream()
+                        .filter(LoHang::isTrangThai)
+                        .count();
+                
                 int tongTonKho = danhSachLoHang.stream()
                         .filter(LoHang::isTrangThai) // Chỉ tính lô hàng còn hoạt động
                         .mapToInt(LoHang::getTonKho)
@@ -75,6 +80,7 @@ public class ChatBotDatabaseService {
                 
                 result.append("🔹 ").append(sp.getTenSanPham()).append("\n");
                 result.append("   - Mã SP: ").append(sp.getMaSanPham()).append("\n");
+                result.append("   - Số lô hàng: ").append(soLoHangHoatDong).append(" lô\n");
                 result.append("   - Tổng tồn kho: ").append(tongTonKho).append(" ");
                 
                 if (sp.getDonViTinh() != null) {
@@ -83,8 +89,8 @@ public class ChatBotDatabaseService {
                 result.append("\n");
                 
                 // Hiển thị chi tiết các lô hàng
-                if (!danhSachLoHang.isEmpty()) {
-                    result.append("   - Chi tiết lô hàng:\n");
+                if (!danhSachLoHang.isEmpty() && soLoHangHoatDong > 0) {
+                    result.append("   - Chi tiết các lô hàng:\n");
                     for (LoHang lh : danhSachLoHang) {
                         if (lh.isTrangThai()) {
                             result.append("     • ").append(lh.getTenLoHang())
@@ -101,6 +107,49 @@ public class ChatBotDatabaseService {
             return result.toString();
         } catch (Exception e) {
             return "Lỗi khi kiểm tra tồn kho: " + e.getMessage();
+        }
+    }
+    
+    /**
+     * Đếm số lô hàng của sản phẩm theo tên
+     */
+    public String demSoLoHang(String tenSanPham) {
+        try {
+            List<SanPham> danhSachSP = sanPhamDAO.findByName(tenSanPham);
+            
+            if (danhSachSP.isEmpty()) {
+                return "Không tìm thấy sản phẩm: " + tenSanPham;
+            }
+            
+            StringBuilder result = new StringBuilder();
+            result.append("📦 Thông tin số lượng lô hàng:\n\n");
+            
+            for (SanPham sp : danhSachSP) {
+                List<LoHang> danhSachLoHang = loHangDAO.findByMaSanPham(sp.getMaSanPham());
+                
+                // Đếm số lô hàng còn hoạt động
+                long soLoHangHoatDong = danhSachLoHang.stream()
+                        .filter(LoHang::isTrangThai)
+                        .count();
+                
+                // Đếm tổng số lô hàng (cả hoạt động và không hoạt động)
+                int tongSoLoHang = danhSachLoHang.size();
+                
+                result.append("🔹 ").append(sp.getTenSanPham()).append("\n");
+                result.append("   - Mã SP: ").append(sp.getMaSanPham()).append("\n");
+                result.append("   - Tổng số lô hàng: ").append(tongSoLoHang).append(" lô\n");
+                result.append("   - Lô đang hoạt động: ").append(soLoHangHoatDong).append(" lô\n");
+                
+                if (tongSoLoHang > soLoHangHoatDong) {
+                    result.append("   - Lô ngừng hoạt động: ").append(tongSoLoHang - soLoHangHoatDong).append(" lô\n");
+                }
+                
+                result.append("\n");
+            }
+            
+            return result.toString();
+        } catch (Exception e) {
+            return "Lỗi khi đếm số lô hàng: " + e.getMessage();
         }
     }
     
