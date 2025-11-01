@@ -17,7 +17,7 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
      */
     public ThongTinCoBanPanel() {
         initComponents();
-        btnDoiMatKhau.setVisible(false);
+        btnDoiMatKhau.setVisible(true);
     }
 
     public void loadAndConfigure(boolean isManager, NhanVien nv) {
@@ -25,7 +25,7 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
 
         if (nv != null) {
             populateData(nv);
-            configureForRole(isManager, nv);
+            //configureForRole(isManager, nv);
         } else {
             // Xử lý khi không có dữ liệu nhân viên
             lblTenNV.setText("Không có dữ liệu người dùng");
@@ -52,10 +52,10 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
         txtAddress.setText(nv.getDiaChi());
     }
 
-    private void configureForRole(boolean isManager, NhanVien nv) {
-        // Hiển thị hoặc ẩn nút đổi mật khẩu
-        btnDoiMatKhau.setVisible(isManager);
-    }
+//    private void configureForRole(boolean isManager, NhanVien nv) {
+//        // Hiển thị hoặc ẩn nút đổi mật khẩu
+//        btnDoiMatKhau.setVisible(isManager);
+//    }
 
     public void setTenNhanVien(String ten) {
         lblTenNV.setText(ten);
