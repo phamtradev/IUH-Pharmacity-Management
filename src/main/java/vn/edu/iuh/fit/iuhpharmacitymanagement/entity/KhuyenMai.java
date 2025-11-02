@@ -22,6 +22,7 @@ public class KhuyenMai {
     private boolean trangThai;
     private LoaiKhuyenMai loaiKhuyenMai;
     private double giaToiThieu; // Giá tối thiểu đơn hàng để áp dụng khuyến mãi (chỉ dùng cho khuyến mãi đơn hàng)
+    private double giaToiDa; // Giá giảm tối đa khi áp dụng khuyến mãi (0 = không giới hạn)
     
     public static final String MA_KHUYEN_MAI_SAI = "Mã khuyến mãi phải có dạng KMXXXXX (trong đó XXXXX là dãy số từ 00001 đến 99999)";
     public static final String TEN_KHUYEN_MAI_RONG = "Tên khuyến mãi không được để trống";
@@ -50,6 +51,7 @@ public class KhuyenMai {
         this.trangThai = trangThai;
         this.loaiKhuyenMai = loaiKhuyenMai;
         this.giaToiThieu = 0; // Mặc định 0 (không yêu cầu giá tối thiểu)
+        this.giaToiDa = 0; // Mặc định 0 (không giới hạn giảm giá tối đa)
     }
 
     public String getMaKhuyenMai() {
@@ -152,6 +154,19 @@ public class KhuyenMai {
         }
     }
 
+    public double getGiaToiDa() {
+        return giaToiDa;
+    }
+
+    public void setGiaToiDa(double giaToiDa) {
+        // Giá tối đa phải >= 0 (0 = không giới hạn giảm giá tối đa)
+        if (giaToiDa < 0) {
+            this.giaToiDa = 0;
+        } else {
+            this.giaToiDa = giaToiDa;
+        }
+    }
+
     @Override
     public String toString() {
         return "KhuyenMai{" +
@@ -163,6 +178,7 @@ public class KhuyenMai {
                 ", trangThai=" + hienThiTrangThai() +
                 ", loaiKhuyenMai=" + loaiKhuyenMai +
                 ", giaToiThieu=" + giaToiThieu +
+                ", giaToiDa=" + giaToiDa +
                 '}';
     }
 }

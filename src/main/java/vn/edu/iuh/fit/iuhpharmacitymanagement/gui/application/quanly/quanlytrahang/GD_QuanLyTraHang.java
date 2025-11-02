@@ -619,7 +619,7 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
         }
     }
     
-    // Xử lý xuất hủy sản phẩm (KHÔNG cập nhật trạng thái, chỉ thông báo)
+    // Xử lý xuất hủy sản phẩm
     private void xuLyXuatHuy(ChiTietDonTraHang chiTiet, JTable table, int row, DonTraHang donTraHang) {
         try {
             String tenSanPham = chiTiet.getSanPham().getTenSanPham();
@@ -627,19 +627,9 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
             String maDonTra = donTraHang.getMaDonTraHang();
             
             // Thông báo cho quản lý
-            javax.swing.JOptionPane.showMessageDialog(
-                null,
-                String.format(
-                    "Đơn trả hàng '%s' đã được đánh dấu.\n" +
-                    "Nhân viên sẽ tạo phiếu xuất hủy từ giao diện 'Phiếu xuất hủy'.\n\n" +
-                    "Sản phẩm: %s\n" +
-                    "Số lượng: %d\n\n" +
-                    "Trạng thái sẽ tự động chuyển thành 'Đã xử lý' sau khi nhân viên tạo phiếu xuất hủy.",
-                    maDonTra, tenSanPham, soLuong
-                ),
-                "Thông tin xuất hủy",
-                javax.swing.JOptionPane.INFORMATION_MESSAGE
-            );
+            Notifications.getInstance().show(Notifications.Type.SUCCESS, 
+                String.format("Đã đánh dấu %d sản phẩm '%s' từ đơn '%s' sẵn sàng xuất hủy", 
+                    soLuong, tenSanPham, maDonTra));
             
         } catch (Exception e) {
             e.printStackTrace();

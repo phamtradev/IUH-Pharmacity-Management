@@ -324,6 +324,8 @@ public class GD_BanHang extends javax.swing.JPanel {
         timSanPham();
     }//GEN-LAST:event_btnMaActionPerformed
 
+    //get ma vach
+    //bat enter goi timSanPham()
     private void txtTimSanPhamKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtTimSanPhamKeyPressed
         if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
             timSanPham();
@@ -570,7 +572,8 @@ public class GD_BanHang extends javax.swing.JPanel {
                     for (vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietKhuyenMaiSanPham ctkm : danhSachCTKM) {
                         if (ctkm.getSanPham().getMaSanPham().equals(panel.getSanPham().getMaSanPham())) {
                             // Sản phẩm có trong chương trình khuyến mãi
-                            double giamGia = panel.getTongTien() * (kmSanPham.getGiamGia() / 100.0);
+                            // getGiamGia() đã trả về dạng thập phân (0.1 = 10%), không cần chia 100
+                            double giamGia = panel.getTongTien() * kmSanPham.getGiamGia();
                             tongGiamGiaSanPham += giamGia;
                             
                             // Cập nhật giảm giá cho panel (hiển thị % giảm giá + TÊN KHUYẾN MÃI)
@@ -589,7 +592,13 @@ public class GD_BanHang extends javax.swing.JPanel {
         if (kmDonHang != null) {
             // Kiểm tra điều kiện giá tối thiểu
             if (tongTienHang >= kmDonHang.getGiaToiThieu()) {
-                giamGiaHoaDon = tongTienHang * (kmDonHang.getGiamGia() / 100.0);
+                // getGiamGia() đã trả về dạng thập phân (0.1 = 10%), không cần chia 100
+                giamGiaHoaDon = tongTienHang * kmDonHang.getGiamGia();
+                
+                // Áp dụng giới hạn giá tối đa (nếu có)
+                if (kmDonHang.getGiaToiDa() > 0 && giamGiaHoaDon > kmDonHang.getGiaToiDa()) {
+                    giamGiaHoaDon = kmDonHang.getGiaToiDa();
+                }
             }
         }
         

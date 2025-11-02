@@ -47,15 +47,14 @@ public class MainApplication {
 
                 // Thiết lập Look and Feel
                 FlatLightLaf.setup();
-                
+
                 // Hiển thị SplashScreen trước
                 new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.loading.SplashScreen().setVisible(true);
-                
+
                 // Note: SplashScreen sẽ tự động:
                 // 1. Kết nối database
                 // 2. Load resources
                 // 3. Chuyển sang LoginFrame sau khi hoàn tất
-
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(null,
                         "Đã xảy ra lỗi khi khởi động ứng dụng: " + e.getMessage(),

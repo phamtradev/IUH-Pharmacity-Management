@@ -291,7 +291,8 @@ public class XuatHoaDonPDF {
         double giamGiaHoaDon = 0;
         KhuyenMai khuyenMaiDonHang = donHang.getKhuyenMai();
         if (khuyenMaiDonHang != null && khuyenMaiDonHang.getGiamGia() > 0) {
-            giamGiaHoaDon = (tongTienHang - tongGiamGiaSanPham) * khuyenMaiDonHang.getGiamGia() / 100;
+            // getGiamGia() đã trả về dạng thập phân (0.1 = 10%), không cần chia 100
+            giamGiaHoaDon = (tongTienHang - tongGiamGiaSanPham) * khuyenMaiDonHang.getGiamGia();
         }
         
         // Tổng giảm giá

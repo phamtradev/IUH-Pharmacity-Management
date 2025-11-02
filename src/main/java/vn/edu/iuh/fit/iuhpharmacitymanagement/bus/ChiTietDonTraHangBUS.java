@@ -138,7 +138,12 @@ public class ChiTietDonTraHangBUS {
         }
     }
 
-   //Lấy tất cả các sản phẩm bị trả hàng để hiển thị lên form xuất hủy.
+    /**
+     * Lấy tất cả các sản phẩm từ đơn trả hàng CHƯA XỬ LÝ
+     * (chưa tạo phiếu xuất hủy hoặc nhập lại kho)
+     * 
+     * @return Danh sách chi tiết đơn trả hàng có trạng thái "Chưa xử lý"
+     */
     public List<ChiTietDonTraHang> layTatCaChiTietCanHuy() {
         return chiTietDonTraHangDAO.findAllWithDetails();
     }

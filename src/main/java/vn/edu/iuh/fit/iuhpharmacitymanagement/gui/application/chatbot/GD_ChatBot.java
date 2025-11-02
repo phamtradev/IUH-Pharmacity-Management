@@ -626,20 +626,20 @@ public class GD_ChatBot extends javax.swing.JPanel {
         // Bo góc tròn
         messagePanel.putClientProperty(FlatClientProperties.STYLE,
                 "arc: 16");
-        
+
         // Tính toán kích thước dựa trên nội dung
         // Đặt chiều rộng tối đa là 450px, nhưng nội dung ngắn sẽ có width nhỏ hơn
         int maxWidth = 450;
         int padding = 32; // 16px left + 16px right
-        
+
         // Nếu text quá dài, sẽ wrap lại, cần tính lại chiều cao
         txtMessage.setSize(maxWidth - padding, Short.MAX_VALUE);
         Dimension preferredSize = txtMessage.getPreferredSize();
-        
+
         // Đặt preferred size cho messagePanel
         messagePanel.setPreferredSize(new Dimension(
-            Math.min(preferredSize.width + padding, maxWidth),
-            preferredSize.height + 40 // Thêm khoảng trống cho time label
+                Math.min(preferredSize.width + padding, maxWidth),
+                preferredSize.height + 40 // Thêm khoảng trống cho time label
         ));
         messagePanel.setMaximumSize(new Dimension(maxWidth, preferredSize.height + 40));
 

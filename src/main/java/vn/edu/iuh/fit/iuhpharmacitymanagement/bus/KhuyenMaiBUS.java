@@ -111,9 +111,16 @@ public class KhuyenMaiBUS {
             
             if (km.getLoaiKhuyenMai() == LoaiKhuyenMai.DON_HANG) {
                 // Khuyến mãi hóa đơn: Áp dụng cho tổng đơn hàng
-                // Kiểm tra giá tối thiểu
+                // Kiểm tra giá tối thiểu và giá tối đa
                 if (tongTienHang >= km.getGiaToiThieu()) {
-                    giamGia = tongTienHang * (km.getGiamGia() / 100.0);
+                    // Kiểm tra giá tối đa: nếu vượt quá thì HỦY khuyến mãi
+                    if (km.getGiaToiDa() > 0 && tongTienHang > km.getGiaToiDa()) {
+                        // Đơn hàng vượt quá giá tối đa -> Không áp dụng khuyến mãi
+                        continue; // Bỏ qua khuyến mãi này
+                    }
+                    
+                    // getGiamGia() đã trả về dạng thập phân (0.1 = 10%), không cần chia 100
+                    giamGia = tongTienHang * km.getGiamGia();
                 }
             } else if (km.getLoaiKhuyenMai() == LoaiKhuyenMai.SAN_PHAM) {
                 // Khuyến mãi sản phẩm: Kiểm tra từng sản phẩm trong giỏ
@@ -129,7 +136,8 @@ public class KhuyenMaiBUS {
                     
                     if (coKhuyenMai) {
                         double tongTienSP = sp.getGiaBan() * soLuong;
-                        giamGia += tongTienSP * (km.getGiamGia() / 100.0);
+                        // getGiamGia() đã trả về dạng thập phân (0.1 = 10%), không cần chia 100
+                        giamGia += tongTienSP * km.getGiamGia();
                     }
                 }
             }
@@ -174,10 +182,18 @@ public class KhuyenMaiBUS {
             }
             
             if (km.getLoaiKhuyenMai() == LoaiKhuyenMai.DON_HANG) {
-                System.out.println("  => Loai DON_HANG | Gia toi thieu: " + km.getGiaToiThieu() + " | Tong tien hang: " + tongTienHang);
+                System.out.println("  => Loai DON_HANG | Gia toi thieu: " + km.getGiaToiThieu() + " | Gia toi da: " + km.getGiaToiDa() + " | Tong tien hang: " + tongTienHang);
                 // Kiểm tra điều kiện giá tối thiểu
                 if (tongTienHang >= km.getGiaToiThieu()) {
-                    double giamGia = tongTienHang * (km.getGiamGia() / 100.0);
+                    // Kiểm tra giá tối đa: nếu vượt quá thì HỦY khuyến mãi
+                    if (km.getGiaToiDa() > 0 && tongTienHang > km.getGiaToiDa()) {
+                        System.out.println("  => KHONG AP DUNG: Don hang vuot qua gia toi da (" + tongTienHang + " > " + km.getGiaToiDa() + ")");
+                        continue; // Bỏ qua khuyến mãi này
+                    }
+                    
+                    // getGiamGia() đã trả về dạng thập phân (0.1 = 10%), không cần chia 100
+                    double giamGia = tongTienHang * km.getGiamGia();
+                    
                     System.out.println("  => DU DIEU KIEN! Giam gia: " + giamGia);
                     if (giamGia > giamGiaDonHangLonNhat) {
                         giamGiaDonHangLonNhat = giamGia;
@@ -185,7 +201,7 @@ public class KhuyenMaiBUS {
                         System.out.println("  => CHON LAM KM DON HANG TOT NHAT!");
                     }
                 } else {
-                    System.out.println("  => KHONG DU DIEU KIEN!");
+                    System.out.println("  => KHONG DU DIEU KIEN: Don hang nho hon gia toi thieu!");
                 }
             } else if (km.getLoaiKhuyenMai() == LoaiKhuyenMai.SAN_PHAM) {
                 System.out.println("  => Loai SAN_PHAM");
@@ -212,7 +228,8 @@ public class KhuyenMaiBUS {
                     
                     if (coKhuyenMai) {
                         double tongTienSP = sp.getGiaBan() * soLuong;
-                        giamGia += tongTienSP * (km.getGiamGia() / 100.0);
+                        // getGiamGia() đã trả về dạng thập phân (0.1 = 10%), không cần chia 100
+                        giamGia += tongTienSP * km.getGiamGia();
                     }
                 }
                 

@@ -159,7 +159,7 @@ public class ChiTietDonTraHangDAO implements DAOInterface<ChiTietDonTraHang, Str
         return dsCt;
     }
 
-    // Lấy tất cả sản phẩm trong đơn trả CHƯA ĐƯỢC XỬ LÝ (chưa xuất hủy)
+    // Lấy tất cả sản phẩm trong đơn trả CHƯA XỬ LÝ
     public List<ChiTietDonTraHang> findAllWithDetails() {
         List<ChiTietDonTraHang> danhSach = new ArrayList<>();
         String sql = "SELECT ct.*, sp.tenSanPham, sp.giaNhap, dv.tenDonVi, dth.trangThaiXuLy "
@@ -167,7 +167,7 @@ public class ChiTietDonTraHangDAO implements DAOInterface<ChiTietDonTraHang, Str
                 + "JOIN SanPham sp ON ct.maSanPham = sp.maSanPham "
                 + "JOIN DonViTinh dv ON sp.maDonVi = dv.maDonVi "
                 + "JOIN DonTraHang dth ON ct.maDonTra = dth.maDonTra "
-                + "WHERE dth.trangThaiXuLy != N'Đã xử lý' OR dth.trangThaiXuLy IS NULL";
+                + "WHERE dth.trangThaiXuLy = N'Chưa xử lý' OR dth.trangThaiXuLy IS NULL";
 
         try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
 
@@ -197,9 +197,9 @@ public class ChiTietDonTraHangDAO implements DAOInterface<ChiTietDonTraHang, Str
 
                 danhSach.add(ctdt);
             }
-            System.out.println("[DAO] da tim thay " + danhSach.size() + " chi tiet dontra han CHUA XU LY");
+            System.out.println("[DAO] Đã tìm thấy " + danhSach.size() + " chi tiết đơn trả hàng đang CHỜ XUẤT HỦY");
         } catch (Exception e) {
-            System.err.println("[DAO] loi khi thuc hien findAllWithDetails: " + e.getMessage());
+            System.err.println("[DAO] Lỗi khi thực hiện findAllWithDetails: " + e.getMessage());
             e.printStackTrace();
         }
         return danhSach;

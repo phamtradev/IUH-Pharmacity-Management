@@ -817,7 +817,7 @@ public class GD_BaoCaoThuChi extends javax.swing.JPanel {
                     tenSanPham,
                     ct.getSoLuong(),
                     DinhDangSo.dinhDangTien(ct.getDonGia()),
-                    DinhDangSo.dinhDangPhanTramTrucTiep(ct.getGiamGia() * 100),
+                    DinhDangSo.dinhDangTien(ct.getGiamGia()),
                     DinhDangSo.dinhDangTien(ct.getThanhTien())
                 });
             }

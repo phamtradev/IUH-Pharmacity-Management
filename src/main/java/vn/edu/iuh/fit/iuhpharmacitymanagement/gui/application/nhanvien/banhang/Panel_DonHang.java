@@ -652,7 +652,8 @@ public class Panel_DonHang extends javax.swing.JPanel {
                 if (kmSanPham != null && danhSachCTKM != null) {
                     for (ChiTietKhuyenMaiSanPham ctkm : danhSachCTKM) {
                         if (ctkm.getSanPham().getMaSanPham().equals(panel.getSanPham().getMaSanPham())) {
-                            giamGiaSP = panel.getTongTien() * (kmSanPham.getGiamGia() / 100.0);
+                            // getGiamGia() đã trả về dạng thập phân (0.1 = 10%), không cần chia 100
+                            giamGiaSP = panel.getTongTien() * kmSanPham.getGiamGia();
                             break;
                         }
                     }

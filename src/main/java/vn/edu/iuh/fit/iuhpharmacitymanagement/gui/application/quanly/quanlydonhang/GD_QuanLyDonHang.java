@@ -443,7 +443,7 @@ public class GD_QuanLyDonHang extends javax.swing.JPanel {
                 donVi,
                 ct.getSoLuong(),
                 DinhDangSo.dinhDangTien(ct.getDonGia()),
-                ct.getGiamGia() > 0 ? "-" + DinhDangSo.dinhDangPhanTramTrucTiep(ct.getGiamGia() * 100) : "0%",
+                ct.getGiamGia() > 0 ? "-" + DinhDangSo.dinhDangTien(ct.getGiamGia()) : "0 đ",
                 DinhDangSo.dinhDangTien(ct.getThanhTien())
             });
         }
