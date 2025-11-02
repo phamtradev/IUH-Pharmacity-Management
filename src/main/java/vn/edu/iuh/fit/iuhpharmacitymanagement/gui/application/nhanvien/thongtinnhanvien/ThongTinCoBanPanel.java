@@ -29,6 +29,8 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
     public ThongTinCoBanPanel() {
         initComponents();
 
+        btnDoiMatKhau.setVisible(true);
+
     }
 
     public void loadAndConfigure(boolean isManager, NhanVien nv) {
@@ -36,7 +38,7 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
 
         if (nv != null) {
             populateData(nv);
-            configureForRole(isManager, nv);
+            //configureForRole(isManager, nv);
         } else {
             // Xử lý khi không có dữ liệu nhân viên
             lblTenNV.setText("Không có dữ liệu người dùng");
@@ -67,6 +69,12 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
 //        // Hiển thị hoặc ẩn nút đổi mật khẩu
 //        btnDoiMatKhau.setVisible(isManager);
     }
+
+//    private void configureForRole(boolean isManager, NhanVien nv) {
+//        // Hiển thị hoặc ẩn nút đổi mật khẩu
+//        btnDoiMatKhau.setVisible(isManager);
+//    }
+
 
     public void setTenNhanVien(String ten) {
         lblTenNV.setText(ten);
@@ -459,7 +467,7 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
         jdiaDoiPass.setPreferredSize(new Dimension(440, 300));
         addPlayholder(txtMkCu);
         addPlayholder(txtMkMoi);
-        addPlayholder(txtXacNhanMkMoi);        
+        addPlayholder(txtXacNhanMkMoi);
         jdiaDoiPass.setVisible(true);
         jdiaDoiPass.requestFocusInWindow();
     }//GEN-LAST:event_btnDoiMatKhauActionPerformed
@@ -538,7 +546,7 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
             txtMkMoi.requestFocus();
             return;
         }
-       
+
 //        if (new TaiKhoanDAO().updatePass(tk, nv, txtMkMoi.getText().trim())) {
 //            Notifications.getInstance().setJFrame(parentFrame);
 //            Notifications.getInstance().show(Notifications.Type.SUCCESS, "Cập nhật mật khẩu thành công!");
@@ -547,42 +555,42 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_btnXNDoiMatKhauActionPerformed
 
     private void txtMkCuFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtMkCuFocusGained
-        if(txtMkCu.getText().equals("Nhập mật khẩu cũ")){
+        if (txtMkCu.getText().equals("Nhập mật khẩu cũ")) {
             txtMkCu.setText("");
             removePlayholder(txtMkCu);
         }
     }//GEN-LAST:event_txtMkCuFocusGained
 
     private void txtMkCuFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtMkCuFocusLost
-        if(txtMkCu.getText().equals("")){
+        if (txtMkCu.getText().equals("")) {
             txtMkCu.setText("Nhập mật khẩu cũ");
             addPlayholder(txtMkCu);
         }
     }//GEN-LAST:event_txtMkCuFocusLost
 
     private void txtMkMoiFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtMkMoiFocusGained
-        if(txtMkMoi.getText().equals("Nhập mật khẩu mới")){
+        if (txtMkMoi.getText().equals("Nhập mật khẩu mới")) {
             txtMkMoi.setText("");
             removePlayholder(txtMkMoi);
         }
     }//GEN-LAST:event_txtMkMoiFocusGained
 
     private void txtMkMoiFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtMkMoiFocusLost
-         if(txtMkMoi.getText().equals("")){
+        if (txtMkMoi.getText().equals("")) {
             txtMkMoi.setText("Nhập mật khẩu mới");
             addPlayholder(txtMkMoi);
         }
     }//GEN-LAST:event_txtMkMoiFocusLost
 
     private void txtXacNhanMkMoiFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtXacNhanMkMoiFocusGained
-        if(txtXacNhanMkMoi.getText().equals("Nhập lại mật khẩu mới")){
+        if (txtXacNhanMkMoi.getText().equals("Nhập lại mật khẩu mới")) {
             txtXacNhanMkMoi.setText("");
             removePlayholder(txtXacNhanMkMoi);
         }
     }//GEN-LAST:event_txtXacNhanMkMoiFocusGained
 
     private void txtXacNhanMkMoiFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtXacNhanMkMoiFocusLost
-        if(txtXacNhanMkMoi.getText().equals("")){
+        if (txtXacNhanMkMoi.getText().equals("")) {
             txtXacNhanMkMoi.setText("Nhập lại mật khẩu mới");
             addPlayholder(txtXacNhanMkMoi);
         }
