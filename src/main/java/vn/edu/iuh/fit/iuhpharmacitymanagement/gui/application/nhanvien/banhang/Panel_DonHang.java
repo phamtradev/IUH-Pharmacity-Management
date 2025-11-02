@@ -57,8 +57,6 @@ public class Panel_DonHang extends javax.swing.JPanel {
     private KhuyenMai khuyenMaiDaChon; // @deprecated - giữ lại để tương thích
     private Map<LoaiKhuyenMai, KhuyenMai> danhSachKhuyenMaiDaChon; // Map lưu các khuyến mãi đang áp dụng
     private JLabel lblTenKhuyenMaiHoaDon;
-    private JLabel lblTenKhuyenMaiSanPham;
-    private JLabel lblThongTinKhuyenMai; // Label hiển thị thông tin khuyến mãi đang áp dụng
     private DonHangBUS donHangBUS;
     private ChiTietDonHangBUS chiTietDonHangBUS;
     private NhanVienBUS nhanVienBUS;
@@ -645,20 +643,22 @@ public class Panel_DonHang extends javax.swing.JPanel {
                 chiTiet.setLoHang(panel.getLoHangDaChon());
                 chiTiet.setSoLuong(panel.getSoLuong());
                 chiTiet.setDonGia(panel.getSanPham().getGiaBan());
-                chiTiet.setThanhTien(panel.getTongTien());
                 
-                // Tính giảm giá sản phẩm (nếu có khuyến mãi)
-                double giamGiaSP = 0;
-                if (kmSanPham != null && danhSachCTKM != null) {
-                    for (ChiTietKhuyenMaiSanPham ctkm : danhSachCTKM) {
-                        if (ctkm.getSanPham().getMaSanPham().equals(panel.getSanPham().getMaSanPham())) {
-                            // getGiamGia() đã trả về dạng thập phân (0.1 = 10%), không cần chia 100
-                            giamGiaSP = panel.getTongTien() * kmSanPham.getGiamGia();
-                            break;
-                        }
-                    }
-                }
+                // Lấy số tiền giảm giá từ panel (đã bao gồm giảm giá từ khuyến mãi hoặc nhập tay)
+                double tongTienGoc = panel.getTongTien(); // Giá gốc = đơn giá × số lượng
+                double giamGiaSP = panel.getSoTienGiamGia(); // Lấy trực tiếp từ panel
+                
+                // Debug log
+                System.out.println("DEBUG - Sản phẩm: " + panel.getSanPham().getTenSanPham() + 
+                    ", Giá gốc: " + tongTienGoc + 
+                    ", % Giảm: " + (panel.getGiamGia() * 100) + "%" +
+                    ", Giảm giá: " + giamGiaSP);
+                
                 chiTiet.setGiamGia(giamGiaSP);
+                
+                // Thành tiền = Giá gốc - Giảm giá
+                double thanhTien = tongTienGoc - giamGiaSP;
+                chiTiet.setThanhTien(thanhTien);
                 
                 // Lưu chi tiết đơn hàng
                 if (!chiTietDonHangBUS.themChiTietDonHang(chiTiet)) {
@@ -803,63 +803,28 @@ public class Panel_DonHang extends javax.swing.JPanel {
     
     /**
      * Cập nhật tổng giảm giá sản phẩm
+     * @param discount Tổng số tiền giảm giá
+     * @param khuyenMai Khuyến mãi được áp dụng (có thể null nếu có nhiều khuyến mãi)
      */
-    public void updateDiscountProduct(double discount) {
+    public void updateDiscountProduct(double discount, KhuyenMai khuyenMai) {
         this.discountProduct = discount;
         txtDiscountProduct.setText(String.format("%,.0f đ", discount));
-        
-        // Hiển thị tên khuyến mãi sản phẩm (nếu có)
-        KhuyenMai kmSanPham = danhSachKhuyenMaiDaChon.get(LoaiKhuyenMai.SAN_PHAM);
-        
-        // DEBUG: In ra console để kiểm tra
-        System.out.println("=== DEBUG updateDiscountProduct ===");
-        System.out.println("Discount: " + discount);
-        System.out.println("KM San Pham: " + (kmSanPham != null ? kmSanPham.getTenKhuyenMai() + " (Loai: " + kmSanPham.getLoaiKhuyenMai() + ")" : "NULL"));
-        if (kmSanPham != null) {
-            System.out.println("KM San Pham getGiamGia(): " + kmSanPham.getGiamGia());
-        }
-        System.out.println("lblTenKhuyenMaiSanPham != null? " + (lblTenKhuyenMaiSanPham != null));
-        
-        if (lblTenKhuyenMaiSanPham != null) {
-            if (kmSanPham != null && discount > 0) {
-                String tenKM = "(" + kmSanPham.getTenKhuyenMai() + " - " + String.format("%.1f", kmSanPham.getGiamGia() * 100) + "%)";
-                System.out.println(">>> DANG SET TEXT CHO lblTenKhuyenMaiSanPham: " + tenKM);
-                lblTenKhuyenMaiSanPham.setText(tenKM);
-                lblTenKhuyenMaiSanPham.revalidate();
-                lblTenKhuyenMaiSanPham.repaint();
-                System.out.println(">>> SAU KHI SET: " + lblTenKhuyenMaiSanPham.getText());
-            } else {
-                System.out.println(">>> XOA TEXT lblTenKhuyenMaiSanPham");
-                lblTenKhuyenMaiSanPham.setText("");
-            }
-        } else {
-            System.out.println(">>> LOI: lblTenKhuyenMaiSanPham = NULL!");
-        }
         
         updateTongHoaDon();
     }
     
     /**
      * Cập nhật tổng giảm giá hóa đơn
+     * @param discount Tổng số tiền giảm giá
+     * @param khuyenMai Khuyến mãi được áp dụng (có thể null)
      */
-    public void updateDiscountOrder(double discount) {
+    public void updateDiscountOrder(double discount, KhuyenMai khuyenMai) {
         this.discountOrder = discount;
         txtDiscountOrder.setText(String.format("%,.0f đ", discount));
         
-        // Hiển thị tên khuyến mãi đơn hàng (nếu có)
-        KhuyenMai kmDonHang = danhSachKhuyenMaiDaChon.get(LoaiKhuyenMai.DON_HANG);
-        
-        // DEBUG: In ra console để kiểm tra
-        System.out.println("=== DEBUG updateDiscountOrder ===");
-        System.out.println("Discount: " + discount);
-        System.out.println("KM Don Hang: " + (kmDonHang != null ? kmDonHang.getTenKhuyenMai() + " (Loai: " + kmDonHang.getLoaiKhuyenMai() + ")" : "NULL"));
-        if (kmDonHang != null) {
-            System.out.println("KM Don Hang getGiamGia(): " + kmDonHang.getGiamGia());
-        }
-        
         if (lblTenKhuyenMaiHoaDon != null) {
-            if (kmDonHang != null && discount > 0) {
-                lblTenKhuyenMaiHoaDon.setText("(" + kmDonHang.getTenKhuyenMai() + " - " + String.format("%.1f", kmDonHang.getGiamGia() * 100) + "%)");
+            if (khuyenMai != null && discount > 0) {
+                lblTenKhuyenMaiHoaDon.setText("(" + khuyenMai.getTenKhuyenMai() + " - " + String.format("%.1f", khuyenMai.getGiamGia() * 100) + "%)");
             } else {
                 lblTenKhuyenMaiHoaDon.setText("");
             }
@@ -980,19 +945,6 @@ public class Panel_DonHang extends javax.swing.JPanel {
         lblTenKhuyenMaiHoaDon.setText("");
         lblTenKhuyenMaiHoaDon.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         
-        // Label cho khuyến mãi sản phẩm (nằm dưới giảm giá sản phẩm)
-        lblTenKhuyenMaiSanPham = new JLabel();
-        lblTenKhuyenMaiSanPham.setFont(new java.awt.Font("Segoe UI", java.awt.Font.ITALIC, 11));
-        lblTenKhuyenMaiSanPham.setForeground(new java.awt.Color(0, 150, 0));
-        lblTenKhuyenMaiSanPham.setText("");
-        lblTenKhuyenMaiSanPham.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-        
-        // Label hiển thị thông tin khuyến mãi đang áp dụng
-        lblThongTinKhuyenMai = new JLabel();
-        lblThongTinKhuyenMai.setFont(new java.awt.Font("Segoe UI", java.awt.Font.ITALIC | java.awt.Font.BOLD, 10));
-        lblThongTinKhuyenMai.setForeground(new java.awt.Color(0, 120, 215));
-        lblThongTinKhuyenMai.setText("");
-        
         // Tạo panel wrapper để label nằm thẳng hàng với textfield
         // Panel cho khuyến mãi hóa đơn
         javax.swing.JPanel pnKhuyenMaiHoaDon = new javax.swing.JPanel();
@@ -1008,22 +960,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
             .addComponent(lblTenKhuyenMaiHoaDon, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
         
-        // Panel cho khuyến mãi sản phẩm
-        javax.swing.JPanel pnKhuyenMaiSanPham = new javax.swing.JPanel();
-        pnKhuyenMaiSanPham.setBackground(new java.awt.Color(255, 255, 255));
-        javax.swing.GroupLayout layoutSanPham = new javax.swing.GroupLayout(pnKhuyenMaiSanPham);
-        pnKhuyenMaiSanPham.setLayout(layoutSanPham);
-        layoutSanPham.setHorizontalGroup(
-            layoutSanPham.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-            .addComponent(lblTenKhuyenMaiSanPham, javax.swing.GroupLayout.PREFERRED_SIZE, 162, javax.swing.GroupLayout.PREFERRED_SIZE)
-        );
-        layoutSanPham.setVerticalGroup(
-            layoutSanPham.createSequentialGroup()
-            .addComponent(lblTenKhuyenMaiSanPham, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
-        );
-        
         // Thêm panel wrapper vào panel tương ứng
-        jPanel8.add(pnKhuyenMaiSanPham); // Thêm vào panel giảm giá sản phẩm
         jPanel1.add(pnKhuyenMaiHoaDon);  // Thêm vào panel giảm giá hóa đơn
     }
     
@@ -1064,11 +1001,6 @@ public class Panel_DonHang extends javax.swing.JPanel {
             if (!danhSachKhuyenMaiDaChon.isEmpty()) {
                 danhSachKhuyenMaiDaChon.clear();
                 khuyenMaiDaChon = null; // backward compatibility
-                
-                // Xóa thông tin khuyến mãi trên label
-                if (lblThongTinKhuyenMai != null) {
-                    lblThongTinKhuyenMai.setText("");
-                }
             }
             return;
         }
@@ -1125,8 +1057,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
                 }
             }
             
-            // Tạo text hiển thị cho label (dựa trên danh sách đã chọn, không phải khuyenMaiApDung)
-            StringBuilder tenKMDisplay = new StringBuilder();
+            // Tạo text hiển thị thông báo (dựa trên danh sách đã chọn, không phải khuyenMaiApDung)
             StringBuilder thongBaoDisplay = new StringBuilder();
             
             KhuyenMai kmSanPham = danhSachKhuyenMaiDaChon.get(LoaiKhuyenMai.SAN_PHAM);
@@ -1176,24 +1107,11 @@ public class Panel_DonHang extends javax.swing.JPanel {
                 }
             }
             
-            // Cập nhật label hiển thị tổng hợp tất cả khuyến mãi đang áp dụng
-            if (kmSanPham != null && kmDonHang != null) {
-                tenKMDisplay.append("🎉 Đang áp dụng: ")
-                    .append(kmSanPham.getTenKhuyenMai())
-                    .append(" + ")
-                    .append(kmDonHang.getTenKhuyenMai());
+            // Cập nhật backward compatibility
+            if (kmDonHang != null) {
                 khuyenMaiDaChon = kmDonHang; // backward compatibility: ưu tiên KM đơn hàng
             } else if (kmSanPham != null) {
-                tenKMDisplay.append("🎉 Đang áp dụng: ").append(kmSanPham.getTenKhuyenMai());
                 khuyenMaiDaChon = kmSanPham; // backward compatibility
-            } else if (kmDonHang != null) {
-                tenKMDisplay.append("🎉 Đang áp dụng: ").append(kmDonHang.getTenKhuyenMai());
-                khuyenMaiDaChon = kmDonHang; // backward compatibility
-            }
-            
-            // Cập nhật label hiển thị thông tin khuyến mãi
-            if (lblThongTinKhuyenMai != null) {
-                lblThongTinKhuyenMai.setText(tenKMDisplay.toString());
             }
             
             // Hiển thị thông báo CHỈ KHI CÓ thay đổi
@@ -1411,14 +1329,8 @@ public class Panel_DonHang extends javax.swing.JPanel {
         txtTimKhachHang.setText("");
         
         // Xóa thông tin khuyến mãi
-        if (lblThongTinKhuyenMai != null) {
-            lblThongTinKhuyenMai.setText("");
-        }
         if (lblTenKhuyenMaiHoaDon != null) {
             lblTenKhuyenMaiHoaDon.setText("");
-        }
-        if (lblTenKhuyenMaiSanPham != null) {
-            lblTenKhuyenMaiSanPham.setText("");
         }
     }
     
@@ -1595,7 +1507,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
             javax.swing.JLabel lblGiamGiaSPText = new javax.swing.JLabel("Giảm giá sản phẩm: ");
             lblGiamGiaSPText.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 14));
             
-            // Lấy % từ khuyến mãi gốc
+            // Lấy % từ khuyến mãi gốc - chỉ hiển thị số tiền và %
             String giamGiaText = "-" + currencyFormat.format(tongGiamGiaSanPham) + " đ";
             giamGiaText += " (" + String.format("%.1f", khuyenMaiSanPham.getGiamGia() * 100) + "%)";
             
@@ -1603,13 +1515,9 @@ public class Panel_DonHang extends javax.swing.JPanel {
             lblGiamGiaSP.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 14));
             lblGiamGiaSP.setForeground(new Color(0, 150, 0));
             
-            javax.swing.JLabel lblKMSPName = new javax.swing.JLabel("  (" + khuyenMaiSanPham.getTenKhuyenMai() + ")");
-            lblKMSPName.setFont(new java.awt.Font("Segoe UI", java.awt.Font.ITALIC, 12));
-            lblKMSPName.setForeground(new Color(255, 102, 0));
-            
             giamGiaSPPanel.add(lblGiamGiaSPText);
             giamGiaSPPanel.add(lblGiamGiaSP);
-            giamGiaSPPanel.add(lblKMSPName);
+            // BỎ label tên khuyến mãi - chỉ hiển thị % trong cột giảm giá
             footerPanel.add(giamGiaSPPanel);
         }
         

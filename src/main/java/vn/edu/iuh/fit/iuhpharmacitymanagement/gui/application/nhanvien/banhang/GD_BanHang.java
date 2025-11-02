@@ -546,83 +546,132 @@ public class GD_BanHang extends javax.swing.JPanel {
             }
         }
         
-        // Tự động tìm và áp dụng TẤT CẢ khuyến mãi phù hợp (có thể cả 2 loại)
-        panelDonHang.tuDongApDungKhuyenMai(tongTienHang, danhSachSanPham);
+        // ========== XỬ LÝ KHUYẾN MÃI SẢN PHẨM - ÁP DỤNG NHIỀU CHƯƠNG TRÌNH ==========
+        // Lấy TẤT CẢ khuyến mãi sản phẩm còn hiệu lực
+        java.util.List<vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhuyenMai> danhSachKMSanPham = 
+            panelDonHang.getKhuyenMaiBUS().getKhuyenMaiConHan()
+                .stream()
+                .filter(km -> km.getLoaiKhuyenMai() == vn.edu.iuh.fit.iuhpharmacitymanagement.constant.LoaiKhuyenMai.SAN_PHAM)
+                .collect(java.util.stream.Collectors.toList());
         
-        // Lấy DANH SÁCH khuyến mãi đã chọn từ Panel_DonHang (sau khi tự động áp dụng)
-        java.util.Map<vn.edu.iuh.fit.iuhpharmacitymanagement.constant.LoaiKhuyenMai, 
-                       vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhuyenMai> danhSachKhuyenMai = 
-            panelDonHang.getDanhSachKhuyenMaiDaChon();
+        System.out.println("\n====== DEBUG ÁP DỤNG NHIỀU KHUYẾN MÃI SẢN PHẨM ======");
+        System.out.println("Số chương trình KM sản phẩm: " + danhSachKMSanPham.size());
         
-        // ========== XỬ LÝ KHUYẾN MÃI SẢN PHẨM ==========
-        vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhuyenMai kmSanPham = 
-            danhSachKhuyenMai.get(vn.edu.iuh.fit.iuhpharmacitymanagement.constant.LoaiKhuyenMai.SAN_PHAM);
-        
-        if (kmSanPham != null) {
-            // Lấy danh sách sản phẩm trong chương trình khuyến mãi
-            java.util.List<vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietKhuyenMaiSanPham> danhSachCTKM = 
-                panelDonHang.getChiTietKhuyenMaiSanPhamBUS().timTheoMaKhuyenMai(kmSanPham.getMaKhuyenMai());
-            
-            // Duyệt qua từng sản phẩm trong giỏ hàng
-            for (Component comp : containerPanel.getComponents()) {
-                if (comp instanceof Panel_ChiTietSanPham) {
-                    Panel_ChiTietSanPham panel = (Panel_ChiTietSanPham) comp;
+        // Duyệt qua từng sản phẩm trong giỏ hàng
+        int countPanels = 0;
+        for (Component comp : containerPanel.getComponents()) {
+            if (comp instanceof Panel_ChiTietSanPham) {
+                Panel_ChiTietSanPham panel = (Panel_ChiTietSanPham) comp;
+                countPanels++;
+                
+                System.out.println("\n  Panel " + countPanels + ": " + panel.getSanPham().getTenSanPham());
+                
+                // Tìm khuyến mãi TỐT NHẤT cho sản phẩm này
+                vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhuyenMai kmTotNhat = null;
+                double giamGiaMax = 0;
+                
+                for (vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhuyenMai km : danhSachKMSanPham) {
+                    // Lấy danh sách sản phẩm trong chương trình khuyến mãi
+                    java.util.List<vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietKhuyenMaiSanPham> danhSachCTKM = 
+                        panelDonHang.getChiTietKhuyenMaiSanPhamBUS().timTheoMaKhuyenMai(km.getMaKhuyenMai());
                     
                     // Kiểm tra xem sản phẩm có trong chương trình khuyến mãi không
                     for (vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietKhuyenMaiSanPham ctkm : danhSachCTKM) {
                         if (ctkm.getSanPham().getMaSanPham().equals(panel.getSanPham().getMaSanPham())) {
-                            // Sản phẩm có trong chương trình khuyến mãi
-                            // getGiamGia() đã trả về dạng thập phân (0.1 = 10%), không cần chia 100
-                            double giamGia = panel.getTongTien() * kmSanPham.getGiamGia();
-                            tongGiamGiaSanPham += giamGia;
+                            // Tính giảm giá cho sản phẩm này
+                            double giamGia = panel.getTongTien() * km.getGiamGia();
                             
-                            // Cập nhật giảm giá cho panel (hiển thị % giảm giá + TÊN KHUYẾN MÃI)
-                            panel.setGiamGia(kmSanPham.getGiamGia(), kmSanPham.getTenKhuyenMai());
+                            System.out.println("    - KM: " + km.getTenKhuyenMai() + " (" + (km.getGiamGia() * 100) + "%) → Giảm: " + giamGia);
+                            
+                            // Chọn khuyến mãi tốt nhất
+                            if (giamGia > giamGiaMax) {
+                                giamGiaMax = giamGia;
+                                kmTotNhat = km;
+                            }
                             break;
                         }
                     }
                 }
-            }
-        }
-        
-        // ========== XỬ LÝ KHUYẾN MÃI ĐƠN HÀNG ==========
-        vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhuyenMai kmDonHang = 
-            danhSachKhuyenMai.get(vn.edu.iuh.fit.iuhpharmacitymanagement.constant.LoaiKhuyenMai.DON_HANG);
-        
-        if (kmDonHang != null) {
-            // Kiểm tra điều kiện giá tối thiểu
-            if (tongTienHang >= kmDonHang.getGiaToiThieu()) {
-                // getGiamGia() đã trả về dạng thập phân (0.1 = 10%), không cần chia 100
-                giamGiaHoaDon = tongTienHang * kmDonHang.getGiamGia();
                 
-                // Áp dụng giới hạn giá tối đa (nếu có)
-                if (kmDonHang.getGiaToiDa() > 0 && giamGiaHoaDon > kmDonHang.getGiaToiDa()) {
-                    giamGiaHoaDon = kmDonHang.getGiaToiDa();
+                // Áp dụng khuyến mãi tốt nhất cho sản phẩm này
+                if (kmTotNhat != null) {
+                    tongGiamGiaSanPham += giamGiaMax;
+                    panel.setGiamGia(kmTotNhat.getGiamGia(), kmTotNhat.getTenKhuyenMai());
+                    System.out.println("    ✓ ÁP DỤNG: " + kmTotNhat.getTenKhuyenMai() + " → Giảm: " + giamGiaMax);
+                } else {
+                    System.out.println("    → KHÔNG CÓ KHUYẾN MÃI");
                 }
             }
         }
+        System.out.println("\nTổng số panel đã xử lý: " + countPanels);
+        System.out.println("Tổng giảm giá sản phẩm: " + tongGiamGiaSanPham);
+        System.out.println("======================================================\n");
         
-        // DEBUG: In ra console để kiểm tra
-        System.out.println("\n====== DEBUG capNhatTongTien ======");
-        System.out.println("Tong tien hang: " + tongTienHang);
-        System.out.println("Tong giam gia san pham: " + tongGiamGiaSanPham);
-        System.out.println("Giam gia hoa don: " + giamGiaHoaDon);
-        System.out.println("Danh sach khuyen mai da chon:");
-        java.util.Map<vn.edu.iuh.fit.iuhpharmacitymanagement.constant.LoaiKhuyenMai, 
-                       vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhuyenMai> danhSachKMDebug = 
-            panelDonHang.getDanhSachKhuyenMaiDaChon();
-        for (java.util.Map.Entry<vn.edu.iuh.fit.iuhpharmacitymanagement.constant.LoaiKhuyenMai, 
-                                   vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhuyenMai> entry : danhSachKMDebug.entrySet()) {
-            System.out.println("  - " + entry.getKey() + ": " + entry.getValue().getTenKhuyenMai() + 
-                             " (Loai: " + entry.getValue().getLoaiKhuyenMai() + ", Giam: " + entry.getValue().getGiamGia() + "%)");
+        // ========== XỬ LÝ KHUYẾN MÃI ĐƠN HÀNG ==========
+        // Lấy TẤT CẢ khuyến mãi đơn hàng còn hiệu lực
+        java.util.List<vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhuyenMai> danhSachKMDonHang = 
+            panelDonHang.getKhuyenMaiBUS().getKhuyenMaiConHan()
+                .stream()
+                .filter(km -> km.getLoaiKhuyenMai() == vn.edu.iuh.fit.iuhpharmacitymanagement.constant.LoaiKhuyenMai.DON_HANG)
+                .collect(java.util.stream.Collectors.toList());
+        
+        System.out.println("\n====== DEBUG KHUYẾN MÃI ĐƠN HÀNG ======");
+        System.out.println("Số chương trình KM đơn hàng: " + danhSachKMDonHang.size());
+        System.out.println("Tổng tiền hàng: " + tongTienHang);
+        
+        // Tìm khuyến mãi đơn hàng TỐT NHẤT
+        vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhuyenMai kmDonHangTotNhat = null;
+        double giamGiaDonHangMax = 0;
+        
+        for (vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhuyenMai km : danhSachKMDonHang) {
+            // Kiểm tra điều kiện giá tối thiểu và tối đa
+            if (tongTienHang >= km.getGiaToiThieu()) {
+                // Kiểm tra giá tối đa (nếu có)
+                if (km.getGiaToiDa() > 0 && tongTienHang > km.getGiaToiDa()) {
+                    System.out.println("  - KM: " + km.getTenKhuyenMai() + " → KHÔNG ÁP DỤNG (vượt giá tối đa)");
+                    continue;
+                }
+                
+                // Tính giảm giá
+                double giamGia = tongTienHang * km.getGiamGia();
+                
+                System.out.println("  - KM: " + km.getTenKhuyenMai() + " (" + (km.getGiamGia() * 100) + "%) → Giảm: " + giamGia);
+                
+                // Chọn khuyến mãi tốt nhất
+                if (giamGia > giamGiaDonHangMax) {
+                    giamGiaDonHangMax = giamGia;
+                    kmDonHangTotNhat = km;
+                }
+            } else {
+                System.out.println("  - KM: " + km.getTenKhuyenMai() + " → KHÔNG ÁP DỤNG (chưa đủ điều kiện)");
+            }
         }
-        System.out.println("===================================\n");
+        
+        // Áp dụng khuyến mãi đơn hàng tốt nhất
+        if (kmDonHangTotNhat != null) {
+            giamGiaHoaDon = giamGiaDonHangMax;
+            System.out.println("\n  ✓ ÁP DỤNG KM ĐƠN HÀNG: " + kmDonHangTotNhat.getTenKhuyenMai() + " → Giảm: " + giamGiaHoaDon);
+        } else {
+            System.out.println("\n  → KHÔNG CÓ KHUYẾN MÃI ĐƠN HÀNG");
+        }
+        System.out.println("==========================================\n");
+        
+        // Cập nhật danh sách khuyến mãi đã chọn vào Panel_DonHang
+        java.util.Map<vn.edu.iuh.fit.iuhpharmacitymanagement.constant.LoaiKhuyenMai, 
+                       vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhuyenMai> danhSachKMDaChon = 
+            new java.util.HashMap<>();
+        
+        // Thêm khuyến mãi đơn hàng (nếu có)
+        if (kmDonHangTotNhat != null) {
+            danhSachKMDaChon.put(vn.edu.iuh.fit.iuhpharmacitymanagement.constant.LoaiKhuyenMai.DON_HANG, kmDonHangTotNhat);
+        }
         
         // Cập nhật vào Panel_DonHang
         if (panelDonHang != null) {
+            // Cập nhật số tiền
             panelDonHang.updateTongTienHang(tongTienHang);
-            panelDonHang.updateDiscountProduct(tongGiamGiaSanPham);
-            panelDonHang.updateDiscountOrder(giamGiaHoaDon);
+            panelDonHang.updateDiscountProduct(tongGiamGiaSanPham, null);  // Không hiển thị tên KM (vì có nhiều KM)
+            panelDonHang.updateDiscountOrder(giamGiaHoaDon, kmDonHangTotNhat);
         }
     }
 

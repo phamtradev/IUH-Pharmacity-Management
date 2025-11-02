@@ -262,9 +262,32 @@ public class XuatHoaDonPDF {
             // Đơn giá
             table.addCell(createCell(CURRENCY_FORMAT.format(chiTiet.getDonGia()) + " đ", font, TextAlignment.RIGHT));
             
-            // Giảm giá
-            String giamGia = chiTiet.getGiamGia() > 0 ? 
-                    "-" + CURRENCY_FORMAT.format(chiTiet.getGiamGia()) + " đ" : "0 đ";
+            // Giảm giá (hiển thị số tiền + %)
+            String giamGia;
+            double soTienGiamGia = chiTiet.getGiamGia();
+            
+            // DEBUG: In ra console để kiểm tra
+            System.out.println("DEBUG - Chi tiết: " + chiTiet.getLoHang().getSanPham().getTenSanPham());
+            System.out.println("DEBUG - Số tiền giảm giá: " + soTienGiamGia);
+            System.out.println("DEBUG - Đơn giá: " + chiTiet.getDonGia());
+            System.out.println("DEBUG - Số lượng: " + chiTiet.getSoLuong());
+            
+            if (soTienGiamGia > 0) {
+                // Tính tổng tiền gốc (đơn giá × số lượng)
+                double tongTienGoc = chiTiet.getDonGia() * chiTiet.getSoLuong();
+                
+                // Tính % giảm giá = (Số tiền giảm / Tổng tiền gốc) × 100
+                double phanTramGiamGia = (soTienGiamGia / tongTienGoc) * 100;
+                
+                System.out.println("DEBUG - Tổng tiền gốc: " + tongTienGoc);
+                System.out.println("DEBUG - Phần trăm giảm giá: " + phanTramGiamGia + "%");
+                
+                // Hiển thị: -số tiền (%)
+                giamGia = "-" + CURRENCY_FORMAT.format(soTienGiamGia) + " đ" +
+                          " (" + String.format("%.0f", phanTramGiamGia) + "%)";
+            } else {
+                giamGia = "0 đ";
+            }
             table.addCell(createCell(giamGia, font, TextAlignment.RIGHT));
             
             // Thành tiền
@@ -309,17 +332,9 @@ public class XuatHoaDonPDF {
         paymentTable.addCell(createPaymentCell(CURRENCY_FORMAT.format(tongTienHang) + " đ", font, true));
         
         // ========== KHUYẾN MÃI SẢN PHẨM ==========
-        if (tongGiamGiaSanPham > 0 && khuyenMaiSanPham != null) {
-            String tenKMSanPham = khuyenMaiSanPham.getTenKhuyenMai();
-            String labelText = "Giam gia san pham:";
-            if (tenKMSanPham != null && !tenKMSanPham.trim().isEmpty()) {
-                labelText += "\n(" + tenKMSanPham + ")";
-            }
-            
-            paymentTable.addCell(createPaymentCell(labelText, font, false));
-            String giamGiaText = "-" + CURRENCY_FORMAT.format(tongGiamGiaSanPham) + " đ";
-            giamGiaText += " (" + String.format("%.1f", khuyenMaiSanPham.getGiamGia() * 100) + "%)";
-            paymentTable.addCell(createPaymentCell(giamGiaText, font, true));
+        if (tongGiamGiaSanPham > 0) {
+            paymentTable.addCell(createPaymentCell("Giam gia san pham:", font, false));
+            paymentTable.addCell(createPaymentCell("-" + CURRENCY_FORMAT.format(tongGiamGiaSanPham) + " đ", font, true));
         }
         
         // ========== KHUYẾN MÃI ĐƠN HÀNG ==========

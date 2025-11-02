@@ -184,14 +184,16 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
     
     /**
      * Set % giảm giá cho sản phẩm (hiển thị trong txtDiscount)
-     * @param phanTramGiamGia % giảm giá (0-100)
-     * @param tenKhuyenMai Tên khuyến mãi (hiển thị phía dưới)
+     * @param phanTramGiamGia % giảm giá (dạng thập phân: 0.1 = 10%)
+     * @param tenKhuyenMai Tên khuyến mãi (hiển thị phía dưới %)
      */
     public void setGiamGia(double phanTramGiamGia, String tenKhuyenMai) {
         if (phanTramGiamGia > 0) {
-            // Hiển thị % giảm giá
+            // Hiển thị % giảm giá + tên khuyến mãi
+            double phanTram = phanTramGiamGia * 100;
             txtDiscount.setText("<html><div style='text-align: center;'>" +
-                "<div style='font-size: 14px; font-weight: bold; color: #ff0000;'>-" + phanTramGiamGia + "%</div>" +
+                "<div style='font-size: 14px; font-weight: bold; color: #ff0000;'>-" + 
+                String.format("%.0f", phanTram) + "%</div>" +
                 (tenKhuyenMai != null && !tenKhuyenMai.isEmpty() ? 
                     "<div style='font-size: 10px; color: #ff6600; margin-top: 2px;'>" + tenKhuyenMai + "</div>" : "") +
                 "</div></html>");
@@ -202,10 +204,44 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
     
     /**
      * Set % giảm giá cho sản phẩm (không có tên khuyến mãi)
-     * @param phanTramGiamGia % giảm giá (0-100)
+     * @param phanTramGiamGia % giảm giá (dạng thập phân: 0.1 = 10%)
      */
     public void setGiamGia(double phanTramGiamGia) {
         setGiamGia(phanTramGiamGia, null);
+    }
+    
+    /**
+     * Lấy % giảm giá từ txtDiscount (parse từ text)
+     * @return phần trăm giảm giá (dạng thập phân: 0.1 = 10%), hoặc 0 nếu không có
+     */
+    public double getGiamGia() {
+        try {
+            String text = txtDiscount.getText();
+            
+            // Loại bỏ HTML tags nếu có
+            text = text.replaceAll("<[^>]*>", "").trim();
+            
+            // Loại bỏ ký tự %, - và khoảng trắng
+            text = text.replace("%", "").replace("-", "").trim();
+            
+            // Tách lấy phần đầu tiên (trước dấu cách) - là số % giảm giá
+            String[] parts = text.split("\\s+");
+            if (parts.length > 0) {
+                double phanTram = Double.parseDouble(parts[0]);
+                return phanTram / 100.0; // Chuyển % sang dạng thập phân
+            }
+        } catch (Exception e) {
+            // Nếu parse lỗi, return 0
+        }
+        return 0.0;
+    }
+    
+    /**
+     * Lấy số tiền giảm giá (= Tổng tiền × % giảm giá)
+     * @return số tiền giảm giá
+     */
+    public double getSoTienGiamGia() {
+        return getTongTien() * getGiamGia();
     }
 
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
