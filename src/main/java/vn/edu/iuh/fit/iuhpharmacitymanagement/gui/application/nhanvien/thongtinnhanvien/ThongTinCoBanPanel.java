@@ -16,6 +16,7 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.TaiKhoanDAO;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhanVien;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.TaiKhoan;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.session.SessionManager;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.util.PasswordUtil;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.util.UserSession;
 
 /**
@@ -179,7 +180,9 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
         txtMkCu.putClientProperty(FlatClientProperties.STYLE, "showRevealButton: true");
         txtMkMoi.putClientProperty(FlatClientProperties.STYLE, "showRevealButton: true");
         txtXacNhanMkMoi.putClientProperty(FlatClientProperties.STYLE, "showRevealButton: true");
-
+        txtMkCu.setEchoChar('*');
+        txtMkMoi.setEchoChar('*');
+        txtXacNhanMkMoi.setEchoChar('*');
         //Style cho nút
         btnXNDoiMatKhau.putClientProperty(FlatClientProperties.STYLE, "background: $Component.accentColor; foreground: #FFFFFF;");
 
@@ -322,9 +325,19 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
         pnlNut.setLayout(new java.awt.BorderLayout(50, 0));
 
         lblQuayLai.setText("Quay lại");
+        lblQuayLai.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                lblQuayLaiMouseClicked(evt);
+            }
+        });
         pnlNut.add(lblQuayLai, java.awt.BorderLayout.LINE_START);
 
         btnXNDoiMatKhau.setText("Xác nhận đổi mật khẩu");
+        btnXNDoiMatKhau.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnXNDoiMatKhauActionPerformed(evt);
+            }
+        });
         pnlNut.add(btnXNDoiMatKhau, java.awt.BorderLayout.LINE_END);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -518,6 +531,68 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
     private void btnDoiMatKhau1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDoiMatKhau1ActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_btnDoiMatKhau1ActionPerformed
+
+    private void lblQuayLaiMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblQuayLaiMouseClicked
+        jdiaDoiPass.dispose();
+    }//GEN-LAST:event_lblQuayLaiMouseClicked
+
+    private void btnXNDoiMatKhauActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnXNDoiMatKhauActionPerformed
+        javax.swing.JFrame parentFrame = (javax.swing.JFrame) SwingUtilities.getWindowAncestor(this);
+
+        NhanVien nv = SessionManager.getInstance().getCurrentUser();
+        TaiKhoan tk = UserSession.getInstance().getTaiKhoan();
+
+        //chk o day chua chk dc
+        if (String.valueOf(txtMkCu.getPassword()).trim().isBlank()) {
+            Notifications.getInstance().setJFrame(parentFrame);
+            Notifications.getInstance().show(Notifications.Type.ERROR, "Vui lòng nhập mật khẩu cũ!");
+            txtMkCu.requestFocus();
+            return;
+        }
+       
+        if (new PasswordUtil().verify(String.valueOf(txtMkCu.getPassword()), new TaiKhoanDAO().findPassByTenDangNhap(nv.getMaNhanVien().toLowerCase()).get()) == false) {
+            Notifications.getInstance().setJFrame(parentFrame);
+            Notifications.getInstance().show(Notifications.Type.ERROR, "Mật khẩu cũ không chính xác!");
+            txtMkCu.requestFocus();
+            return;
+        }
+        if (String.valueOf(txtMkMoi.getPassword()).trim().isBlank()) {
+            Notifications.getInstance().setJFrame(parentFrame);
+            Notifications.getInstance().show(Notifications.Type.ERROR, "Vui lòng nhập mật khẩu mới!");
+            txtMkMoi.requestFocus();
+            return;
+        }
+         //o entity taikhoan
+        String MAT_KHAU_SAI = "Mật khẩu phải từ 6 ký tự trở lên, có ít nhất 1 chữ số và 1 ký tự đặc biệt (@#$^*)";
+        String REGEX_PASSWORD = "^(?=.*[0-9])(?=.*[@#$^*]).{6,}$";
+        if (!String.valueOf(txtMkMoi.getPassword()).matches(REGEX_PASSWORD)) {
+            Notifications.getInstance().setJFrame(parentFrame);
+            Notifications.getInstance().show(Notifications.Type.ERROR, MAT_KHAU_SAI);
+            txtMkMoi.requestFocus();
+            return;
+        }
+        if (String.valueOf(txtXacNhanMkMoi.getPassword()).trim().isBlank()) {
+            Notifications.getInstance().setJFrame(parentFrame);
+            Notifications.getInstance().show(Notifications.Type.ERROR, "Vui lòng xác nhận mật khẩu mới!");
+            txtXacNhanMkMoi.requestFocus();
+            return;
+        }
+        if (!String.valueOf(txtMkMoi.getPassword()).trim().equals(String.valueOf(txtXacNhanMkMoi.getPassword()).trim())) {
+            Notifications.getInstance().setJFrame(parentFrame);
+            Notifications.getInstance().show(Notifications.Type.ERROR, "Mật khẩu xác nhận chưa trùng khớp!");
+            txtXacNhanMkMoi.requestFocus();
+            return;
+        }
+       
+
+        if (new TaiKhoanDAO().resetMatKhau(nv.getMaNhanVien().toLowerCase(), String.valueOf(txtMkMoi.getPassword()))) {
+            Notifications.getInstance().setJFrame(parentFrame);
+            Notifications.getInstance().show(Notifications.Type.SUCCESS, "Cập nhật mật khẩu thành công!");
+            jdiaDoiPass.dispose();
+        }
+
+
+    }//GEN-LAST:event_btnXNDoiMatKhauActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
