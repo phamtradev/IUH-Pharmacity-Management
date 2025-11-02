@@ -21,6 +21,7 @@ public class KhuyenMai {
     private double giamGia;
     private boolean trangThai;
     private LoaiKhuyenMai loaiKhuyenMai;
+    private double giaToiThieu; // Giá tối thiểu đơn hàng để áp dụng khuyến mãi (chỉ dùng cho khuyến mãi đơn hàng)
     
     public static final String MA_KHUYEN_MAI_SAI = "Mã khuyến mãi phải có dạng KMXXXXX (trong đó XXXXX là dãy số từ 00001 đến 99999)";
     public static final String TEN_KHUYEN_MAI_RONG = "Tên khuyến mãi không được để trống";
@@ -48,6 +49,7 @@ public class KhuyenMai {
         this.giamGia = giamGia;
         this.trangThai = trangThai;
         this.loaiKhuyenMai = loaiKhuyenMai;
+        this.giaToiThieu = 0; // Mặc định 0 (không yêu cầu giá tối thiểu)
     }
 
     public String getMaKhuyenMai() {
@@ -76,11 +78,9 @@ public class KhuyenMai {
         return ngayBatDau;
     }
 
+    //tam go de test
     public void setNgayBatDau(LocalDate ngayBatDau) throws Exception {
-        // Không cho phép ngày bắt đầu <= ngày hiện tại (chỉ cho phép > ngày hiện tại)
-        if (ngayBatDau.isBefore(LocalDate.now()) || ngayBatDau.isEqual(LocalDate.now())) {
-            throw new Exception(NGAY_BAT_DAU_SAI);
-        }
+        
         this.ngayBatDau = ngayBatDau;
     }
     
@@ -139,6 +139,19 @@ public class KhuyenMai {
         this.loaiKhuyenMai = loaiKhuyenMai;
     }
 
+    public double getGiaToiThieu() {
+        return giaToiThieu;
+    }
+
+    public void setGiaToiThieu(double giaToiThieu) {
+        // Giá tối thiểu phải >= 0 (0 = không yêu cầu giá tối thiểu)
+        if (giaToiThieu < 0) {
+            this.giaToiThieu = 0;
+        } else {
+            this.giaToiThieu = giaToiThieu;
+        }
+    }
+
     @Override
     public String toString() {
         return "KhuyenMai{" +
@@ -149,6 +162,7 @@ public class KhuyenMai {
                 ", giamGia=" + giamGia +
                 ", trangThai=" + hienThiTrangThai() +
                 ", loaiKhuyenMai=" + loaiKhuyenMai +
+                ", giaToiThieu=" + giaToiThieu +
                 '}';
     }
 }

@@ -33,6 +33,10 @@ public class ThemKhuyenMaiDialog extends javax.swing.JDialog {
     private final ChiTietKhuyenMaiSanPhamBUS chiTietKhuyenMaiSanPhamBUS;
     private boolean themThanhCong = false;
     private SanPham sanPhamHienTai = null; // Lưu sản phẩm được tìm thấy
+    
+    // Components cho giá tối thiểu (khuyến mãi đơn hàng)
+    private javax.swing.JLabel lblGiaToiThieu;
+    private javax.swing.JTextField txtGiaToiThieu;
 
     public ThemKhuyenMaiDialog(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
@@ -48,6 +52,7 @@ public class ThemKhuyenMaiDialog extends javax.swing.JDialog {
         // Placeholder text
         txtTenKhuyenMai.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập tên khuyến mãi");
         txtGiamGia.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "VD: 0.1 (10%)");
+        txtGiaToiThieu.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "VD: 100000");
         txtSoDangKy.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập số đăng ký sản phẩm");
         
         // Thiết lập date chooser
@@ -83,15 +88,29 @@ public class ThemKhuyenMaiDialog extends javax.swing.JDialog {
         cboLoaiKhuyenMai.addActionListener(e -> {
             String loaiKM = (String) cboLoaiKhuyenMai.getSelectedItem();
             boolean isProductPromotion = "Sản phẩm".equals(loaiKM);
+            boolean isOrderPromotion = "Đơn hàng".equals(loaiKM);
+            
+            // Hiển thị giá tối thiểu cho khuyến mãi đơn hàng
+            lblGiaToiThieu.setVisible(isOrderPromotion);
+            txtGiaToiThieu.setVisible(isOrderPromotion);
+            
+            // Hiển thị số đăng ký cho khuyến mãi sản phẩm
             lblSoDangKy.setVisible(isProductPromotion);
             txtSoDangKy.setVisible(isProductPromotion);
             lblTenSanPham.setVisible(isProductPromotion);
             txtTenSanPham.setVisible(isProductPromotion);
+            
+            pack(); // Resize dialog
         });
         
-        // Mặc định ẩn các trường sản phẩm nếu chọn "Đơn hàng"
+        // Mặc định hiển thị các trường theo loại được chọn
         String loaiKM = (String) cboLoaiKhuyenMai.getSelectedItem();
         boolean isProductPromotion = "Sản phẩm".equals(loaiKM);
+        boolean isOrderPromotion = "Đơn hàng".equals(loaiKM);
+        
+        lblGiaToiThieu.setVisible(isOrderPromotion);
+        txtGiaToiThieu.setVisible(isOrderPromotion);
+        
         lblSoDangKy.setVisible(isProductPromotion);
         txtSoDangKy.setVisible(isProductPromotion);
         lblTenSanPham.setVisible(isProductPromotion);
@@ -148,6 +167,8 @@ public class ThemKhuyenMaiDialog extends javax.swing.JDialog {
         txtGiamGia = new javax.swing.JTextField();
         jLabel6 = new javax.swing.JLabel();
         cboLoaiKhuyenMai = new javax.swing.JComboBox<>();
+        lblGiaToiThieu = new javax.swing.JLabel();
+        txtGiaToiThieu = new javax.swing.JTextField();
         lblSoDangKy = new javax.swing.JLabel();
         txtSoDangKy = new javax.swing.JTextField();
         lblTenSanPham = new javax.swing.JLabel();
@@ -209,6 +230,11 @@ public class ThemKhuyenMaiDialog extends javax.swing.JDialog {
 
         cboLoaiKhuyenMai.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
+        lblGiaToiThieu.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        lblGiaToiThieu.setText("Giá tối thiểu (đ):");
+
+        txtGiaToiThieu.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+
         lblSoDangKy.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         lblSoDangKy.setText("Số đăng ký:");
 
@@ -230,6 +256,7 @@ public class ThemKhuyenMaiDialog extends javax.swing.JDialog {
                     .addComponent(jLabel4)
                     .addComponent(jLabel5)
                     .addComponent(jLabel6)
+                    .addComponent(lblGiaToiThieu)
                     .addComponent(lblSoDangKy)
                     .addComponent(lblTenSanPham))
                 .addGap(30, 30, 30)
@@ -239,6 +266,7 @@ public class ThemKhuyenMaiDialog extends javax.swing.JDialog {
                     .addComponent(dateNgayKetThuc, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(txtGiamGia)
                     .addComponent(cboLoaiKhuyenMai, 0, 350, Short.MAX_VALUE)
+                    .addComponent(txtGiaToiThieu)
                     .addComponent(txtSoDangKy)
                     .addComponent(txtTenSanPham)))
         );
@@ -264,6 +292,10 @@ public class ThemKhuyenMaiDialog extends javax.swing.JDialog {
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel6)
                     .addComponent(cboLoaiKhuyenMai, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(20, 20, 20)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblGiaToiThieu)
+                    .addComponent(txtGiaToiThieu, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(20, 20, 20)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblSoDangKy)
@@ -405,6 +437,28 @@ public class ThemKhuyenMaiDialog extends javax.swing.JDialog {
 
             String loaiKM = (String) cboLoaiKhuyenMai.getSelectedItem();
             km.setLoaiKhuyenMai(loaiKM.equals("Sản phẩm") ? LoaiKhuyenMai.SAN_PHAM : LoaiKhuyenMai.DON_HANG);
+
+            // Nếu là khuyến mãi đơn hàng, lấy giá tối thiểu
+            if (loaiKM.equals("Đơn hàng")) {
+                String giaToiThieuStr = txtGiaToiThieu.getText().trim();
+                if (!giaToiThieuStr.isEmpty()) {
+                    try {
+                        double giaToiThieu = Double.parseDouble(giaToiThieuStr);
+                        if (giaToiThieu < 0) {
+                            Notifications.getInstance().show(Notifications.Type.WARNING, "Giá tối thiểu phải >= 0!");
+                            txtGiaToiThieu.requestFocus();
+                            return;
+                        }
+                        km.setGiaToiThieu(giaToiThieu);
+                    } catch (NumberFormatException e) {
+                        Notifications.getInstance().show(Notifications.Type.WARNING, "Giá tối thiểu phải là số!");
+                        txtGiaToiThieu.requestFocus();
+                        return;
+                    }
+                } else {
+                    km.setGiaToiThieu(0); // Mặc định không yêu cầu giá tối thiểu
+                }
+            }
 
             // Nếu là khuyến mãi sản phẩm, kiểm tra đã nhập số đăng ký chưa
             if (loaiKM.equals("Sản phẩm")) {

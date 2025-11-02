@@ -40,10 +40,13 @@ public class KhuyenMaiBUS {
         return danhSach;
     }
 
-    //Lấy danh sách các khuyến mãi còn hạn.
+    //Lấy danh sách các khuyến mãi còn hạn và ĐÃ TỚI NGÀY ÁP DỤNG.
     public List<KhuyenMai> getKhuyenMaiConHan() {
+        LocalDate homNay = LocalDate.now();
         return getAllKhuyenMai().stream()
-                .filter(KhuyenMai::isTrangThai)
+                .filter(km -> km.isTrangThai() 
+                    && !homNay.isBefore(km.getNgayBatDau())  // Đã tới ngày bắt đầu
+                    && !homNay.isAfter(km.getNgayKetThuc())) // Chưa quá ngày kết thúc
                 .collect(Collectors.toList());
     }
 
@@ -95,6 +98,7 @@ public class KhuyenMaiBUS {
      * @param tongTienHang Tổng tiền hàng hiện tại
      * @param danhSachSanPham Map của sản phẩm và số lượng trong giỏ hàng
      * @return Khuyến mãi tốt nhất hoặc null nếu không có
+     * @deprecated Sử dụng timKhuyenMaiApDung() thay thế để hỗ trợ nhiều khuyến mãi
      */
     public KhuyenMai timKhuyenMaiTotNhat(double tongTienHang, Map<SanPham, Integer> danhSachSanPham) {
         List<KhuyenMai> danhSachKhuyenMai = getKhuyenMaiConHan();
@@ -107,7 +111,10 @@ public class KhuyenMaiBUS {
             
             if (km.getLoaiKhuyenMai() == LoaiKhuyenMai.DON_HANG) {
                 // Khuyến mãi hóa đơn: Áp dụng cho tổng đơn hàng
-                giamGia = tongTienHang * (km.getGiamGia() / 100.0);
+                // Kiểm tra giá tối thiểu
+                if (tongTienHang >= km.getGiaToiThieu()) {
+                    giamGia = tongTienHang * (km.getGiamGia() / 100.0);
+                }
             } else if (km.getLoaiKhuyenMai() == LoaiKhuyenMai.SAN_PHAM) {
                 // Khuyến mãi sản phẩm: Kiểm tra từng sản phẩm trong giỏ
                 var danhSachCTKM = chiTietKhuyenMaiSanPhamDAO.findByMaKhuyenMai(km.getMaKhuyenMai());
@@ -135,5 +142,67 @@ public class KhuyenMaiBUS {
         }
         
         return khuyenMaiTotNhat;
+    }
+    
+    /**
+     * Tìm TẤT CẢ khuyến mãi áp dụng được cho đơn hàng (có thể cả 2: SAN_PHAM và DON_HANG)
+     * @param tongTienHang Tổng tiền hàng hiện tại
+     * @param danhSachSanPham Map của sản phẩm và số lượng trong giỏ hàng
+     * @return Map với key là loại khuyến mãi, value là khuyến mãi tốt nhất của loại đó
+     */
+    public Map<LoaiKhuyenMai, KhuyenMai> timKhuyenMaiApDung(double tongTienHang, Map<SanPham, Integer> danhSachSanPham) {
+        List<KhuyenMai> danhSachKhuyenMai = getKhuyenMaiConHan();
+        
+        Map<LoaiKhuyenMai, KhuyenMai> ketQua = new java.util.HashMap<>();
+        double giamGiaSanPhamLonNhat = 0;
+        double giamGiaDonHangLonNhat = 0;
+        KhuyenMai kmSanPhamTotNhat = null;
+        KhuyenMai kmDonHangTotNhat = null;
+        
+        for (KhuyenMai km : danhSachKhuyenMai) {
+            if (km.getLoaiKhuyenMai() == LoaiKhuyenMai.DON_HANG) {
+                // Kiểm tra điều kiện giá tối thiểu
+                if (tongTienHang >= km.getGiaToiThieu()) {
+                    double giamGia = tongTienHang * (km.getGiamGia() / 100.0);
+                    if (giamGia > giamGiaDonHangLonNhat) {
+                        giamGiaDonHangLonNhat = giamGia;
+                        kmDonHangTotNhat = km;
+                    }
+                }
+            } else if (km.getLoaiKhuyenMai() == LoaiKhuyenMai.SAN_PHAM) {
+                // Khuyến mãi sản phẩm: Kiểm tra từng sản phẩm trong giỏ
+                var danhSachCTKM = chiTietKhuyenMaiSanPhamDAO.findByMaKhuyenMai(km.getMaKhuyenMai());
+                double giamGia = 0;
+                
+                for (var entry : danhSachSanPham.entrySet()) {
+                    SanPham sp = entry.getKey();
+                    int soLuong = entry.getValue();
+                    
+                    // Kiểm tra sản phẩm có trong chương trình khuyến mãi không
+                    boolean coKhuyenMai = danhSachCTKM.stream()
+                        .anyMatch(ctkm -> ctkm.getSanPham().getMaSanPham().equals(sp.getMaSanPham()));
+                    
+                    if (coKhuyenMai) {
+                        double tongTienSP = sp.getGiaBan() * soLuong;
+                        giamGia += tongTienSP * (km.getGiamGia() / 100.0);
+                    }
+                }
+                
+                if (giamGia > giamGiaSanPhamLonNhat) {
+                    giamGiaSanPhamLonNhat = giamGia;
+                    kmSanPhamTotNhat = km;
+                }
+            }
+        }
+        
+        // Thêm vào kết quả nếu tìm thấy
+        if (kmSanPhamTotNhat != null && giamGiaSanPhamLonNhat > 0) {
+            ketQua.put(LoaiKhuyenMai.SAN_PHAM, kmSanPhamTotNhat);
+        }
+        if (kmDonHangTotNhat != null && giamGiaDonHangLonNhat > 0) {
+            ketQua.put(LoaiKhuyenMai.DON_HANG, kmDonHangTotNhat);
+        }
+        
+        return ketQua;
     }
 }

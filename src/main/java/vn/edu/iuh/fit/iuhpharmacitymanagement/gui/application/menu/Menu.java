@@ -20,7 +20,7 @@ import javax.swing.*;
 public class Menu extends JPanel {
 
     private final String[][] menuItemsManager = {
-        {"Thống kê"},
+        {"Dashboard"},
         {"Báo cáo thu chi"},
         {"Quản lý sản phẩm"},
         {"Quản lý đơn vị tính"},
@@ -40,6 +40,7 @@ public class Menu extends JPanel {
     };
 
     private final String[][] menuItemsStaff = {
+        {"Dashboard"},
         {"Bán hàng"},
         {"Quản lý sản phẩm"},
         {"Quản lý khách hàng"},
@@ -47,7 +48,6 @@ public class Menu extends JPanel {
         {"Phiếu nhập hàng"},
         {"Phiếu trả hàng"},
         {"Phiếu xuất hủy"},
-        {"Thống kê cá nhân"},
         {"Thông tin cá nhân"},
         {"Chat Bot"},
         {"Trợ giúp"},

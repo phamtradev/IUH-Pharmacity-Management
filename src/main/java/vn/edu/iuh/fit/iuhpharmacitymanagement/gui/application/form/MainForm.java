@@ -136,24 +136,24 @@ public class MainForm extends JLayeredPane {
             // Application.mainForm.showForm(new DefaultForm("Form : " + index + " " + subIndex));
             try{
             if (getType() == 1) {
-                // Type 1 = Nhân viên (index từ 20-30)
+                // Type 1 = Nhân viên (index từ 20-31)
                 if (index == 20) {
-                    showForm(new GD_BanHang());
-                } else if (index == 21) {
-                    showForm(new GD_QuanLySanPham());
-                } else if (index == 22) {
-                    showForm(new GD_QuanLyKhachHang());
-                } else if (index == 23) {
-                    showForm(new GD_QuanLyNhaCungCap());
-                } else if (index == 24) {
-                    showForm(new GD_QuanLyPhieuNhapHang());
-                } else if (index == 25) {
-                    showForm(new GD_QuanLyPhieuTraHang());
-                } else if (index == 26) {
-                    showForm(new GD_QuanLyXuatHuy());
-                } else if (index == 27) {
-                    // Thống kê cá nhân (Dashboard nhân viên)
+                    // Dashboard (Thống kê cá nhân) - Vị trí đầu tiên
                     showForm(new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.dashboard.GD_DashBoard());
+                } else if (index == 21) {
+                    showForm(new GD_BanHang());
+                } else if (index == 22) {
+                    showForm(new GD_QuanLySanPham());
+                } else if (index == 23) {
+                    showForm(new GD_QuanLyKhachHang());
+                } else if (index == 24) {
+                    showForm(new GD_QuanLyNhaCungCap());
+                } else if (index == 25) {
+                    showForm(new GD_QuanLyPhieuNhapHang());
+                } else if (index == 26) {
+                    showForm(new GD_QuanLyPhieuTraHang());
+                } else if (index == 27) {
+                    showForm(new GD_QuanLyXuatHuy());
                 } else if (index == 28) {
                     showForm(new GD_ThongTinCaNhan(false));
                 } else if (index == 29) {
@@ -169,9 +169,9 @@ public class MainForm extends JLayeredPane {
                     action.cancel();
                 }
             } else if (getType() == 2) {
-                // Type 2 = Quản lý (index từ 0-14)
+                // Type 2 = Quản lý (index từ 0-16)
                 if (index == 0) {
-                    // Thống kê (Dashboard quản lý)
+                    // Dashboard
                     showForm(new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.dashboard.GD_DashBoardQuanLy());
                 } else if (index == 1) {
                     // Báo cáo thu chi

@@ -54,7 +54,8 @@ public class Panel_DonHang extends javax.swing.JPanel {
     private KhachHang khachHangHienTai;
     private KhuyenMaiBUS khuyenMaiBUS;
     private ChiTietKhuyenMaiSanPhamBUS chiTietKhuyenMaiSanPhamBUS;
-    private KhuyenMai khuyenMaiDaChon;
+    private KhuyenMai khuyenMaiDaChon; // @deprecated - giữ lại để tương thích
+    private Map<LoaiKhuyenMai, KhuyenMai> danhSachKhuyenMaiDaChon; // Map lưu các khuyến mãi đang áp dụng
     private JLabel lblTenKhuyenMaiHoaDon;
     private JLabel lblTenKhuyenMaiSanPham;
     private JLabel lblThongTinKhuyenMai; // Label hiển thị thông tin khuyến mãi đang áp dụng
@@ -76,6 +77,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
         chiTietDonHangBUS = new ChiTietDonHangBUS();
         nhanVienBUS = new NhanVienBUS();
         loHangBUS = new LoHangBUS();
+        danhSachKhuyenMaiDaChon = new java.util.HashMap<>(); // Khởi tạo Map
         
         initComponents();
         customizeTextFields();
@@ -781,6 +783,17 @@ public class Panel_DonHang extends javax.swing.JPanel {
     public void updateDiscountProduct(double discount) {
         this.discountProduct = discount;
         txtDiscountProduct.setText(String.format("%,.0f đ", discount));
+        
+        // Hiển thị tên khuyến mãi sản phẩm (nếu có)
+        KhuyenMai kmSanPham = danhSachKhuyenMaiDaChon.get(LoaiKhuyenMai.SAN_PHAM);
+        if (lblTenKhuyenMaiSanPham != null) {
+            if (kmSanPham != null && discount > 0) {
+                lblTenKhuyenMaiSanPham.setText("(" + kmSanPham.getTenKhuyenMai() + ")");
+            } else {
+                lblTenKhuyenMaiSanPham.setText("");
+            }
+        }
+        
         updateTongHoaDon();
     }
     
@@ -790,6 +803,17 @@ public class Panel_DonHang extends javax.swing.JPanel {
     public void updateDiscountOrder(double discount) {
         this.discountOrder = discount;
         txtDiscountOrder.setText(String.format("%,.0f đ", discount));
+        
+        // Hiển thị tên khuyến mãi đơn hàng (nếu có)
+        KhuyenMai kmDonHang = danhSachKhuyenMaiDaChon.get(LoaiKhuyenMai.DON_HANG);
+        if (lblTenKhuyenMaiHoaDon != null) {
+            if (kmDonHang != null && discount > 0) {
+                lblTenKhuyenMaiHoaDon.setText("(" + kmDonHang.getTenKhuyenMai() + ")");
+            } else {
+                lblTenKhuyenMaiHoaDon.setText("");
+            }
+        }
+        
         updateTongHoaDon();
     }
     
@@ -918,10 +942,18 @@ public class Panel_DonHang extends javax.swing.JPanel {
     }
     
     /**
-     * Lấy khuyến mãi đã chọn
+     * Lấy khuyến mãi đã chọn (backward compatibility)
+     * @deprecated Sử dụng getDanhSachKhuyenMaiDaChon() thay thế
      */
     public KhuyenMai getKhuyenMaiDaChon() {
         return khuyenMaiDaChon;
+    }
+    
+    /**
+     * Lấy danh sách khuyến mãi đã chọn (Map theo loại)
+     */
+    public Map<LoaiKhuyenMai, KhuyenMai> getDanhSachKhuyenMaiDaChon() {
+        return danhSachKhuyenMaiDaChon;
     }
     
     /**
@@ -937,14 +969,15 @@ public class Panel_DonHang extends javax.swing.JPanel {
      * @param danhSachSanPham Map sản phẩm và số lượng trong giỏ
      */
     public void tuDongApDungKhuyenMai(double tongTienHang, Map<SanPham, Integer> danhSachSanPham) {
-        // Tìm khuyến mãi tốt nhất
-        KhuyenMai khuyenMaiTotNhat = khuyenMaiBUS.timKhuyenMaiTotNhat(tongTienHang, danhSachSanPham);
+        // Tìm TẤT CẢ khuyến mãi áp dụng được (có thể cả 2 loại)
+        Map<LoaiKhuyenMai, KhuyenMai> khuyenMaiApDung = khuyenMaiBUS.timKhuyenMaiApDung(tongTienHang, danhSachSanPham);
         
         // Nếu không có sản phẩm trong giỏ hoặc không có khuyến mãi nào phù hợp
-        if (tongTienHang == 0 || khuyenMaiTotNhat == null) {
+        if (tongTienHang == 0 || khuyenMaiApDung.isEmpty()) {
             // Reset về không áp dụng khuyến mãi
-            if (khuyenMaiDaChon != null) {
-                khuyenMaiDaChon = null;
+            if (!danhSachKhuyenMaiDaChon.isEmpty()) {
+                danhSachKhuyenMaiDaChon.clear();
+                khuyenMaiDaChon = null; // backward compatibility
                 
                 // Xóa thông tin khuyến mãi trên label
                 if (lblThongTinKhuyenMai != null) {
@@ -954,29 +987,82 @@ public class Panel_DonHang extends javax.swing.JPanel {
             return;
         }
         
-        // Nếu khuyến mãi tốt nhất khác với khuyến mãi đang chọn
-        if (khuyenMaiDaChon == null || !khuyenMaiDaChon.getMaKhuyenMai().equals(khuyenMaiTotNhat.getMaKhuyenMai())) {
-            khuyenMaiDaChon = khuyenMaiTotNhat;
-            String tenKM = khuyenMaiTotNhat.getTenKhuyenMai();
+        // Kiểm tra xem có thay đổi khuyến mãi không
+        boolean coThayDoi = false;
+        if (danhSachKhuyenMaiDaChon.size() != khuyenMaiApDung.size()) {
+            coThayDoi = true;
+        } else {
+            // Kiểm tra từng khuyến mãi
+            for (Map.Entry<LoaiKhuyenMai, KhuyenMai> entry : khuyenMaiApDung.entrySet()) {
+                KhuyenMai kmCu = danhSachKhuyenMaiDaChon.get(entry.getKey());
+                if (kmCu == null || !kmCu.getMaKhuyenMai().equals(entry.getValue().getMaKhuyenMai())) {
+                    coThayDoi = true;
+                    break;
+                }
+            }
+        }
+        
+        // Nếu có thay đổi, cập nhật khuyến mãi
+        if (coThayDoi) {
+            danhSachKhuyenMaiDaChon = khuyenMaiApDung;
             
-            // Hiển thị thông báo
-            String loaiKM = khuyenMaiTotNhat.getLoaiKhuyenMai() == LoaiKhuyenMai.DON_HANG 
-                ? "giảm " + khuyenMaiTotNhat.getGiamGia() + "% trên tổng hóa đơn"
-                : "giảm " + khuyenMaiTotNhat.getGiamGia() + "% cho các sản phẩm áp dụng";
+            // Tạo text hiển thị cho label
+            StringBuilder tenKMDisplay = new StringBuilder();
+            StringBuilder thongBaoDisplay = new StringBuilder();
+            
+            KhuyenMai kmSanPham = khuyenMaiApDung.get(LoaiKhuyenMai.SAN_PHAM);
+            KhuyenMai kmDonHang = khuyenMaiApDung.get(LoaiKhuyenMai.DON_HANG);
+            
+            if (kmSanPham != null && kmDonHang != null) {
+                // Cả 2 khuyến mãi
+                tenKMDisplay.append("🎉 Đang áp dụng: ")
+                    .append(kmSanPham.getTenKhuyenMai())
+                    .append(" + ")
+                    .append(kmDonHang.getTenKhuyenMai());
+                
+                thongBaoDisplay.append("✨ Tự động áp dụng: ")
+                    .append(kmSanPham.getTenKhuyenMai())
+                    .append(" (giảm ").append(kmSanPham.getGiamGia())
+                    .append("% sản phẩm) + ")
+                    .append(kmDonHang.getTenKhuyenMai())
+                    .append(" (giảm ").append(kmDonHang.getGiamGia())
+                    .append("% đơn hàng)");
+                
+                khuyenMaiDaChon = kmDonHang; // backward compatibility: ưu tiên KM đơn hàng
+            } else if (kmSanPham != null) {
+                // Chỉ khuyến mãi sản phẩm
+                tenKMDisplay.append("🎉 Đang áp dụng: ").append(kmSanPham.getTenKhuyenMai());
+                thongBaoDisplay.append("✨ Tự động áp dụng: ")
+                    .append(kmSanPham.getTenKhuyenMai())
+                    .append(" (giảm ").append(kmSanPham.getGiamGia())
+                    .append("% cho các sản phẩm áp dụng)");
+                
+                khuyenMaiDaChon = kmSanPham; // backward compatibility
+            } else if (kmDonHang != null) {
+                // Chỉ khuyến mãi đơn hàng
+                tenKMDisplay.append("🎉 Đang áp dụng: ").append(kmDonHang.getTenKhuyenMai());
+                thongBaoDisplay.append("✨ Tự động áp dụng: ")
+                    .append(kmDonHang.getTenKhuyenMai())
+                    .append(" (giảm ").append(kmDonHang.getGiamGia())
+                    .append("% trên tổng hóa đơn)");
+                
+                khuyenMaiDaChon = kmDonHang; // backward compatibility
+            }
             
             // Cập nhật label hiển thị thông tin khuyến mãi
             if (lblThongTinKhuyenMai != null) {
-                lblThongTinKhuyenMai.setText("🎉 Đang áp dụng: " + tenKM);
+                lblThongTinKhuyenMai.setText(tenKMDisplay.toString());
             }
             
+            // Hiển thị thông báo
             Notifications.getInstance().show(
                 Notifications.Type.SUCCESS, 
                 Notifications.Location.TOP_CENTER,
-                "✨ Tự động áp dụng: " + tenKM + " (" + loaiKM + ")"
+                thongBaoDisplay.toString()
             );
             
             // Notify để cập nhật lại tổng tiền
-            firePropertyChange("khuyenMaiChanged", null, khuyenMaiTotNhat);
+            firePropertyChange("khuyenMaiChanged", null, khuyenMaiApDung);
         }
     }
     

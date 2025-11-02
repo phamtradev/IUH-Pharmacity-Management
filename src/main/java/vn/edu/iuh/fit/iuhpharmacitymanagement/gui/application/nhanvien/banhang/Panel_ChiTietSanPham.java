@@ -185,13 +185,27 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
     /**
      * Set % giảm giá cho sản phẩm (hiển thị trong txtDiscount)
      * @param phanTramGiamGia % giảm giá (0-100)
+     * @param tenKhuyenMai Tên khuyến mãi (hiển thị phía dưới)
      */
-    public void setGiamGia(double phanTramGiamGia) {
+    public void setGiamGia(double phanTramGiamGia, String tenKhuyenMai) {
         if (phanTramGiamGia > 0) {
-            txtDiscount.setText("-" + phanTramGiamGia + "%");
+            // Hiển thị % giảm giá
+            txtDiscount.setText("<html><div style='text-align: center;'>" +
+                "<div style='font-size: 14px; font-weight: bold; color: #ff0000;'>-" + phanTramGiamGia + "%</div>" +
+                (tenKhuyenMai != null && !tenKhuyenMai.isEmpty() ? 
+                    "<div style='font-size: 10px; color: #ff6600; margin-top: 2px;'>" + tenKhuyenMai + "</div>" : "") +
+                "</div></html>");
         } else {
             txtDiscount.setText("0%");
         }
+    }
+    
+    /**
+     * Set % giảm giá cho sản phẩm (không có tên khuyến mãi)
+     * @param phanTramGiamGia % giảm giá (0-100)
+     */
+    public void setGiamGia(double phanTramGiamGia) {
+        setGiamGia(phanTramGiamGia, null);
     }
 
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents

@@ -20,10 +20,10 @@ import java.util.Optional;
 public class KhuyenMaiDAO implements DAOInterface<KhuyenMai, String> {
 
     private final String SQL_THEM
-            = "INSERT INTO KhuyenMai (maKhuyenMai, tenKhuyenMai, ngayBatDau, ngayKetThuc, giamGia, trangThai, loaiKhuyenMai) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            = "INSERT INTO KhuyenMai (maKhuyenMai, tenKhuyenMai, ngayBatDau, ngayKetThuc, giamGia, trangThai, loaiKhuyenMai, giaToiThieu) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
     private final String SQL_CAP_NHAT
-            = "UPDATE KhuyenMai SET tenKhuyenMai = ?, ngayBatDau = ?, ngayKetThuc = ?, giamGia = ?, trangThai = ?, loaiKhuyenMai = ? WHERE maKhuyenMai = ?";
+            = "UPDATE KhuyenMai SET tenKhuyenMai = ?, ngayBatDau = ?, ngayKetThuc = ?, giamGia = ?, trangThai = ?, loaiKhuyenMai = ?, giaToiThieu = ? WHERE maKhuyenMai = ?";
 
     private final String SQL_TIM_THEO_MA
             = "SELECT * FROM KhuyenMai WHERE maKhuyenMai = ?";
@@ -55,6 +55,7 @@ public class KhuyenMaiDAO implements DAOInterface<KhuyenMai, String> {
             stmt.setDouble(5, khuyenMai.getGiamGia());
             stmt.setBoolean(6, khuyenMai.isTrangThai());
             stmt.setString(7, khuyenMai.getLoaiKhuyenMai().name());
+            stmt.setDouble(8, khuyenMai.getGiaToiThieu());
 
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -76,7 +77,8 @@ public class KhuyenMaiDAO implements DAOInterface<KhuyenMai, String> {
             stmt.setDouble(4, khuyenMai.getGiamGia());
             stmt.setBoolean(5, khuyenMai.isTrangThai());
             stmt.setString(6, khuyenMai.getLoaiKhuyenMai().name());
-            stmt.setString(7, khuyenMai.getMaKhuyenMai());
+            stmt.setDouble(7, khuyenMai.getGiaToiThieu());
+            stmt.setString(8, khuyenMai.getMaKhuyenMai());
 
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -144,6 +146,13 @@ public class KhuyenMaiDAO implements DAOInterface<KhuyenMai, String> {
         khuyenMai.setGiamGia(rs.getDouble("giamGia"));
         khuyenMai.setTrangThai(rs.getBoolean("trangThai"));
         khuyenMai.setLoaiKhuyenMai(LoaiKhuyenMai.valueOf(rs.getString("loaiKhuyenMai")));
+        
+        // Load giaToiThieu - nếu column không tồn tại (DB cũ) thì mặc định = 0
+        try {
+            khuyenMai.setGiaToiThieu(rs.getDouble("giaToiThieu"));
+        } catch (SQLException e) {
+            khuyenMai.setGiaToiThieu(0);
+        }
 
         return khuyenMai;
     }
