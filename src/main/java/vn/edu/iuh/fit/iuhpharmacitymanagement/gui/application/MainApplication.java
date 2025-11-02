@@ -47,21 +47,14 @@ public class MainApplication {
 
                 // Thiết lập Look and Feel
                 FlatLightLaf.setup();
-                // Test kết nối database
-                if (!ConnectDB.testConnection()) {
-                    JOptionPane.showMessageDialog(null,
-                            "Không thể kết nối đến cơ sở dữ liệu.",
-                            "Lỗi Kết Nối",
-                            JOptionPane.ERROR_MESSAGE);
-                    System.exit(1);
-                } else {
-                    System.out.println("Kết nối đến cơ sở dữ liệu thành công!");
-                }
-
-                // Khởi tạo ứng dụng - chạy vào giao diện chính luôn
-                //new MenuForm().setVisible(true);
-                new LoginFrame().setVisible(true);
-                //new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.loading.SplashScreen().setVisible(true);
+                
+                // Hiển thị SplashScreen trước
+                new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.loading.SplashScreen().setVisible(true);
+                
+                // Note: SplashScreen sẽ tự động:
+                // 1. Kết nối database
+                // 2. Load resources
+                // 3. Chuyển sang LoginFrame sau khi hoàn tất
 
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(null,

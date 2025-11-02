@@ -46,7 +46,7 @@ public class SanPhamDAO implements DAOInterface<SanPham, String> {
             "SELECT sp.*, dv.tenDonVi AS donViTinhTen " +
             "FROM SanPham sp " +
             "LEFT JOIN DonViTinh dv ON sp.maDonVi = dv.maDonVi " +
-            "WHERE sp.tenSanPham LIKE ?";
+            "WHERE LOWER(sp.tenSanPham) LIKE LOWER(?)";
     
     private final String SQL_TIM_THEO_LOAI = 
             "SELECT sp.*, dv.tenDonVi AS donViTinhTen " +
@@ -211,12 +211,15 @@ public class SanPhamDAO implements DAOInterface<SanPham, String> {
         try (Connection con = ConnectDB.getConnection();
              PreparedStatement stmt = con.prepareStatement(SQL_TIM_THEO_TEN)) {
             
-            stmt.setString(1, "%" + tenSanPham + "%");
+            String searchPattern = "%" + tenSanPham + "%";
+            System.out.println("🔍 DEBUG - Tìm kiếm sản phẩm với pattern: " + searchPattern);
+            stmt.setString(1, searchPattern);
             ResultSet rs = stmt.executeQuery();
             
             while (rs.next()) {
                 danhSachSanPham.add(mapResultSetToSanPham(rs));
             }
+            System.out.println("✅ DEBUG - Tìm thấy " + danhSachSanPham.size() + " sản phẩm");
         } catch (SQLException e) {
             e.printStackTrace();
         }
