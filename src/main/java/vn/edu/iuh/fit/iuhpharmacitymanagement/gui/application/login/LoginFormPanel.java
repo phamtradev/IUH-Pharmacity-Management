@@ -431,7 +431,8 @@ public class LoginFormPanel extends javax.swing.JPanel {
 
     public void removePlayhoder(JTextField txt) {
         Font font = txt.getFont();
-        font = font.deriveFont(Font.PLAIN);
+        font = font.deriveFont(Font.PLAIN);    
+        txt.setForeground(Color.BLACK);
         txt.setFont(font);
     }
     private void txtTenDangNhapActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtTenDangNhapActionPerformed
@@ -441,8 +442,7 @@ public class LoginFormPanel extends javax.swing.JPanel {
 
     private void txtTenDangNhapFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtTenDangNhapFocusGained
         if (txtTenDangNhap.getText().equals("Tên đăng nhập")) {
-            txtTenDangNhap.setText("");
-            txtTenDangNhap.setForeground(Color.BLACK);
+            txtTenDangNhap.setText("");            
             removePlayhoder(txtTenDangNhap);
         }
     }//GEN-LAST:event_txtTenDangNhapFocusGained
@@ -461,8 +461,8 @@ public class LoginFormPanel extends javax.swing.JPanel {
 
     private void txtTenDangNhapFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtTenDangNhapFocusLost
         if (txtTenDangNhap.getText().length() == 0) {
-            addPlayhoder(txtTenDangNhap);
             txtTenDangNhap.setText("Tên đăng nhập");
+            addPlayhoder(txtTenDangNhap);            
         }
     }//GEN-LAST:event_txtTenDangNhapFocusLost
 
@@ -486,8 +486,7 @@ public class LoginFormPanel extends javax.swing.JPanel {
 
     private void txtMatKhauFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtMatKhauFocusGained
         if (String.valueOf(txtMatKhau.getPassword()).equals("Mật khẩu")) {
-            txtMatKhau.setText("");
-            txtMatKhau.setForeground(Color.BLACK);
+            txtMatKhau.setText("");            
             removePlayhoder(txtMatKhau);
         }
         // Giữ chế độ hiện mật khẩu nếu checkbox đang bật
