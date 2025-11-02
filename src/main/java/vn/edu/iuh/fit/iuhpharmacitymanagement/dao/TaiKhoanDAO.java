@@ -92,11 +92,11 @@ public class TaiKhoanDAO implements DAOInterface<TaiKhoan, String> {
         //EmailUtil email = new EmailUtil();
         //String newPass = email.ramdomPass(nv);        
         System.out.println("Mật khẩu mới (plain text): " + newPass);
-        
+
         // Hash mật khẩu trước khi lưu vào database
         String hashedPassword = PasswordUtil.encode(newPass);
         System.out.println("Mật khẩu đã hash: " + hashedPassword);
-        
+
         String sql = "UPDATE tk "
                 + " set tk.matKhau = ? "
                 + " from taikhoan tk "
@@ -267,10 +267,12 @@ public class TaiKhoanDAO implements DAOInterface<TaiKhoan, String> {
                 + " where tenDangNhap = ? ";
         try {
             Connection con = ConnectDB.getConnection();
-            PreparedStatement pre= con.prepareStatement(sql);
+            PreparedStatement pre = con.prepareStatement(sql);
             pre.setString(1, tenDN);
             ResultSet rs = pre.executeQuery();
-            if(rs.next()) return true;
+            if (rs.next()) {
+                return true;
+            }
             return false;
         } catch (Exception e) {
             e.printStackTrace();
@@ -279,7 +281,9 @@ public class TaiKhoanDAO implements DAOInterface<TaiKhoan, String> {
     }
 
     /**
-     * Method để reset mật khẩu về mật khẩu mặc định (dùng để fix mật khẩu bị hash 2 lần)
+     * Method để reset mật khẩu về mật khẩu mặc định (dùng để fix mật khẩu bị
+     * hash 2 lần)
+     *
      * @param tenDangNhap tên đăng nhập
      * @param matKhauMoi mật khẩu mới (plain text)
      * @return true nếu thành công
@@ -291,11 +295,29 @@ public class TaiKhoanDAO implements DAOInterface<TaiKhoan, String> {
             String matKhauHash = vn.edu.iuh.fit.iuhpharmacitymanagement.util.PasswordUtil.encode(matKhauMoi);
             pre.setString(1, matKhauHash);
             pre.setString(2, tenDangNhap);
-            
+
             return pre.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
         }
-    }       
+    }
+
+    public Optional<String> findPassByTenDangNhap(String tenDangNhap) {
+        String sql = "SELECT * FROM taikhoan WHERE tenDangNhap = ?";
+        try {
+            Connection con = ConnectDB.getConnection();
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setString(1, tenDangNhap);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+
+                return Optional.of(rs.getString("matKhau"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return Optional.empty();
+    }
+
 }

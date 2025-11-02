@@ -71,7 +71,6 @@ public class PasswordUtil {
             int index = random.nextInt(chars.length());
             password.append(chars.charAt(index));
         }
-
         return password.toString();
     }
 
