@@ -83,8 +83,12 @@ public class LoHangBUS {
 
     //tự động cập nhật trạng thái của lô hàng.
     private void capNhatTrangThaiTuDong(LoHang loHang) {
-        //Tự động cập nhật trạng thái hết hạn
-        if (loHang.getHanSuDung().isBefore(LocalDate.now()) && loHang.isTrangThai()) {
+        //Tự động cập nhật trạng thái hết hạn: 
+        // - Nếu HSD <= 6 tháng kể từ hôm nay → Set hết hạn
+        LocalDate ngayGioiHan = LocalDate.now().plusMonths(6);
+        if ((loHang.getHanSuDung().isBefore(ngayGioiHan) || 
+             loHang.getHanSuDung().isEqual(ngayGioiHan)) && 
+            loHang.isTrangThai()) {
             loHang.setTrangThai(false);
         }
     }

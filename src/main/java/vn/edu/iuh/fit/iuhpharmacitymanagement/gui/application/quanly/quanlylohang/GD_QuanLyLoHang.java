@@ -176,6 +176,9 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
     // Biến lưu sản phẩm đã chọn (thay thế cho combobox)
     private SanPham selectedProductAdd = null;
     private SanPham selectedProductEdit = null;
+    
+    // ComboBox lọc trạng thái lô hàng
+    private javax.swing.JComboBox<String> cboFilterStatus;
 
     private void fillTable() {
         String[] headers = {"Mã lô hàng", "Tên lô hàng", "Hạn sử dụng", "Tồn kho", "Trạng thái"};
@@ -198,8 +201,10 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
             
             // Thêm từng lô hàng vào bảng
             for (LoHang lh : danhSachLH) {
-                // Kiểm tra và cập nhật trạng thái hết hạn
-                boolean isExpired = lh.getHanSuDung().isBefore(LocalDate.now());
+                // Kiểm tra và cập nhật trạng thái hết hạn: HSD <= 6 tháng → Set hết hạn
+                LocalDate ngayGioiHan = LocalDate.now().plusMonths(6);
+                boolean isExpired = lh.getHanSuDung().isBefore(ngayGioiHan) || 
+                                    lh.getHanSuDung().isEqual(ngayGioiHan);
                 String trangThai = isExpired ? "Hết hạn" : "Còn hạn";
                 
                 // Nếu trạng thái thay đổi, cập nhật vào database
@@ -589,13 +594,26 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
 
         headerPanel.add(actionPanel, java.awt.BorderLayout.WEST);
 
-        // Panel bên phải chứa TextField và nút Tìm kiếm
+        // Panel bên phải chứa ComboBox, TextField và nút Tìm kiếm
         jPanel5.setBackground(new java.awt.Color(255, 255, 255));
-        jPanel5.setPreferredSize(new java.awt.Dimension(590, 60));
+        jPanel5.setPreferredSize(new java.awt.Dimension(650, 60));
         jPanel5.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 6, 10));
 
+        // ComboBox lọc trạng thái
+        cboFilterStatus = new javax.swing.JComboBox<>();
+        cboFilterStatus.setFont(new java.awt.Font("Segoe UI", 0, 14));
+        cboFilterStatus.setPreferredSize(new java.awt.Dimension(150, 40));
+        cboFilterStatus.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Tất cả", "Còn hạn", "Hết hạn" }));
+        cboFilterStatus.putClientProperty(FlatClientProperties.STYLE, "arc:10");
+        cboFilterStatus.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                filterBatchData();
+            }
+        });
+        jPanel5.add(cboFilterStatus);
+
         txtSearchBatch.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        txtSearchBatch.setPreferredSize(new java.awt.Dimension(300, 40));
+        txtSearchBatch.setPreferredSize(new java.awt.Dimension(250, 40));
         txtSearchBatch.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 txtSearchBatchActionPerformed(evt);
@@ -652,34 +670,66 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void btnSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSearchActionPerformed
+    // Phương thức lọc và tìm kiếm kết hợp
+    private void filterBatchData() {
         String keyword = txtSearchBatch.getText().trim().toLowerCase();
-        if (keyword.isEmpty()) {
-            loadBatchData();
-            return;
-        }
+        String filterStatus = (String) cboFilterStatus.getSelectedItem();
         
         try {
             tableDesign.getModelTable().setRowCount(0);
             List<LoHang> danhSachLH = loHangBUS.getAllLoHang();
             
             for (LoHang lh : danhSachLH) {
-                String maLH = lh.getMaLoHang().toLowerCase();
-                String tenLH = lh.getTenLoHang().toLowerCase();
+                // Kiểm tra và cập nhật trạng thái hết hạn: HSD <= 6 tháng → Set hết hạn
+                LocalDate ngayGioiHan = LocalDate.now().plusMonths(6);
+                boolean isExpired = lh.getHanSuDung().isBefore(ngayGioiHan) || 
+                                    lh.getHanSuDung().isEqual(ngayGioiHan);
+                String trangThai = isExpired ? "Hết hạn" : "Còn hạn";
                 
-                if (maLH.contains(keyword) || tenLH.contains(keyword)) {
+                // Nếu trạng thái thay đổi, cập nhật vào database
+                if (isExpired && lh.isTrangThai()) {
+                    lh.setTrangThai(false);
+                    try {
+                        loHangBUS.capNhatLoHang(lh);
+                    } catch (Exception ex) {
+                        System.err.println("Lỗi khi cập nhật trạng thái lô hàng: " + ex.getMessage());
+                    }
+                }
+                
+                // Lọc theo trạng thái
+                boolean matchStatus = true;
+                if (filterStatus.equals("Còn hạn")) {
+                    matchStatus = trangThai.equals("Còn hạn");
+                } else if (filterStatus.equals("Hết hạn")) {
+                    matchStatus = trangThai.equals("Hết hạn");
+                }
+                
+                // Lọc theo từ khóa tìm kiếm
+                boolean matchKeyword = true;
+                if (!keyword.isEmpty()) {
+                    String maLH = lh.getMaLoHang().toLowerCase();
+                    String tenLH = lh.getTenLoHang().toLowerCase();
+                    matchKeyword = maLH.contains(keyword) || tenLH.contains(keyword);
+                }
+                
+                // Thêm vào bảng nếu thỏa mãn cả 2 điều kiện
+                if (matchStatus && matchKeyword) {
                     tableDesign.getModelTable().addRow(new Object[]{
                         lh.getMaLoHang(),
                         lh.getTenLoHang(),
                         lh.getHanSuDung(),
                         lh.getTonKho(),
-                        lh.isTrangThai() ? "Còn hạn" : "Hết hạn"
+                        trangThai
                     });
                 }
             }
         } catch (Exception e) {
-            Notifications.getInstance().show(Notifications.Type.ERROR, "Lỗi khi tìm kiếm: " + e.getMessage());
+            Notifications.getInstance().show(Notifications.Type.ERROR, "Lỗi khi lọc dữ liệu: " + e.getMessage());
         }
+    }
+    
+    private void btnSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSearchActionPerformed
+        filterBatchData();
     }//GEN-LAST:event_btnSearchActionPerformed
 
     private void txtSearchBatchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtSearchBatchActionPerformed
@@ -687,7 +737,7 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
     }//GEN-LAST:event_txtSearchBatchActionPerformed
 
     private void txtSearchBatchKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtSearchBatchKeyReleased
-        btnSearchActionPerformed(null);
+        filterBatchData();
     }//GEN-LAST:event_txtSearchBatchKeyReleased
 
     private void btnExitModalAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExitModalAddActionPerformed
@@ -734,10 +784,12 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
                 return;
             }
             
-            // Kiểm tra hạn sử dụng phải lớn hơn ngày hiện tại
+            // Kiểm tra hạn sử dụng phải > 6 tháng kể từ hôm nay
             LocalDate hanSuDung = hanSD.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-            if (hanSuDung.isBefore(LocalDate.now())) {
-                Notifications.getInstance().show(Notifications.Type.WARNING, "Hạn sử dụng phải lớn hơn hoặc bằng ngày hiện tại!");
+            LocalDate ngayGioiHan = LocalDate.now().plusMonths(6);
+            if (hanSuDung.isBefore(ngayGioiHan) || hanSuDung.isEqual(ngayGioiHan)) {
+                Notifications.getInstance().show(Notifications.Type.WARNING, 
+                    "Hạn sử dụng phải lớn hơn 6 tháng kể từ ngày hiện tại!");
                 return;
             }
             

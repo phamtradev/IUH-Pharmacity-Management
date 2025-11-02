@@ -9,6 +9,7 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.LoHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.LoHangBUS;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.Calendar;
@@ -528,9 +529,24 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
                     return;
                 }
                 
+                // Kiểm tra hạn sử dụng phải > 6 tháng
+                Date hsdDate = (Date) spinnerHSDMoi.getValue();
+                LocalDate hsd = hsdDate.toInstant()
+                    .atZone(java.time.ZoneId.systemDefault())
+                    .toLocalDate();
+                LocalDate ngayGioiHan = LocalDate.now().plusMonths(6);
+                
+                if (hsd.isBefore(ngayGioiHan) || hsd.isEqual(ngayGioiHan)) {
+                    javax.swing.JOptionPane.showMessageDialog(dialog,
+                        "Hạn sử dụng phải lớn hơn 6 tháng kể từ ngày hiện tại!",
+                        "Thông báo",
+                        javax.swing.JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+                
                 // Lưu thông tin lô mới
                 tenLoMoi = tenLo;
-                hsdLoMoi = (Date) spinnerHSDMoi.getValue();
+                hsdLoMoi = hsdDate;
                 soLuongLoMoi = soLuong;
                 loHangDaChon = null; // Clear lô cũ nếu có
                 

@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.*;
 import javax.swing.UIManager;
 import javax.swing.BorderFactory;
@@ -1061,13 +1062,25 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
                     String tenLo = panel.getTenLoMoi();
                     Date hanDung = panel.getHanDung();
                     
+                    // Kiểm tra HSD phải > 6 tháng (đã check ở Panel nhưng check thêm ở đây để đảm bảo)
+                    LocalDate hsd = hanDung.toInstant()
+                            .atZone(java.time.ZoneId.systemDefault())
+                            .toLocalDate();
+                    LocalDate ngayGioiHan = LocalDate.now().plusMonths(6);
+                    
+                    if (hsd.isBefore(ngayGioiHan) || hsd.isEqual(ngayGioiHan)) {
+                        System.out.println("✗ HSD không hợp lệ (≤ 6 tháng) cho lô: " + tenLo);
+                        Notifications.getInstance().show(Notifications.Type.WARNING,
+                            Notifications.Location.TOP_CENTER,
+                            "Không thể tạo lô '" + tenLo + "': HSD phải lớn hơn 6 tháng!");
+                        continue; // Skip sản phẩm này
+                    }
+                    
                     System.out.println("→ Tạo lô mới từ dialog: " + tenLo);
                     
                     LoHang loMoi = new LoHang();
                     loMoi.setTenLoHang(tenLo);
-                    loMoi.setHanSuDung(hanDung.toInstant()
-                            .atZone(java.time.ZoneId.systemDefault())
-                            .toLocalDate());
+                    loMoi.setHanSuDung(hsd);
                     loMoi.setTonKho(0);  // Bắt đầu từ 0, sẽ cập nhật khi lưu chi tiết
                     loMoi.setTrangThai(true);
                     loMoi.setSanPham(sanPham);
@@ -1099,11 +1112,23 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
                         System.out.println("→ Lô '" + tenLo + "' chưa tồn tại, đang tạo mới...");
                         Date hanDung = panel.getHanDung();
                         
+                        // Kiểm tra HSD phải > 6 tháng
+                        LocalDate hsd = hanDung.toInstant()
+                                .atZone(java.time.ZoneId.systemDefault())
+                                .toLocalDate();
+                        LocalDate ngayGioiHan = LocalDate.now().plusMonths(6);
+                        
+                        if (hsd.isBefore(ngayGioiHan) || hsd.isEqual(ngayGioiHan)) {
+                            System.out.println("✗ HSD không hợp lệ (≤ 6 tháng) cho lô Excel: " + tenLo);
+                            Notifications.getInstance().show(Notifications.Type.WARNING,
+                                Notifications.Location.TOP_CENTER,
+                                "Không thể tạo lô '" + tenLo + "' từ Excel: HSD phải lớn hơn 6 tháng!");
+                            continue; // Skip sản phẩm này
+                        }
+                        
                         LoHang loMoi = new LoHang();
                         loMoi.setTenLoHang(tenLo);
-                        loMoi.setHanSuDung(hanDung.toInstant()
-                                .atZone(java.time.ZoneId.systemDefault())
-                                .toLocalDate());
+                        loMoi.setHanSuDung(hsd);
                         loMoi.setTonKho(0);  // Bắt đầu từ 0, sẽ cập nhật khi lưu chi tiết
                         loMoi.setTrangThai(true);
                         loMoi.setSanPham(sanPham);
