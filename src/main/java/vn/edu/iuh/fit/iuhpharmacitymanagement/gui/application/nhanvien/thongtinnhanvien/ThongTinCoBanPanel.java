@@ -4,6 +4,7 @@
  */
 package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.thongtinnhanvien;
 
+import com.formdev.flatlaf.FlatClientProperties;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -169,7 +170,25 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
         textField.setForeground(new java.awt.Color(51, 51, 51));
     }
 
-    // Phương thức phụ an toàn để đặt icon
+    private void styleChangePasswordDialog() {
+        txtMkCu.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập mật khẩu cũ của bạn");
+        txtMkMoi.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập mật khẩu mới");
+        txtXacNhanMkMoi.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Xác nhận mật khẩu mới");
+
+        //Con mắt trong flatlaf vip pro
+        txtMkCu.putClientProperty(FlatClientProperties.STYLE, "showRevealButton: true");
+        txtMkMoi.putClientProperty(FlatClientProperties.STYLE, "showRevealButton: true");
+        txtXacNhanMkMoi.putClientProperty(FlatClientProperties.STYLE, "showRevealButton: true");
+
+        //Style cho nút
+        btnXNDoiMatKhau.putClientProperty(FlatClientProperties.STYLE, "background: $Component.accentColor; foreground: #FFFFFF;");
+
+        //styel cho Jlabel quay lại
+        lblQuayLai.setText("<html><u>&lt; Quay lại</u></html>");
+        lblQuayLai.setForeground(new java.awt.Color(0, 102, 204));
+        lblQuayLai.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+    }
+
     private void setIcon(javax.swing.JLabel label, String path, String fallbackText) {
         try {
             java.net.URL iconUrl = getClass().getResource(path);
@@ -177,7 +196,6 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
                 label.setText("");
                 label.setIcon(new com.formdev.flatlaf.extras.FlatSVGIcon(iconUrl).derive(24, 24));
             } else {
-                // Nếu không tìm thấy file, dùng text thay thế
                 System.err.println("Không tìm thấy icon: " + path);
                 label.setText(fallbackText);
             }
@@ -205,12 +223,17 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
         java.awt.GridBagConstraints gridBagConstraints;
 
         jdiaDoiPass = new javax.swing.JDialog();
-        txtMkCu = new javax.swing.JTextField();
-        btnXNDoiMatKhau = new javax.swing.JButton();
-        chkHienDoiMK = new javax.swing.JCheckBox();
-        txtXacNhanMkMoi = new javax.swing.JPasswordField();
+        pnlDoiMatKhau = new javax.swing.JPanel();
+        lblDialogTitle = new javax.swing.JLabel();
+        lblOldPassTitle = new javax.swing.JLabel();
+        txtMkCu = new javax.swing.JPasswordField();
+        lblNewPassTitle = new javax.swing.JLabel();
         txtMkMoi = new javax.swing.JPasswordField();
+        lblConfirmPassTitle = new javax.swing.JLabel();
+        txtXacNhanMkMoi = new javax.swing.JPasswordField();
+        pnlNut = new javax.swing.JPanel();
         lblQuayLai = new javax.swing.JLabel();
+        btnXNDoiMatKhau = new javax.swing.JButton();
         btnDoiMatKhau1 = new javax.swing.JButton();
         lblAvatar = new javax.swing.JLabel();
         lblTenNV = new javax.swing.JLabel();
@@ -228,107 +251,104 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
         txtAddress = new javax.swing.JTextArea();
         btnDoiMatKhau = new javax.swing.JButton();
 
-        txtMkCu.setText("Nhập mật khẩu cũ");
-        txtMkCu.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                txtMkCuFocusGained(evt);
-            }
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                txtMkCuFocusLost(evt);
-            }
-        });
-        txtMkCu.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txtMkCuActionPerformed(evt);
-            }
-        });
+        pnlDoiMatKhau.setBackground(new java.awt.Color(255, 255, 255));
+        pnlDoiMatKhau.setBorder(javax.swing.BorderFactory.createEmptyBorder(20, 30, 20, 30));
+        pnlDoiMatKhau.setLayout(new java.awt.GridBagLayout());
 
-        btnXNDoiMatKhau.setText("Đổi mật khẩu");
-        btnXNDoiMatKhau.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnXNDoiMatKhauActionPerformed(evt);
-            }
-        });
+        lblDialogTitle.setText("ĐỔI MẬT KHẨU");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 25, 0);
+        pnlDoiMatKhau.add(lblDialogTitle, gridBagConstraints);
 
-        chkHienDoiMK.setText("Hiện mật khẩu");
-        chkHienDoiMK.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                chkHienDoiMKActionPerformed(evt);
-            }
-        });
+        lblOldPassTitle.setText("Mật khẩu cũ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
+        pnlDoiMatKhau.add(lblOldPassTitle, gridBagConstraints);
 
-        txtXacNhanMkMoi.setText("jPasswordField1");
-        txtXacNhanMkMoi.setPreferredSize(new java.awt.Dimension(148, 23));
-        txtXacNhanMkMoi.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                txtXacNhanMkMoiFocusGained(evt);
-            }
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                txtXacNhanMkMoiFocusLost(evt);
-            }
-        });
-        txtXacNhanMkMoi.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txtXacNhanMkMoiActionPerformed(evt);
-            }
-        });
+        txtMkCu.setMinimumSize(new java.awt.Dimension(300, 22));
+        txtMkCu.setPreferredSize(new java.awt.Dimension(64, 40));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 15, 0);
+        pnlDoiMatKhau.add(txtMkCu, gridBagConstraints);
 
-        txtMkMoi.setText("jPasswordField1");
-        txtMkMoi.setPreferredSize(new java.awt.Dimension(148, 23));
-        txtMkMoi.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                txtMkMoiFocusGained(evt);
-            }
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                txtMkMoiFocusLost(evt);
-            }
-        });
-        txtMkMoi.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txtMkMoiActionPerformed(evt);
-            }
-        });
+        lblNewPassTitle.setText("Mật khẩu mới");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
+        pnlDoiMatKhau.add(lblNewPassTitle, gridBagConstraints);
+
+        txtMkMoi.setPreferredSize(new java.awt.Dimension(300, 40));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 15, 0);
+        pnlDoiMatKhau.add(txtMkMoi, gridBagConstraints);
+
+        lblConfirmPassTitle.setText("Xác nhận mật khẩu mới");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
+        pnlDoiMatKhau.add(lblConfirmPassTitle, gridBagConstraints);
+
+        txtXacNhanMkMoi.setPreferredSize(new java.awt.Dimension(300, 40));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 10, 0);
+        pnlDoiMatKhau.add(txtXacNhanMkMoi, gridBagConstraints);
+
+        pnlNut.setOpaque(false);
+        pnlNut.setLayout(new java.awt.BorderLayout(50, 0));
 
         lblQuayLai.setText("Quay lại");
-        lblQuayLai.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                lblQuayLaiMouseClicked(evt);
-            }
-        });
+        pnlNut.add(lblQuayLai, java.awt.BorderLayout.LINE_START);
+
+        btnXNDoiMatKhau.setText("Xác nhận đổi mật khẩu");
+        pnlNut.add(btnXNDoiMatKhau, java.awt.BorderLayout.LINE_END);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        pnlDoiMatKhau.add(pnlNut, gridBagConstraints);
 
         javax.swing.GroupLayout jdiaDoiPassLayout = new javax.swing.GroupLayout(jdiaDoiPass.getContentPane());
         jdiaDoiPass.getContentPane().setLayout(jdiaDoiPassLayout);
         jdiaDoiPassLayout.setHorizontalGroup(
             jdiaDoiPassLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jdiaDoiPassLayout.createSequentialGroup()
-                .addGap(100, 100, 100)
-                .addGroup(jdiaDoiPassLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(txtMkMoi, javax.swing.GroupLayout.PREFERRED_SIZE, 195, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(txtMkCu, javax.swing.GroupLayout.PREFERRED_SIZE, 201, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(jdiaDoiPassLayout.createSequentialGroup()
-                        .addComponent(lblQuayLai)
-                        .addGap(52, 52, 52)
-                        .addComponent(btnXNDoiMatKhau))
-                    .addComponent(txtXacNhanMkMoi, javax.swing.GroupLayout.PREFERRED_SIZE, 195, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(chkHienDoiMK))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap()
+                .addComponent(pnlDoiMatKhau, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
         jdiaDoiPassLayout.setVerticalGroup(
             jdiaDoiPassLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jdiaDoiPassLayout.createSequentialGroup()
-                .addGap(23, 23, 23)
-                .addComponent(txtMkCu, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(39, 39, 39)
-                .addComponent(txtMkMoi, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(29, 29, 29)
-                .addComponent(txtXacNhanMkMoi, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(chkHienDoiMK)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 22, Short.MAX_VALUE)
-                .addGroup(jdiaDoiPassLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnXNDoiMatKhau)
-                    .addComponent(lblQuayLai))
-                .addGap(22, 22, 22))
+                .addContainerGap()
+                .addComponent(pnlDoiMatKhau, javax.swing.GroupLayout.DEFAULT_SIZE, 368, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         btnDoiMatKhau1.setText("Đổi mật khẩu");
@@ -480,198 +500,52 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnDoiMatKhauActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDoiMatKhauActionPerformed
+
+        styleChangePasswordDialog();
+
+        // Xóa dữ liệu cũ
+        txtMkCu.setText("");
+        txtMkMoi.setText("");
+        txtXacNhanMkMoi.setText("");
+
+        jdiaDoiPass.setTitle("Đổi Mật Khẩu");
+        jdiaDoiPass.pack();
         jdiaDoiPass.setLocationRelativeTo(this);
-        jdiaDoiPass.setPreferredSize(new Dimension(440, 300));
-        addPlayholder(txtMkCu);
-        addPlayholder(txtMkMoi);
-        addPlayholder(txtXacNhanMkMoi);
         jdiaDoiPass.setVisible(true);
-        jdiaDoiPass.requestFocusInWindow();
     }//GEN-LAST:event_btnDoiMatKhauActionPerformed
-    public void addPlayholder(JTextField txt) {
-        Font font = txt.getFont();
-        font = font.deriveFont(Font.ITALIC);
-        txt.setFont(font);
-        txt.setForeground(Color.GRAY);
-        txt.setBackground(Color.WHITE);
-    }
 
-    public void removePlayholder(JTextField txt) {
-        Font font = txt.getFont();
-        font = font.deriveFont(Font.PLAIN);
-        txt.setForeground(Color.BLACK);
-        txt.setFont(font);
-    }
-
-    private void txtMkCuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtMkCuActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_txtMkCuActionPerformed
 
     private void btnDoiMatKhau1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDoiMatKhau1ActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_btnDoiMatKhau1ActionPerformed
-
-    private void btnXNDoiMatKhauActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnXNDoiMatKhauActionPerformed
-        javax.swing.JFrame parentFrame = (javax.swing.JFrame) SwingUtilities.getWindowAncestor(this);
-
-        NhanVien nv = SessionManager.getInstance().getCurrentUser();
-
-        //chk o day chua chk dc
-        if (txtMkCu.getText().trim().isEmpty() || txtMkCu.getText() == null) {
-            Notifications.getInstance().setJFrame(parentFrame);
-            Notifications.getInstance().show(Notifications.Type.ERROR, "Vui lòng nhập mật khẩu cũ!");
-            txtMkCu.requestFocus();
-            return;
-        }
-//         if (!txtMkCu.getText().trim().equals(tk.getMatKhau())) {
-//            Notifications.getInstance().setJFrame(parentFrame);
-//            Notifications.getInstance().show(Notifications.Type.ERROR, "Mật khẩu cũ không chính xác!");
-//            txtMkCu.requestFocus();
-//            return;
-//        }
-        if (String.valueOf(txtMkMoi.getPassword()).trim().isBlank()) {
-            Notifications.getInstance().setJFrame(parentFrame);
-            Notifications.getInstance().show(Notifications.Type.ERROR, "Vui lòng nhập mật khẩu mới!");
-            txtMkMoi.requestFocus();
-            return;
-        }
-        if (String.valueOf(txtXacNhanMkMoi.getPassword()).trim().isBlank()) {
-            Notifications.getInstance().setJFrame(parentFrame);
-            Notifications.getInstance().show(Notifications.Type.ERROR, "Vui lòng xác nhận mật khẩu mới!");
-            txtXacNhanMkMoi.requestFocus();
-            return;
-        }
-        if (!String.valueOf(txtMkMoi.getPassword()).trim().equals(String.valueOf(txtXacNhanMkMoi.getPassword()).trim())) {
-            Notifications.getInstance().setJFrame(parentFrame);
-            Notifications.getInstance().show(Notifications.Type.ERROR, "Mật khẩu xác nhận chưa trùng khớp!");
-            txtXacNhanMkMoi.requestFocus();
-            return;
-        }
-        //o entity taikhoan
-        String MAT_KHAU_SAI = "Mật khẩu phải từ 6 ký tự trở lên, có ít nhất 1 chữ số và 1 ký tự đặc biệt (@#$^*)";
-        String REGEX_PASSWORD = "^(?=.*[0-9])(?=.*[@#$^*]).{6,}$";
-        if (!String.valueOf(txtMkMoi.getPassword()).matches(REGEX_PASSWORD)) {
-            Notifications.getInstance().setJFrame(parentFrame);
-            Notifications.getInstance().show(Notifications.Type.ERROR, MAT_KHAU_SAI);
-            txtMkMoi.requestFocus();
-            return;
-        }
-
-        if (new TaiKhoanDAO().resetMatKhau(nv.getMaNhanVien().toLowerCase(), String.valueOf(txtMkMoi.getPassword()))) {
-            Notifications.getInstance().setJFrame(parentFrame);
-            Notifications.getInstance().show(Notifications.Type.SUCCESS, "Cập nhật mật khẩu thành công!");
-            jdiaDoiPass.dispose();
-        }
-
-    }//GEN-LAST:event_btnXNDoiMatKhauActionPerformed
-
-    private void txtMkCuFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtMkCuFocusGained
-        if (txtMkCu.getText().equals("Nhập mật khẩu cũ")) {
-            txtMkCu.setText("");
-            removePlayholder(txtMkCu);
-        }
-    }//GEN-LAST:event_txtMkCuFocusGained
-
-    private void txtMkCuFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtMkCuFocusLost
-        if (txtMkCu.getText().equals("")) {
-            txtMkCu.setText("Nhập mật khẩu cũ");
-            addPlayholder(txtMkCu);
-        }
-    }//GEN-LAST:event_txtMkCuFocusLost
-
-    private void txtXacNhanMkMoiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtXacNhanMkMoiActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_txtXacNhanMkMoiActionPerformed
-
-    private void txtMkMoiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtMkMoiActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_txtMkMoiActionPerformed
-
-    private void txtMkMoiFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtMkMoiFocusGained
-        if (String.valueOf(txtMkMoi.getPassword()).equals("Nhập mật khẩu mới")) {
-            txtMkMoi.setText("");
-            txtMkMoi.setEchoChar('*');
-            removePlayholder(txtMkMoi);
-        }
-    }//GEN-LAST:event_txtMkMoiFocusGained
-
-    private void txtMkMoiFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtMkMoiFocusLost
-        if (String.valueOf(txtMkMoi.getPassword()).equals("")) {
-            txtMkMoi.setEchoChar((char) 0);
-            txtMkMoi.setText("Nhập mật khẩu mới");
-            addPlayholder(txtMkMoi);
-        }
-    }//GEN-LAST:event_txtMkMoiFocusLost
-
-    private void txtXacNhanMkMoiFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtXacNhanMkMoiFocusGained
-        if (String.valueOf(txtXacNhanMkMoi.getPassword()).equals("Xác nhận mật khẩu mới")) {
-            txtXacNhanMkMoi.setText("");
-            txtXacNhanMkMoi.setEchoChar('*');
-            removePlayholder(txtXacNhanMkMoi);
-        }
-    }//GEN-LAST:event_txtXacNhanMkMoiFocusGained
-
-    private void txtXacNhanMkMoiFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtXacNhanMkMoiFocusLost
-        if (String.valueOf(txtXacNhanMkMoi.getPassword()).equals("")) {
-            txtXacNhanMkMoi.setEchoChar((char) 0);
-            txtXacNhanMkMoi.setText("Xác nhận mật khẩu mới");
-            addPlayholder(txtXacNhanMkMoi);
-        }
-    }//GEN-LAST:event_txtXacNhanMkMoiFocusLost
-
-    private void chkHienDoiMKActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chkHienDoiMKActionPerformed
-        if (chkHienDoiMK.isSelected()) {
-            txtMkMoi.setEchoChar((char) 0);
-            txtXacNhanMkMoi.setEchoChar((char) 0);
-        } else {
-            String mkMoi = String.valueOf(txtMkMoi.getPassword());
-            if (mkMoi.isEmpty() || mkMoi.equals("Nhập mật khẩu mới")) {
-                txtMkMoi.setEchoChar((char) 0);
-            } else {
-                txtMkMoi.setEchoChar('\u2022');
-            }
-            String xnMKMoi = String.valueOf(txtXacNhanMkMoi.getPassword());
-            if (xnMKMoi.isEmpty() || xnMKMoi.equals("Xác nhận mật khẩu mới")) {
-                txtXacNhanMkMoi.setEchoChar((char) 0);
-            } else {
-                txtXacNhanMkMoi.setEchoChar('\u2022');
-            }
-        }
-        txtMkMoi.repaint();
-        txtXacNhanMkMoi.repaint();
-    }//GEN-LAST:event_chkHienDoiMKActionPerformed
-
-    private void lblQuayLaiMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblQuayLaiMouseClicked
-        jdiaDoiPass.dispose();
-        txtMkCu.setText("Nhập mật khẩu cũ");
-        txtMkMoi.setEchoChar((char)0);
-        txtMkMoi.setText("Nhập mật khẩu mới");
-        txtXacNhanMkMoi.setEchoChar((char)0);
-        txtXacNhanMkMoi.setText("Xác nhận mật khẩu mới");
-    }//GEN-LAST:event_lblQuayLaiMouseClicked
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnDoiMatKhau;
     private javax.swing.JButton btnDoiMatKhau1;
     private javax.swing.JButton btnXNDoiMatKhau;
-    private javax.swing.JCheckBox chkHienDoiMK;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JDialog jdiaDoiPass;
     private javax.swing.JLabel lblAddressTitle;
     private javax.swing.JLabel lblAvatar;
+    private javax.swing.JLabel lblConfirmPassTitle;
+    private javax.swing.JLabel lblDialogTitle;
     private javax.swing.JLabel lblEmailTitle;
     private javax.swing.JLabel lblIconAddress;
     private javax.swing.JLabel lblIconEmail;
     private javax.swing.JLabel lblIconPhone;
     private javax.swing.JLabel lblMa;
+    private javax.swing.JLabel lblNewPassTitle;
+    private javax.swing.JLabel lblOldPassTitle;
     private javax.swing.JLabel lblPhoneTitle;
     private javax.swing.JLabel lblQuayLai;
     private javax.swing.JLabel lblTenNV;
+    private javax.swing.JPanel pnlDoiMatKhau;
+    private javax.swing.JPanel pnlNut;
     private javax.swing.JScrollPane scrAddress;
     private javax.swing.JTextArea txtAddress;
     private javax.swing.JTextField txtEmail;
-    private javax.swing.JTextField txtMkCu;
+    private javax.swing.JPasswordField txtMkCu;
     private javax.swing.JPasswordField txtMkMoi;
     private javax.swing.JTextField txtPhone;
     private javax.swing.JPasswordField txtXacNhanMkMoi;
