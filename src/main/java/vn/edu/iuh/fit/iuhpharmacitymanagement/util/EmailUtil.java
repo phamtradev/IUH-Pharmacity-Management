@@ -342,16 +342,17 @@ public class EmailUtil {
                 coKyTuDacBiet = true;
             }
         }
-        
+
         if (!coSo) {
             matKhau.append(chuSo.charAt(random.nextInt(chuSo.length())));
         }
 
         if (!coKyTuDacBiet) {
             matKhau.append(kyTuDacBiet.charAt(random.nextInt(kyTuDacBiet.length())));
-        }       
+        }
         return matKhau.toString();
     }
+
     private String taoNoiDungEmailLayPassHTML(NhanVien nv, String pass) {
         StringBuilder html = new StringBuilder();
         html.append("<!DOCTYPE html>");
@@ -385,13 +386,13 @@ public class EmailUtil {
 
         html.append("<div class='box'>");
         html.append("<p><strong>Mật khẩu truy cập mới của bạn:</strong></p>");
-       // pass = ramdomPass(nv);
+        // pass = ramdomPass(nv);
         html.append("<div class='password'>").append(pass).append("</div>");
         html.append("</div>");
 
         html.append("<p>Vui lòng đăng nhập và thay đổi mật khẩu ngay sau khi truy cập để đảm bảo tính bảo mật tài khoản.</p>");
 
-        html.append("<p>👉 Email đăng nhập: <strong>").append(nv.getEmail()).append("</strong></p>");
+        html.append("<p>👉 Tài khoản đăng nhập: <strong>").append(nv.getMaNhanVien().toLowerCase()).append("</strong></p>");
         html.append("<p>Nếu bạn không yêu cầu thao tác này, vui lòng liên hệ quản trị hệ thống ngay lập tức.</p>");
         html.append("</div>");
 
@@ -436,7 +437,7 @@ public class EmailUtil {
             Message message = new MimeMessage(session);
             message.setFrom(new InternetAddress(SENDER_EMAIL, SENDER_NAME, "UTF-8"));
             //message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(khachHang.getEmail()));
-            message.setSubject("Pharmacity - Cấp lại mật khẩu tài khoản cho nhân viên "+nv.getTenNhanVien());
+            message.setSubject("IUH PHARMACITY MANAGEMENT - Cấp lại mật khẩu tài khoản cho nhân viên " + nv.getTenNhanVien());
 
             // Tạo nội dung HTML     
             String pass = ramdomPass(nv);
@@ -461,8 +462,9 @@ public class EmailUtil {
             return false;
         }
     }
+
     public static void main(String[] args) {
         new EmailUtil().guiEmailCapPass(new NhanVienDAO().findById("NV00021").get());
     }
-    
+
 }

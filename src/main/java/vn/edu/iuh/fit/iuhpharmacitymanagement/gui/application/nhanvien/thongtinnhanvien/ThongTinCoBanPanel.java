@@ -4,7 +4,18 @@
  */
 package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.thongtinnhanvien;
 
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import javax.swing.JFrame;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
+import raven.toast.Notifications;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.TaiKhoanDAO;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhanVien;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.TaiKhoan;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.session.SessionManager;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.util.UserSession;
 
 /**
  *
@@ -17,7 +28,7 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
      */
     public ThongTinCoBanPanel() {
         initComponents();
-        btnDoiMatKhau.setVisible(false);
+
     }
 
     public void loadAndConfigure(boolean isManager, NhanVien nv) {
@@ -46,15 +57,15 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
 
         lblTenNV.setText(ten);
         lblMa.setText(nv.getMaNhanVien());
-        txtVaiTro.setText(nv.getVaiTro());
+        // txtVaiTro.setText(nv.getVaiTro());
         txtPhone.setText(nv.getSoDienThoai());
         txtEmail.setText(nv.getEmail());
         txtAddress.setText(nv.getDiaChi());
     }
 
     private void configureForRole(boolean isManager, NhanVien nv) {
-        // Hiển thị hoặc ẩn nút đổi mật khẩu
-        btnDoiMatKhau.setVisible(isManager);
+//        // Hiển thị hoặc ẩn nút đổi mật khẩu
+//        btnDoiMatKhau.setVisible(isManager);
     }
 
     public void setTenNhanVien(String ten) {
@@ -105,7 +116,7 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
         lblMa.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 
         //Các ô thông tin - Tăng kích thước font
-        styleReadOnlyTextField(txtVaiTro);
+        //styleReadOnlyTextField(txtVaiTro);
         styleReadOnlyTextField(txtPhone);
         styleReadOnlyTextField(txtEmail);
         txtAddress.setBackground(this.getBackground());
@@ -116,14 +127,14 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
         scrAddress.setBorder(null);
 
         //Các Icon
-        setIcon(lblIconVaiTro, "/img/icons/phone.svg", "👤");
+        // setIcon(lblIconVaiTro, "/img/icons/phone.svg", "👤");
         setIcon(lblIconPhone, "/img/icons/phone.svg", "📞");
         setIcon(lblIconEmail, "/img/icons/email.svg", "📧");
         setIcon(lblIconAddress, "/img/icons/address.svg", "🏠");
 
         //label tiêu đề - Tăng kích thước
-        lblVaiTroTitle.setText("Chức vụ:");
-        lblVaiTroTitle.setFont(new java.awt.Font("Segoe UI", 1, 18));
+        //lblVaiTroTitle.setText("Chức vụ:");
+        //lblVaiTroTitle.setFont(new java.awt.Font("Segoe UI", 1, 18));
         lblPhoneTitle.setText("Điện thoại:");
         lblPhoneTitle.setFont(new java.awt.Font("Segoe UI", 1, 18));
         lblEmailTitle.setText("Email:");
@@ -183,13 +194,17 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
+        jdiaDoiPass = new javax.swing.JDialog();
+        txtMkCu = new javax.swing.JTextField();
+        txtXacNhanMkMoi = new javax.swing.JTextField();
+        txtMkMoi = new javax.swing.JTextField();
+        btnXNDoiMatKhau = new javax.swing.JButton();
+        chkHienDoiMK = new javax.swing.JCheckBox();
+        btnDoiMatKhau1 = new javax.swing.JButton();
         lblAvatar = new javax.swing.JLabel();
         lblTenNV = new javax.swing.JLabel();
         lblMa = new javax.swing.JLabel();
         jSeparator1 = new javax.swing.JSeparator();
-        lblIconVaiTro = new javax.swing.JLabel();
-        lblVaiTroTitle = new javax.swing.JLabel();
-        txtVaiTro = new javax.swing.JTextField();
         lblIconPhone = new javax.swing.JLabel();
         lblPhoneTitle = new javax.swing.JLabel();
         txtPhone = new javax.swing.JTextField();
@@ -201,6 +216,102 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
         scrAddress = new javax.swing.JScrollPane();
         txtAddress = new javax.swing.JTextArea();
         btnDoiMatKhau = new javax.swing.JButton();
+
+        txtMkCu.setText("Nhập mật khẩu cũ");
+        txtMkCu.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                txtMkCuFocusGained(evt);
+            }
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                txtMkCuFocusLost(evt);
+            }
+        });
+        txtMkCu.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtMkCuActionPerformed(evt);
+            }
+        });
+
+        txtXacNhanMkMoi.setText("Nhập lại mật khẩu mới");
+        txtXacNhanMkMoi.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                txtXacNhanMkMoiFocusGained(evt);
+            }
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                txtXacNhanMkMoiFocusLost(evt);
+            }
+        });
+        txtXacNhanMkMoi.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtXacNhanMkMoiActionPerformed(evt);
+            }
+        });
+
+        txtMkMoi.setText("Nhập mật khẩu mới");
+        txtMkMoi.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                txtMkMoiFocusGained(evt);
+            }
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                txtMkMoiFocusLost(evt);
+            }
+        });
+        txtMkMoi.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtMkMoiActionPerformed(evt);
+            }
+        });
+
+        btnXNDoiMatKhau.setText("Đổi mật khẩu");
+        btnXNDoiMatKhau.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnXNDoiMatKhauActionPerformed(evt);
+            }
+        });
+
+        chkHienDoiMK.setText("Hiện mật khẩu");
+
+        javax.swing.GroupLayout jdiaDoiPassLayout = new javax.swing.GroupLayout(jdiaDoiPass.getContentPane());
+        jdiaDoiPass.getContentPane().setLayout(jdiaDoiPassLayout);
+        jdiaDoiPassLayout.setHorizontalGroup(
+            jdiaDoiPassLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jdiaDoiPassLayout.createSequentialGroup()
+                .addGap(100, 100, 100)
+                .addComponent(txtMkCu, javax.swing.GroupLayout.PREFERRED_SIZE, 201, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addGroup(jdiaDoiPassLayout.createSequentialGroup()
+                .addGap(100, 100, 100)
+                .addComponent(txtMkMoi, javax.swing.GroupLayout.PREFERRED_SIZE, 201, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addGroup(jdiaDoiPassLayout.createSequentialGroup()
+                .addGap(194, 194, 194)
+                .addComponent(btnXNDoiMatKhau))
+            .addGroup(jdiaDoiPassLayout.createSequentialGroup()
+                .addGap(100, 100, 100)
+                .addGroup(jdiaDoiPassLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(chkHienDoiMK)
+                    .addComponent(txtXacNhanMkMoi, javax.swing.GroupLayout.PREFERRED_SIZE, 201, javax.swing.GroupLayout.PREFERRED_SIZE)))
+        );
+        jdiaDoiPassLayout.setVerticalGroup(
+            jdiaDoiPassLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jdiaDoiPassLayout.createSequentialGroup()
+                .addGap(23, 23, 23)
+                .addComponent(txtMkCu, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(33, 33, 33)
+                .addComponent(txtMkMoi, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(33, 33, 33)
+                .addComponent(txtXacNhanMkMoi, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(chkHienDoiMK)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 22, Short.MAX_VALUE)
+                .addComponent(btnXNDoiMatKhau)
+                .addGap(22, 22, 22))
+        );
+
+        btnDoiMatKhau1.setText("Đổi mật khẩu");
+        btnDoiMatKhau1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDoiMatKhau1ActionPerformed(evt);
+            }
+        });
 
         setBackground(new java.awt.Color(255, 255, 255));
         setBorder(javax.swing.BorderFactory.createEmptyBorder(20, 20, 20, 20));
@@ -220,7 +331,7 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(10, 0, 8, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(lblTenNV, gridBagConstraints);
 
         lblMa.setText("ma");
@@ -229,7 +340,7 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 20, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 15, 0);
         add(lblMa, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -239,106 +350,78 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 15, 0);
         add(jSeparator1, gridBagConstraints);
 
-        lblIconVaiTro.setText("lblIconVaiTro");
-        lblIconVaiTro.setPreferredSize(new java.awt.Dimension(35, 35));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 12, 15);
-        add(lblIconVaiTro, gridBagConstraints);
-
-        lblVaiTroTitle.setText("lblVaiTroTitle");
-        lblVaiTroTitle.setPreferredSize(new java.awt.Dimension(130, 35));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 12, 20);
-        add(lblVaiTroTitle, gridBagConstraints);
-
-        txtVaiTro.setText("txtVaiTro");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 12, 0);
-        add(txtVaiTro, gridBagConstraints);
-
         lblIconPhone.setText("conPhone");
-        lblIconPhone.setPreferredSize(new java.awt.Dimension(35, 35));
+        lblIconPhone.setPreferredSize(new java.awt.Dimension(30, 30));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 12, 15);
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 5);
         add(lblIconPhone, gridBagConstraints);
 
         lblPhoneTitle.setText("phoneTitle");
-        lblPhoneTitle.setPreferredSize(new java.awt.Dimension(130, 35));
+        lblPhoneTitle.setPreferredSize(new java.awt.Dimension(100, 30));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 12, 20);
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 10);
         add(lblPhoneTitle, gridBagConstraints);
 
         txtPhone.setText("txtPhone");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 12, 0);
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 0);
         add(txtPhone, gridBagConstraints);
 
         lblIconEmail.setText("lblIconEmail");
-        lblIconEmail.setPreferredSize(new java.awt.Dimension(35, 35));
+        lblIconEmail.setPreferredSize(new java.awt.Dimension(30, 30));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 12, 15);
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 5);
         add(lblIconEmail, gridBagConstraints);
 
         lblEmailTitle.setText("lblEmailTitle");
-        lblEmailTitle.setPreferredSize(new java.awt.Dimension(130, 35));
+        lblEmailTitle.setPreferredSize(new java.awt.Dimension(100, 30));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 12, 20);
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 10);
         add(lblEmailTitle, gridBagConstraints);
 
         txtEmail.setText("txtEmail");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 12, 0);
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 0);
         add(txtEmail, gridBagConstraints);
 
         lblIconAddress.setText("lblIconAddress");
-        lblIconAddress.setPreferredSize(new java.awt.Dimension(35, 35));
+        lblIconAddress.setPreferredSize(new java.awt.Dimension(30, 30));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 12, 15);
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 5);
         add(lblIconAddress, gridBagConstraints);
 
         lblAddressTitle.setText("lblAddressTitle");
-        lblAddressTitle.setPreferredSize(new java.awt.Dimension(130, 35));
+        lblAddressTitle.setPreferredSize(new java.awt.Dimension(100, 30));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 12, 20);
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 10);
         add(lblAddressTitle, gridBagConstraints);
 
         txtAddress.setEditable(false);
@@ -350,41 +433,191 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 12, 0);
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 0);
         add(scrAddress, gridBagConstraints);
 
         btnDoiMatKhau.setText("Đổi mật khẩu");
+        btnDoiMatKhau.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDoiMatKhauActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.insets = new java.awt.Insets(20, 0, 0, 0);
         add(btnDoiMatKhau, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
+    private void btnDoiMatKhauActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDoiMatKhauActionPerformed
+        jdiaDoiPass.setLocationRelativeTo(this);
+        jdiaDoiPass.setPreferredSize(new Dimension(440, 300));
+        addPlayholder(txtMkCu);
+        addPlayholder(txtMkMoi);
+        addPlayholder(txtXacNhanMkMoi);        
+        jdiaDoiPass.setVisible(true);
+        jdiaDoiPass.requestFocusInWindow();
+    }//GEN-LAST:event_btnDoiMatKhauActionPerformed
+    public void addPlayholder(JTextField txt) {
+        Font font = txt.getFont();
+        font = font.deriveFont(Font.ITALIC);
+        txt.setFont(font);
+        txt.setForeground(Color.GRAY);
+        txt.setBackground(Color.WHITE);
+    }
+
+    public void removePlayholder(JTextField txt) {
+        Font font = txt.getFont();
+        font = font.deriveFont(Font.PLAIN);
+        txt.setForeground(Color.BLACK);
+        txt.setFont(font);
+    }
+
+    private void txtMkCuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtMkCuActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtMkCuActionPerformed
+
+    private void txtXacNhanMkMoiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtXacNhanMkMoiActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtXacNhanMkMoiActionPerformed
+
+    private void txtMkMoiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtMkMoiActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtMkMoiActionPerformed
+
+    private void btnDoiMatKhau1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDoiMatKhau1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnDoiMatKhau1ActionPerformed
+
+    private void btnXNDoiMatKhauActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnXNDoiMatKhauActionPerformed
+        javax.swing.JFrame parentFrame = (javax.swing.JFrame) SwingUtilities.getWindowAncestor(this);
+//        UserSession userSes = UserSession.getInstance();
+//        NhanVien nv = userSes.getNhanVien();
+//        TaiKhoan tk = userSes.getTaiKhoan();
+        NhanVien nv = SessionManager.getInstance().getCurrentUser();
+        if (txtMkCu.getText().trim().length() == 0) {
+            Notifications.getInstance().setJFrame(parentFrame);
+            Notifications.getInstance().show(Notifications.Type.ERROR, "Vui lòng nhập mật khẩu cũ!");
+            txtMkCu.requestFocus();
+            return;
+        }
+//         if (!txtMkCu.getText().trim().equals(tk.getMatKhau())) {
+//            Notifications.getInstance().setJFrame(parentFrame);
+//            Notifications.getInstance().show(Notifications.Type.ERROR, "Mật khẩu cũ không chính xác!");
+//            txtMkCu.requestFocus();
+//            return;
+//        }
+        if (txtMkMoi.getText().trim().length() == 0) {
+            Notifications.getInstance().setJFrame(parentFrame);
+            Notifications.getInstance().show(Notifications.Type.ERROR, "Vui lòng nhập mật khẩu mới!");
+            txtMkMoi.requestFocus();
+            return;
+        }
+        if (txtXacNhanMkMoi.getText().trim().length() == 0) {
+            Notifications.getInstance().setJFrame(parentFrame);
+            Notifications.getInstance().show(Notifications.Type.ERROR, "Vui lòng xác nhận mật khẩu mới!");
+            txtXacNhanMkMoi.requestFocus();
+            return;
+        }
+        if (!txtMkMoi.getText().trim().equals(txtXacNhanMkMoi.getText().trim())) {
+            Notifications.getInstance().setJFrame(parentFrame);
+            Notifications.getInstance().show(Notifications.Type.ERROR, "Mật khẩu xác nhận chưa trùng khớp!");
+            txtXacNhanMkMoi.requestFocus();
+            return;
+        }
+        //o entity taikhoan
+        String MAT_KHAU_SAI = "Mật khẩu phải từ 6 ký tự trở lên, có ít nhất 1 chữ số và 1 ký tự đặc biệt (@#$^*)";
+        if (!txtMkMoi.getText().matches(MAT_KHAU_SAI)) {
+            Notifications.getInstance().setJFrame(parentFrame);
+            Notifications.getInstance().show(Notifications.Type.ERROR, MAT_KHAU_SAI);
+            txtMkMoi.requestFocus();
+            return;
+        }
+       
+//        if (new TaiKhoanDAO().updatePass(tk, nv, txtMkMoi.getText().trim())) {
+//            Notifications.getInstance().setJFrame(parentFrame);
+//            Notifications.getInstance().show(Notifications.Type.SUCCESS, "Cập nhật mật khẩu thành công!");
+//        }
+
+    }//GEN-LAST:event_btnXNDoiMatKhauActionPerformed
+
+    private void txtMkCuFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtMkCuFocusGained
+        if(txtMkCu.getText().equals("Nhập mật khẩu cũ")){
+            txtMkCu.setText("");
+            removePlayholder(txtMkCu);
+        }
+    }//GEN-LAST:event_txtMkCuFocusGained
+
+    private void txtMkCuFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtMkCuFocusLost
+        if(txtMkCu.getText().equals("")){
+            txtMkCu.setText("Nhập mật khẩu cũ");
+            addPlayholder(txtMkCu);
+        }
+    }//GEN-LAST:event_txtMkCuFocusLost
+
+    private void txtMkMoiFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtMkMoiFocusGained
+        if(txtMkMoi.getText().equals("Nhập mật khẩu mới")){
+            txtMkMoi.setText("");
+            removePlayholder(txtMkMoi);
+        }
+    }//GEN-LAST:event_txtMkMoiFocusGained
+
+    private void txtMkMoiFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtMkMoiFocusLost
+         if(txtMkMoi.getText().equals("")){
+            txtMkMoi.setText("Nhập mật khẩu mới");
+            addPlayholder(txtMkMoi);
+        }
+    }//GEN-LAST:event_txtMkMoiFocusLost
+
+    private void txtXacNhanMkMoiFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtXacNhanMkMoiFocusGained
+        if(txtXacNhanMkMoi.getText().equals("Nhập lại mật khẩu mới")){
+            txtXacNhanMkMoi.setText("");
+            removePlayholder(txtXacNhanMkMoi);
+        }
+    }//GEN-LAST:event_txtXacNhanMkMoiFocusGained
+
+    private void txtXacNhanMkMoiFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtXacNhanMkMoiFocusLost
+        if(txtXacNhanMkMoi.getText().equals("")){
+            txtXacNhanMkMoi.setText("Nhập lại mật khẩu mới");
+            addPlayholder(txtXacNhanMkMoi);
+        }
+    }//GEN-LAST:event_txtXacNhanMkMoiFocusLost
+    public static void main(String[] args) {
+//        NhanVien nv = SessionManager.getInstance().getCurrentUser();
+//        System.out.println(nv.toString());
+        JFrame jf = new JFrame();
+        jf.setSize(1000, 1000);
+        jf.add(new ThongTinCoBanPanel());
+        jf.setVisible(true);
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnDoiMatKhau;
+    private javax.swing.JButton btnDoiMatKhau1;
+    private javax.swing.JButton btnXNDoiMatKhau;
+    private javax.swing.JCheckBox chkHienDoiMK;
     private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JDialog jdiaDoiPass;
     private javax.swing.JLabel lblAddressTitle;
     private javax.swing.JLabel lblAvatar;
     private javax.swing.JLabel lblEmailTitle;
     private javax.swing.JLabel lblIconAddress;
     private javax.swing.JLabel lblIconEmail;
     private javax.swing.JLabel lblIconPhone;
-    private javax.swing.JLabel lblIconVaiTro;
     private javax.swing.JLabel lblMa;
     private javax.swing.JLabel lblPhoneTitle;
     private javax.swing.JLabel lblTenNV;
-    private javax.swing.JLabel lblVaiTroTitle;
     private javax.swing.JScrollPane scrAddress;
     private javax.swing.JTextArea txtAddress;
     private javax.swing.JTextField txtEmail;
+    private javax.swing.JTextField txtMkCu;
+    private javax.swing.JTextField txtMkMoi;
     private javax.swing.JTextField txtPhone;
-    private javax.swing.JTextField txtVaiTro;
+    private javax.swing.JTextField txtXacNhanMkMoi;
     // End of variables declaration//GEN-END:variables
 }

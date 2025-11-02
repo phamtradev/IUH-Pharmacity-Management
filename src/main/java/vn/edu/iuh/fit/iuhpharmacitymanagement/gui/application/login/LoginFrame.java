@@ -5,6 +5,8 @@
 package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.login;
 
 import java.awt.Dimension;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhanVien;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.session.SessionManager;
 
 /**
  *
@@ -21,7 +23,7 @@ public class LoginFrame extends javax.swing.JFrame {
         initComponents();
         setExtendedState(javax.swing.JFrame.MAXIMIZED_BOTH);
         setResizable(true); // Nên để true để người dùng có thể thu nhỏ lại cửa sổ
-        
+
         // Đảm bảo form login được focus khi frame hiển thị
         addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
@@ -72,7 +74,7 @@ public class LoginFrame extends javax.swing.JFrame {
         }
         //</editor-fold>
         /* Create and display the form */
-        java.awt.EventQueue.invokeLater(() -> new LoginFrame().setVisible(true));
+        java.awt.EventQueue.invokeLater(() -> new LoginFrame().setVisible(true));       
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
