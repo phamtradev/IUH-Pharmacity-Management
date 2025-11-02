@@ -40,9 +40,10 @@ public class XuatHoaDonPDF {
      * @param donHang đơn hàng cần xuất
      * @param chiTietDonHangList danh sách chi tiết đơn hàng
      * @param outputPath đường dẫn lưu file PDF
+     * @param khuyenMaiSanPham khuyến mãi sản phẩm (có thể null)
      * @return true nếu xuất thành công, false nếu thất bại
      */
-    public static boolean xuatHoaDon(DonHang donHang, List<ChiTietDonHang> chiTietDonHangList, String outputPath) {
+    public static boolean xuatHoaDon(DonHang donHang, List<ChiTietDonHang> chiTietDonHangList, String outputPath, KhuyenMai khuyenMaiSanPham) {
         try {
             // Tạo thư mục nếu chưa tồn tại
             File file = new File(outputPath);
@@ -99,7 +100,7 @@ public class XuatHoaDonPDF {
             addProductTable(document, font, boldFont, chiTietDonHangList);
             
             // Thông tin thanh toán
-            addPaymentInfo(document, font, boldFont, donHang, chiTietDonHangList);
+            addPaymentInfo(document, font, boldFont, donHang, chiTietDonHangList, khuyenMaiSanPham);
             
             // Footer
             addFooter(document, font);
@@ -120,7 +121,7 @@ public class XuatHoaDonPDF {
      */
     private static void addStoreHeader(Document document, PdfFont boldFont, PdfFont font) {
         // Tên cửa hàng
-        Paragraph storeName = new Paragraph("PHARMACITY")
+        Paragraph storeName = new Paragraph("IUH PHARMACITY")
                 .setFont(boldFont)
                 .setFontSize(20)
                 .setFontColor(HEADER_COLOR)
@@ -276,15 +277,25 @@ public class XuatHoaDonPDF {
     /**
      * Thêm thông tin thanh toán
      */
-    private static void addPaymentInfo(Document document, PdfFont font, PdfFont boldFont, DonHang donHang, List<ChiTietDonHang> chiTietDonHangList) {
-        // Tính tổng tiền hàng và tổng giảm giá
+    private static void addPaymentInfo(Document document, PdfFont font, PdfFont boldFont, DonHang donHang, List<ChiTietDonHang> chiTietDonHangList, KhuyenMai khuyenMaiSanPham) {
+        // Tính tổng tiền hàng và tổng giảm giá sản phẩm
         double tongTienHang = 0;
-        double tongGiamGia = 0;
+        double tongGiamGiaSanPham = 0;
         
         for (ChiTietDonHang chiTiet : chiTietDonHangList) {
             tongTienHang += chiTiet.getDonGia() * chiTiet.getSoLuong();
-            tongGiamGia += chiTiet.getGiamGia();
+            tongGiamGiaSanPham += chiTiet.getGiamGia();
         }
+        
+        // Tính giảm giá đơn hàng
+        double giamGiaHoaDon = 0;
+        KhuyenMai khuyenMaiDonHang = donHang.getKhuyenMai();
+        if (khuyenMaiDonHang != null && khuyenMaiDonHang.getGiamGia() > 0) {
+            giamGiaHoaDon = (tongTienHang - tongGiamGiaSanPham) * khuyenMaiDonHang.getGiamGia() / 100;
+        }
+        
+        // Tổng giảm giá
+        double tongGiamGia = tongGiamGiaSanPham + giamGiaHoaDon;
         
         // Tạo bảng thanh toán (căn phải)
         Table paymentTable = new Table(UnitValue.createPercentArray(new float[]{3, 2}))
@@ -296,27 +307,51 @@ public class XuatHoaDonPDF {
         paymentTable.addCell(createPaymentCell("Tong tien hang:", font, false));
         paymentTable.addCell(createPaymentCell(CURRENCY_FORMAT.format(tongTienHang) + " đ", font, true));
         
-        // Giảm giá sản phẩm (luôn hiển thị)
-        paymentTable.addCell(createPaymentCell("Giam gia san pham:", font, false));
-        if (tongGiamGia > 0) {
-            paymentTable.addCell(createPaymentCell("-" + CURRENCY_FORMAT.format(tongGiamGia) + " đ", font, true));
-        } else {
-            paymentTable.addCell(createPaymentCell("Khong co", font, true));
+        // ========== KHUYẾN MÃI SẢN PHẨM ==========
+        if (tongGiamGiaSanPham > 0 && khuyenMaiSanPham != null) {
+            String tenKMSanPham = khuyenMaiSanPham.getTenKhuyenMai();
+            String labelText = "Giam gia san pham:";
+            if (tenKMSanPham != null && !tenKMSanPham.trim().isEmpty()) {
+                labelText += "\n(" + tenKMSanPham + ")";
+            }
+            
+            paymentTable.addCell(createPaymentCell(labelText, font, false));
+            String giamGiaText = "-" + CURRENCY_FORMAT.format(tongGiamGiaSanPham) + " đ";
+            giamGiaText += " (" + String.format("%.1f", khuyenMaiSanPham.getGiamGia() * 100) + "%)";
+            paymentTable.addCell(createPaymentCell(giamGiaText, font, true));
         }
         
-        // Giảm giá hóa đơn (luôn hiển thị)
-        KhuyenMai khuyenMai = donHang.getKhuyenMai();
-        paymentTable.addCell(createPaymentCell("Giam gia hoa don:", font, false));
-        if (khuyenMai != null && khuyenMai.getGiamGia() > 0) {
-            double giamGiaHoaDon = (tongTienHang - tongGiamGia) * khuyenMai.getGiamGia() / 100;
-            paymentTable.addCell(createPaymentCell("-" + CURRENCY_FORMAT.format(giamGiaHoaDon) + " đ (" + khuyenMai.getGiamGia() + "%)", font, true));
-        } else {
-            paymentTable.addCell(createPaymentCell("Khong co", font, true));
+        // ========== KHUYẾN MÃI ĐƠN HÀNG ==========
+        if (giamGiaHoaDon > 0 && khuyenMaiDonHang != null) {
+            String tenKMDonHang = khuyenMaiDonHang.getTenKhuyenMai();
+            String labelText = "Giam gia hoa don:";
+            if (tenKMDonHang != null && !tenKMDonHang.trim().isEmpty()) {
+                labelText += "\n(" + tenKMDonHang + ")";
+            }
+            
+            paymentTable.addCell(createPaymentCell(labelText, font, false));
+            String giamGiaHDText = "-" + CURRENCY_FORMAT.format(giamGiaHoaDon) + " đ";
+            giamGiaHDText += " (" + String.format("%.1f", khuyenMaiDonHang.getGiamGia() * 100) + "%)";
+            paymentTable.addCell(createPaymentCell(giamGiaHDText, font, true));
         }
+        
+        // ========== TỔNG GIẢM GIÁ ==========
+        if (tongGiamGia > 0) {
+            paymentTable.addCell(createPaymentCell("TONG GIAM GIA:", boldFont, false));
+            paymentTable.addCell(createPaymentCell("-" + CURRENCY_FORMAT.format(tongGiamGia) + " đ", boldFont, true));
+        }
+        
+        // Đường kẻ phân cách
+        Cell separator1 = new Cell(1, 2)
+                .add(new Paragraph(" ").setFontSize(1))
+                .setBorder(Border.NO_BORDER)
+                .setBorderTop(new com.itextpdf.layout.borders.SolidBorder(new DeviceRgb(200, 200, 200), 1))
+                .setPadding(3);
+        paymentTable.addCell(separator1);
         
         // Thành tiền (in đậm, lớn hơn)
         Cell thanhTienLabel = new Cell()
-                .add(new Paragraph("THANH TIEN:").setFont(boldFont).setFontSize(11))
+                .add(new Paragraph("THANH TIEN:").setFont(boldFont).setFontSize(13))
                 .setBorder(Border.NO_BORDER)
                 .setPadding(5)
                 .setTextAlignment(TextAlignment.LEFT);
@@ -325,12 +360,20 @@ public class XuatHoaDonPDF {
         Cell thanhTienValue = new Cell()
                 .add(new Paragraph(CURRENCY_FORMAT.format(donHang.getThanhTien()) + " đ")
                         .setFont(boldFont)
-                        .setFontSize(11)
+                        .setFontSize(13)
                         .setFontColor(HEADER_COLOR))
                 .setBorder(Border.NO_BORDER)
                 .setPadding(5)
                 .setTextAlignment(TextAlignment.RIGHT);
         paymentTable.addCell(thanhTienValue);
+        
+        // Đường kẻ phân cách
+        Cell separator2 = new Cell(1, 2)
+                .add(new Paragraph(" ").setFontSize(1))
+                .setBorder(Border.NO_BORDER)
+                .setBorderTop(new com.itextpdf.layout.borders.SolidBorder(new DeviceRgb(200, 200, 200), 1))
+                .setPadding(3);
+        paymentTable.addCell(separator2);
         
         // Phương thức thanh toán
         paymentTable.addCell(createPaymentCell("Phuong thuc:", font, false));
@@ -392,9 +435,10 @@ public class XuatHoaDonPDF {
      * Xuất hóa đơn tự động vào folder resources/img/hoadonbanhang
      * @param donHang đơn hàng cần xuất
      * @param chiTietDonHangList danh sách chi tiết đơn hàng
+     * @param khuyenMaiSanPham khuyến mãi sản phẩm (có thể null)
      * @return đường dẫn file PDF đã lưu, hoặc null nếu thất bại
      */
-    public static String xuatHoaDonTuDong(DonHang donHang, List<ChiTietDonHang> chiTietDonHangList) {
+    public static String xuatHoaDonTuDong(DonHang donHang, List<ChiTietDonHang> chiTietDonHangList, KhuyenMai khuyenMaiSanPham) {
         try {
             // Lấy đường dẫn tới thư mục resources
             String projectPath = System.getProperty("user.dir");
@@ -411,7 +455,7 @@ public class XuatHoaDonPDF {
             String fullPath = folderPath + "/" + fileName;
             
             // Xuất hóa đơn
-            boolean success = xuatHoaDon(donHang, chiTietDonHangList, fullPath);
+            boolean success = xuatHoaDon(donHang, chiTietDonHangList, fullPath, khuyenMaiSanPham);
             
             return success ? fullPath : null;
             

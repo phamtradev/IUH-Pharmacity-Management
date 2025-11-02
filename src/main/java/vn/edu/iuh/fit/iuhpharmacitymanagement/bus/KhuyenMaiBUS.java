@@ -153,6 +153,9 @@ public class KhuyenMaiBUS {
     public Map<LoaiKhuyenMai, KhuyenMai> timKhuyenMaiApDung(double tongTienHang, Map<SanPham, Integer> danhSachSanPham) {
         List<KhuyenMai> danhSachKhuyenMai = getKhuyenMaiConHan();
         
+        System.out.println("\n====== DEBUG timKhuyenMaiApDung ======");
+        System.out.println("So luong khuyen mai con han: " + danhSachKhuyenMai.size());
+        
         Map<LoaiKhuyenMai, KhuyenMai> ketQua = new java.util.HashMap<>();
         double giamGiaSanPhamLonNhat = 0;
         double giamGiaDonHangLonNhat = 0;
@@ -160,18 +163,43 @@ public class KhuyenMaiBUS {
         KhuyenMai kmDonHangTotNhat = null;
         
         for (KhuyenMai km : danhSachKhuyenMai) {
+            System.out.println("\n- Kiem tra KM: " + km.getTenKhuyenMai() + 
+                             " | Loai: " + km.getLoaiKhuyenMai() + 
+                             " | Giam: " + km.getGiamGia() + "%");
+            
+            // Bỏ qua khuyến mãi có % giảm giá = 0
+            if (km.getGiamGia() <= 0) {
+                System.out.println("  => BO QUA: Giam gia = 0");
+                continue;
+            }
+            
             if (km.getLoaiKhuyenMai() == LoaiKhuyenMai.DON_HANG) {
+                System.out.println("  => Loai DON_HANG | Gia toi thieu: " + km.getGiaToiThieu() + " | Tong tien hang: " + tongTienHang);
                 // Kiểm tra điều kiện giá tối thiểu
                 if (tongTienHang >= km.getGiaToiThieu()) {
                     double giamGia = tongTienHang * (km.getGiamGia() / 100.0);
+                    System.out.println("  => DU DIEU KIEN! Giam gia: " + giamGia);
                     if (giamGia > giamGiaDonHangLonNhat) {
                         giamGiaDonHangLonNhat = giamGia;
                         kmDonHangTotNhat = km;
+                        System.out.println("  => CHON LAM KM DON HANG TOT NHAT!");
                     }
+                } else {
+                    System.out.println("  => KHONG DU DIEU KIEN!");
                 }
             } else if (km.getLoaiKhuyenMai() == LoaiKhuyenMai.SAN_PHAM) {
+                System.out.println("  => Loai SAN_PHAM");
                 // Khuyến mãi sản phẩm: Kiểm tra từng sản phẩm trong giỏ
                 var danhSachCTKM = chiTietKhuyenMaiSanPhamDAO.findByMaKhuyenMai(km.getMaKhuyenMai());
+                
+                System.out.println("  => So luong san pham trong chuong trinh KM: " + (danhSachCTKM != null ? danhSachCTKM.size() : 0));
+                
+                // Bỏ qua nếu không có sản phẩm nào trong chương trình KM
+                if (danhSachCTKM == null || danhSachCTKM.isEmpty()) {
+                    System.out.println("  => BO QUA: Khong co san pham nao trong chuong trinh KM");
+                    continue;
+                }
+                
                 double giamGia = 0;
                 
                 for (var entry : danhSachSanPham.entrySet()) {
@@ -188,20 +216,27 @@ public class KhuyenMaiBUS {
                     }
                 }
                 
+                System.out.println("  => Tong giam gia san pham: " + giamGia);
+                
                 if (giamGia > giamGiaSanPhamLonNhat) {
                     giamGiaSanPhamLonNhat = giamGia;
                     kmSanPhamTotNhat = km;
+                    System.out.println("  => CHON LAM KM SAN PHAM TOT NHAT!");
                 }
             }
         }
         
         // Thêm vào kết quả nếu tìm thấy
+        System.out.println("\n=== KET QUA ===");
         if (kmSanPhamTotNhat != null && giamGiaSanPhamLonNhat > 0) {
+            System.out.println("KM San Pham: " + kmSanPhamTotNhat.getTenKhuyenMai() + " | Giam: " + giamGiaSanPhamLonNhat);
             ketQua.put(LoaiKhuyenMai.SAN_PHAM, kmSanPhamTotNhat);
         }
         if (kmDonHangTotNhat != null && giamGiaDonHangLonNhat > 0) {
+            System.out.println("KM Don Hang: " + kmDonHangTotNhat.getTenKhuyenMai() + " | Giam: " + giamGiaDonHangLonNhat);
             ketQua.put(LoaiKhuyenMai.DON_HANG, kmDonHangTotNhat);
         }
+        System.out.println("===============================\n");
         
         return ketQua;
     }

@@ -556,6 +556,17 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
 
     private void updateBatchQuantity(LoHang loHang, int delta, JTextField txtTonKho) {
         try {
+            // Kiểm tra sản phẩm có đang hoạt động không (chỉ kiểm tra khi TĂNG số lượng)
+            if (delta > 0) {
+                SanPham sanPham = loHang.getSanPham();
+                if (sanPham != null && !sanPham.isHoatDong()) {
+                    Notifications.getInstance().show(Notifications.Type.ERROR,
+                            Notifications.Location.TOP_CENTER,
+                            "Không thể thêm số lượng! Sản phẩm đã ngừng hoạt động");
+                    return;
+                }
+            }
+            
             int currentQuantity = loHang.getTonKho();
             int newQuantity = currentQuantity + delta;
 
@@ -622,6 +633,18 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
             // Nếu giá trị không thay đổi thì không cần cập nhật
             if (newQuantity == loHang.getTonKho()) {
                 return;
+            }
+            
+            // Kiểm tra sản phẩm có đang hoạt động không (CHỈ khi TĂNG số lượng)
+            if (newQuantity > loHang.getTonKho()) {
+                SanPham sanPham = loHang.getSanPham();
+                if (sanPham != null && !sanPham.isHoatDong()) {
+                    Notifications.getInstance().show(Notifications.Type.ERROR,
+                            Notifications.Location.TOP_CENTER,
+                            "Không thể thêm số lượng! Sản phẩm đã ngừng hoạt động");
+                    txtTonKho.setText(String.valueOf(loHang.getTonKho())); // Reset về giá trị cũ
+                    return;
+                }
             }
             
             // Cập nhật vào database
@@ -1043,7 +1066,8 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
             .addComponent(ScrollPaneTab3, javax.swing.GroupLayout.DEFAULT_SIZE, 815, Short.MAX_VALUE)
         );
 
-        tabEdit.addTab("Thông tin số lượng", jPanel11);
+        // Tab "Thông tin số lượng" đã bị xóa - chỉ xem thông tin sản phẩm
+        // tabEdit.addTab("Thông tin số lượng", jPanel11);
 
         javax.swing.GroupLayout modelEditProductLayout = new javax.swing.GroupLayout(modelEditProduct.getContentPane());
         modelEditProduct.getContentPane().setLayout(modelEditProductLayout);

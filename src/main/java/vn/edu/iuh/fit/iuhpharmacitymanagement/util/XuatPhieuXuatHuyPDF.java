@@ -23,7 +23,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /**
- * Class tiện ích để xuất phiếu xuất hủy ra file PDF
+ * 
  * @author PhamTra
  */
 public class XuatPhieuXuatHuyPDF {
@@ -125,7 +125,7 @@ public class XuatPhieuXuatHuyPDF {
      */
     private static void addStoreHeader(Document document, PdfFont boldFont, PdfFont font) {
         // Tên cửa hàng
-        Paragraph storeName = new Paragraph("PHARMACITY")
+        Paragraph storeName = new Paragraph("IUH PHARMACITY")
                 .setFont(boldFont)
                 .setFontSize(20)
                 .setFontColor(HEADER_COLOR)

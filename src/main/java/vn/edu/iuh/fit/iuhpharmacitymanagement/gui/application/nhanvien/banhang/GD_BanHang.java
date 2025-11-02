@@ -57,11 +57,8 @@ public class GD_BanHang extends javax.swing.JPanel {
         panelDonHang = new Panel_DonHang();
         panelDonHang.setGdBanHang(this); // Set reference đến form cha
         
-        // Thêm listener để lắng nghe thay đổi khuyến mãi
-        panelDonHang.addPropertyChangeListener("khuyenMaiChanged", evt -> {
-            // Khi khuyến mãi thay đổi, cập nhật lại tổng tiền
-            capNhatTongTien();
-        });
+        // KHÔNG cần listener cho "khuyenMaiChanged" vì capNhatTongTien() đã gọi tuDongApDungKhuyenMai()
+        // Nếu thêm listener này sẽ gây ra việc tính toán lại không cần thiết
         
         wrapperPanel.add(pnMi, java.awt.BorderLayout.CENTER);
         wrapperPanel.add(panelDonHang, java.awt.BorderLayout.EAST);
@@ -595,6 +592,22 @@ public class GD_BanHang extends javax.swing.JPanel {
                 giamGiaHoaDon = tongTienHang * (kmDonHang.getGiamGia() / 100.0);
             }
         }
+        
+        // DEBUG: In ra console để kiểm tra
+        System.out.println("\n====== DEBUG capNhatTongTien ======");
+        System.out.println("Tong tien hang: " + tongTienHang);
+        System.out.println("Tong giam gia san pham: " + tongGiamGiaSanPham);
+        System.out.println("Giam gia hoa don: " + giamGiaHoaDon);
+        System.out.println("Danh sach khuyen mai da chon:");
+        java.util.Map<vn.edu.iuh.fit.iuhpharmacitymanagement.constant.LoaiKhuyenMai, 
+                       vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhuyenMai> danhSachKMDebug = 
+            panelDonHang.getDanhSachKhuyenMaiDaChon();
+        for (java.util.Map.Entry<vn.edu.iuh.fit.iuhpharmacitymanagement.constant.LoaiKhuyenMai, 
+                                   vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhuyenMai> entry : danhSachKMDebug.entrySet()) {
+            System.out.println("  - " + entry.getKey() + ": " + entry.getValue().getTenKhuyenMai() + 
+                             " (Loai: " + entry.getValue().getLoaiKhuyenMai() + ", Giam: " + entry.getValue().getGiamGia() + "%)");
+        }
+        System.out.println("===================================\n");
         
         // Cập nhật vào Panel_DonHang
         if (panelDonHang != null) {

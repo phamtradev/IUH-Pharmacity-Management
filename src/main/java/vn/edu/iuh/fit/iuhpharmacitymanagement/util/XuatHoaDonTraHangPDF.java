@@ -119,7 +119,7 @@ public class XuatHoaDonTraHangPDF {
      */
     private static void addStoreHeader(Document document, PdfFont boldFont, PdfFont font) {
         // Tên cửa hàng
-        Paragraph storeName = new Paragraph("PHARMACITY")
+        Paragraph storeName = new Paragraph("IUH PHARMACITY")
                 .setFont(boldFont)
                 .setFontSize(20)
                 .setFontColor(HEADER_COLOR)
