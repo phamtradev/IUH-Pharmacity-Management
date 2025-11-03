@@ -26,6 +26,8 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
     private List<LoHang> danhSachLoHang;
     private double cachedTongTien = 0; // Cache giá trị tổng tiền để detect thay đổi
     private javax.swing.JPanel containerLoHang; // Container chứa nhiều lô (hiển thị dọc)
+    private javax.swing.JScrollPane scrollPaneLoHang; // ScrollPane để kiểm soát scrollbar
+    private boolean daThongBaoCongDon = false; // Flag để tracking đã thông báo cộng dồn chưa
 
     public Panel_ChiTietSanPham() {
         this.currencyFormat = new DecimalFormat("#,###");
@@ -37,6 +39,7 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
         this.sanPham = sanPham;
         this.currencyFormat = new DecimalFormat("#,###");
         this.loHangBUS = new LoHangBUS();
+        this.daThongBaoCongDon = false; // Reset flag khi chọn sản phẩm mới
         initComponents();
         loadSanPhamData();
         loadLoHangData();
@@ -256,6 +259,31 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
         // Phân bổ số lượng vào các lô
         java.util.Map<LoHang, Integer> mapLoHangVaSoLuong = phanBoLoHang(soLuongYeuCau);
         
+        // Thông báo khi cộng dồn vào lô thứ 2 trở đi (chỉ thông báo 1 lần)
+        if (mapLoHangVaSoLuong.size() >= 2 && !daThongBaoCongDon) {
+            // Tạo thông báo chi tiết về các lô được sử dụng
+            StringBuilder message = new StringBuilder("📦 Đang lấy hàng từ " + mapLoHangVaSoLuong.size() + " lô:\n");
+            int index = 1;
+            for (java.util.Map.Entry<LoHang, Integer> entry : mapLoHangVaSoLuong.entrySet()) {
+                LoHang loHang = entry.getKey();
+                int soLuongLay = entry.getValue();
+                message.append(String.format("  Lô %d: %d %s (HSD: %s)\n", 
+                    index++, 
+                    soLuongLay, 
+                    donViTinh,
+                    loHang.getHanSuDung()));
+            }
+            
+            raven.toast.Notifications.getInstance().show(
+                raven.toast.Notifications.Type.INFO,
+                raven.toast.Notifications.Location.TOP_CENTER,
+                message.toString()
+            );
+            
+            // Đánh dấu đã thông báo
+            daThongBaoCongDon = true;
+        }
+        
         // Cập nhật hiển thị
         capNhatHienThiLoHang(mapLoHangVaSoLuong);
     }
@@ -310,6 +338,13 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
         }
         
         System.out.println("   → Container có " + containerLoHang.getComponentCount() + " panels");
+        
+        // Kiểm soát scrollbar: chỉ hiển thị khi có >= 2 lô
+        if (mapLoHangVaSoLuong.size() >= 2) {
+            scrollPaneLoHang.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+        } else {
+            scrollPaneLoHang.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+        }
         
         // Cập nhật UI
         containerLoHang.revalidate();
@@ -546,8 +581,8 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
         lblTenSP = new javax.swing.JLabel();
         lblTenSP.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         lblTenSP.setText("");
-        lblTenSP.setPreferredSize(new java.awt.Dimension(180, 80));
-        lblTenSP.setMinimumSize(new java.awt.Dimension(180, 80));
+        lblTenSP.setPreferredSize(new java.awt.Dimension(180, 100));
+        lblTenSP.setMinimumSize(new java.awt.Dimension(180, 100));
         lblTenSP.setVerticalAlignment(javax.swing.SwingConstants.TOP);
         gbc.gridx = 1;
         gbc.weightx = 1.0;
@@ -563,11 +598,11 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
         containerLoHang.add(panelChonLo);
         
         // Wrap container trong JScrollPane để có thể cuộn khi có nhiều lô
-        javax.swing.JScrollPane scrollPaneLoHang = new javax.swing.JScrollPane(containerLoHang);
-        scrollPaneLoHang.setPreferredSize(new java.awt.Dimension(170, 250)); // 170px (150 + scrollbar), cao 250px
+        scrollPaneLoHang = new javax.swing.JScrollPane(containerLoHang);
+        scrollPaneLoHang.setPreferredSize(new java.awt.Dimension(170, 80)); // 170px (150 + scrollbar), cao 80px
         scrollPaneLoHang.setMinimumSize(new java.awt.Dimension(170, 80));
         scrollPaneLoHang.setBorder(javax.swing.BorderFactory.createEmptyBorder()); // Bỏ viền
-        scrollPaneLoHang.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scrollPaneLoHang.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER); // Ẩn ban đầu
         scrollPaneLoHang.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         scrollPaneLoHang.getVerticalScrollBar().setUnitIncrement(10); // Cuộn mượt hơn
         
