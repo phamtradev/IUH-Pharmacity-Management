@@ -13,6 +13,8 @@ public class Panel_ChiTietSanPhamTraHang extends javax.swing.JPanel {
 
     private String lyDoTraHang = "";
     private PanelDeleteListener deleteListener;
+    private int soLuongToiDa = 1000; // Số lượng tối đa đã mua
+    private boolean isResettingValue = false; // Flag để tránh vòng lặp validation
 
     public Panel_ChiTietSanPhamTraHang() {
         initComponents();
@@ -33,7 +35,28 @@ public class Panel_ChiTietSanPhamTraHang extends javax.swing.JPanel {
     }
 
     public void setSoLuongTra(int soLuong) {
-        spinnerSoLuongTra.setValue(soLuong);
+        // Kiểm tra số lượng không vượt quá số lượng tối đa
+        if (soLuong > soLuongToiDa) {
+            System.out.println("WARN setSoLuongTra: Số lượng " + soLuong + " vượt quá tối đa " + soLuongToiDa + ", tự động điều chỉnh");
+            spinnerSoLuongTra.setValue(soLuongToiDa);
+        } else {
+            spinnerSoLuongTra.setValue(soLuong);
+        }
+    }
+    
+    public int getSoLuongToiDa() {
+        return soLuongToiDa;
+    }
+    
+    public void setSoLuongToiDa(int soLuong) {
+        this.soLuongToiDa = soLuong;
+        System.out.println("DEBUG setSoLuongToiDa: Đã set số lượng tối đa = " + soLuong);
+        // Lấy giá trị hiện tại của spinner
+        int currentValue = (int) spinnerSoLuongTra.getValue();
+        // Cập nhật model của spinner với giới hạn RẤT LỚN (Integer.MAX_VALUE)
+        // để KHÔNG tự động chặn, mà để listener xử lý validation
+        int newValue = Math.min(currentValue, soLuong);
+        spinnerSoLuongTra.setModel(new javax.swing.SpinnerNumberModel(newValue, 1, Integer.MAX_VALUE, 1));
     }
 
     public String getTenSanPham() {
@@ -177,15 +200,16 @@ public class Panel_ChiTietSanPhamTraHang extends javax.swing.JPanel {
         gbc.weightx = 0.0;
         add(lblDonVi, gbc);
 
-        // 4. Số lượng (Spinner) - Cột riêng - KHÔNG CHO CHỈNH SỬA
+        // 4. Số lượng (Spinner) - Cột riêng - Có thể chỉnh sửa
         javax.swing.JPanel pnSpinner = new javax.swing.JPanel();
         pnSpinner.setBackground(java.awt.Color.WHITE);
         pnSpinner.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 22));
         spinnerSoLuongTra = new javax.swing.JSpinner();
         spinnerSoLuongTra.setFont(new java.awt.Font("Segoe UI", 0, 14));
-        spinnerSoLuongTra.setModel(new javax.swing.SpinnerNumberModel(1, 1, 1000, 1));
+        // Set max = Integer.MAX_VALUE để không tự động chặn, để listener xử lý validation
+        spinnerSoLuongTra.setModel(new javax.swing.SpinnerNumberModel(1, 1, Integer.MAX_VALUE, 1));
         spinnerSoLuongTra.setPreferredSize(new java.awt.Dimension(60, 35));
-        spinnerSoLuongTra.setEnabled(false); // Không cho chỉnh sửa số lượng
+        spinnerSoLuongTra.setEnabled(true); // Cho phép chỉnh sửa số lượng
         spinnerSoLuongTra.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 spinnerSoLuongTraStateChanged(evt);
@@ -298,6 +322,36 @@ public class Panel_ChiTietSanPhamTraHang extends javax.swing.JPanel {
     }//GEN-LAST:event_btnXoaActionPerformed
 
     private void spinnerSoLuongTraStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_spinnerSoLuongTraStateChanged
+        // Nếu đang trong quá trình reset value, bỏ qua validation
+        if (isResettingValue) {
+            System.out.println("DEBUG: Đang reset value, bỏ qua validation");
+            return;
+        }
+        
+        // Kiểm tra số lượng trả không vượt quá số lượng đã mua
+        int soLuongNhap = (int) spinnerSoLuongTra.getValue();
+        
+        System.out.println("DEBUG spinnerStateChanged: Số lượng nhập = " + soLuongNhap + ", Tối đa = " + soLuongToiDa);
+        
+        if (soLuongNhap > soLuongToiDa) {
+            // Hiển thị thông báo lỗi
+            raven.toast.Notifications.getInstance().show(
+                raven.toast.Notifications.Type.ERROR,
+                raven.toast.Notifications.Location.TOP_CENTER,
+                3000,
+                "Số lượng trả (" + soLuongNhap + ") không được lớn hơn số lượng đã mua (" + soLuongToiDa + ")"
+            );
+            
+            System.out.println("DEBUG: Đang reset spinner về " + soLuongToiDa);
+            
+            // Reset về số lượng tối đa
+            isResettingValue = true; // Đánh dấu đang reset
+            spinnerSoLuongTra.setValue(soLuongToiDa);
+            isResettingValue = false; // Hoàn tất reset
+            updateTongTienTra();
+            return;
+        }
+        
         // Tính lại tổng tiền trả khi thay đổi số lượng
         updateTongTienTra();
     }//GEN-LAST:event_spinnerSoLuongTraStateChanged
