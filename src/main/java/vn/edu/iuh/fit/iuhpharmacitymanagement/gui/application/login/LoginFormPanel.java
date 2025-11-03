@@ -46,6 +46,8 @@ public class LoginFormPanel extends javax.swing.JPanel {
         removePlayhoder(txtTenDangNhap);
         removePlayhoder(txtMatKhau);
         txtMatKhau.setEchoChar('\u2022');
+        
+        
         backgroundImage = new ImageIcon(getClass().getResource("/img/LoginImage.png")).getImage();
         setOpaque(false); // Đảm bảo panel cho phép hiển thị ảnh nền
         contentPanel.setOpaque(true);
@@ -63,7 +65,7 @@ public class LoginFormPanel extends javax.swing.JPanel {
         //txtMatKhau.putClientProperty(FlatClientProperties.TEXT_FIELD_LEADING_ICON, new com.formdev.flatlaf.extras.FlatSVGIcon("img/password_icon.svg"));
         //txtTenDangNhap.setText("Tên đăng nhập");
         //txtMatKhau.setText("Nhập mật khẩu");
-        txtMatKhau.setEchoChar((char) 0);
+//        txtMatKhau.setEchoChar((char) 0);
         contentPanel.setFocusable(true);
         contentPanel.requestFocusInWindow();
         addPlayhoder(txtTenDangNhap);
