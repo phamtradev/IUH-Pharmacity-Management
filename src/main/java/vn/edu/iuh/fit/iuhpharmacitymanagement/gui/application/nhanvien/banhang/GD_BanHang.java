@@ -753,9 +753,15 @@ public class GD_BanHang extends javax.swing.JPanel {
     }
 
     private void btnXoaActionPerformed(java.awt.event.ActionEvent evt) {
-        // Xóa nội dung text field và đặt focus
+        // Xóa nội dung text field
         txtTimSanPham.setText("");
+        
+        // Xóa toàn bộ sản phẩm trong giỏ hàng
+        xoaToanBoGioHang();
+        
+        // Đặt focus vào text field
         txtTimSanPham.requestFocus();
+        
         Notifications.getInstance().show(Notifications.Type.SUCCESS, "Đã xóa trắng thành công !");
     }
     
