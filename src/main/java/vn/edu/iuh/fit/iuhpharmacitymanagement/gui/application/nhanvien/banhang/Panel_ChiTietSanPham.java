@@ -25,6 +25,7 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
     private Panel_ChonLo panelChonLo;
     private List<LoHang> danhSachLoHang;
     private double cachedTongTien = 0; // Cache giá trị tổng tiền để detect thay đổi
+    private javax.swing.JPanel containerLoHang; // Container chứa nhiều lô (hiển thị dọc)
 
     public Panel_ChiTietSanPham() {
         this.currencyFormat = new DecimalFormat("#,###");
@@ -155,7 +156,7 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
             // Lấy danh sách lô hàng của sản phẩm
             danhSachLoHang = loHangBUS.getLoHangBySanPham(sanPham);
             
-            // Nếu có lô hàng, hiển thị lô đầu tiên (hoặc lô có tồn kho lớn nhất)
+            // Nếu có lô hàng, hiển thị lô đầu tiên
             if (!danhSachLoHang.isEmpty()) {
                 // Tìm lô có tồn kho > 0 và còn hạn sử dụng (ưu tiên FIFO - HSD gần nhất)
                 LoHang loHangHopLe = danhSachLoHang.stream()
@@ -164,18 +165,67 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
                     .findFirst()
                     .orElse(danhSachLoHang.get(0)); // Nếu không có lô hợp lệ, lấy lô đầu tiên
                 
-                // Cập nhật panel chọn lô
-                if (panelChonLo != null) {
-                    panelChonLo.setLoHang(loHangHopLe);
-                }
+                // Cập nhật hiển thị lô đầu tiên vào container
+                containerLoHang.removeAll();
+                panelChonLo = new Panel_ChonLo();
+                panelChonLo.setLoHang(loHangHopLe);
+                containerLoHang.add(panelChonLo);
+                containerLoHang.revalidate();
+                containerLoHang.repaint();
             }
         }
     }
     
     /**
+     * Tính tổng tồn kho của tất cả các lô còn hiệu lực
+     * @return tổng tồn kho
+     */
+    private int tinhTongTonKho() {
+        if (danhSachLoHang == null || danhSachLoHang.isEmpty()) {
+            return 0;
+        }
+        
+        return danhSachLoHang.stream()
+            .filter(lh -> lh.getTonKho() > 0 && lh.isTrangThai())
+            .mapToInt(LoHang::getTonKho)
+            .sum();
+    }
+    
+    /**
+     * Phân bổ số lượng yêu cầu vào các lô hàng (theo FIFO)
+     * @param soLuongYeuCau số lượng cần
+     * @return Map<LoHang, Integer> - Map lô hàng và số lượng lấy từ lô đó
+     */
+    private java.util.Map<LoHang, Integer> phanBoLoHang(int soLuongYeuCau) {
+        java.util.Map<LoHang, Integer> mapLoHangVaSoLuong = new java.util.LinkedHashMap<>();
+        
+        if (danhSachLoHang == null || danhSachLoHang.isEmpty()) {
+            return mapLoHangVaSoLuong;
+        }
+        
+        // Lấy danh sách lô hợp lệ và sắp xếp theo FIFO
+        List<LoHang> danhSachLoHopLe = danhSachLoHang.stream()
+            .filter(lh -> lh.getTonKho() > 0 && lh.isTrangThai())
+            .sorted((lh1, lh2) -> lh1.getHanSuDung().compareTo(lh2.getHanSuDung()))
+            .collect(java.util.stream.Collectors.toList());
+        
+        int soLuongConLai = soLuongYeuCau;
+        
+        for (LoHang loHang : danhSachLoHopLe) {
+            if (soLuongConLai <= 0) break;
+            
+            int soLuongLay = Math.min(loHang.getTonKho(), soLuongConLai);
+            mapLoHangVaSoLuong.put(loHang, soLuongLay);
+            soLuongConLai -= soLuongLay;
+        }
+        
+        return mapLoHangVaSoLuong;
+    }
+    
+    /**
      * Tìm lô phù hợp với số lượng yêu cầu
-     * Ưu tiên tìm lô có tồn kho >= số lượng yêu cầu
-     * Nếu không có, giữ nguyên lô hiện tại
+     * - Nếu số lượng <= tổng tồn kho: Hiển thị các lô cần lấy
+     * - Nếu số lượng > tổng tồn kho: Báo lỗi
      * @param soLuongYeuCau số lượng cần
      */
     private void timVaChuyenLoPhiHop(int soLuongYeuCau) {
@@ -183,69 +233,148 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
             return;
         }
         
-        // Lấy lô hiện tại
-        LoHang loHienTai = getLoHangDaChon();
-        if (loHienTai == null) {
+        // Tính tổng tồn kho
+        int tongTonKho = tinhTongTonKho();
+        String donViTinh = sanPham.getDonViTinh() != null ? 
+            sanPham.getDonViTinh().getTenDonVi() : "sản phẩm";
+        
+        // Kiểm tra xem số lượng yêu cầu có vượt quá tổng tồn kho không
+        if (soLuongYeuCau > tongTonKho) {
+            // Báo lỗi
+            raven.toast.Notifications.getInstance().show(
+                raven.toast.Notifications.Type.ERROR,
+                raven.toast.Notifications.Location.TOP_CENTER,
+                "❌ Không đủ hàng! Sản phẩm '" + sanPham.getTenSanPham() + 
+                "' chỉ còn " + tongTonKho + " " + donViTinh + " trong kho."
+            );
+            
+            // Reset về tổng tồn kho
+            spinnerSoLuong.setValue(tongTonKho);
             return;
         }
         
-        // Nếu lô hiện tại đủ số lượng → không cần chuyển
-        if (loHienTai.getTonKho() >= soLuongYeuCau) {
+        // Phân bổ số lượng vào các lô
+        java.util.Map<LoHang, Integer> mapLoHangVaSoLuong = phanBoLoHang(soLuongYeuCau);
+        
+        // Cập nhật hiển thị
+        capNhatHienThiLoHang(mapLoHangVaSoLuong);
+    }
+    
+    /**
+     * Cập nhật hiển thị các lô hàng dựa trên map phân bổ
+     * @param mapLoHangVaSoLuong Map<LoHang, Integer> - Map lô hàng và số lượng lấy
+     */
+    private void capNhatHienThiLoHang(java.util.Map<LoHang, Integer> mapLoHangVaSoLuong) {
+        if (mapLoHangVaSoLuong == null || mapLoHangVaSoLuong.isEmpty()) {
             return;
         }
         
-        // Tìm lô khác có tồn kho >= số lượng yêu cầu (ưu tiên FIFO - HSD gần nhất)
-        LoHang loPhiHop = danhSachLoHang.stream()
-            .filter(lh -> lh.getTonKho() > 0 && lh.isTrangThai())
-            .filter(lh -> lh.getTonKho() >= soLuongYeuCau)
-            .sorted((lh1, lh2) -> lh1.getHanSuDung().compareTo(lh2.getHanSuDung()))
-            .findFirst()
-            .orElse(null);
+        // Xóa tất cả Panel_ChonLo cũ trong container
+        containerLoHang.removeAll();
         
-        // Nếu tìm thấy lô phù hợp và khác với lô hiện tại
-        if (loPhiHop != null && !loPhiHop.getMaLoHang().equals(loHienTai.getMaLoHang())) {
-            // Chuyển sang lô mới
-            if (panelChonLo != null) {
-                panelChonLo.setLoHang(loPhiHop);
+        System.out.println("🔍 [Panel_ChiTietSanPham] Cập nhật hiển thị " + mapLoHangVaSoLuong.size() + " lô:");
+        
+        // Thêm các Panel_ChonLo cho mỗi lô trong map
+        for (java.util.Map.Entry<LoHang, Integer> entry : mapLoHangVaSoLuong.entrySet()) {
+            LoHang loHang = entry.getKey();
+            int soLuongLay = entry.getValue();
+            
+            // DEBUG
+            System.out.println("   - Lô " + loHang.getMaLoHang() + ": Lấy " + soLuongLay + "/" + loHang.getTonKho());
+            
+            Panel_ChonLo panel = new Panel_ChonLo();
+            panel.setLoHang(loHang);
+            
+            // Nếu có nhiều lô, hiển thị số lượng lấy
+            if (mapLoHangVaSoLuong.size() > 1) {
+                panel.hienThiSoLuongLay(soLuongLay);
             }
             
-            // Thông báo cho người dùng
-            String donViTinh = sanPham.getDonViTinh() != null ? 
-                sanPham.getDonViTinh().getTenDonVi() : "sản phẩm";
-            raven.toast.Notifications.getInstance().show(
-                raven.toast.Notifications.Type.INFO,
-                raven.toast.Notifications.Location.TOP_CENTER,
-                "🔄 Đã chuyển sang lô '" + loPhiHop.getMaLoHang() + "' (Còn " + 
-                loPhiHop.getTonKho() + " " + donViTinh + ")"
-            );
-        } else if (loPhiHop == null) {
-            // Không có lô nào đủ số lượng → cảnh báo
-            int tongTonKho = danhSachLoHang.stream()
-                .filter(lh -> lh.getTonKho() > 0 && lh.isTrangThai())
-                .mapToInt(LoHang::getTonKho)
-                .sum();
+            // Thêm tooltip hiển thị số lượng lấy
+            panel.setToolTipText(String.format("Lấy %d/%d từ lô %s (HSD: %s)", 
+                soLuongLay, 
+                loHang.getTonKho(),
+                loHang.getMaLoHang(),
+                loHang.getHanSuDung()));
             
-            String donViTinh = sanPham.getDonViTinh() != null ? 
-                sanPham.getDonViTinh().getTenDonVi() : "sản phẩm";
+            // Đặt kích thước cố định cho panel để căn chỉnh đều
+            panel.setMaximumSize(new java.awt.Dimension(150, 80));
+            panel.setPreferredSize(new java.awt.Dimension(150, 80));
             
-            raven.toast.Notifications.getInstance().show(
-                raven.toast.Notifications.Type.WARNING,
-                raven.toast.Notifications.Location.TOP_CENTER,
-                "⚠️ Không có lô nào đủ " + soLuongYeuCau + " " + donViTinh + 
-                ". Tổng tồn kho: " + tongTonKho
-            );
+            containerLoHang.add(panel);
+            
+            // Thêm khoảng cách 5px giữa các lô (nếu không phải lô cuối)
+            if (mapLoHangVaSoLuong.size() > 1) {
+                containerLoHang.add(javax.swing.Box.createRigidArea(new java.awt.Dimension(0, 5)));
+            }
         }
+        
+        System.out.println("   → Container có " + containerLoHang.getComponentCount() + " panels");
+        
+        // Cập nhật UI
+        containerLoHang.revalidate();
+        containerLoHang.repaint();
+        
+        // Cập nhật panel chính
+        this.revalidate();
+        this.repaint();
     }
     
     public List<LoHang> getDanhSachLoHang() {
         return danhSachLoHang;
     }
     
+    /**
+     * Lấy lô hàng đã chọn (lô đầu tiên nếu có nhiều lô)
+     * @return LoHang đầu tiên trong container
+     */
     public LoHang getLoHangDaChon() {
-        if (panelChonLo != null) {
-            return panelChonLo.getLoHang();
+        if (containerLoHang != null && containerLoHang.getComponentCount() > 0) {
+            java.awt.Component firstComponent = containerLoHang.getComponent(0);
+            if (firstComponent instanceof Panel_ChonLo) {
+                return ((Panel_ChonLo) firstComponent).getLoHang();
+            }
         }
         return null;
+    }
+    
+    /**
+     * Lấy map phân bổ lô hàng và số lượng (dùng khi thanh toán)
+     * @return Map<LoHang, Integer> - Map lô hàng và số lượng lấy từ lô đó
+     */
+    public java.util.Map<LoHang, Integer> getMapLoHangVaSoLuong() {
+        java.util.Map<LoHang, Integer> map = new java.util.LinkedHashMap<>();
+        
+        if (containerLoHang != null) {
+            for (java.awt.Component component : containerLoHang.getComponents()) {
+                if (component instanceof Panel_ChonLo) {
+                    Panel_ChonLo panel = (Panel_ChonLo) component;
+                    LoHang loHang = panel.getLoHang();
+                    
+                    if (loHang != null) {
+                        // Parse số lượng từ tooltip hoặc tính lại
+                        String tooltip = panel.getToolTipText();
+                        if (tooltip != null && tooltip.startsWith("Lấy ")) {
+                            try {
+                                // Parse "Lấy 50/100 từ lô..."
+                                String[] parts = tooltip.split(" ");
+                                String[] numbers = parts[1].split("/");
+                                int soLuongLay = Integer.parseInt(numbers[0]);
+                                map.put(loHang, soLuongLay);
+                            } catch (Exception e) {
+                                // Nếu parse lỗi, mặc định lấy tất cả từ lô này
+                                map.put(loHang, loHang.getTonKho());
+                            }
+                        } else {
+                            // Không có tooltip, nghĩa là chỉ có 1 lô
+                            map.put(loHang, getSoLuong());
+                        }
+                    }
+                }
+            }
+        }
+        
+        return map;
     }
     
     /**
@@ -424,11 +553,27 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
         gbc.weightx = 1.0;
         add(lblTenSP, gbc);
 
-        // 3. Panel chọn lô
+        // 3. Container chứa các Panel_ChonLo (hiển thị dọc khi có nhiều lô)
+        containerLoHang = new javax.swing.JPanel();
+        containerLoHang.setBackground(java.awt.Color.WHITE);
+        containerLoHang.setLayout(new javax.swing.BoxLayout(containerLoHang, javax.swing.BoxLayout.Y_AXIS));
+        
+        // Thêm Panel_ChonLo mặc định vào container
         panelChonLo = new Panel_ChonLo();
+        containerLoHang.add(panelChonLo);
+        
+        // Wrap container trong JScrollPane để có thể cuộn khi có nhiều lô
+        javax.swing.JScrollPane scrollPaneLoHang = new javax.swing.JScrollPane(containerLoHang);
+        scrollPaneLoHang.setPreferredSize(new java.awt.Dimension(170, 250)); // 170px (150 + scrollbar), cao 250px
+        scrollPaneLoHang.setMinimumSize(new java.awt.Dimension(170, 80));
+        scrollPaneLoHang.setBorder(javax.swing.BorderFactory.createEmptyBorder()); // Bỏ viền
+        scrollPaneLoHang.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scrollPaneLoHang.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollPaneLoHang.getVerticalScrollBar().setUnitIncrement(10); // Cuộn mượt hơn
+        
         gbc.gridx = 2;
         gbc.weightx = 0.0;
-        add(panelChonLo, gbc);
+        add(scrollPaneLoHang, gbc);
 
         // 4. Số lượng với nút +/- - Cột riêng
         javax.swing.JPanel pnSpinner = new javax.swing.JPanel();
