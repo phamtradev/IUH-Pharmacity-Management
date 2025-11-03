@@ -41,6 +41,11 @@ public class LoginFormPanel extends javax.swing.JPanel {
 
     public LoginFormPanel() {
         initComponents();
+        txtTenDangNhap.setText("nv00001");
+        txtMatKhau.setText("nv@00001");
+        removePlayhoder(txtTenDangNhap);
+        removePlayhoder(txtMatKhau);
+        txtMatKhau.setEchoChar('\u2022');
         backgroundImage = new ImageIcon(getClass().getResource("/img/LoginImage.png")).getImage();
         setOpaque(false); // Đảm bảo panel cho phép hiển thị ảnh nền
         contentPanel.setOpaque(true);
