@@ -417,9 +417,9 @@ public class GD_BanHang extends javax.swing.JPanel {
         // FIFO: Lọc + Sắp xếp theo HẠN SỬ DỤNG TĂNG DẦN (hết hạn sớm nhất → bán trước)
         java.util.List<vn.edu.iuh.fit.iuhpharmacitymanagement.entity.LoHang> danhSachLoHangFIFO = 
             danhSachLoHangGoc.stream()
-                .filter(lh -> lh.getTonKho() > 0 && lh.isTrangThai()) // ① Lọc: Còn hàng + Còn hạn
+                .filter(lh -> lh.getTonKho() > 0 && lh.isTrangThai()) // Lọc: Còn hàng + Còn hạn
                 .sorted(java.util.Comparator.comparing(
-                    vn.edu.iuh.fit.iuhpharmacitymanagement.entity.LoHang::getHanSuDung)) // ② FIFO: Sắp xếp
+                    vn.edu.iuh.fit.iuhpharmacitymanagement.entity.LoHang::getHanSuDung)) // FIFO: Sắp xếp
                 .collect(java.util.stream.Collectors.toList());
         
         // Tính tổng tồn kho từ các lô FIFO

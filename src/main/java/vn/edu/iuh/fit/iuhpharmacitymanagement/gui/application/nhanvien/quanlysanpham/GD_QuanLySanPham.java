@@ -328,8 +328,10 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         // Lấy danh sách lô hàng của sản phẩm
         List<LoHang> danhSachLoHang = loHangDAO.findByMaSanPham(productEdit);
 
-        // Tính tổng tồn kho
+        // Tính tổng tồn kho (CHỈ TÍNH LÔ CÒN HẠN - HSD > hôm nay + 6 tháng)
+        LocalDate ngayGioiHan = LocalDate.now().plusMonths(6);
         int tongTonKho = danhSachLoHang.stream()
+                .filter(lh -> lh.getHanSuDung().isAfter(ngayGioiHan)) // Lọc lô còn hạn (HSD > ngày giới hạn)
                 .mapToInt(LoHang::getTonKho)
                 .sum();
 
@@ -682,9 +684,11 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
     }
 
     private void updateTotalQuantityTextField(String maSanPham) {
-        // Tính tổng tồn kho từ tất cả các lô hàng
+        // Tính tổng tồn kho (CHỈ TÍNH LÔ CÒN HẠN - HSD > hôm nay + 6 tháng)
         List<LoHang> danhSachLoHang = loHangDAO.findByMaSanPham(maSanPham);
+        LocalDate ngayGioiHan = LocalDate.now().plusMonths(6);
         int tongTonKho = danhSachLoHang.stream()
+                .filter(lh -> lh.getHanSuDung().isAfter(ngayGioiHan)) // Lọc lô còn hạn (HSD > ngày giới hạn)
                 .mapToInt(LoHang::getTonKho)
                 .sum();
 
@@ -695,9 +699,11 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
     }
 
     private void updateProductTotalQuantityInTable(String maSanPham) {
-        // Tính tổng tồn kho từ tất cả các lô hàng
+        // Tính tổng tồn kho (CHỈ TÍNH LÔ CÒN HẠN - HSD > hôm nay + 6 tháng)
         List<LoHang> danhSachLoHang = loHangDAO.findByMaSanPham(maSanPham);
+        LocalDate ngayGioiHan = LocalDate.now().plusMonths(6);
         int tongTonKho = danhSachLoHang.stream()
+                .filter(lh -> lh.getHanSuDung().isAfter(ngayGioiHan)) // Lọc lô còn hạn (HSD > ngày giới hạn)
                 .mapToInt(LoHang::getTonKho)
                 .sum();
 
@@ -1742,13 +1748,21 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
             addDetailRow(infoPanel, "Đơn vị tính:", sp.getDonViTinh().getTenDonVi());
         }
         
-        // Tính tổng tồn kho từ các lô hàng
+        // Tính tổng tồn kho (CHỈ TÍNH LÔ CÒN HẠN - HSD > hôm nay + 6 tháng)
         List<LoHang> danhSachLoHang = loHangDAO.findByMaSanPham(sp.getMaSanPham());
+        LocalDate ngayGioiHan = LocalDate.now().plusMonths(6);
         int tongTonKho = danhSachLoHang.stream()
+                .filter(lh -> lh.getHanSuDung().isAfter(ngayGioiHan)) // Lọc lô còn hạn (HSD > ngày giới hạn)
                 .mapToInt(LoHang::getTonKho)
                 .sum();
+        
+        // Đếm số lượng lô hàng CÒN HẠN
+        long soLuongLoHangConHan = danhSachLoHang.stream()
+                .filter(lh -> lh.getHanSuDung().isAfter(ngayGioiHan)) // Chỉ đếm lô còn hạn (HSD > ngày giới hạn)
+                .count();
+        
         addDetailRow(infoPanel, "Tổng tồn kho:", String.valueOf(tongTonKho));
-        addDetailRow(infoPanel, "Số lượng lô hàng:", String.valueOf(danhSachLoHang.size()));
+        addDetailRow(infoPanel, "Số lượng lô hàng:", String.valueOf(soLuongLoHangConHan));
         
         // Panel bên phải - Hình ảnh sản phẩm
         JPanel imagePanel = new JPanel();

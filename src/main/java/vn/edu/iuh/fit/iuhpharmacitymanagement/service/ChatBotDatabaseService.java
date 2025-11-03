@@ -68,13 +68,14 @@ public class ChatBotDatabaseService {
             for (SanPham sp : danhSachSP) {
                 List<LoHang> danhSachLoHang = loHangDAO.findByMaSanPham(sp.getMaSanPham());
                 
-                // Đếm số lô hàng còn hoạt động
+                // Đếm số lô hàng còn hạn (HSD > hôm nay + 6 tháng)
+                java.time.LocalDate ngayGioiHan = java.time.LocalDate.now().plusMonths(6);
                 long soLoHangHoatDong = danhSachLoHang.stream()
-                        .filter(LoHang::isTrangThai)
+                        .filter(lh -> lh.getHanSuDung().isAfter(ngayGioiHan))
                         .count();
                 
                 int tongTonKho = danhSachLoHang.stream()
-                        .filter(LoHang::isTrangThai) // Chỉ tính lô hàng còn hoạt động
+                        .filter(lh -> lh.getHanSuDung().isAfter(ngayGioiHan)) // Chỉ tính lô còn hạn (HSD > ngày giới hạn)
                         .mapToInt(LoHang::getTonKho)
                         .sum();
                 
@@ -92,7 +93,7 @@ public class ChatBotDatabaseService {
                 if (!danhSachLoHang.isEmpty() && soLoHangHoatDong > 0) {
                     result.append("   - Chi tiết các lô hàng:\n");
                     for (LoHang lh : danhSachLoHang) {
-                        if (lh.isTrangThai()) {
+                        if (lh.getHanSuDung().isAfter(ngayGioiHan)) {
                             result.append("     • ").append(lh.getTenLoHang())
                                   .append(": ").append(lh.getTonKho())
                                   .append(" (HSD: ").append(lh.getHanSuDung()).append(")\n");
@@ -127,9 +128,10 @@ public class ChatBotDatabaseService {
             for (SanPham sp : danhSachSP) {
                 List<LoHang> danhSachLoHang = loHangDAO.findByMaSanPham(sp.getMaSanPham());
                 
-                // Đếm số lô hàng còn hoạt động
-                long soLoHangHoatDong = danhSachLoHang.stream()
-                        .filter(LoHang::isTrangThai)
+                // Đếm số lô hàng còn hạn (HSD > hôm nay + 6 tháng)
+                java.time.LocalDate ngayGioiHan = java.time.LocalDate.now().plusMonths(6);
+                long soLoHangConHan = danhSachLoHang.stream()
+                        .filter(lh -> lh.getHanSuDung().isAfter(ngayGioiHan))
                         .count();
                 
                 // Đếm tổng số lô hàng (cả hoạt động và không hoạt động)
@@ -138,10 +140,10 @@ public class ChatBotDatabaseService {
                 result.append("🔹 ").append(sp.getTenSanPham()).append("\n");
                 result.append("   - Mã SP: ").append(sp.getMaSanPham()).append("\n");
                 result.append("   - Tổng số lô hàng: ").append(tongSoLoHang).append(" lô\n");
-                result.append("   - Lô đang hoạt động: ").append(soLoHangHoatDong).append(" lô\n");
+                result.append("   - Lô còn hạn: ").append(soLoHangConHan).append(" lô\n");
                 
-                if (tongSoLoHang > soLoHangHoatDong) {
-                    result.append("   - Lô ngừng hoạt động: ").append(tongSoLoHang - soLoHangHoatDong).append(" lô\n");
+                if (tongSoLoHang > soLoHangConHan) {
+                    result.append("   - Lô hết hạn: ").append(tongSoLoHang - soLoHangConHan).append(" lô\n");
                 }
                 
                 result.append("\n");
