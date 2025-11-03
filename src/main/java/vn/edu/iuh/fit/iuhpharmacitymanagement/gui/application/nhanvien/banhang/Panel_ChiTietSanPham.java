@@ -157,9 +157,10 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
             
             // Nếu có lô hàng, hiển thị lô đầu tiên (hoặc lô có tồn kho lớn nhất)
             if (!danhSachLoHang.isEmpty()) {
-                // Tìm lô có tồn kho > 0 và còn hạn sử dụng
+                // Tìm lô có tồn kho > 0 và còn hạn sử dụng (ưu tiên FIFO - HSD gần nhất)
                 LoHang loHangHopLe = danhSachLoHang.stream()
                     .filter(lh -> lh.getTonKho() > 0 && lh.isTrangThai())
+                    .sorted((lh1, lh2) -> lh1.getHanSuDung().compareTo(lh2.getHanSuDung()))
                     .findFirst()
                     .orElse(danhSachLoHang.get(0)); // Nếu không có lô hợp lệ, lấy lô đầu tiên
                 
@@ -168,6 +169,71 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
                     panelChonLo.setLoHang(loHangHopLe);
                 }
             }
+        }
+    }
+    
+    /**
+     * Tìm lô phù hợp với số lượng yêu cầu
+     * Ưu tiên tìm lô có tồn kho >= số lượng yêu cầu
+     * Nếu không có, giữ nguyên lô hiện tại
+     * @param soLuongYeuCau số lượng cần
+     */
+    private void timVaChuyenLoPhiHop(int soLuongYeuCau) {
+        if (danhSachLoHang == null || danhSachLoHang.isEmpty()) {
+            return;
+        }
+        
+        // Lấy lô hiện tại
+        LoHang loHienTai = getLoHangDaChon();
+        if (loHienTai == null) {
+            return;
+        }
+        
+        // Nếu lô hiện tại đủ số lượng → không cần chuyển
+        if (loHienTai.getTonKho() >= soLuongYeuCau) {
+            return;
+        }
+        
+        // Tìm lô khác có tồn kho >= số lượng yêu cầu (ưu tiên FIFO - HSD gần nhất)
+        LoHang loPhiHop = danhSachLoHang.stream()
+            .filter(lh -> lh.getTonKho() > 0 && lh.isTrangThai())
+            .filter(lh -> lh.getTonKho() >= soLuongYeuCau)
+            .sorted((lh1, lh2) -> lh1.getHanSuDung().compareTo(lh2.getHanSuDung()))
+            .findFirst()
+            .orElse(null);
+        
+        // Nếu tìm thấy lô phù hợp và khác với lô hiện tại
+        if (loPhiHop != null && !loPhiHop.getMaLoHang().equals(loHienTai.getMaLoHang())) {
+            // Chuyển sang lô mới
+            if (panelChonLo != null) {
+                panelChonLo.setLoHang(loPhiHop);
+            }
+            
+            // Thông báo cho người dùng
+            String donViTinh = sanPham.getDonViTinh() != null ? 
+                sanPham.getDonViTinh().getTenDonVi() : "sản phẩm";
+            raven.toast.Notifications.getInstance().show(
+                raven.toast.Notifications.Type.INFO,
+                raven.toast.Notifications.Location.TOP_CENTER,
+                "🔄 Đã chuyển sang lô '" + loPhiHop.getMaLoHang() + "' (Còn " + 
+                loPhiHop.getTonKho() + " " + donViTinh + ")"
+            );
+        } else if (loPhiHop == null) {
+            // Không có lô nào đủ số lượng → cảnh báo
+            int tongTonKho = danhSachLoHang.stream()
+                .filter(lh -> lh.getTonKho() > 0 && lh.isTrangThai())
+                .mapToInt(LoHang::getTonKho)
+                .sum();
+            
+            String donViTinh = sanPham.getDonViTinh() != null ? 
+                sanPham.getDonViTinh().getTenDonVi() : "sản phẩm";
+            
+            raven.toast.Notifications.getInstance().show(
+                raven.toast.Notifications.Type.WARNING,
+                raven.toast.Notifications.Location.TOP_CENTER,
+                "⚠️ Không có lô nào đủ " + soLuongYeuCau + " " + donViTinh + 
+                ". Tổng tồn kho: " + tongTonKho
+            );
         }
     }
     
@@ -381,7 +447,12 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
         btnGiam.addActionListener(evt -> {
             int currentValue = (int) spinnerSoLuong.getValue();
             if (currentValue > 1) {
-                spinnerSoLuong.setValue(currentValue - 1);
+                int newValue = currentValue - 1;
+                spinnerSoLuong.setValue(newValue);
+                
+                // Tìm và chuyển sang lô phù hợp
+                timVaChuyenLoPhiHop(newValue);
+                
                 spinnerSoLuongStateChanged(null);
             }
         });
@@ -408,6 +479,10 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
                 int value = Integer.parseInt(txtSoLuong.getText().trim());
                 if (value >= 1 && value <= 1000) {
                     spinnerSoLuong.setValue(value);
+                    
+                    // Tìm và chuyển sang lô phù hợp
+                    timVaChuyenLoPhiHop(value);
+                    
                     spinnerSoLuongStateChanged(null);
                 } else {
                     // Nếu ngoài phạm vi, reset về giá trị hiện tại
@@ -435,6 +510,10 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
                     int value = Integer.parseInt(txtSoLuong.getText().trim());
                     if (value >= 1 && value <= 1000) {
                         spinnerSoLuong.setValue(value);
+                        
+                        // Tìm và chuyển sang lô phù hợp
+                        timVaChuyenLoPhiHop(value);
+                        
                         spinnerSoLuongStateChanged(null);
                     } else {
                         txtSoLuong.setText(String.valueOf(spinnerSoLuong.getValue()));
@@ -457,7 +536,12 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
         btnTang.addActionListener(evt -> {
             int currentValue = (int) spinnerSoLuong.getValue();
             if (currentValue < 1000) {
-                spinnerSoLuong.setValue(currentValue + 1);
+                int newValue = currentValue + 1;
+                spinnerSoLuong.setValue(newValue);
+                
+                // Tìm và chuyển sang lô phù hợp
+                timVaChuyenLoPhiHop(newValue);
+                
                 spinnerSoLuongStateChanged(null);
             }
         });

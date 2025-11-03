@@ -34,6 +34,10 @@ public class GD_BanHang extends javax.swing.JPanel {
     static int transactionNumber = 1;
     private SanPhamBUS sanPhamBUS;
     private Panel_DonHang panelDonHang;
+    
+    // TextField và Button tìm đơn hàng
+    private javax.swing.JTextField txtTimDonHang;
+    private javax.swing.JButton btnTimDonHang;
 
     /**
      * Creates new form LapHoaDonForm
@@ -169,6 +173,23 @@ public class GD_BanHang extends javax.swing.JPanel {
     }
 
     private void customUI() {
+        // TextField tìm đơn hàng
+        txtTimDonHang.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Mã đơn hàng");
+        txtTimDonHang.putClientProperty(FlatClientProperties.OUTLINE, "default");
+        txtTimDonHang.putClientProperty(FlatClientProperties.STYLE,
+                "arc:8;"
+                + "borderWidth:1;"
+                + "borderColor:#CCCCCC"
+        );
+        
+        // Button tìm đơn hàng
+        btnTimDonHang.putClientProperty(FlatClientProperties.STYLE,
+                "arc:8;"
+                + "borderWidth:0;"
+                + "focusWidth:0"
+        );
+        
+        // TextField tìm sản phẩm
         txtTimSanPham.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Vui lòng quét mã vạch hoặc nhập số đăng ký");
         // Thêm viền cho text field
         txtTimSanPham.putClientProperty(FlatClientProperties.OUTLINE, "default");
@@ -223,6 +244,8 @@ public class GD_BanHang extends javax.swing.JPanel {
 
         pnMi = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
+        txtTimDonHang = new javax.swing.JTextField();
+        btnTimDonHang = new javax.swing.JButton();
         txtTimSanPham = new javax.swing.JTextField();
         btnMa = new javax.swing.JButton();
         btnXoa = new javax.swing.JButton();
@@ -238,6 +261,24 @@ public class GD_BanHang extends javax.swing.JPanel {
         jPanel1.setBackground(new java.awt.Color(255, 255, 255));
         jPanel1.setBorder(javax.swing.BorderFactory.createMatteBorder(0, 0, 1, 0, new java.awt.Color(204, 204, 204)));
         jPanel1.setToolTipText("");
+
+        txtTimDonHang.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
+        txtTimDonHang.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtTimDonHangActionPerformed(evt);
+            }
+        });
+
+        btnTimDonHang.setBackground(new java.awt.Color(81, 154, 244));
+        btnTimDonHang.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        btnTimDonHang.setForeground(new java.awt.Color(255, 255, 255));
+        btnTimDonHang.setText("Tìm");
+        btnTimDonHang.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnTimDonHang.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnTimDonHangActionPerformed(evt);
+            }
+        });
 
         txtTimSanPham.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
         txtTimSanPham.addKeyListener(new java.awt.event.KeyAdapter() {
@@ -271,19 +312,25 @@ public class GD_BanHang extends javax.swing.JPanel {
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(50, 50, 50)
-                .addComponent(txtTimSanPham, javax.swing.GroupLayout.PREFERRED_SIZE, 650, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(15, 15, 15)
+                .addComponent(txtTimSanPham, javax.swing.GroupLayout.PREFERRED_SIZE, 500, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(15, 15, 15)
                 .addComponent(btnMa, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(15, 15, 15)
                 .addComponent(btnXoa, javax.swing.GroupLayout.PREFERRED_SIZE, 105, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(50, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 40, Short.MAX_VALUE)
+                .addComponent(txtTimDonHang, javax.swing.GroupLayout.PREFERRED_SIZE, 350, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnTimDonHang, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(15, 15, 15))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addGap(15, 15, 15)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(txtTimDonHang, javax.swing.GroupLayout.DEFAULT_SIZE, 46, Short.MAX_VALUE)
+                    .addComponent(btnTimDonHang, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(txtTimSanPham, javax.swing.GroupLayout.DEFAULT_SIZE, 46, Short.MAX_VALUE)
                     .addComponent(btnMa, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(btnXoa, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -712,6 +759,25 @@ public class GD_BanHang extends javax.swing.JPanel {
         Notifications.getInstance().show(Notifications.Type.SUCCESS, "Đã xóa trắng thành công !");
     }
     
+    private void txtTimDonHangActionPerformed(java.awt.event.ActionEvent evt) {
+        timDonHang();
+    }
+    
+    private void btnTimDonHangActionPerformed(java.awt.event.ActionEvent evt) {
+        timDonHang();
+    }
+    
+    /**
+     * Tìm đơn hàng theo mã và hiển thị sản phẩm đã mua
+     */
+    private void timDonHang() {
+        if (panelDonHang != null) {
+            panelDonHang.timDonHangTuGDBanHang(txtTimDonHang.getText().trim());
+            txtTimDonHang.setText("");
+            txtTimSanPham.requestFocus();
+        }
+    }
+    
     /**
      * Lấy danh sách sản phẩm trong giỏ hàng
      */
@@ -745,6 +811,89 @@ public class GD_BanHang extends javax.swing.JPanel {
         containerPanel.repaint();
         
         // Cập nhật tổng tiền (sẽ về 0)
+        capNhatTongTien();
+    }
+    
+    /**
+     * Thêm sản phẩm vào giỏ hàng với lô hàng và số lượng cụ thể
+     * Method này dùng cho việc load đơn hàng cũ (chỉ để xem, không kiểm tra tồn kho)
+     * @param sanPham Sản phẩm cần thêm
+     * @param loHang Lô hàng của sản phẩm
+     * @param soLuong Số lượng cần thêm
+     */
+    public void themSanPhamVaoGio(vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham sanPham, 
+                                   vn.edu.iuh.fit.iuhpharmacitymanagement.entity.LoHang loHang,
+                                   int soLuong) {
+        // 1. Kiểm tra xem sản phẩm đã có trong giỏ hàng chưa
+        Panel_ChiTietSanPham panelDaTonTai = null;
+        for (Component comp : containerPanel.getComponents()) {
+            if (comp instanceof Panel_ChiTietSanPham) {
+                Panel_ChiTietSanPham panel = (Panel_ChiTietSanPham) comp;
+                if (panel.getSanPham().getMaSanPham().equals(sanPham.getMaSanPham())) {
+                    panelDaTonTai = panel;
+                    break;
+                }
+            }
+        }
+        
+        // 2. Kiểm tra lô hàng có tồn tại (BỎ QUA kiểm tra tồn kho vì đây là đơn hàng cũ đã bán)
+        if (loHang == null) {
+            Notifications.getInstance().show(
+                Notifications.Type.WARNING, 
+                Notifications.Location.TOP_CENTER,
+                "⚠️ Lô hàng không tồn tại cho sản phẩm '" + sanPham.getTenSanPham() + "'!"
+            );
+            return;
+        }
+        
+        // 3. Kiểm tra số lượng yêu cầu
+        if (soLuong <= 0) {
+            Notifications.getInstance().show(
+                Notifications.Type.WARNING, 
+                Notifications.Location.TOP_CENTER,
+                "⚠️ Số lượng phải lớn hơn 0!"
+            );
+            return;
+        }
+        
+        // 4. Nếu sản phẩm đã có → cộng dồn số lượng (KHÔNG kiểm tra tồn kho)
+        if (panelDaTonTai != null) {
+            int soLuongMoi = panelDaTonTai.getSoLuong() + soLuong;
+            panelDaTonTai.setSoLuong(soLuongMoi);
+            
+            // Highlight panel
+            final Panel_ChiTietSanPham panelFinal = panelDaTonTai;
+            panelFinal.setBackground(new java.awt.Color(200, 255, 200));
+            javax.swing.Timer timer = new javax.swing.Timer(500, e -> {
+                panelFinal.setBackground(java.awt.Color.WHITE);
+            });
+            timer.setRepeats(false);
+            timer.start();
+            
+            System.out.println("✅ Cộng dồn từ đơn hàng cũ: " + sanPham.getTenSanPham() + " | SL: +" + soLuong);
+        } else {
+            // 5. Sản phẩm chưa có → tạo panel mới với số lượng đã cho
+            Panel_ChiTietSanPham panelChiTiet = new Panel_ChiTietSanPham(sanPham);
+            panelChiTiet.setSoLuong(soLuong); // Set số lượng từ đơn hàng
+            
+            // Thêm listener
+            panelChiTiet.addPropertyChangeListener("tongTien", evt -> capNhatTongTien());
+            panelChiTiet.addPropertyChangeListener("sanPhamXoa", evt -> capNhatTongTien());
+            
+            containerPanel.add(panelChiTiet);
+            containerPanel.revalidate();
+            containerPanel.repaint();
+            
+            System.out.println("✅ Thêm mới từ đơn hàng: " + sanPham.getTenSanPham() + " | SL: " + soLuong);
+            
+            // Scroll đến sản phẩm vừa thêm
+            javax.swing.SwingUtilities.invokeLater(() -> {
+                java.awt.Rectangle bounds = panelChiTiet.getBounds();
+                scrollPaneProducts.getViewport().scrollRectToVisible(bounds);
+            });
+        }
+        
+        // 6. Cập nhật tổng tiền
         capNhatTongTien();
     }
 

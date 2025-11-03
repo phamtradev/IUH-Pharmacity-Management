@@ -555,6 +555,83 @@ public class Panel_DonHang extends javax.swing.JPanel {
     }
     
     /**
+     * Tìm đơn hàng từ GD_BanHang (được gọi từ bên ngoài)
+     * @param maDonHang mã đơn hàng cần tìm
+     */
+    public void timDonHangTuGDBanHang(String maDonHang) {
+        // Kiểm tra input rỗng
+        if (maDonHang == null || maDonHang.trim().isEmpty()) {
+            Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER, 
+                "Vui lòng nhập mã đơn hàng hoặc quét mã");
+            return;
+        }
+        
+        maDonHang = maDonHang.trim();
+        
+        // Tìm đơn hàng theo mã
+        List<DonHang> ketQuaTimKiem = donHangBUS.timKiemTheoMa(maDonHang);
+        Optional<DonHang> donHangOpt = ketQuaTimKiem.isEmpty() ? Optional.empty() : Optional.of(ketQuaTimKiem.get(0));
+        
+        if (!donHangOpt.isPresent()) {
+            Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER, 
+                "Không tìm thấy đơn hàng với mã: " + maDonHang);
+            return;
+        }
+        
+        DonHang donHang = donHangOpt.get();
+        
+        // Load thông tin khách hàng từ đơn hàng
+        khachHangHienTai = donHang.getKhachHang();
+        if (khachHangHienTai != null) {
+            txtTenKhachHang.setText(khachHangHienTai.getTenKhachHang());
+            txtTimKhachHang.setText("");
+        } else {
+            txtTenKhachHang.setText("Vãng lai");
+        }
+        
+        // Lấy danh sách sản phẩm từ đơn hàng
+        List<ChiTietDonHang> danhSachChiTiet = chiTietDonHangBUS.layDanhSachChiTietTheoMaDonHang(maDonHang);
+        
+        if (danhSachChiTiet.isEmpty()) {
+            Notifications.getInstance().show(Notifications.Type.INFO, Notifications.Location.TOP_CENTER, 
+                "Đơn hàng không có sản phẩm");
+            return;
+        }
+        
+        // Hiển thị sản phẩm vào danh sách bán hàng
+        hienThiSanPhamTuDonHang(danhSachChiTiet);
+        
+        // Thông báo thành công
+        Notifications.getInstance().show(Notifications.Type.SUCCESS, Notifications.Location.TOP_CENTER, 
+            "Đã tìm thấy đơn hàng " + maDonHang + " với " + danhSachChiTiet.size() + " sản phẩm");
+    }
+    
+    /**
+     * Hiển thị danh sách sản phẩm từ đơn hàng vào giỏ hàng
+     */
+    private void hienThiSanPhamTuDonHang(List<ChiTietDonHang> danhSachChiTiet) {
+        if (gdBanHang == null) {
+            Notifications.getInstance().show(Notifications.Type.ERROR, Notifications.Location.TOP_CENTER, 
+                "Lỗi hệ thống: Không thể truy cập giỏ hàng!");
+            return;
+        }
+        
+        // Duyệt qua từng sản phẩm và thêm vào giỏ hàng
+        for (ChiTietDonHang chiTiet : danhSachChiTiet) {
+            LoHang loHang = chiTiet.getLoHang();
+            if (loHang == null || loHang.getSanPham() == null) {
+                continue;
+            }
+            
+            SanPham sanPham = loHang.getSanPham();
+            int soLuong = chiTiet.getSoLuong();
+            
+            // Thêm sản phẩm vào giỏ hàng thông qua GD_BanHang
+            gdBanHang.themSanPhamVaoGio(sanPham, loHang, soLuong);
+        }
+    }
+    
+    /**
      * Lấy khách hàng hiện tại
      */
     public KhachHang getKhachHangHienTai() {
@@ -686,10 +763,13 @@ public class Panel_DonHang extends javax.swing.JPanel {
                     .sum();
                 
                 if (tongTonKho < soLuongBan) {
+                    String donViTinh = panel.getSanPham().getDonViTinh() != null ? 
+                        panel.getSanPham().getDonViTinh().getTenDonVi() : "sản phẩm";
                     Notifications.getInstance().show(Notifications.Type.ERROR, 
                         Notifications.Location.TOP_CENTER,
-                        "Hết hàng! Sản phẩm '" + panel.getSanPham().getTenSanPham() + 
-                        "' chỉ còn " + tongTonKho + " trong kho");
+                        "❌ Không đủ hàng! Sản phẩm '" + panel.getSanPham().getTenSanPham() + 
+                        "' chỉ còn " + tongTonKho + " " + donViTinh + " trong kho.\n" +
+                        "Vui lòng giảm số lượng hoặc xóa sản phẩm khỏi giỏ hàng!");
                     return;
                 }
                 
