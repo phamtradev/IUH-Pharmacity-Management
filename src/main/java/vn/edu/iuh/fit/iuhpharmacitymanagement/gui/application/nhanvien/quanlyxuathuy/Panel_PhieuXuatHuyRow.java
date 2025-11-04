@@ -18,7 +18,6 @@ import javax.swing.SwingConstants;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.ChiTietHangHongBUS;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietHangHong;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.HangHong;
-import vn.edu.iuh.fit.iuhpharmacitymanagement.util.XuatPhieuXuatHuyPDF;
 
 /**
  * Panel hiển thị 1 dòng thông tin phiếu xuất hủy
@@ -249,20 +248,7 @@ public class Panel_PhieuXuatHuyRow extends JPanel {
         JPanel btnPanel = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 10, 10));
         btnPanel.setBackground(Color.WHITE);
         
-        JButton btnXuatPDF = new JButton("Xuất PDF");
-        btnXuatPDF.setPreferredSize(new Dimension(120, 35));
-        btnXuatPDF.setBackground(new Color(220, 53, 69));
-        btnXuatPDF.setForeground(Color.WHITE);
-        btnXuatPDF.setFocusPainted(false);
-        btnXuatPDF.addActionListener(e -> {
-            String pdfPath = XuatPhieuXuatHuyPDF.xuatPhieuXuatHuyTuDong(phieu, danhSachChiTiet);
-            if (pdfPath != null) {
-                javax.swing.JOptionPane.showMessageDialog(dialog, 
-                    "Đã xuất PDF thành công!\nĐường dẫn: " + pdfPath, 
-                    "Thành công", 
-                    javax.swing.JOptionPane.INFORMATION_MESSAGE);
-            }
-        });
+        // Không có nút Xuất PDF nữa (đã xóa class PDF)
         
         JButton btnDong = new JButton("Đóng");
         btnDong.setPreferredSize(new Dimension(120, 35));
@@ -271,7 +257,6 @@ public class Panel_PhieuXuatHuyRow extends JPanel {
         btnDong.setFocusPainted(false);
         btnDong.addActionListener(e -> dialog.dispose());
         
-        btnPanel.add(btnXuatPDF);
         btnPanel.add(btnDong);
         
         footerPanel.add(btnPanel, java.awt.BorderLayout.SOUTH);

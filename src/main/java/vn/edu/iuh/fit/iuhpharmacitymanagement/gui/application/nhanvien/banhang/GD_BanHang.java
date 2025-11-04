@@ -644,8 +644,10 @@ public class GD_BanHang extends javax.swing.JPanel {
                 if (kmTotNhat != null) {
                     tongGiamGiaSanPham += giamGiaMax;
                     panel.setGiamGia(kmTotNhat.getGiamGia(), kmTotNhat.getTenKhuyenMai());
+                    panel.setKhuyenMaiDuocApDung(kmTotNhat); // Lưu thông tin khuyến mãi để save vào DB
                     System.out.println("    ✓ ÁP DỤNG: " + kmTotNhat.getTenKhuyenMai() + " → Giảm: " + giamGiaMax);
                 } else {
+                    panel.setKhuyenMaiDuocApDung(null); // Không có khuyến mãi (giảm giá thủ công)
                     System.out.println("    → KHÔNG CÓ KHUYẾN MÃI");
                 }
             }
@@ -913,5 +915,12 @@ public class GD_BanHang extends javax.swing.JPanel {
     private javax.swing.JPanel containerPanel;
     private javax.swing.JTextField txtTimSanPham;
     // End of variables declaration//GEN-END:variables
+    
+    /**
+     * Getter cho containerPanel (để Panel_DonHang truy cập các Panel_ChiTietSanPham)
+     */
+    public javax.swing.JPanel getContainerPanel() {
+        return containerPanel;
+    }
 
 }

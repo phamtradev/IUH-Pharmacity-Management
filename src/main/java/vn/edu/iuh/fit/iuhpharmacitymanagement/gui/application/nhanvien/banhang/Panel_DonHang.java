@@ -41,7 +41,6 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.LoHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhanVien;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.util.UserSession;
-import vn.edu.iuh.fit.iuhpharmacitymanagement.util.XuatHoaDonPDF;
 import java.util.Map;
 
 /**
@@ -816,20 +815,14 @@ public class Panel_DonHang extends javax.swing.JPanel {
                 chiTietDonHangList.add(chiTiet);
             }
             
-            // 7. Tự động xuất hóa đơn PDF vào folder resources/img/hoadonbanhang
-            String pdfPath = XuatHoaDonPDF.xuatHoaDonTuDong(donHang, chiTietDonHangList, kmSanPham);
-            
-            // 8. Thông báo thành công
+            // 7. Thông báo thành công
             String message = "Tạo đơn hàng thành công! Mã đơn: " + donHang.getMaDonHang();
-            if (pdfPath != null) {
-                message += "\nHóa đơn đã được lưu tại: " + pdfPath;
-            }
             Notifications.getInstance().show(Notifications.Type.SUCCESS, 
                 Notifications.Location.TOP_CENTER,
                 message);
             
-            // 9. Hiển thị preview hóa đơn luôn
-            hienThiHoaDon(donHang, chiTietDonHangList, kmSanPham);
+            // 8. Hiển thị dialog xác nhận hóa đơn
+            hienThiXacNhanHoaDon(donHang, chiTietDonHangList, kmSanPham);
             
             // 10. Reset giỏ hàng
             gdBanHang.xoaToanBoGioHang();
@@ -1082,6 +1075,8 @@ public class Panel_DonHang extends javax.swing.JPanel {
                 danhSachKhuyenMaiDaChon.clear();
                 khuyenMaiDaChon = null; // backward compatibility
             }
+            // Reset giảm giá của tất cả panel về 0
+            apDungGiamGiaChoTatCaPanel(null);
             return;
         }
         
@@ -1203,8 +1198,64 @@ public class Panel_DonHang extends javax.swing.JPanel {
                 );
             }
             
+            // ÁP DỤNG GIẢM GIÁ CHO TẤT CẢ PANEL (nếu khuyến mãi sản phẩm thay đổi)
+            if (khuyenMaiSanPhamThayDoi) {
+                apDungGiamGiaChoTatCaPanel(kmSanPham);
+            }
+            
             // Notify để cập nhật lại tổng tiền (sử dụng danh sách đã chọn thực tế)
             firePropertyChange("khuyenMaiChanged", null, danhSachKhuyenMaiDaChon);
+        } else {
+            // Không có thay đổi khuyến mãi, NHƯNG có thể cần áp dụng lại (vì panel mới được thêm)
+            // Chỉ áp dụng nếu có khuyến mãi sản phẩm
+            KhuyenMai kmSanPham = danhSachKhuyenMaiDaChon.get(LoaiKhuyenMai.SAN_PHAM);
+            if (kmSanPham != null) {
+                apDungGiamGiaChoTatCaPanel(kmSanPham);
+            }
+        }
+    }
+    
+    /**
+     * Áp dụng giảm giá cho tất cả Panel_ChiTietSanPham dựa trên khuyến mãi sản phẩm
+     * @param kmSanPham Khuyến mãi sản phẩm (null = reset về 0)
+     */
+    private void apDungGiamGiaChoTatCaPanel(KhuyenMai kmSanPham) {
+        if (gdBanHang == null) return;
+        
+        // Lấy containerPanel từ GD_BanHang
+        javax.swing.JPanel containerPanel = gdBanHang.getContainerPanel();
+        if (containerPanel == null) return;
+        
+        if (kmSanPham == null) {
+            // Reset tất cả về 0
+            for (java.awt.Component comp : containerPanel.getComponents()) {
+                if (comp instanceof Panel_ChiTietSanPham) {
+                    Panel_ChiTietSanPham panel = (Panel_ChiTietSanPham) comp;
+                    panel.setGiamGia(0);
+                }
+            }
+            return;
+        }
+        
+        // Lấy danh sách sản phẩm trong khuyến mãi
+        List<ChiTietKhuyenMaiSanPham> danhSachCTKM = 
+            chiTietKhuyenMaiSanPhamBUS.timTheoMaKhuyenMai(kmSanPham.getMaKhuyenMai());
+        
+        // Áp dụng giảm giá cho từng panel
+        for (java.awt.Component comp : containerPanel.getComponents()) {
+            if (comp instanceof Panel_ChiTietSanPham) {
+                Panel_ChiTietSanPham panel = (Panel_ChiTietSanPham) comp;
+                
+                // Kiểm tra xem sản phẩm có trong khuyến mãi không
+                boolean coTrongKM = danhSachCTKM.stream()
+                    .anyMatch(ctkm -> ctkm.getSanPham().getMaSanPham().equals(panel.getSanPham().getMaSanPham()));
+                
+                if (coTrongKM) {
+                    panel.setGiamGia(kmSanPham.getGiamGia(), kmSanPham.getTenKhuyenMai());
+                } else {
+                    panel.setGiamGia(0);
+                }
+            }
         }
     }
     
@@ -1415,14 +1466,14 @@ public class Panel_DonHang extends javax.swing.JPanel {
     }
     
     /**
-     * Hiển thị preview hóa đơn bán hàng
+     * Hiển thị dialog xác nhận hóa đơn (với nút In hóa đơn)
      */
-    private void hienThiHoaDon(DonHang donHang, List<ChiTietDonHang> danhSachChiTiet, KhuyenMai khuyenMaiSanPham) {
+    private void hienThiXacNhanHoaDon(DonHang donHang, List<ChiTietDonHang> danhSachChiTiet, KhuyenMai khuyenMaiSanPham) {
         javax.swing.JDialog dialog = new javax.swing.JDialog();
-        dialog.setTitle("Hóa đơn bán hàng");
+        dialog.setTitle("Xác Nhận Hóa Đơn");
         dialog.setModal(true);
-        dialog.setSize(900, 650);
-        dialog.setLocationRelativeTo(null); // Hiển thị giữa màn hình
+        dialog.setSize(900, 700);
+        dialog.setLocationRelativeTo(null);
         
         // Panel chính
         javax.swing.JPanel mainPanel = new javax.swing.JPanel();
@@ -1439,7 +1490,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
         headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.Y_AXIS));
         headerPanel.setBackground(Color.WHITE);
         
-        javax.swing.JLabel lblTitle = new javax.swing.JLabel("HÓA ĐƠN BÁN HÀNG");
+        javax.swing.JLabel lblTitle = new javax.swing.JLabel("XÁC NHẬN HÓA ĐƠN");
         lblTitle.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 24));
         lblTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
         headerPanel.add(lblTitle);
@@ -1460,18 +1511,10 @@ public class Panel_DonHang extends javax.swing.JPanel {
         
         KhachHang khachHang = donHang.getKhachHang();
         String tenKhachHang = khachHang != null ? khachHang.getTenKhachHang() : "Khách vãng lai";
-        String sdtKhachHang = khachHang != null && khachHang.getSoDienThoai() != null ? 
-                khachHang.getSoDienThoai() : "";
         infoPanel.add(createInfoLabel("Khách hàng: ", tenKhachHang, true));
         
-        if (!sdtKhachHang.isEmpty()) {
-            infoPanel.add(createInfoLabel("Số điện thoại: ", sdtKhachHang, false));
-        } else {
-            infoPanel.add(new javax.swing.JLabel()); // Empty cell
-        }
-        
         String phuongThuc = donHang.getPhuongThucThanhToan() != null ? 
-                donHang.getPhuongThucThanhToan().toString() : "Tiền mặt";
+                donHang.getPhuongThucThanhToan().toString() : "TIEN_MAT";
         infoPanel.add(createInfoLabel("Phương thức: ", phuongThuc, false));
         
         headerPanel.add(infoPanel);
@@ -1492,7 +1535,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
         lblChiTiet.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
         bodyPanel.add(lblChiTiet, BorderLayout.NORTH);
         
-        String[] columnNames = {"STT", "Tên sản phẩm", "Đơn vị", "Số lượng", "Đơn giá", "Thành tiền"};
+        String[] columnNames = {"STT", "Tên sản phẩm", "Đơn vị", "Số lượng", "Đơn giá", "Giảm giá", "Thành tiền"};
         javax.swing.table.DefaultTableModel tableModel = new javax.swing.table.DefaultTableModel(columnNames, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -1507,24 +1550,39 @@ public class Panel_DonHang extends javax.swing.JPanel {
         table.getTableHeader().setBackground(new Color(240, 240, 240));
         
         // Set column widths
-        table.getColumnModel().getColumn(0).setPreferredWidth(50);  // STT
-        table.getColumnModel().getColumn(1).setPreferredWidth(300); // Tên SP
-        table.getColumnModel().getColumn(2).setPreferredWidth(80);  // Đơn vị
-        table.getColumnModel().getColumn(3).setPreferredWidth(80);  // Số lượng
-        table.getColumnModel().getColumn(4).setPreferredWidth(120); // Đơn giá
-        table.getColumnModel().getColumn(5).setPreferredWidth(150); // Thành tiền
+        table.getColumnModel().getColumn(0).setPreferredWidth(50);   // STT
+        table.getColumnModel().getColumn(1).setPreferredWidth(250);  // Tên SP
+        table.getColumnModel().getColumn(2).setPreferredWidth(70);   // Đơn vị
+        table.getColumnModel().getColumn(3).setPreferredWidth(70);   // Số lượng
+        table.getColumnModel().getColumn(4).setPreferredWidth(100);  // Đơn giá
+        table.getColumnModel().getColumn(5).setPreferredWidth(200);  // Giảm giá (NEW)
+        table.getColumnModel().getColumn(6).setPreferredWidth(120);  // Thành tiền
         
         // Thêm dữ liệu vào bảng
         int stt = 1;
         for (ChiTietDonHang chiTiet : danhSachChiTiet) {
             SanPham sanPham = chiTiet.getLoHang().getSanPham();
             
+            // Tính giảm giá với % và tên KM
+            String giamGia;
+            double soTienGiamGia = chiTiet.getGiamGia();
+            if (soTienGiamGia > 0) {
+                double tongTienGoc = chiTiet.getDonGia() * chiTiet.getSoLuong();
+                double phanTramGiamGia = (soTienGiamGia / tongTienGoc) * 100;
+                
+                giamGia = "-" + currencyFormat.format(soTienGiamGia) + " đ" +
+                          " (" + String.format("%.0f", phanTramGiamGia) + "%)";
+            } else {
+                giamGia = "0 đ";
+            }
+            
             tableModel.addRow(new Object[]{
                 stt++,
                 sanPham.getTenSanPham(),
-                sanPham.getDonViTinh() != null ? sanPham.getDonViTinh().getTenDonVi() : "Hộp",
+                sanPham.getDonViTinh() != null ? sanPham.getDonViTinh().getTenDonVi() : "Tuýp",
                 chiTiet.getSoLuong(),
                 currencyFormat.format(chiTiet.getDonGia()) + " đ",
+                giamGia,  // NEW: Cột giảm giá
                 currencyFormat.format(chiTiet.getThanhTien()) + " đ"
             });
         }
@@ -1535,7 +1593,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
         
         mainPanel.add(bodyPanel, BorderLayout.CENTER);
         
-        // === FOOTER - Tổng tiền ===
+        // === FOOTER - Tổng tiền + NÚT IN HÓA ĐƠN ===
         javax.swing.JPanel footerPanel = new javax.swing.JPanel();
         footerPanel.setLayout(new BoxLayout(footerPanel, BoxLayout.Y_AXIS));
         footerPanel.setBackground(Color.WHITE);
@@ -1545,8 +1603,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
         footerPanel.add(separator2);
         footerPanel.add(Box.createVerticalStrut(15));
         
-        // ========== TÍNH TOÁN CÁC GIÁ TRỊ ==========
-        // 1. Tổng tiền hàng (trước giảm giá)
+        // Tính toán và hiển thị tổng tiền
         double tongTienHang = 0;
         double tongGiamGiaSanPham = 0;
         
@@ -1556,18 +1613,6 @@ public class Panel_DonHang extends javax.swing.JPanel {
             tongGiamGiaSanPham += ct.getGiamGia();
         }
         
-        // 2. Giảm giá đơn hàng
-        double giamGiaHoaDon = 0;
-        KhuyenMai khuyenMaiDonHang = donHang.getKhuyenMai();
-        if (khuyenMaiDonHang != null) {
-            // Giảm giá đơn hàng = (Tổng tiền hàng - Giảm giá sản phẩm) × % (getGiamGia đã là decimal)
-            giamGiaHoaDon = (tongTienHang - tongGiamGiaSanPham) * khuyenMaiDonHang.getGiamGia();
-        }
-        
-        // 3. Tổng giảm giá
-        double tongGiamGia = tongGiamGiaSanPham + giamGiaHoaDon;
-        
-        // ========== HIỂN THỊ CHI TIẾT ==========
         // Tổng tiền hàng
         javax.swing.JPanel tongTienHangPanel = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT));
         tongTienHangPanel.setBackground(Color.WHITE);
@@ -1579,75 +1624,6 @@ public class Panel_DonHang extends javax.swing.JPanel {
         tongTienHangPanel.add(lblTongTienHang);
         footerPanel.add(tongTienHangPanel);
         
-        // Giảm giá sản phẩm (nếu có)
-        if (tongGiamGiaSanPham > 0 && khuyenMaiSanPham != null) {
-            javax.swing.JPanel giamGiaSPPanel = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT));
-            giamGiaSPPanel.setBackground(Color.WHITE);
-            
-            javax.swing.JLabel lblGiamGiaSPText = new javax.swing.JLabel("Giảm giá sản phẩm: ");
-            lblGiamGiaSPText.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 14));
-            
-            // Lấy % từ khuyến mãi gốc - chỉ hiển thị số tiền và %
-            String giamGiaText = "-" + currencyFormat.format(tongGiamGiaSanPham) + " đ";
-            giamGiaText += " (" + String.format("%.1f", khuyenMaiSanPham.getGiamGia() * 100) + "%)";
-            
-            javax.swing.JLabel lblGiamGiaSP = new javax.swing.JLabel(giamGiaText);
-            lblGiamGiaSP.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 14));
-            lblGiamGiaSP.setForeground(new Color(0, 150, 0));
-            
-            giamGiaSPPanel.add(lblGiamGiaSPText);
-            giamGiaSPPanel.add(lblGiamGiaSP);
-            // BỎ label tên khuyến mãi - chỉ hiển thị % trong cột giảm giá
-            footerPanel.add(giamGiaSPPanel);
-        }
-        
-        // Giảm giá hóa đơn (nếu có)
-        if (giamGiaHoaDon > 0 && khuyenMaiDonHang != null) {
-            javax.swing.JPanel giamGiaHDPanel = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT));
-            giamGiaHDPanel.setBackground(Color.WHITE);
-            
-            javax.swing.JLabel lblGiamGiaHDText = new javax.swing.JLabel("Giảm giá hóa đơn: ");
-            lblGiamGiaHDText.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 14));
-            
-            String giamGiaHDText = "-" + currencyFormat.format(giamGiaHoaDon) + " đ";
-            giamGiaHDText += " (" + String.format("%.1f", khuyenMaiDonHang.getGiamGia() * 100) + "%)";
-            
-            javax.swing.JLabel lblGiamGiaHD = new javax.swing.JLabel(giamGiaHDText);
-            lblGiamGiaHD.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 14));
-            lblGiamGiaHD.setForeground(new Color(0, 150, 0));
-            
-            javax.swing.JLabel lblKMName = new javax.swing.JLabel("  (" + khuyenMaiDonHang.getTenKhuyenMai() + ")");
-            lblKMName.setFont(new java.awt.Font("Segoe UI", java.awt.Font.ITALIC, 12));
-            lblKMName.setForeground(new Color(255, 102, 0));
-            
-            giamGiaHDPanel.add(lblGiamGiaHDText);
-            giamGiaHDPanel.add(lblGiamGiaHD);
-            giamGiaHDPanel.add(lblKMName);
-            footerPanel.add(giamGiaHDPanel);
-        }
-        
-        // Tổng giảm giá (nếu có)
-        if (tongGiamGia > 0) {
-            javax.swing.JPanel tongGiamGiaPanel = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT));
-            tongGiamGiaPanel.setBackground(Color.WHITE);
-            tongGiamGiaPanel.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(200, 200, 200)));
-            tongGiamGiaPanel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(200, 200, 200)),
-                BorderFactory.createEmptyBorder(5, 0, 0, 0)
-            ));
-            
-            javax.swing.JLabel lblTongGiamGiaText = new javax.swing.JLabel("TỔNG GIẢM GIÁ: ");
-            lblTongGiamGiaText.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 14));
-            
-            javax.swing.JLabel lblTongGiamGia = new javax.swing.JLabel("-" + currencyFormat.format(tongGiamGia) + " đ");
-            lblTongGiamGia.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 15));
-            lblTongGiamGia.setForeground(new Color(220, 53, 69));
-            
-            tongGiamGiaPanel.add(lblTongGiamGiaText);
-            tongGiamGiaPanel.add(lblTongGiamGia);
-            footerPanel.add(tongGiamGiaPanel);
-        }
-        
         // Đường kẻ phân cách
         javax.swing.JSeparator separator3 = new javax.swing.JSeparator();
         separator3.setForeground(new Color(100, 100, 100));
@@ -1655,7 +1631,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
         footerPanel.add(separator3);
         footerPanel.add(Box.createVerticalStrut(5));
         
-        // Thành tiền (sau giảm giá)
+        // Thành tiền
         javax.swing.JPanel tongTienPanel = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT));
         tongTienPanel.setBackground(Color.WHITE);
         
@@ -1670,11 +1646,393 @@ public class Panel_DonHang extends javax.swing.JPanel {
         tongTienPanel.add(lblTongTien);
         
         footerPanel.add(tongTienPanel);
-        footerPanel.add(Box.createVerticalStrut(10));
+        footerPanel.add(Box.createVerticalStrut(20));
+        
+        // Nút "In Hóa Đơn"
+        javax.swing.JPanel buttonPanel = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER));
+        buttonPanel.setBackground(Color.WHITE);
+        
+        javax.swing.JButton btnInHoaDon = new javax.swing.JButton("In Hóa Đơn");
+        btnInHoaDon.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 16));
+        btnInHoaDon.setPreferredSize(new java.awt.Dimension(200, 45));
+        btnInHoaDon.setBackground(new Color(40, 167, 69));
+        btnInHoaDon.setForeground(Color.WHITE);
+        btnInHoaDon.setFocusPainted(false);
+        btnInHoaDon.setBorderPainted(false);
+        btnInHoaDon.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        
+        btnInHoaDon.addActionListener(e -> {
+            // Đóng dialog xác nhận
+            dialog.dispose();
+            
+            // Hiển thị hóa đơn bán hàng (preview UI không lưu PDF)
+            hienThiHoaDonBanHang(donHang, danhSachChiTiet, khuyenMaiSanPham);
+        });
+        
+        buttonPanel.add(btnInHoaDon);
+        footerPanel.add(buttonPanel);
         
         mainPanel.add(footerPanel, BorderLayout.SOUTH);
         
         dialog.add(mainPanel);
+        dialog.setVisible(true);
+    }
+    
+    /**
+     * Hiển thị preview hóa đơn bán hàng (UI giống PDF nhưng nhỏ gọn)
+     */
+    private void hienThiHoaDonBanHang(DonHang donHang, List<ChiTietDonHang> danhSachChiTiet, KhuyenMai khuyenMaiSanPham) {
+        javax.swing.JDialog dialog = new javax.swing.JDialog();
+        dialog.setTitle("Hóa Đơn Bán Hàng");
+        dialog.setModal(true);
+        dialog.setSize(650, 750);  // Nhỏ gọn hơn, chỉ dài theo chiều dọc
+        dialog.setLocationRelativeTo(null);
+        
+        // Scroll pane cho toàn bộ hóa đơn
+        javax.swing.JScrollPane mainScrollPane = new javax.swing.JScrollPane();
+        mainScrollPane.setBorder(null);
+        mainScrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        
+        // Panel chính
+        javax.swing.JPanel mainPanel = new javax.swing.JPanel();
+        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+        mainPanel.setBackground(Color.WHITE);
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 25, 20, 25));  // Giảm padding
+        
+        // Format cho số tiền và ngày tháng
+        DecimalFormat currencyFormat = new DecimalFormat("#,###");
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        
+        // ========== HEADER - THÔNG TIN CỬA HÀNG ==========
+        javax.swing.JLabel lblStoreName = new javax.swing.JLabel("IUH PHARMACITY");
+        lblStoreName.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 18));  // Giảm size
+        lblStoreName.setForeground(new Color(0, 120, 215));
+        lblStoreName.setAlignmentX(Component.CENTER_ALIGNMENT);
+        mainPanel.add(lblStoreName);
+        mainPanel.add(Box.createVerticalStrut(3));  // Giảm khoảng cách
+        
+        javax.swing.JLabel lblAddress = new javax.swing.JLabel("12 Nguyen Van Bao, Ward 4, Go Vap District, HCMC");
+        lblAddress.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 9));  // Giảm size
+        lblAddress.setAlignmentX(Component.CENTER_ALIGNMENT);
+        mainPanel.add(lblAddress);
+        mainPanel.add(Box.createVerticalStrut(2));
+        
+        javax.swing.JLabel lblContact = new javax.swing.JLabel("Hotline: 1800 6928 | Email: cskh@pharmacity.vn");
+        lblContact.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 9));
+        lblContact.setAlignmentX(Component.CENTER_ALIGNMENT);
+        mainPanel.add(lblContact);
+        mainPanel.add(Box.createVerticalStrut(12));  // Giảm khoảng cách
+        
+        // ========== TIÊU ĐỀ HÓA ĐƠN ==========
+        javax.swing.JLabel lblTitle = new javax.swing.JLabel("HOA DON BAN HANG");
+        lblTitle.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 16));  // Giảm size
+        lblTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
+        mainPanel.add(lblTitle);
+        mainPanel.add(Box.createVerticalStrut(4));
+        
+        javax.swing.JLabel lblInvoiceCode = new javax.swing.JLabel("Ma hoa don: " + donHang.getMaDonHang());
+        lblInvoiceCode.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 11));
+        lblInvoiceCode.setAlignmentX(Component.CENTER_ALIGNMENT);
+        mainPanel.add(lblInvoiceCode);
+        mainPanel.add(Box.createVerticalStrut(2));
+        
+        String ngayLap = donHang.getNgayDatHang().format(dateFormatter);
+        javax.swing.JLabel lblDate = new javax.swing.JLabel("Ngay lap: " + ngayLap);
+        lblDate.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 10));
+        lblDate.setAlignmentX(Component.CENTER_ALIGNMENT);
+        mainPanel.add(lblDate);
+        mainPanel.add(Box.createVerticalStrut(12));
+        
+        // ========== THÔNG TIN KHÁCH HÀNG VÀ NHÂN VIÊN (2 CỘT) ==========
+        javax.swing.JPanel infoTablePanel = new javax.swing.JPanel(new java.awt.GridLayout(1, 2, 10, 0));  // Giảm gap
+        infoTablePanel.setBackground(Color.WHITE);
+        infoTablePanel.setMaximumSize(new java.awt.Dimension(600, 80));  // Giảm chiều cao
+        
+        // THÔNG TIN KHÁCH HÀNG (Cột trái)
+        KhachHang khachHang = donHang.getKhachHang();
+        javax.swing.JPanel customerPanel = new javax.swing.JPanel();
+        customerPanel.setLayout(new BoxLayout(customerPanel, BoxLayout.Y_AXIS));
+        customerPanel.setBackground(Color.WHITE);
+        customerPanel.setBorder(BorderFactory.createEmptyBorder(3, 3, 3, 3));  // Giảm padding
+        
+        javax.swing.JLabel lblCustomerTitle = new javax.swing.JLabel("THONG TIN KHACH HANG");
+        lblCustomerTitle.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 9));  // Giảm size
+        lblCustomerTitle.setAlignmentX(Component.LEFT_ALIGNMENT);
+        customerPanel.add(lblCustomerTitle);
+        customerPanel.add(Box.createVerticalStrut(3));
+        
+        String tenKH = khachHang != null ? khachHang.getTenKhachHang() : "Vang lai";
+        javax.swing.JLabel lblCustomerName = new javax.swing.JLabel("Ho ten: " + tenKH);
+        lblCustomerName.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 9));
+        lblCustomerName.setAlignmentX(Component.LEFT_ALIGNMENT);
+        customerPanel.add(lblCustomerName);
+        
+        if (khachHang != null && khachHang.getSoDienThoai() != null) {
+            javax.swing.JLabel lblCustomerPhone = new javax.swing.JLabel("SDT: " + khachHang.getSoDienThoai());
+            lblCustomerPhone.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 9));
+            lblCustomerPhone.setAlignmentX(Component.LEFT_ALIGNMENT);
+            customerPanel.add(lblCustomerPhone);
+        }
+        
+        // THÔNG TIN NHÂN VIÊN (Cột phải)
+        NhanVien nhanVien = donHang.getNhanVien();
+        javax.swing.JPanel employeePanel = new javax.swing.JPanel();
+        employeePanel.setLayout(new BoxLayout(employeePanel, BoxLayout.Y_AXIS));
+        employeePanel.setBackground(Color.WHITE);
+        employeePanel.setBorder(BorderFactory.createEmptyBorder(3, 3, 3, 3));
+        
+        javax.swing.JLabel lblEmployeeTitle = new javax.swing.JLabel("THONG TIN NHAN VIEN");
+        lblEmployeeTitle.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 9));
+        lblEmployeeTitle.setAlignmentX(Component.LEFT_ALIGNMENT);
+        employeePanel.add(lblEmployeeTitle);
+        employeePanel.add(Box.createVerticalStrut(3));
+        
+        if (nhanVien != null) {
+            javax.swing.JLabel lblEmployeeName = new javax.swing.JLabel("Ho ten: " + nhanVien.getTenNhanVien());
+            lblEmployeeName.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 9));
+            lblEmployeeName.setAlignmentX(Component.LEFT_ALIGNMENT);
+            employeePanel.add(lblEmployeeName);
+            
+            if (nhanVien.getSoDienThoai() != null) {
+                javax.swing.JLabel lblEmployeePhone = new javax.swing.JLabel("SDT: " + nhanVien.getSoDienThoai());
+                lblEmployeePhone.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 9));
+                lblEmployeePhone.setAlignmentX(Component.LEFT_ALIGNMENT);
+                employeePanel.add(lblEmployeePhone);
+            }
+        }
+        
+        infoTablePanel.add(customerPanel);
+        infoTablePanel.add(employeePanel);
+        mainPanel.add(infoTablePanel);
+        mainPanel.add(Box.createVerticalStrut(10));  // Giảm khoảng cách
+        
+        // ========== BẢNG SẢN PHẨM (GIỐNG PDF - CÓ CỘT GIẢM GIÁ) ==========
+        String[] columnNames = {"STT", "Ten san pham", "SL", "Don gia", "Giam gia", "Thanh tien"};
+        javax.swing.table.DefaultTableModel tableModel = new javax.swing.table.DefaultTableModel(columnNames, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        
+        javax.swing.JTable table = new javax.swing.JTable(tableModel);
+        table.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 9));  // Giảm size
+        table.setRowHeight(28);  // Giảm row height
+        table.getTableHeader().setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 9));
+        table.getTableHeader().setBackground(new Color(240, 240, 240));
+        table.setGridColor(new Color(220, 220, 220));
+        
+        // Set column widths (nhỏ gọn hơn)
+        table.getColumnModel().getColumn(0).setPreferredWidth(30);   // STT
+        table.getColumnModel().getColumn(1).setPreferredWidth(180);  // Tên sản phẩm
+        table.getColumnModel().getColumn(2).setPreferredWidth(35);   // SL
+        table.getColumnModel().getColumn(3).setPreferredWidth(80);   // Đơn giá
+        table.getColumnModel().getColumn(4).setPreferredWidth(90);   // Giảm giá
+        table.getColumnModel().getColumn(5).setPreferredWidth(85);   // Thành tiền
+        
+        // Center align cho các cột số
+        javax.swing.table.DefaultTableCellRenderer centerRenderer = new javax.swing.table.DefaultTableCellRenderer();
+        centerRenderer.setHorizontalAlignment(javax.swing.JLabel.CENTER);
+        table.getColumnModel().getColumn(0).setCellRenderer(centerRenderer);
+        table.getColumnModel().getColumn(2).setCellRenderer(centerRenderer);
+        
+        // Right align cho các cột tiền
+        javax.swing.table.DefaultTableCellRenderer rightRenderer = new javax.swing.table.DefaultTableCellRenderer();
+        rightRenderer.setHorizontalAlignment(javax.swing.JLabel.RIGHT);
+        table.getColumnModel().getColumn(3).setCellRenderer(rightRenderer);
+        table.getColumnModel().getColumn(4).setCellRenderer(rightRenderer);
+        table.getColumnModel().getColumn(5).setCellRenderer(rightRenderer);
+        
+        // Thêm dữ liệu vào bảng (GIỐNG LOGIC TRONG PDF)
+        int stt = 1;
+        for (ChiTietDonHang chiTiet : danhSachChiTiet) {
+            LoHang loHang = chiTiet.getLoHang();
+            SanPham sanPham = loHang != null ? loHang.getSanPham() : null;
+            
+            // Tên sản phẩm (bỏ thông tin lô hàng để gọn)
+            String tenSP = sanPham != null ? sanPham.getTenSanPham() : "";
+            String tenSPFull = tenSP;
+            
+            // Tính giảm giá với %
+            String giamGia;
+            double soTienGiamGia = chiTiet.getGiamGia();
+            if (soTienGiamGia > 0) {
+                double tongTienGoc = chiTiet.getDonGia() * chiTiet.getSoLuong();
+                double phanTramGiamGia = (soTienGiamGia / tongTienGoc) * 100;
+                
+                giamGia = "-" + currencyFormat.format(soTienGiamGia) + " đ" +
+                          " (" + String.format("%.0f", phanTramGiamGia) + "%)";
+            } else {
+                giamGia = "0 đ";
+            }
+            
+            tableModel.addRow(new Object[]{
+                stt++,
+                tenSPFull,
+                chiTiet.getSoLuong(),
+                currencyFormat.format(chiTiet.getDonGia()) + " đ",
+                giamGia,
+                currencyFormat.format(chiTiet.getThanhTien()) + " đ"
+            });
+        }
+        
+        javax.swing.JScrollPane tableScrollPane = new javax.swing.JScrollPane(table);
+        tableScrollPane.setBorder(BorderFactory.createLineBorder(new Color(200, 200, 200)));
+        tableScrollPane.setPreferredSize(new java.awt.Dimension(580, 250));  // Giảm size
+        tableScrollPane.setMaximumSize(new java.awt.Dimension(600, 250));
+        mainPanel.add(tableScrollPane);
+        mainPanel.add(Box.createVerticalStrut(12));  // Giảm khoảng cách
+        
+        // ========== TÍNH TOÁN CÁC GIÁ TRỊ (GIỐNG PDF) ==========
+        double tongTienHang = 0;
+        double tongGiamGiaSanPham = 0;
+        
+        for (ChiTietDonHang ct : danhSachChiTiet) {
+            tongTienHang += ct.getDonGia() * ct.getSoLuong();
+            tongGiamGiaSanPham += ct.getGiamGia();
+        }
+        
+        // Giảm giá đơn hàng
+        double giamGiaHoaDon = 0;
+        KhuyenMai khuyenMaiDonHang = donHang.getKhuyenMai();
+        if (khuyenMaiDonHang != null && khuyenMaiDonHang.getGiamGia() > 0) {
+            giamGiaHoaDon = (tongTienHang - tongGiamGiaSanPham) * khuyenMaiDonHang.getGiamGia();
+        }
+        
+        // Tổng giảm giá
+        double tongGiamGia = tongGiamGiaSanPham + giamGiaHoaDon;
+        
+        // ========== BẢNG THANH TOÁN (GIỐNG PDF - PANEL PHẢI) ==========
+        javax.swing.JPanel paymentPanel = new javax.swing.JPanel();
+        paymentPanel.setLayout(new BoxLayout(paymentPanel, BoxLayout.Y_AXIS));
+        paymentPanel.setBackground(Color.WHITE);
+        paymentPanel.setAlignmentX(Component.CENTER_ALIGNMENT);  // Căn giữa
+        paymentPanel.setMaximumSize(new java.awt.Dimension(450, 300));  // Giảm chiều rộng để căn giữa đẹp hơn
+        
+        // Helper method để tạo row thanh toán
+        java.util.function.BiConsumer<String, String> addPaymentRow = (label, value) -> {
+            javax.swing.JPanel rowPanel = new javax.swing.JPanel(new java.awt.BorderLayout());
+            rowPanel.setBackground(Color.WHITE);
+            rowPanel.setMaximumSize(new java.awt.Dimension(450, 25));  // Giảm chiều cao
+            
+            javax.swing.JLabel lblLeft = new javax.swing.JLabel(label);
+            lblLeft.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 10));  // Giảm size
+            
+            javax.swing.JLabel lblRight = new javax.swing.JLabel(value);
+            lblRight.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 10));
+            lblRight.setHorizontalAlignment(javax.swing.JLabel.RIGHT);
+            
+            rowPanel.add(lblLeft, BorderLayout.WEST);
+            rowPanel.add(lblRight, BorderLayout.EAST);
+            
+            paymentPanel.add(rowPanel);
+            paymentPanel.add(Box.createVerticalStrut(3));  // Giảm khoảng cách
+        };
+        
+        // Tổng tiền hàng
+        addPaymentRow.accept("Tong tien hang:", currencyFormat.format(tongTienHang) + " đ");
+        
+        // Giảm giá sản phẩm (nếu có)
+        if (tongGiamGiaSanPham > 0) {
+            addPaymentRow.accept("Giam gia san pham:", "-" + currencyFormat.format(tongGiamGiaSanPham) + " đ");
+        }
+        
+        // Giảm giá hóa đơn (nếu có)
+        if (giamGiaHoaDon > 0 && khuyenMaiDonHang != null) {
+            String labelText = "Giam gia hoa don:";
+            if (khuyenMaiDonHang.getTenKhuyenMai() != null && !khuyenMaiDonHang.getTenKhuyenMai().trim().isEmpty()) {
+                labelText += "\n(" + khuyenMaiDonHang.getTenKhuyenMai() + ")";
+            }
+            String valueText = "-" + currencyFormat.format(giamGiaHoaDon) + " đ" +
+                             " (" + String.format("%.1f", khuyenMaiDonHang.getGiamGia() * 100) + "%)";
+            addPaymentRow.accept(labelText, valueText);
+        }
+        
+        // Tổng giảm giá (nếu có)
+        if (tongGiamGia > 0) {
+            paymentPanel.add(Box.createVerticalStrut(2));
+            javax.swing.JPanel separatorPanel = new javax.swing.JPanel();
+            separatorPanel.setBackground(new Color(200, 200, 200));
+            separatorPanel.setMaximumSize(new java.awt.Dimension(450, 1));
+            paymentPanel.add(separatorPanel);
+            paymentPanel.add(Box.createVerticalStrut(5));
+            
+            javax.swing.JPanel tongGGPanel = new javax.swing.JPanel(new java.awt.BorderLayout());
+            tongGGPanel.setBackground(Color.WHITE);
+            tongGGPanel.setMaximumSize(new java.awt.Dimension(450, 25));
+            
+            javax.swing.JLabel lblTongGGLeft = new javax.swing.JLabel("TONG GIAM GIA:");
+            lblTongGGLeft.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 10));
+            
+            javax.swing.JLabel lblTongGGRight = new javax.swing.JLabel("-" + currencyFormat.format(tongGiamGia) + " đ");
+            lblTongGGRight.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 10));
+            lblTongGGRight.setHorizontalAlignment(javax.swing.JLabel.RIGHT);
+            
+            tongGGPanel.add(lblTongGGLeft, BorderLayout.WEST);
+            tongGGPanel.add(lblTongGGRight, BorderLayout.EAST);
+            
+            paymentPanel.add(tongGGPanel);
+            paymentPanel.add(Box.createVerticalStrut(5));
+        }
+        
+        // Đường kẻ trước THÀNH TIỀN
+        javax.swing.JPanel separator2Panel = new javax.swing.JPanel();
+        separator2Panel.setBackground(new Color(200, 200, 200));
+        separator2Panel.setMaximumSize(new java.awt.Dimension(450, 1));
+        paymentPanel.add(separator2Panel);
+        paymentPanel.add(Box.createVerticalStrut(5));
+        
+        // THÀNH TIỀN (in đậm, màu xanh)
+        javax.swing.JPanel thanhTienPanel = new javax.swing.JPanel(new java.awt.BorderLayout());
+        thanhTienPanel.setBackground(Color.WHITE);
+        thanhTienPanel.setMaximumSize(new java.awt.Dimension(450, 30));
+        
+        javax.swing.JLabel lblThanhTienLeft = new javax.swing.JLabel("THANH TIEN:");
+        lblThanhTienLeft.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 12));
+        
+        javax.swing.JLabel lblThanhTienRight = new javax.swing.JLabel(currencyFormat.format(donHang.getThanhTien()) + " đ");
+        lblThanhTienRight.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 12));
+        lblThanhTienRight.setForeground(new Color(0, 120, 215));
+        lblThanhTienRight.setHorizontalAlignment(javax.swing.JLabel.RIGHT);
+        
+        thanhTienPanel.add(lblThanhTienLeft, BorderLayout.WEST);
+        thanhTienPanel.add(lblThanhTienRight, BorderLayout.EAST);
+        
+        paymentPanel.add(thanhTienPanel);
+        paymentPanel.add(Box.createVerticalStrut(5));
+        
+        // Đường kẻ sau THÀNH TIỀN
+        javax.swing.JPanel separator3Panel = new javax.swing.JPanel();
+        separator3Panel.setBackground(new Color(200, 200, 200));
+        separator3Panel.setMaximumSize(new java.awt.Dimension(450, 1));
+        paymentPanel.add(separator3Panel);
+        paymentPanel.add(Box.createVerticalStrut(5));
+        
+        // Phương thức thanh toán
+        String phuongThuc = donHang.getPhuongThucThanhToan() != null ? 
+                           donHang.getPhuongThucThanhToan().toString() : "TIEN_MAT";
+        addPaymentRow.accept("Phuong thuc:", phuongThuc);
+        
+        mainPanel.add(paymentPanel);
+        mainPanel.add(Box.createVerticalStrut(15));  // Giảm khoảng cách
+        
+        // ========== FOOTER (GIỐNG PDF) ==========
+        javax.swing.JLabel lblFooter1 = new javax.swing.JLabel("Cam on quy khach da mua hang tai Pharmacity!");
+        lblFooter1.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 10));  // Giảm size
+        lblFooter1.setForeground(new Color(0, 120, 215));
+        lblFooter1.setAlignmentX(Component.CENTER_ALIGNMENT);
+        mainPanel.add(lblFooter1);
+        mainPanel.add(Box.createVerticalStrut(3));
+        
+        javax.swing.JLabel lblFooter2 = new javax.swing.JLabel("Vui long giu hoa don de doi/tra hang trong vong 7 ngay");
+        lblFooter2.setFont(new java.awt.Font("Segoe UI", java.awt.Font.ITALIC, 8));  // Giảm size
+        lblFooter2.setAlignmentX(Component.CENTER_ALIGNMENT);
+        mainPanel.add(lblFooter2);
+        
+        // Thêm mainPanel vào scrollPane
+        mainScrollPane.setViewportView(mainPanel);
+        
+        dialog.add(mainScrollPane);
         dialog.setVisible(true);
     }
     

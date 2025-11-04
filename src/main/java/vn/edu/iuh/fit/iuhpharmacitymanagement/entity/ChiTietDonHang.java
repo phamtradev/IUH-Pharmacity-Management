@@ -8,7 +8,7 @@ public class ChiTietDonHang {
     private double thanhTien;
     private double giamGia;
     private LoHang loHang;
-    private DonHang donHang;
+    private DonHang donHang; 
 
     public static final String MA_CHI_TIET_DON_HANG_RONG = "Mã chi tiết đơn hàng không được rỗng";
     public static final String SO_LUONG_SAI = "Số lượng không hợp lệ phải lớn hơn 0, không được rỗng";
@@ -36,6 +36,7 @@ public class ChiTietDonHang {
         setLoHang(loHang);
         setDonHang(donHang);
     }
+
 
 //    public String getMaChiTietDonHang() {
 //        return maChiTietDonHang;
@@ -113,6 +114,7 @@ public class ChiTietDonHang {
         }
         this.donHang = donHang;
     }
+
 
     @Override
     public String toString() {

@@ -28,6 +28,7 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
     private javax.swing.JPanel containerLoHang; // Container chứa nhiều lô (hiển thị dọc)
     private javax.swing.JScrollPane scrollPaneLoHang; // ScrollPane để kiểm soát scrollbar
     private boolean daThongBaoCongDon = false; // Flag để tracking đã thông báo cộng dồn chưa
+    private vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhuyenMai khuyenMaiDuocApDung; // Khuyến mãi được áp dụng cho sản phẩm này (nullable)
 
     public Panel_ChiTietSanPham() {
         this.currencyFormat = new DecimalFormat("#,###");
@@ -472,6 +473,22 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
      */
     public double getSoTienGiamGia() {
         return getTongTien() * getGiamGia();
+    }
+    
+    /**
+     * Lấy khuyến mãi được áp dụng cho sản phẩm này
+     * @return KhuyenMai hoặc null nếu không có (giảm giá thủ công)
+     */
+    public vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhuyenMai getKhuyenMaiDuocApDung() {
+        return khuyenMaiDuocApDung;
+    }
+    
+    /**
+     * Set khuyến mãi được áp dụng cho sản phẩm này
+     * @param khuyenMai KhuyenMai hoặc null (nếu giảm giá thủ công)
+     */
+    public void setKhuyenMaiDuocApDung(vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhuyenMai khuyenMai) {
+        this.khuyenMaiDuocApDung = khuyenMai;
     }
 
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
