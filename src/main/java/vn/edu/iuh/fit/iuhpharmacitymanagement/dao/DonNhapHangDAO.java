@@ -188,4 +188,27 @@ public class DonNhapHangDAO implements DAOInterface<DonNhapHang, String> {
     public List<DonNhapHang> timTheoText(String text) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
+    
+    /**
+     * Đếm số lượng đơn nhập hàng trong tuần hiện tại
+     * @return số lượng đơn nhập hàng trong tuần
+     */
+    public int countDonNhapHangTrongTuan() {
+        String sql = "SELECT COUNT(*) AS total FROM DonNhapHang " +
+                     "WHERE DATEPART(WEEK, ngayNhap) = DATEPART(WEEK, GETDATE()) " +
+                     "AND DATEPART(YEAR, ngayNhap) = DATEPART(YEAR, GETDATE())";
+        
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            if (rs.next()) {
+                return rs.getInt("total");
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
 }

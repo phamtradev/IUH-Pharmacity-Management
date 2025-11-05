@@ -94,5 +94,13 @@ public class KhachHangBUS {
     public Optional<KhachHang> timKhachHangTheoSoDienThoai(String soDienThoai) {
         return khachHangDAO.findBySoDienThoai(soDienThoai);
     }
+    
+    /**
+     * Đếm số lượng khách hàng đăng ký gần đây (10 khách hàng mới nhất)
+     * @return số lượng khách hàng mới
+     */
+    public int dem10KhachHangGanDay() {
+        return khachHangDAO.lay10KhachHangGanDay().size();
+    }
 }
 

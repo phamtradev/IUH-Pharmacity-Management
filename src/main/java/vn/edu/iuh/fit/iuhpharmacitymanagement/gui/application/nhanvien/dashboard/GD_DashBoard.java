@@ -15,6 +15,7 @@ import javax.swing.table.DefaultTableModel;
 import org.jdesktop.animation.timing.Animator;
 import org.jdesktop.animation.timing.TimingTargetAdapter;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.DonHangBUS;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.DonNhapHangBUS;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.HangHongBUS;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.LoHangDAO;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.SanPhamDAO;
@@ -40,11 +41,12 @@ public class GD_DashBoard extends javax.swing.JPanel {
     // Dashboard cards
     private DashboardCard cardDoanhThu;
     private DashboardCard cardDonHang;
-    private DashboardCard cardKhachHang;
+    private DashboardCard cardDonNhapHang;
     private DashboardCard cardDonXuatHuy;
     
     // Business logic
     private DonHangBUS donHangBUS;
+    private DonNhapHangBUS donNhapHangBUS;
     private HangHongBUS hangHongBUS;
     private SanPhamDAO sanPhamDAO;
     private LoHangDAO loHangDAO;
@@ -64,6 +66,7 @@ public class GD_DashBoard extends javax.swing.JPanel {
     public GD_DashBoard() {
         currencyFormat = new DecimalFormat("#,###");
         donHangBUS = new DonHangBUS();
+        donNhapHangBUS = new DonNhapHangBUS();
         hangHongBUS = new HangHongBUS();
         sanPhamDAO = new SanPhamDAO();
         loHangDAO = new LoHangDAO();
@@ -143,8 +146,9 @@ public class GD_DashBoard extends javax.swing.JPanel {
         
         // Ngày hiện tại
         LocalDate today = LocalDate.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("'Hôm nay là' EEEE, dd/MM/yyyy");
-        JLabel lblDate = new JLabel(today.format(formatter));
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        String dateText = "Hôm nay là " + getDayOfWeekVietnamese(today) + ", " + today.format(formatter);
+        JLabel lblDate = new JLabel(dateText);
         lblDate.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         lblDate.setForeground(new Color(102, 102, 102));
         
@@ -165,6 +169,22 @@ public class GD_DashBoard extends javax.swing.JPanel {
             return "Chào buổi chiều";
         } else {
             return "Chào buổi tối";
+        }
+    }
+    
+    /**
+     * Lấy tên ngày trong tuần tiếng Việt
+     */
+    private String getDayOfWeekVietnamese(LocalDate date) {
+        switch (date.getDayOfWeek()) {
+            case MONDAY: return "Thứ Hai";
+            case TUESDAY: return "Thứ Ba";
+            case WEDNESDAY: return "Thứ Tư";
+            case THURSDAY: return "Thứ Năm";
+            case FRIDAY: return "Thứ Sáu";
+            case SATURDAY: return "Thứ Bảy";
+            case SUNDAY: return "Chủ Nhật";
+            default: return "";
         }
     }
     
@@ -197,14 +217,14 @@ public class GD_DashBoard extends javax.swing.JPanel {
                 "10.svg"  // Icon đơn hàng
         );
 
-        // Card 3: Khách hàng mới
-        cardKhachHang = new DashboardCard(
-                "KHÁCH HÀNG MỚI",
+        // Card 3: Đơn nhập hàng trong tuần
+        cardDonNhapHang = new DashboardCard(
+                "ĐƠN NHẬP HÀNG",
                 "0",
-                "Đăng ký hôm nay",
+                "Trong tuần này",
                 new Color(255, 152, 0),
                 Color.WHITE,
-                "21.svg"  // Icon khách hàng
+                "10.svg"  // Icon đơn hàng
         );
 
         // Card 4: Đơn xuất hủy
@@ -219,7 +239,7 @@ public class GD_DashBoard extends javax.swing.JPanel {
 
         statsPanel.add(cardDoanhThu);
         statsPanel.add(cardDonHang);
-        statsPanel.add(cardKhachHang);
+        statsPanel.add(cardDonNhapHang);
         statsPanel.add(cardDonXuatHuy);
 
         return statsPanel;
@@ -244,7 +264,7 @@ public class GD_DashBoard extends javax.swing.JPanel {
         
         // Chart
         chart = new Chart();
-        chart.setPreferredSize(new Dimension(600, 300));
+        chart.setPreferredSize(new Dimension(600, 600));
         
         panel.add(lblTitle, BorderLayout.NORTH);
         panel.add(chart, BorderLayout.CENTER);
@@ -285,31 +305,16 @@ public class GD_DashBoard extends javax.swing.JPanel {
             BorderFactory.createEmptyBorder(20, 20, 20, 20)
         ));
         
-        // Header panel với title và button
-        JPanel headerPanel = new JPanel(new BorderLayout());
-        headerPanel.setBackground(Color.WHITE);
-        headerPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 15, 0));
-        
-        JLabel lblTableTitle = new JLabel("ĐƠN HÀNG GẦN ĐÂY (CÁ NHÂN)");
+        // Title
+        JLabel lblTableTitle = new JLabel("10 ĐƠN HÀNG GẦN NHẤT (CÁ NHÂN)");
         lblTableTitle.setFont(new Font("Segoe UI", Font.BOLD, 16));
         lblTableTitle.setForeground(new Color(51, 51, 51));
-        
-        JButton btnViewAll = new JButton("Xem tất cả đơn hàng");
-        btnViewAll.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        btnViewAll.setForeground(new Color(33, 150, 243));
-        btnViewAll.setBackground(Color.WHITE);
-        btnViewAll.setBorderPainted(false);
-        btnViewAll.setFocusPainted(false);
-        btnViewAll.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnViewAll.addActionListener(e -> viewAllOrders());
-        
-        headerPanel.add(lblTableTitle, BorderLayout.WEST);
-        headerPanel.add(btnViewAll, BorderLayout.EAST);
+        lblTableTitle.setBorder(BorderFactory.createEmptyBorder(0, 0, 15, 0));
         
         // Setup table
         setupRecentOrdersTable();
         
-        panel.add(headerPanel, BorderLayout.NORTH);
+        panel.add(lblTableTitle, BorderLayout.NORTH);
         panel.add(scrollTable, BorderLayout.CENTER);
         
         return panel;
@@ -329,11 +334,12 @@ public class GD_DashBoard extends javax.swing.JPanel {
         };
         
         table = new JTable(tableModel);
-        table.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        table.setRowHeight(40);
-        table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
+        table.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        table.setRowHeight(50);  // Tăng height để dễ đọc hơn
+        table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
         table.getTableHeader().setBackground(new Color(245, 245, 245));
         table.getTableHeader().setForeground(new Color(51, 51, 51));
+        table.getTableHeader().setPreferredSize(new Dimension(0, 45));  // Tăng height header
         
         // Màu selection nổi bật khi click
         table.setSelectionBackground(new Color(64, 158, 255));
@@ -372,13 +378,9 @@ public class GD_DashBoard extends javax.swing.JPanel {
                     .sum();
             int soDonHang = myOrdersToday.size();
             
-            // ========== LẤY DỮ LIỆU KHÁCH HÀNG MỚI ==========
-            // Tính số khách hàng mới dựa trên đơn hàng hôm nay có khách hàng khác nhau
-            long soKhachHangMoi = myOrdersToday.stream()
-                    .filter(dh -> dh.getKhachHang() != null)
-                    .map(dh -> dh.getKhachHang().getMaKhachHang())
-                    .distinct()
-                    .count();
+            // ========== LẤY DỮ LIỆU ĐƠN NHẬP HÀNG ==========
+            // Đếm số đơn nhập hàng trong tuần
+            int soDonNhapHangTrongTuan = donNhapHangBUS.demDonNhapHangTrongTuan();
             
             // ========== LẤY DỮ LIỆU ĐƠN XUẤT HỦY ==========
             List<HangHong> allHangHong = hangHongBUS.layTatCaHangHong();
@@ -389,7 +391,7 @@ public class GD_DashBoard extends javax.swing.JPanel {
             // ========== CẬP NHẬT CARDS ==========
             cardDoanhThu.updateValue(currencyFormat.format(tongDoanhThu) + " đ");
             cardDonHang.updateValue(String.valueOf(soDonHang) + " đơn");
-            cardKhachHang.updateValue(String.valueOf(soKhachHangMoi) + " khách");
+            cardDonNhapHang.updateValue(String.valueOf(soDonNhapHangTrongTuan) + " đơn");
             cardDonXuatHuy.updateValue(String.valueOf(soDonXuatHuy) + " đơn");
             
             // ========== LOAD BIỂU ĐỒ 7 NGÀY ==========
@@ -409,7 +411,7 @@ public class GD_DashBoard extends javax.swing.JPanel {
                     JOptionPane.ERROR_MESSAGE);
         }
     }
-    
+
     /**
      * Load dữ liệu biểu đồ doanh thu 7 ngày gần nhất (cá nhân)
      */
@@ -464,8 +466,8 @@ public class GD_DashBoard extends javax.swing.JPanel {
                         .mapToInt(LoHang::getTonKho)
                         .sum();
                 
-                // Chỉ hiển thị sản phẩm tồn kho < 50
-                if (tonKho < 50 && tonKho >= 0) {
+                // Chỉ hiển thị sản phẩm tồn kho < 10
+                if (tonKho < 10 && tonKho >= 0) {
                     JPanel itemPanel = createLowStockItem(sp.getTenSanPham(), tonKho);
                     contentPanel.add(itemPanel);
                     contentPanel.add(Box.createVerticalStrut(8));
@@ -584,18 +586,6 @@ public class GD_DashBoard extends javax.swing.JPanel {
         fadeInAnimator.setDeceleration(0.5f);
         fadeInAnimator.start();
     }
-    
-    /**
-     * Xem tất cả đơn hàng - Chuyển sang tab Bán hàng
-     */
-    private void viewAllOrders() {
-        // Có thể implement chuyển tab hoặc mở dialog
-        JOptionPane.showMessageDialog(this, 
-                "Chức năng này sẽ chuyển đến trang Quản lý đơn hàng", 
-                "Thông báo", 
-                JOptionPane.INFORMATION_MESSAGE);
-    }
-
 
     /**
      * Làm mới dữ liệu dashboard
