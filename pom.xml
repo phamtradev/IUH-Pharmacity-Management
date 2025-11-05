@@ -124,6 +124,24 @@
             <artifactId>miglayout-swing</artifactId>
             <version>11.3</version>
         </dependency>
+        <!-- zxing generate qrcode -->
+        <dependency>
+            <groupId>com.google.zxing</groupId>
+            <artifactId>core</artifactId>
+            <version>3.5.3</version>
+        </dependency>
+        <!-- gson convert object to json -->
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.13.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.zxing</groupId>
+            <artifactId>javase</artifactId>
+            <version>3.5.3</version>
+            <type>jar</type>
+        </dependency>
     </dependencies>
 
     <build>

@@ -909,7 +909,7 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
 
             txtEmployeeIDRsPass.setText((String) table.getValueAt(selectedRow, 0));
             txtEmployeeNameRsPass.setText((String) table.getValueAt(selectedRow, 1));
-
+            
             modalResetPassword.setLocationRelativeTo(null);
             modalResetPassword.setVisible(true);
         }

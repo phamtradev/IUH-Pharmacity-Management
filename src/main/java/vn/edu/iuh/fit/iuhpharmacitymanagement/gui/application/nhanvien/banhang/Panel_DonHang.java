@@ -8,7 +8,11 @@ import com.formdev.flatlaf.FlatClientProperties;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Image;
 import java.awt.event.KeyEvent;
+import java.awt.image.BufferedImage;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -43,6 +47,10 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.util.UserSession;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.util.XuatHoaDonPDF;
 import java.util.Map;
+import javax.swing.ImageIcon;
+import javax.swing.JPanel;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.util.BarcodeUtil;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.util.QrCodeUtil;
 
 /**
  *
@@ -76,13 +84,13 @@ public class Panel_DonHang extends javax.swing.JPanel {
         nhanVienBUS = new NhanVienBUS();
         loHangBUS = new LoHangBUS();
         danhSachKhuyenMaiDaChon = new java.util.HashMap<>(); // Khởi tạo Map
-        
+
         initComponents();
         customizeTextFields();
         addPromotionLabels();
         addPriceSuggestButtons();
     }
-    
+
     /**
      * Set reference đến form cha (GD_BanHang)
      */
@@ -502,84 +510,85 @@ public class Panel_DonHang extends javax.swing.JPanel {
     private void txtTimKhachHangActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtTimKhachHangActionPerformed
         timKhachHang();
     }//GEN-LAST:event_txtTimKhachHangActionPerformed
-    
+
     /**
      * Tìm khách hàng theo số điện thoại
      */
     private void timKhachHang() {
         String soDienThoai = txtTimKhachHang.getText().trim();
-        
+
         // Kiểm tra input rỗng
         if (soDienThoai.isEmpty()) {
-            Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER, 
-                "Vui lòng nhập số điện thoại khách hàng");
+            Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER,
+                    "Vui lòng nhập số điện thoại khách hàng");
             txtTimKhachHang.requestFocus();
             return;
         }
-        
+
         // Kiểm tra định dạng số điện thoại (10 số, bắt đầu bằng 0)
         if (!soDienThoai.matches("^0[0-9]{9}$")) {
-            Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER, 
-                "Số điện thoại không hợp lệ. Phải bắt đầu bằng 0 và gồm 10 chữ số");
+            Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER,
+                    "Số điện thoại không hợp lệ. Phải bắt đầu bằng 0 và gồm 10 chữ số");
             txtTimKhachHang.selectAll();
             txtTimKhachHang.requestFocus();
             return;
         }
-        
+
         // Tìm khách hàng theo số điện thoại
         Optional<KhachHang> khachHangOpt = khachHangBUS.timKhachHangTheoSoDienThoai(soDienThoai);
-        
+
         if (khachHangOpt.isPresent()) {
             khachHangHienTai = khachHangOpt.get();
-            
+
             // Hiển thị thông tin khách hàng
             txtTenKhachHang.setText(khachHangHienTai.getTenKhachHang());
-            
+
             // Thông báo thành công
-            Notifications.getInstance().show(Notifications.Type.SUCCESS, Notifications.Location.TOP_CENTER, 
-                "Đã tìm thấy khách hàng: " + khachHangHienTai.getTenKhachHang());
-            
+            Notifications.getInstance().show(Notifications.Type.SUCCESS, Notifications.Location.TOP_CENTER,
+                    "Đã tìm thấy khách hàng: " + khachHangHienTai.getTenKhachHang());
+
             // Xóa text field tìm kiếm
             txtTimKhachHang.setText("");
         } else {
             // Reset về khách vãng lai
             khachHangHienTai = null;
             txtTenKhachHang.setText("Vãng lai");
-            
-            Notifications.getInstance().show(Notifications.Type.INFO, Notifications.Location.TOP_CENTER, 
-                "Không tìm thấy khách hàng với SĐT: " + soDienThoai + ". Khách hàng vãng lai");
-            
+
+            Notifications.getInstance().show(Notifications.Type.INFO, Notifications.Location.TOP_CENTER,
+                    "Không tìm thấy khách hàng với SĐT: " + soDienThoai + ". Khách hàng vãng lai");
+
             txtTimKhachHang.selectAll();
             txtTimKhachHang.requestFocus();
         }
     }
-    
+
     /**
      * Tìm đơn hàng từ GD_BanHang (được gọi từ bên ngoài)
+     *
      * @param maDonHang mã đơn hàng cần tìm
      */
     public void timDonHangTuGDBanHang(String maDonHang) {
         // Kiểm tra input rỗng
         if (maDonHang == null || maDonHang.trim().isEmpty()) {
-            Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER, 
-                "Vui lòng nhập mã đơn hàng hoặc quét mã");
+            Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER,
+                    "Vui lòng nhập mã đơn hàng hoặc quét mã");
             return;
         }
-        
+
         maDonHang = maDonHang.trim();
-        
+
         // Tìm đơn hàng theo mã
         List<DonHang> ketQuaTimKiem = donHangBUS.timKiemTheoMa(maDonHang);
         Optional<DonHang> donHangOpt = ketQuaTimKiem.isEmpty() ? Optional.empty() : Optional.of(ketQuaTimKiem.get(0));
-        
+
         if (!donHangOpt.isPresent()) {
-            Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER, 
-                "Không tìm thấy đơn hàng với mã: " + maDonHang);
+            Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER,
+                    "Không tìm thấy đơn hàng với mã: " + maDonHang);
             return;
         }
-        
+
         DonHang donHang = donHangOpt.get();
-        
+
         // Load thông tin khách hàng từ đơn hàng
         khachHangHienTai = donHang.getKhachHang();
         if (khachHangHienTai != null) {
@@ -588,49 +597,49 @@ public class Panel_DonHang extends javax.swing.JPanel {
         } else {
             txtTenKhachHang.setText("Vãng lai");
         }
-        
+
         // Lấy danh sách sản phẩm từ đơn hàng
         List<ChiTietDonHang> danhSachChiTiet = chiTietDonHangBUS.layDanhSachChiTietTheoMaDonHang(maDonHang);
-        
+
         if (danhSachChiTiet.isEmpty()) {
-            Notifications.getInstance().show(Notifications.Type.INFO, Notifications.Location.TOP_CENTER, 
-                "Đơn hàng không có sản phẩm");
+            Notifications.getInstance().show(Notifications.Type.INFO, Notifications.Location.TOP_CENTER,
+                    "Đơn hàng không có sản phẩm");
             return;
         }
-        
+
         // Hiển thị sản phẩm vào danh sách bán hàng
         hienThiSanPhamTuDonHang(danhSachChiTiet);
-        
+
         // Thông báo thành công
-        Notifications.getInstance().show(Notifications.Type.SUCCESS, Notifications.Location.TOP_CENTER, 
-            "Đã tìm thấy đơn hàng " + maDonHang + " với " + danhSachChiTiet.size() + " sản phẩm");
+        Notifications.getInstance().show(Notifications.Type.SUCCESS, Notifications.Location.TOP_CENTER,
+                "Đã tìm thấy đơn hàng " + maDonHang + " với " + danhSachChiTiet.size() + " sản phẩm");
     }
-    
+
     /**
      * Hiển thị danh sách sản phẩm từ đơn hàng vào giỏ hàng
      */
     private void hienThiSanPhamTuDonHang(List<ChiTietDonHang> danhSachChiTiet) {
         if (gdBanHang == null) {
-            Notifications.getInstance().show(Notifications.Type.ERROR, Notifications.Location.TOP_CENTER, 
-                "Lỗi hệ thống: Không thể truy cập giỏ hàng!");
+            Notifications.getInstance().show(Notifications.Type.ERROR, Notifications.Location.TOP_CENTER,
+                    "Lỗi hệ thống: Không thể truy cập giỏ hàng!");
             return;
         }
-        
+
         // Duyệt qua từng sản phẩm và thêm vào giỏ hàng
         for (ChiTietDonHang chiTiet : danhSachChiTiet) {
             LoHang loHang = chiTiet.getLoHang();
             if (loHang == null || loHang.getSanPham() == null) {
                 continue;
             }
-            
+
             SanPham sanPham = loHang.getSanPham();
             int soLuong = chiTiet.getSoLuong();
-            
+
             // Thêm sản phẩm vào giỏ hàng thông qua GD_BanHang
             gdBanHang.themSanPhamVaoGio(sanPham, loHang, soLuong);
         }
     }
-    
+
     /**
      * Lấy khách hàng hiện tại
      */
@@ -642,31 +651,31 @@ public class Panel_DonHang extends javax.swing.JPanel {
         try {
             // 1. Kiểm tra giỏ hàng có sản phẩm không
             if (gdBanHang == null) {
-                Notifications.getInstance().show(Notifications.Type.ERROR, 
-                    Notifications.Location.TOP_CENTER,
-                    "Lỗi hệ thống: Không thể truy cập giỏ hàng!");
+                Notifications.getInstance().show(Notifications.Type.ERROR,
+                        Notifications.Location.TOP_CENTER,
+                        "Lỗi hệ thống: Không thể truy cập giỏ hàng!");
                 return;
             }
-            
+
             List<Panel_ChiTietSanPham> danhSachSanPham = gdBanHang.getDanhSachSanPhamTrongGio();
             if (danhSachSanPham == null || danhSachSanPham.isEmpty()) {
-                Notifications.getInstance().show(Notifications.Type.WARNING, 
-                    Notifications.Location.TOP_CENTER,
-                    "Giỏ hàng trống! Vui lòng thêm sản phẩm trước khi thanh toán.");
+                Notifications.getInstance().show(Notifications.Type.WARNING,
+                        Notifications.Location.TOP_CENTER,
+                        "Giỏ hàng trống! Vui lòng thêm sản phẩm trước khi thanh toán.");
                 return;
             }
-            
+
             // 2. Kiểm tra tiền khách đưa
             double tongHoaDon = parseCurrency(txtTongHoaDon.getText());
             double tienKhachDua = parseCurrency(txtTienKhachDua.getText());
-            
+
             if (tienKhachDua < tongHoaDon) {
-                Notifications.getInstance().show(Notifications.Type.WARNING, 
-                    Notifications.Location.TOP_CENTER,
-                    "Tiền khách đưa không đủ! Còn thiếu: " + String.format("%,.0f đ", tongHoaDon - tienKhachDua));
+                Notifications.getInstance().show(Notifications.Type.WARNING,
+                        Notifications.Location.TOP_CENTER,
+                        "Tiền khách đưa không đủ! Còn thiếu: " + String.format("%,.0f đ", tongHoaDon - tienKhachDua));
                 return;
             }
-            
+
             // 3. Lấy thông tin nhân viên hiện tại
             NhanVien nhanVien = UserSession.getInstance().getNhanVien();
             if (nhanVien == null) {
@@ -675,174 +684,176 @@ public class Panel_DonHang extends javax.swing.JPanel {
                 if (danhSachNV != null && !danhSachNV.isEmpty()) {
                     nhanVien = danhSachNV.get(0);
                 } else {
-                    Notifications.getInstance().show(Notifications.Type.ERROR, 
-                        Notifications.Location.TOP_CENTER,
-                        "Không tìm thấy thông tin nhân viên!");
+                    Notifications.getInstance().show(Notifications.Type.ERROR,
+                            Notifications.Location.TOP_CENTER,
+                            "Không tìm thấy thông tin nhân viên!");
                     return;
                 }
             }
-            
+
             // 4. Tạo đơn hàng
             DonHang donHang = new DonHang();
             donHang.setNgayDatHang(LocalDate.now());
             donHang.setThanhTien(tongHoaDon);
             donHang.setPhuongThucThanhToan(PhuongThucThanhToan.TIEN_MAT); // Mặc định tiền mặt
             donHang.setNhanVien(nhanVien);
-            
+
             // Khách hàng (nếu có, không thì null)
             donHang.setKhachHang(khachHangHienTai);
-            
+
             // Khuyến mãi ĐƠN HÀNG (nếu có, không thì null)
             KhuyenMai kmDonHang = danhSachKhuyenMaiDaChon.get(LoaiKhuyenMai.DON_HANG);
             donHang.setKhuyenMai(kmDonHang);
-            
+
             // 5. Lưu đơn hàng vào database
             if (!donHangBUS.taoDonHang(donHang)) {
-                Notifications.getInstance().show(Notifications.Type.ERROR, 
-                    Notifications.Location.TOP_CENTER,
-                    "Không thể tạo đơn hàng! Vui lòng thử lại.");
+                Notifications.getInstance().show(Notifications.Type.ERROR,
+                        Notifications.Location.TOP_CENTER,
+                        "Không thể tạo đơn hàng! Vui lòng thử lại.");
                 return;
             }
-            
+
             // 6. Tạo danh sách chi tiết đơn hàng
             List<ChiTietDonHang> chiTietDonHangList = new ArrayList<>();
-            
+
             // Lấy khuyến mãi sản phẩm (nếu có) để tính giảm giá
             KhuyenMai kmSanPham = danhSachKhuyenMaiDaChon.get(LoaiKhuyenMai.SAN_PHAM);
             List<ChiTietKhuyenMaiSanPham> danhSachCTKM = null;
             if (kmSanPham != null) {
                 danhSachCTKM = chiTietKhuyenMaiSanPhamBUS.timTheoMaKhuyenMai(kmSanPham.getMaKhuyenMai());
             }
-            
+
             for (Panel_ChiTietSanPham panel : danhSachSanPham) {
                 ChiTietDonHang chiTiet = new ChiTietDonHang();
                 chiTiet.setDonHang(donHang);
                 chiTiet.setLoHang(panel.getLoHangDaChon());
                 chiTiet.setSoLuong(panel.getSoLuong());
                 chiTiet.setDonGia(panel.getSanPham().getGiaBan());
-                
+
                 // Lấy số tiền giảm giá từ panel (đã bao gồm giảm giá từ khuyến mãi hoặc nhập tay)
                 double tongTienGoc = panel.getTongTien(); // Giá gốc = đơn giá × số lượng
                 double giamGiaSP = panel.getSoTienGiamGia(); // Lấy trực tiếp từ panel
-                
+
                 // Debug log
-                System.out.println("DEBUG - Sản phẩm: " + panel.getSanPham().getTenSanPham() + 
-                    ", Giá gốc: " + tongTienGoc + 
-                    ", % Giảm: " + (panel.getGiamGia() * 100) + "%" +
-                    ", Giảm giá: " + giamGiaSP);
-                
+                System.out.println("DEBUG - Sản phẩm: " + panel.getSanPham().getTenSanPham()
+                        + ", Giá gốc: " + tongTienGoc
+                        + ", % Giảm: " + (panel.getGiamGia() * 100) + "%"
+                        + ", Giảm giá: " + giamGiaSP);
+
                 chiTiet.setGiamGia(giamGiaSP);
-                
+
                 // Thành tiền = Giá gốc - Giảm giá
                 double thanhTien = tongTienGoc - giamGiaSP;
                 chiTiet.setThanhTien(thanhTien);
-                
+
                 // Lưu chi tiết đơn hàng
                 if (!chiTietDonHangBUS.themChiTietDonHang(chiTiet)) {
-                    Notifications.getInstance().show(Notifications.Type.ERROR, 
-                        Notifications.Location.TOP_CENTER,
-                        "Không thể lưu chi tiết đơn hàng!");
+                    Notifications.getInstance().show(Notifications.Type.ERROR,
+                            Notifications.Location.TOP_CENTER,
+                            "Không thể lưu chi tiết đơn hàng!");
                     return;
                 }
-                
+
                 // QUAN TRỌNG: Xử lý giảm tồn kho - tự động chuyển lô nếu cần
                 int soLuongBan = panel.getSoLuong();
                 List<LoHang> danhSachLoHang = panel.getDanhSachLoHang();
-                
+
                 if (danhSachLoHang == null || danhSachLoHang.isEmpty()) {
-                    Notifications.getInstance().show(Notifications.Type.ERROR, 
-                        Notifications.Location.TOP_CENTER,
-                        "Lỗi: Không tìm thấy lô hàng cho sản phẩm " + panel.getSanPham().getTenSanPham());
+                    Notifications.getInstance().show(Notifications.Type.ERROR,
+                            Notifications.Location.TOP_CENTER,
+                            "Lỗi: Không tìm thấy lô hàng cho sản phẩm " + panel.getSanPham().getTenSanPham());
                     return;
                 }
-                
+
                 // Kiểm tra tổng tồn kho của tất cả các lô còn hiệu lực
                 int tongTonKho = danhSachLoHang.stream()
-                    .filter(lh -> lh.getTonKho() > 0 && lh.isTrangThai())
-                    .mapToInt(LoHang::getTonKho)
-                    .sum();
-                
+                        .filter(lh -> lh.getTonKho() > 0 && lh.isTrangThai())
+                        .mapToInt(LoHang::getTonKho)
+                        .sum();
+
                 if (tongTonKho < soLuongBan) {
-                    String donViTinh = panel.getSanPham().getDonViTinh() != null ? 
-                        panel.getSanPham().getDonViTinh().getTenDonVi() : "sản phẩm";
-                    Notifications.getInstance().show(Notifications.Type.ERROR, 
-                        Notifications.Location.TOP_CENTER,
-                        "❌ Không đủ hàng! Sản phẩm '" + panel.getSanPham().getTenSanPham() + 
-                        "' chỉ còn " + tongTonKho + " " + donViTinh + " trong kho.\n" +
-                        "Vui lòng giảm số lượng hoặc xóa sản phẩm khỏi giỏ hàng!");
+                    String donViTinh = panel.getSanPham().getDonViTinh() != null
+                            ? panel.getSanPham().getDonViTinh().getTenDonVi() : "sản phẩm";
+                    Notifications.getInstance().show(Notifications.Type.ERROR,
+                            Notifications.Location.TOP_CENTER,
+                            "❌ Không đủ hàng! Sản phẩm '" + panel.getSanPham().getTenSanPham()
+                            + "' chỉ còn " + tongTonKho + " " + donViTinh + " trong kho.\n"
+                            + "Vui lòng giảm số lượng hoặc xóa sản phẩm khỏi giỏ hàng!");
                     return;
                 }
-                
+
                 // Giảm tồn kho từ các lô hàng (ưu tiên lô có hạn sử dụng gần nhất)
                 int soLuongConLai = soLuongBan;
                 List<LoHang> danhSachLoHopLe = danhSachLoHang.stream()
-                    .filter(lh -> lh.getTonKho() > 0 && lh.isTrangThai())
-                    .sorted((lh1, lh2) -> lh1.getHanSuDung().compareTo(lh2.getHanSuDung())) // FIFO
-                    .collect(java.util.stream.Collectors.toList());
-                
+                        .filter(lh -> lh.getTonKho() > 0 && lh.isTrangThai())
+                        .sorted((lh1, lh2) -> lh1.getHanSuDung().compareTo(lh2.getHanSuDung())) // FIFO
+                        .collect(java.util.stream.Collectors.toList());
+
                 for (LoHang loHang : danhSachLoHopLe) {
-                    if (soLuongConLai <= 0) break;
-                    
+                    if (soLuongConLai <= 0) {
+                        break;
+                    }
+
                     int tonKhoHienTai = loHang.getTonKho();
                     int soLuongTuLoNay = Math.min(tonKhoHienTai, soLuongConLai);
                     int tonKhoMoi = tonKhoHienTai - soLuongTuLoNay;
-                    
+
                     try {
                         loHang.setTonKho(tonKhoMoi);
-                        
+
                         // Cập nhật vào database
                         if (!loHangBUS.capNhatLoHang(loHang)) {
-                            Notifications.getInstance().show(Notifications.Type.ERROR, 
-                                Notifications.Location.TOP_CENTER,
-                                "Không thể cập nhật tồn kho cho lô hàng: " + loHang.getMaLoHang());
+                            Notifications.getInstance().show(Notifications.Type.ERROR,
+                                    Notifications.Location.TOP_CENTER,
+                                    "Không thể cập nhật tồn kho cho lô hàng: " + loHang.getMaLoHang());
                             return;
                         }
-                        
+
                         // Ghi log
-                        System.out.println("✓ Giảm tồn kho lô " + loHang.getMaLoHang() + 
-                            ": " + tonKhoHienTai + " → " + tonKhoMoi + 
-                            " (bán " + soLuongTuLoNay + ")");
-                        
+                        System.out.println("✓ Giảm tồn kho lô " + loHang.getMaLoHang()
+                                + ": " + tonKhoHienTai + " → " + tonKhoMoi
+                                + " (bán " + soLuongTuLoNay + ")");
+
                         soLuongConLai -= soLuongTuLoNay;
-                        
+
                     } catch (Exception e) {
-                        Notifications.getInstance().show(Notifications.Type.ERROR, 
-                            Notifications.Location.TOP_CENTER,
-                            "Lỗi khi cập nhật tồn kho: " + e.getMessage());
+                        Notifications.getInstance().show(Notifications.Type.ERROR,
+                                Notifications.Location.TOP_CENTER,
+                                "Lỗi khi cập nhật tồn kho: " + e.getMessage());
                         return;
                     }
                 }
-                
+
                 chiTietDonHangList.add(chiTiet);
             }
-            
+
             // 7. Tự động xuất hóa đơn PDF vào folder resources/img/hoadonbanhang
             String pdfPath = XuatHoaDonPDF.xuatHoaDonTuDong(donHang, chiTietDonHangList, kmSanPham);
-            
+
             // 8. Thông báo thành công
             String message = "Tạo đơn hàng thành công! Mã đơn: " + donHang.getMaDonHang();
             if (pdfPath != null) {
                 message += "\nHóa đơn đã được lưu tại: " + pdfPath;
             }
-            Notifications.getInstance().show(Notifications.Type.SUCCESS, 
-                Notifications.Location.TOP_CENTER,
-                message);
-            
+            Notifications.getInstance().show(Notifications.Type.SUCCESS,
+                    Notifications.Location.TOP_CENTER,
+                    message);
+
             // 9. Hiển thị preview hóa đơn luôn
             hienThiHoaDon(donHang, chiTietDonHangList, kmSanPham);
-            
+
             // 10. Reset giỏ hàng
             gdBanHang.xoaToanBoGioHang();
             resetThanhToan();
-            
+
         } catch (Exception e) {
             e.printStackTrace();
-            Notifications.getInstance().show(Notifications.Type.ERROR, 
-                Notifications.Location.TOP_CENTER,
-                "Lỗi: " + e.getMessage());
+            Notifications.getInstance().show(Notifications.Type.ERROR,
+                    Notifications.Location.TOP_CENTER,
+                    "Lỗi: " + e.getMessage());
         }
     }
-    
+
     private void btnBanHangActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBanHangActionPerformed
         createOrder();
 
@@ -870,38 +881,41 @@ public class Panel_DonHang extends javax.swing.JPanel {
     private double tongTienHang;
     private double discountProduct;
     private double discountOrder;
-    
+
     /**
      * Cập nhật tổng tiền hàng
      */
     public void updateTongTienHang(double tongTien) {
         this.tongTienHang = tongTien;
         txtTongTienHang.setText(String.format("%,.0f đ", tongTien));
-        
+
         updateTongHoaDon();
     }
-    
+
     /**
      * Cập nhật tổng giảm giá sản phẩm
+     *
      * @param discount Tổng số tiền giảm giá
-     * @param khuyenMai Khuyến mãi được áp dụng (có thể null nếu có nhiều khuyến mãi)
+     * @param khuyenMai Khuyến mãi được áp dụng (có thể null nếu có nhiều khuyến
+     * mãi)
      */
     public void updateDiscountProduct(double discount, KhuyenMai khuyenMai) {
         this.discountProduct = discount;
         txtDiscountProduct.setText(String.format("%,.0f đ", discount));
-        
+
         updateTongHoaDon();
     }
-    
+
     /**
      * Cập nhật tổng giảm giá hóa đơn
+     *
      * @param discount Tổng số tiền giảm giá
      * @param khuyenMai Khuyến mãi được áp dụng (có thể null)
      */
     public void updateDiscountOrder(double discount, KhuyenMai khuyenMai) {
         this.discountOrder = discount;
         txtDiscountOrder.setText(String.format("%,.0f đ", discount));
-        
+
         if (lblTenKhuyenMaiHoaDon != null) {
             if (khuyenMai != null && discount > 0) {
                 lblTenKhuyenMaiHoaDon.setText("(" + khuyenMai.getTenKhuyenMai() + " - " + String.format("%.1f", khuyenMai.getGiamGia() * 100) + "%)");
@@ -909,10 +923,10 @@ public class Panel_DonHang extends javax.swing.JPanel {
                 lblTenKhuyenMaiHoaDon.setText("");
             }
         }
-        
+
         updateTongHoaDon();
     }
-    
+
     /**
      * Cập nhật tổng hóa đơn (tự động tính)
      */
@@ -920,11 +934,11 @@ public class Panel_DonHang extends javax.swing.JPanel {
         double tongHoaDon = tongTienHang - discountProduct - discountOrder;
         txtTongHoaDon.setText(String.format("%,.0f đ", tongHoaDon));
         updateTienTraKhach();
-        
+
         // Cập nhật các nút tiền mệnh giá gợi ý dựa trên tổng hóa đơn mới
         addPriceSuggestButtons();
     }
-    
+
     /**
      * Tính tiền thối cho khách (tự động cập nhật khi thay đổi tiền khách đưa)
      */
@@ -932,17 +946,17 @@ public class Panel_DonHang extends javax.swing.JPanel {
         try {
             // Lấy số tiền khách đưa, chỉ giữ lại số (bỏ dấu chấm, chữ)
             String tienKhachDuaStr = txtTienKhachDua.getText().replaceAll("[^0-9]", "");
-            
+
             if (!tienKhachDuaStr.isEmpty()) {
                 // Chuyển thành số
                 double tienKhachDua = Double.parseDouble(tienKhachDuaStr);
-                
+
                 // Tính tổng hóa đơn = Tổng hàng - Giảm giá SP - Giảm giá HĐ
                 double tongHoaDon = tongTienHang - discountProduct - discountOrder;
-                
+
                 // Tiền thối = Tiền khách đưa - Tổng hóa đơn
                 double tienTraKhach = tienKhachDua - tongHoaDon;
-                
+
                 if (tienTraKhach >= 0) {
                     // Đủ tiền → Hiển thị tiền thối
                     txtTienTraKhach.setText(String.format("%,.0f đ", tienTraKhach));
@@ -959,35 +973,35 @@ public class Panel_DonHang extends javax.swing.JPanel {
             txtTienTraKhach.setText("0 đ");
         }
     }
-    
+
     /**
      * Lấy tổng tiền hàng
      */
     public double getTongTienHang() {
         return tongTienHang;
     }
-    
+
     /**
      * Lấy tổng giảm giá sản phẩm
      */
     public double getDiscountProduct() {
         return discountProduct;
     }
-    
+
     /**
      * Lấy tổng giảm giá hóa đơn
      */
     public double getDiscountOrder() {
         return discountOrder;
     }
-    
+
     /**
      * Lấy tổng hóa đơn
      */
     public double getTongHoaDon() {
         return tongTienHang - discountProduct - discountOrder;
     }
-    
+
     /**
      * Lấy tiền khách đưa
      */
@@ -999,7 +1013,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
             return 0;
         }
     }
-    
+
     /**
      * Lấy tiền trả khách
      */
@@ -1012,10 +1026,9 @@ public class Panel_DonHang extends javax.swing.JPanel {
         }
     }
 
-    
     /**
-     * Thêm label hiển thị tên khuyến mãi vào UI
-     * Sẽ được gọi sau khi initComponents() hoàn tất
+     * Thêm label hiển thị tên khuyến mãi vào UI Sẽ được gọi sau khi
+     * initComponents() hoàn tất
      */
     private void addPromotionLabels() {
         // Label cho khuyến mãi hóa đơn (nằm dưới giảm giá đơn hàng)
@@ -1024,7 +1037,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
         lblTenKhuyenMaiHoaDon.setForeground(new java.awt.Color(0, 150, 0));
         lblTenKhuyenMaiHoaDon.setText("");
         lblTenKhuyenMaiHoaDon.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-        
+
         // Tạo panel wrapper để label nằm thẳng hàng với textfield
         // Panel cho khuyến mãi hóa đơn
         javax.swing.JPanel pnKhuyenMaiHoaDon = new javax.swing.JPanel();
@@ -1032,49 +1045,51 @@ public class Panel_DonHang extends javax.swing.JPanel {
         javax.swing.GroupLayout layoutHoaDon = new javax.swing.GroupLayout(pnKhuyenMaiHoaDon);
         pnKhuyenMaiHoaDon.setLayout(layoutHoaDon);
         layoutHoaDon.setHorizontalGroup(
-            layoutHoaDon.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-            .addComponent(lblTenKhuyenMaiHoaDon, javax.swing.GroupLayout.PREFERRED_SIZE, 162, javax.swing.GroupLayout.PREFERRED_SIZE)
+                layoutHoaDon.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addComponent(lblTenKhuyenMaiHoaDon, javax.swing.GroupLayout.PREFERRED_SIZE, 162, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
         layoutHoaDon.setVerticalGroup(
-            layoutHoaDon.createSequentialGroup()
-            .addComponent(lblTenKhuyenMaiHoaDon, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
+                layoutHoaDon.createSequentialGroup()
+                        .addComponent(lblTenKhuyenMaiHoaDon, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
-        
+
         // Thêm panel wrapper vào panel tương ứng
         jPanel1.add(pnKhuyenMaiHoaDon);  // Thêm vào panel giảm giá hóa đơn
     }
-    
+
     /**
      * Lấy khuyến mãi đã chọn (backward compatibility)
+     *
      * @deprecated Sử dụng getDanhSachKhuyenMaiDaChon() thay thế
      */
     public KhuyenMai getKhuyenMaiDaChon() {
         return khuyenMaiDaChon;
     }
-    
+
     /**
      * Lấy danh sách khuyến mãi đã chọn (Map theo loại)
      */
     public Map<LoaiKhuyenMai, KhuyenMai> getDanhSachKhuyenMaiDaChon() {
         return danhSachKhuyenMaiDaChon;
     }
-    
+
     /**
      * Lấy ChiTietKhuyenMaiSanPhamBUS
      */
     public ChiTietKhuyenMaiSanPhamBUS getChiTietKhuyenMaiSanPhamBUS() {
         return chiTietKhuyenMaiSanPhamBUS;
     }
-    
+
     /**
      * Tự động kiểm tra và áp dụng khuyến mãi tốt nhất dựa trên giỏ hàng
+     *
      * @param tongTienHang Tổng tiền hàng hiện tại
      * @param danhSachSanPham Map sản phẩm và số lượng trong giỏ
      */
     public void tuDongApDungKhuyenMai(double tongTienHang, Map<SanPham, Integer> danhSachSanPham) {
         // Tìm TẤT CẢ khuyến mãi áp dụng được (có thể cả 2 loại)
         Map<LoaiKhuyenMai, KhuyenMai> khuyenMaiApDung = khuyenMaiBUS.timKhuyenMaiApDung(tongTienHang, danhSachSanPham);
-        
+
         // Nếu không có sản phẩm trong giỏ hoặc không có khuyến mãi nào phù hợp
         if (tongTienHang == 0 || khuyenMaiApDung.isEmpty()) {
             // Reset về không áp dụng khuyến mãi
@@ -1084,18 +1099,18 @@ public class Panel_DonHang extends javax.swing.JPanel {
             }
             return;
         }
-        
+
         // Kiểm tra xem có thay đổi khuyến mãi không
         boolean coThayDoi = false;
         boolean khuyenMaiSanPhamThayDoi = false;
         boolean khuyenMaiDonHangThayDoi = false;
-        
+
         // Kiểm tra từng loại khuyến mãi riêng biệt
         for (Map.Entry<LoaiKhuyenMai, KhuyenMai> entry : khuyenMaiApDung.entrySet()) {
             LoaiKhuyenMai loai = entry.getKey();
             KhuyenMai kmMoi = entry.getValue();
             KhuyenMai kmCu = danhSachKhuyenMaiDaChon.get(loai);
-            
+
             if (kmCu == null || !kmCu.getMaKhuyenMai().equals(kmMoi.getMaKhuyenMai())) {
                 coThayDoi = true;
                 if (loai == LoaiKhuyenMai.SAN_PHAM) {
@@ -1105,7 +1120,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
                 }
             }
         }
-        
+
         // Kiểm tra xem có khuyến mãi bị loại bỏ không
         for (LoaiKhuyenMai loai : danhSachKhuyenMaiDaChon.keySet()) {
             if (!khuyenMaiApDung.containsKey(loai)) {
@@ -1117,7 +1132,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
                 }
             }
         }
-        
+
         // Nếu có thay đổi, cập nhật khuyến mãi
         if (coThayDoi) {
             // CHỈ CẬP NHẬT khuyến mãi nào thay đổi, GIỮ NGUYÊN khuyến mãi không thay đổi
@@ -1128,7 +1143,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
                     danhSachKhuyenMaiDaChon.remove(LoaiKhuyenMai.SAN_PHAM);
                 }
             }
-            
+
             if (khuyenMaiDonHangThayDoi) {
                 if (khuyenMaiApDung.containsKey(LoaiKhuyenMai.DON_HANG)) {
                     danhSachKhuyenMaiDaChon.put(LoaiKhuyenMai.DON_HANG, khuyenMaiApDung.get(LoaiKhuyenMai.DON_HANG));
@@ -1136,42 +1151,42 @@ public class Panel_DonHang extends javax.swing.JPanel {
                     danhSachKhuyenMaiDaChon.remove(LoaiKhuyenMai.DON_HANG);
                 }
             }
-            
+
             // Tạo text hiển thị thông báo (dựa trên danh sách đã chọn, không phải khuyenMaiApDung)
             StringBuilder thongBaoDisplay = new StringBuilder();
-            
+
             KhuyenMai kmSanPham = danhSachKhuyenMaiDaChon.get(LoaiKhuyenMai.SAN_PHAM);
             KhuyenMai kmDonHang = danhSachKhuyenMaiDaChon.get(LoaiKhuyenMai.DON_HANG);
-            
+
             // Tạo thông báo CHỈ cho khuyến mãi thay đổi
             if (khuyenMaiSanPhamThayDoi && khuyenMaiDonHangThayDoi) {
                 // Cả 2 khuyến mãi đều thay đổi
                 if (kmSanPham != null && kmDonHang != null) {
                     thongBaoDisplay.append("✨ Tự động áp dụng: ")
-                        .append(kmSanPham.getTenKhuyenMai())
-                        .append(" (giảm ").append(kmSanPham.getGiamGia())
-                        .append("% sản phẩm) + ")
-                        .append(kmDonHang.getTenKhuyenMai())
-                        .append(" (giảm ").append(kmDonHang.getGiamGia())
-                        .append("% đơn hàng)");
+                            .append(kmSanPham.getTenKhuyenMai())
+                            .append(" (giảm ").append(kmSanPham.getGiamGia())
+                            .append("% sản phẩm) + ")
+                            .append(kmDonHang.getTenKhuyenMai())
+                            .append(" (giảm ").append(kmDonHang.getGiamGia())
+                            .append("% đơn hàng)");
                 } else if (kmSanPham != null) {
                     thongBaoDisplay.append("✨ Tự động áp dụng: ")
-                        .append(kmSanPham.getTenKhuyenMai())
-                        .append(" (giảm ").append(kmSanPham.getGiamGia())
-                        .append("% cho các sản phẩm áp dụng)");
+                            .append(kmSanPham.getTenKhuyenMai())
+                            .append(" (giảm ").append(kmSanPham.getGiamGia())
+                            .append("% cho các sản phẩm áp dụng)");
                 } else if (kmDonHang != null) {
                     thongBaoDisplay.append("✨ Tự động áp dụng: ")
-                        .append(kmDonHang.getTenKhuyenMai())
-                        .append(" (giảm ").append(kmDonHang.getGiamGia())
-                        .append("% trên tổng hóa đơn)");
+                            .append(kmDonHang.getTenKhuyenMai())
+                            .append(" (giảm ").append(kmDonHang.getGiamGia())
+                            .append("% trên tổng hóa đơn)");
                 }
             } else if (khuyenMaiSanPhamThayDoi) {
                 // Chỉ khuyến mãi sản phẩm thay đổi
                 if (kmSanPham != null) {
                     thongBaoDisplay.append("✨ Tự động áp dụng: ")
-                        .append(kmSanPham.getTenKhuyenMai())
-                        .append(" (giảm ").append(kmSanPham.getGiamGia())
-                        .append("% cho các sản phẩm áp dụng)");
+                            .append(kmSanPham.getTenKhuyenMai())
+                            .append(" (giảm ").append(kmSanPham.getGiamGia())
+                            .append("% cho các sản phẩm áp dụng)");
                 } else {
                     thongBaoDisplay.append("❌ Đã hủy khuyến mãi sản phẩm");
                 }
@@ -1179,72 +1194,72 @@ public class Panel_DonHang extends javax.swing.JPanel {
                 // Chỉ khuyến mãi đơn hàng thay đổi
                 if (kmDonHang != null) {
                     thongBaoDisplay.append("✨ Tự động áp dụng: ")
-                        .append(kmDonHang.getTenKhuyenMai())
-                        .append(" (giảm ").append(kmDonHang.getGiamGia())
-                        .append("% trên tổng hóa đơn)");
+                            .append(kmDonHang.getTenKhuyenMai())
+                            .append(" (giảm ").append(kmDonHang.getGiamGia())
+                            .append("% trên tổng hóa đơn)");
                 } else {
                     thongBaoDisplay.append("❌ Đã hủy khuyến mãi đơn hàng");
                 }
             }
-            
+
             // Cập nhật backward compatibility
             if (kmDonHang != null) {
                 khuyenMaiDaChon = kmDonHang; // backward compatibility: ưu tiên KM đơn hàng
             } else if (kmSanPham != null) {
                 khuyenMaiDaChon = kmSanPham; // backward compatibility
             }
-            
+
             // Hiển thị thông báo CHỈ KHI CÓ thay đổi
             if (thongBaoDisplay.length() > 0) {
                 Notifications.getInstance().show(
-                    Notifications.Type.SUCCESS, 
-                    Notifications.Location.TOP_CENTER,
-                    thongBaoDisplay.toString()
+                        Notifications.Type.SUCCESS,
+                        Notifications.Location.TOP_CENTER,
+                        thongBaoDisplay.toString()
                 );
             }
-            
+
             // Notify để cập nhật lại tổng tiền (sử dụng danh sách đã chọn thực tế)
             firePropertyChange("khuyenMaiChanged", null, danhSachKhuyenMaiDaChon);
         }
     }
-    
+
     /**
      * Lấy KhuyenMaiBUS
      */
     public KhuyenMaiBUS getKhuyenMaiBUS() {
         return khuyenMaiBUS;
     }
-    
+
     /**
      * Thêm các nút tiền mệnh giá gợi ý vào panel (CHỈ HIỂN THỊ KHI CÓ SẢN PHẨM)
      * Các nút này giúp người bán nhanh chóng chọn số tiền khách đưa
-     * 
-     * LOGIC DỰ ĐOÁN THÔNG MINH - PHÙ HỢP VỚI MỨC GIÁ:
-     * - Ví dụ hóa đơn 1.500đ → hiển thị: 2k, 3k, 5k, 10k, 20k, 50k
-     * - Ví dụ hóa đơn 44.000đ → hiển thị: 44k, 45k, 50k, 100k, 200k, 500k
-     * - Ví dụ hóa đơn 567.000đ → hiển thị: 567k, 570k, 600k, 1tr, 2tr, 5tr
-     * - Chưa có sản phẩm (0đ) → ẨN HẾT (không hiển thị nút nào)
+     *
+     * LOGIC DỰ ĐOÁN THÔNG MINH - PHÙ HỢP VỚI MỨC GIÁ: - Ví dụ hóa đơn 1.500đ →
+     * hiển thị: 2k, 3k, 5k, 10k, 20k, 50k - Ví dụ hóa đơn 44.000đ → hiển thị:
+     * 44k, 45k, 50k, 100k, 200k, 500k - Ví dụ hóa đơn 567.000đ → hiển thị:
+     * 567k, 570k, 600k, 1tr, 2tr, 5tr - Chưa có sản phẩm (0đ) → ẨN HẾT (không
+     * hiển thị nút nào)
      */
     private void addPriceSuggestButtons() {
         // Xóa hết nút cũ
         pnPriceSuggest.removeAll();
-        
+
         // Lấy tổng hóa đơn (VD: "49.900 đ" → 49900.0)
         double tongHoaDon = parseCurrency(txtTongHoaDon.getText());
-        
+
         if (tongHoaDon <= 0) {
             // Chưa có sản phẩm → Ẩn hết nút
         } else {
             // Danh sách 6 nút gợi ý
             java.util.List<Long> suggestions = new java.util.ArrayList<>();
-            
+
             // Làm tròn lên (VD: 49900.5 → 49901) khong lam tron thi se kho tin
             long tongHoaDonRound = (long) Math.ceil(tongHoaDon);
-            
+
             // NÚT 1: Làm tròn lên nghìn (VD: 49900 → 50000)
             long exact = (long) (Math.ceil(tongHoaDonRound / 1000.0) * 1000);
             suggestions.add(exact);
-            
+
             // NÚT 2-3: Thêm các mức gần kề (thông minh theo mức giá)
             if (exact < 10000) {
                 // Hóa đơn nhỏ: +1k, +2k
@@ -1263,22 +1278,24 @@ public class Panel_DonHang extends javax.swing.JPanel {
                 addIfNotExists(suggestions, exact + 10000);
                 addIfNotExists(suggestions, exact + 20000);
             }
-            
+
             // NÚT 4-6: Thêm các mệnh giá tiêu chuẩn (2k, 5k, 10k, 20k, 50k, 100k,...)
             long[] allDenominations = {
-                2000, 5000, 10000, 20000, 50000, 
-                100000, 200000, 500000, 
+                2000, 5000, 10000, 20000, 50000,
+                100000, 200000, 500000,
                 1000000, 2000000, 5000000, 10000000
             };
-            
+
             // Duyệt qua các mệnh giá, thêm nếu > tổng HĐ và chưa có trong list
             for (long denom : allDenominations) {
-                if (suggestions.size() >= 6) break;  // Đủ 6 nút → Dừng
+                if (suggestions.size() >= 6) {
+                    break;  // Đủ 6 nút → Dừng
+                }
                 if (denom > exact && !suggestions.contains(denom)) {
                     suggestions.add(denom);
                 }
             }
-            
+
             // Nếu vẫn thiếu (hóa đơn quá lớn) → Gấp đôi số cuối cùng
             if (suggestions.size() < 6) {
                 long lastAmount = suggestions.get(suggestions.size() - 1);
@@ -1289,18 +1306,18 @@ public class Panel_DonHang extends javax.swing.JPanel {
                     }
                 }
             }
-            
+
             // Tạo 6 nút trên UI
             for (int i = 0; i < Math.min(6, suggestions.size()); i++) {
                 addPriceSuggestButton(suggestions.get(i));
             }
         }
-        
+
         // Cập nhật giao diện
         pnPriceSuggest.revalidate();
         pnPriceSuggest.repaint();
     }
-    
+
     /**
      * Thêm giá trị vào list nếu chưa tồn tại (tránh trùng)
      */
@@ -1310,54 +1327,53 @@ public class Panel_DonHang extends javax.swing.JPanel {
             list.add(value);
         }
     }
-    
+
     /**
      * Tạo và thêm nút tiền vào panel
-     * 
+     *
      * @param amount số tiền hiển thị trên nút
      */
     private void addPriceSuggestButton(long amount) {
         // Tạo nút mới
         javax.swing.JButton btn = new javax.swing.JButton();
-        
+
         // Format số: 50000 → "50.000 đ" (dấu chấm phân cách nghìn)
         String giaText = String.format("%,d đ", amount).replace(",", ".");
         btn.setText(giaText);
-        
+
         // Style nút: bo góc, viền xanh, nền xanh nhạt
         btn.setFont(btn.getFont().deriveFont(java.awt.Font.BOLD, 13f));
-        btn.putClientProperty(FlatClientProperties.STYLE, 
-            "arc:8;borderWidth:1;borderColor:#519AF4;background:#F0F8FF");
-        
+        btn.putClientProperty(FlatClientProperties.STYLE,
+                "arc:8;borderWidth:1;borderColor:#519AF4;background:#F0F8FF");
+
         // Khi click nút
         btn.addActionListener(e -> {
             double tongHoaDon = parseCurrency(txtTongHoaDon.getText());
-            
+
             // Kiểm tra giỏ hàng rỗng
             if (tongHoaDon <= 0) {
                 Notifications.getInstance().show(
-                    Notifications.Type.WARNING, 
-                    Notifications.Location.TOP_CENTER,
-                    "Chưa có sản phẩm trong giỏ hàng"
+                        Notifications.Type.WARNING,
+                        Notifications.Location.TOP_CENTER,
+                        "Chưa có sản phẩm trong giỏ hàng"
                 );
                 return;
             }
-            
+
             // Điền số tiền khách đưa
             txtTienKhachDua.setText(String.format("%,d", amount).replace(",", "."));
-            
+
             // Tự động tính tiền thối
             updateTienTraKhach();
         });
-        
+
         // Thêm nút vào panel
         pnPriceSuggest.add(btn);
     }
-    
+
     /**
-     * Chuyển chuỗi tiền thành số
-     * VD: "1.000.000 đ" → 1000000.0
-     * 
+     * Chuyển chuỗi tiền thành số VD: "1.000.000 đ" → 1000000.0
+     *
      * @param currencyText chuỗi tiền (có dấu chấm, ký tự "đ")
      * @return giá trị số
      */
@@ -1366,13 +1382,13 @@ public class Panel_DonHang extends javax.swing.JPanel {
         if (currencyText == null || currencyText.trim().isEmpty()) {
             return 0;
         }
-        
+
         try {
             // Loại bỏ ký tự không phải số: "49.900 đ" → "49900"
-            String cleaned = currencyText.replace(".", "")    // Bỏ dấu chấm
-                                        .replace("đ", "")      // Bỏ chữ đ
-                                        .replace(",", "")      // Bỏ dấu phẩy
-                                        .trim();               // Bỏ khoảng trắng
+            String cleaned = currencyText.replace(".", "") // Bỏ dấu chấm
+                    .replace("đ", "") // Bỏ chữ đ
+                    .replace(",", "") // Bỏ dấu phẩy
+                    .trim();               // Bỏ khoảng trắng
             // Chuyển thành số
             return Double.parseDouble(cleaned);
         } catch (NumberFormatException e) {
@@ -1380,10 +1396,10 @@ public class Panel_DonHang extends javax.swing.JPanel {
             return 0;
         }
     }
-    
+
     /**
-     * Reset tất cả thông tin thanh toán về trạng thái ban đầu
-     * Được gọi khi giỏ hàng rỗng (xóa hết sản phẩm)
+     * Reset tất cả thông tin thanh toán về trạng thái ban đầu Được gọi khi giỏ
+     * hàng rỗng (xóa hết sản phẩm)
      */
     public void resetThanhToan() {
         // Reset các biến
@@ -1391,7 +1407,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
         discountProduct = 0;
         discountOrder = 0;
         khuyenMaiDaChon = null;
-        
+
         // Reset tất cả các text field về 0
         txtTongTienHang.setText("0 đ");
         txtDiscountProduct.setText("0 đ");
@@ -1399,21 +1415,21 @@ public class Panel_DonHang extends javax.swing.JPanel {
         txtTongHoaDon.setText("0 đ");
         txtTienKhachDua.setText("");
         txtTienTraKhach.setText("0 đ");
-        
+
         // Reset các nút tiền mệnh giá về mặc định
         addPriceSuggestButtons();
-        
+
         // Reset thông tin khách hàng về vãng lai
         khachHangHienTai = null;
         txtTenKhachHang.setText("Vãng lai");
         txtTimKhachHang.setText("");
-        
+
         // Xóa thông tin khuyến mãi
         if (lblTenKhuyenMaiHoaDon != null) {
             lblTenKhuyenMaiHoaDon.setText("");
         }
     }
-    
+
     /**
      * Hiển thị preview hóa đơn bán hàng
      */
@@ -1423,75 +1439,90 @@ public class Panel_DonHang extends javax.swing.JPanel {
         dialog.setModal(true);
         dialog.setSize(900, 650);
         dialog.setLocationRelativeTo(null); // Hiển thị giữa màn hình
-        
+
         // Panel chính
         javax.swing.JPanel mainPanel = new javax.swing.JPanel();
         mainPanel.setLayout(new BorderLayout(10, 10));
         mainPanel.setBackground(Color.WHITE);
         mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 30, 20, 30));
-        
+
         // Format cho số tiền và ngày tháng
         DecimalFormat currencyFormat = new DecimalFormat("#,###");
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        
+
         // === HEADER ===
         javax.swing.JPanel headerPanel = new javax.swing.JPanel();
         headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.Y_AXIS));
         headerPanel.setBackground(Color.WHITE);
         
+        JPanel pnlBar = new JPanel();
+        pnlBar.setLayout(new BoxLayout(pnlBar, BoxLayout.X_AXIS));
         javax.swing.JLabel lblTitle = new javax.swing.JLabel("HÓA ĐƠN BÁN HÀNG");
         lblTitle.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 24));
         lblTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
+//        //bar        
+//        BufferedImage barcodeImg = BarcodeUtil.taoBarcode(donHang.getMaDonHang());
+//        JLabel lblBarcode = new JLabel(new ImageIcon(barcodeImg));
+//        pnlBar.add(Box.createHorizontalStrut(300));
+//        pnlBar.add(lblTitle);
+//        pnlBar.add(Box.createHorizontalStrut(100));
+//        pnlBar.add(lblBarcode);
+//        pnlBar.setBackground(Color.WHITE);
+//        headerPanel.revalidate();
+//        headerPanel.repaint();
+//        headerPanel.add(pnlBar);
         headerPanel.add(lblTitle);
+        //headerPanel.add(lblBarcode);
+        //hết
         headerPanel.add(Box.createVerticalStrut(20));
-        
+
         // Thông tin đơn hàng
         javax.swing.JPanel infoPanel = new javax.swing.JPanel(new java.awt.GridLayout(5, 2, 10, 8));
         infoPanel.setBackground(Color.WHITE);
-        
+
         infoPanel.add(createInfoLabel("Mã hóa đơn: ", donHang.getMaDonHang(), true));
-        
+
         NhanVien nhanVien = donHang.getNhanVien();
         String tenNhanVien = nhanVien != null ? nhanVien.getTenNhanVien() : "N/A";
         infoPanel.add(createInfoLabel("Nhân viên: ", tenNhanVien, false));
-        
+
         String ngayDat = donHang.getNgayDatHang().format(dateFormatter);
         infoPanel.add(createInfoLabel("Ngày lập: ", ngayDat, false));
-        
+
         KhachHang khachHang = donHang.getKhachHang();
         String tenKhachHang = khachHang != null ? khachHang.getTenKhachHang() : "Khách vãng lai";
-        String sdtKhachHang = khachHang != null && khachHang.getSoDienThoai() != null ? 
-                khachHang.getSoDienThoai() : "";
+        String sdtKhachHang = khachHang != null && khachHang.getSoDienThoai() != null
+                ? khachHang.getSoDienThoai() : "";
         infoPanel.add(createInfoLabel("Khách hàng: ", tenKhachHang, true));
-        
+
         if (!sdtKhachHang.isEmpty()) {
             infoPanel.add(createInfoLabel("Số điện thoại: ", sdtKhachHang, false));
         } else {
             infoPanel.add(new javax.swing.JLabel()); // Empty cell
         }
-        
-        String phuongThuc = donHang.getPhuongThucThanhToan() != null ? 
-                donHang.getPhuongThucThanhToan().toString() : "Tiền mặt";
+
+        String phuongThuc = donHang.getPhuongThucThanhToan() != null
+                ? donHang.getPhuongThucThanhToan().toString() : "Tiền mặt";
         infoPanel.add(createInfoLabel("Phương thức: ", phuongThuc, false));
-        
+
         headerPanel.add(infoPanel);
         headerPanel.add(Box.createVerticalStrut(10));
-        
+
         // Đường phân cách
         javax.swing.JSeparator separator1 = new javax.swing.JSeparator();
         headerPanel.add(separator1);
-        
+
         mainPanel.add(headerPanel, BorderLayout.NORTH);
-        
+
         // === BODY - Bảng chi tiết sản phẩm ===
         javax.swing.JPanel bodyPanel = new javax.swing.JPanel(new BorderLayout());
         bodyPanel.setBackground(Color.WHITE);
-        
+
         javax.swing.JLabel lblChiTiet = new javax.swing.JLabel("Chi tiết sản phẩm");
         lblChiTiet.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 16));
         lblChiTiet.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
         bodyPanel.add(lblChiTiet, BorderLayout.NORTH);
-        
+
         String[] columnNames = {"STT", "Tên sản phẩm", "Đơn vị", "Số lượng", "Đơn giá", "Thành tiền"};
         javax.swing.table.DefaultTableModel tableModel = new javax.swing.table.DefaultTableModel(columnNames, 0) {
             @Override
@@ -1499,13 +1530,13 @@ public class Panel_DonHang extends javax.swing.JPanel {
                 return false;
             }
         };
-        
+
         javax.swing.JTable table = new javax.swing.JTable(tableModel);
         table.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 14));
         table.setRowHeight(30);
         table.getTableHeader().setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 14));
         table.getTableHeader().setBackground(new Color(240, 240, 240));
-        
+
         // Set column widths
         table.getColumnModel().getColumn(0).setPreferredWidth(50);  // STT
         table.getColumnModel().getColumn(1).setPreferredWidth(300); // Tên SP
@@ -1513,12 +1544,12 @@ public class Panel_DonHang extends javax.swing.JPanel {
         table.getColumnModel().getColumn(3).setPreferredWidth(80);  // Số lượng
         table.getColumnModel().getColumn(4).setPreferredWidth(120); // Đơn giá
         table.getColumnModel().getColumn(5).setPreferredWidth(150); // Thành tiền
-        
+
         // Thêm dữ liệu vào bảng
         int stt = 1;
         for (ChiTietDonHang chiTiet : danhSachChiTiet) {
             SanPham sanPham = chiTiet.getLoHang().getSanPham();
-            
+
             tableModel.addRow(new Object[]{
                 stt++,
                 sanPham.getTenSanPham(),
@@ -1528,34 +1559,34 @@ public class Panel_DonHang extends javax.swing.JPanel {
                 currencyFormat.format(chiTiet.getThanhTien()) + " đ"
             });
         }
-        
+
         javax.swing.JScrollPane scrollPane = new javax.swing.JScrollPane(table);
         scrollPane.setBorder(BorderFactory.createLineBorder(new Color(200, 200, 200)));
         bodyPanel.add(scrollPane, BorderLayout.CENTER);
-        
+
         mainPanel.add(bodyPanel, BorderLayout.CENTER);
-        
+
         // === FOOTER - Tổng tiền ===
         javax.swing.JPanel footerPanel = new javax.swing.JPanel();
         footerPanel.setLayout(new BoxLayout(footerPanel, BoxLayout.Y_AXIS));
         footerPanel.setBackground(Color.WHITE);
         footerPanel.setBorder(BorderFactory.createEmptyBorder(15, 0, 0, 0));
-        
+
         javax.swing.JSeparator separator2 = new javax.swing.JSeparator();
         footerPanel.add(separator2);
         footerPanel.add(Box.createVerticalStrut(15));
-        
+
         // ========== TÍNH TOÁN CÁC GIÁ TRỊ ==========
         // 1. Tổng tiền hàng (trước giảm giá)
         double tongTienHang = 0;
         double tongGiamGiaSanPham = 0;
-        
+
         for (ChiTietDonHang ct : danhSachChiTiet) {
             double tienSP = ct.getDonGia() * ct.getSoLuong();
             tongTienHang += tienSP;
             tongGiamGiaSanPham += ct.getGiamGia();
         }
-        
+
         // 2. Giảm giá đơn hàng
         double giamGiaHoaDon = 0;
         KhuyenMai khuyenMaiDonHang = donHang.getKhuyenMai();
@@ -1563,10 +1594,10 @@ public class Panel_DonHang extends javax.swing.JPanel {
             // Giảm giá đơn hàng = (Tổng tiền hàng - Giảm giá sản phẩm) × % (getGiamGia đã là decimal)
             giamGiaHoaDon = (tongTienHang - tongGiamGiaSanPham) * khuyenMaiDonHang.getGiamGia();
         }
-        
+
         // 3. Tổng giảm giá
         double tongGiamGia = tongGiamGiaSanPham + giamGiaHoaDon;
-        
+
         // ========== HIỂN THỊ CHI TIẾT ==========
         // Tổng tiền hàng
         javax.swing.JPanel tongTienHangPanel = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT));
@@ -1578,123 +1609,123 @@ public class Panel_DonHang extends javax.swing.JPanel {
         tongTienHangPanel.add(lblTongTienHangText);
         tongTienHangPanel.add(lblTongTienHang);
         footerPanel.add(tongTienHangPanel);
-        
+
         // Giảm giá sản phẩm (nếu có)
         if (tongGiamGiaSanPham > 0 && khuyenMaiSanPham != null) {
             javax.swing.JPanel giamGiaSPPanel = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT));
             giamGiaSPPanel.setBackground(Color.WHITE);
-            
+
             javax.swing.JLabel lblGiamGiaSPText = new javax.swing.JLabel("Giảm giá sản phẩm: ");
             lblGiamGiaSPText.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 14));
-            
+
             // Lấy % từ khuyến mãi gốc - chỉ hiển thị số tiền và %
             String giamGiaText = "-" + currencyFormat.format(tongGiamGiaSanPham) + " đ";
             giamGiaText += " (" + String.format("%.1f", khuyenMaiSanPham.getGiamGia() * 100) + "%)";
-            
+
             javax.swing.JLabel lblGiamGiaSP = new javax.swing.JLabel(giamGiaText);
             lblGiamGiaSP.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 14));
             lblGiamGiaSP.setForeground(new Color(0, 150, 0));
-            
+
             giamGiaSPPanel.add(lblGiamGiaSPText);
             giamGiaSPPanel.add(lblGiamGiaSP);
             // BỎ label tên khuyến mãi - chỉ hiển thị % trong cột giảm giá
             footerPanel.add(giamGiaSPPanel);
         }
-        
+
         // Giảm giá hóa đơn (nếu có)
         if (giamGiaHoaDon > 0 && khuyenMaiDonHang != null) {
             javax.swing.JPanel giamGiaHDPanel = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT));
             giamGiaHDPanel.setBackground(Color.WHITE);
-            
+
             javax.swing.JLabel lblGiamGiaHDText = new javax.swing.JLabel("Giảm giá hóa đơn: ");
             lblGiamGiaHDText.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 14));
-            
+
             String giamGiaHDText = "-" + currencyFormat.format(giamGiaHoaDon) + " đ";
             giamGiaHDText += " (" + String.format("%.1f", khuyenMaiDonHang.getGiamGia() * 100) + "%)";
-            
+
             javax.swing.JLabel lblGiamGiaHD = new javax.swing.JLabel(giamGiaHDText);
             lblGiamGiaHD.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 14));
             lblGiamGiaHD.setForeground(new Color(0, 150, 0));
-            
+
             javax.swing.JLabel lblKMName = new javax.swing.JLabel("  (" + khuyenMaiDonHang.getTenKhuyenMai() + ")");
             lblKMName.setFont(new java.awt.Font("Segoe UI", java.awt.Font.ITALIC, 12));
             lblKMName.setForeground(new Color(255, 102, 0));
-            
+
             giamGiaHDPanel.add(lblGiamGiaHDText);
             giamGiaHDPanel.add(lblGiamGiaHD);
             giamGiaHDPanel.add(lblKMName);
             footerPanel.add(giamGiaHDPanel);
         }
-        
+
         // Tổng giảm giá (nếu có)
         if (tongGiamGia > 0) {
             javax.swing.JPanel tongGiamGiaPanel = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT));
             tongGiamGiaPanel.setBackground(Color.WHITE);
             tongGiamGiaPanel.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(200, 200, 200)));
             tongGiamGiaPanel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(200, 200, 200)),
-                BorderFactory.createEmptyBorder(5, 0, 0, 0)
+                    BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(200, 200, 200)),
+                    BorderFactory.createEmptyBorder(5, 0, 0, 0)
             ));
-            
+
             javax.swing.JLabel lblTongGiamGiaText = new javax.swing.JLabel("TỔNG GIẢM GIÁ: ");
             lblTongGiamGiaText.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 14));
-            
+
             javax.swing.JLabel lblTongGiamGia = new javax.swing.JLabel("-" + currencyFormat.format(tongGiamGia) + " đ");
             lblTongGiamGia.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 15));
             lblTongGiamGia.setForeground(new Color(220, 53, 69));
-            
+
             tongGiamGiaPanel.add(lblTongGiamGiaText);
             tongGiamGiaPanel.add(lblTongGiamGia);
             footerPanel.add(tongGiamGiaPanel);
         }
-        
+
         // Đường kẻ phân cách
         javax.swing.JSeparator separator3 = new javax.swing.JSeparator();
         separator3.setForeground(new Color(100, 100, 100));
         footerPanel.add(Box.createVerticalStrut(5));
         footerPanel.add(separator3);
         footerPanel.add(Box.createVerticalStrut(5));
-        
+
         // Thành tiền (sau giảm giá)
         javax.swing.JPanel tongTienPanel = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT));
         tongTienPanel.setBackground(Color.WHITE);
-        
+
         javax.swing.JLabel lblTongTienText = new javax.swing.JLabel("THÀNH TIỀN: ");
         lblTongTienText.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 18));
-        
+
         javax.swing.JLabel lblTongTien = new javax.swing.JLabel(currencyFormat.format(donHang.getThanhTien()) + " đ");
         lblTongTien.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 20));
         lblTongTien.setForeground(new Color(0, 120, 215));
-        
+
         tongTienPanel.add(lblTongTienText);
         tongTienPanel.add(lblTongTien);
-        
+
         footerPanel.add(tongTienPanel);
         footerPanel.add(Box.createVerticalStrut(10));
-        
+
         mainPanel.add(footerPanel, BorderLayout.SOUTH);
-        
+
         dialog.add(mainPanel);
         dialog.setVisible(true);
     }
-    
+
     /**
      * Tạo JPanel với label thông tin
      */
     private javax.swing.JPanel createInfoLabel(String title, String value, boolean bold) {
         javax.swing.JPanel panel = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 0, 0));
         panel.setBackground(Color.WHITE);
-        
+
         javax.swing.JLabel lblTitle = new javax.swing.JLabel(title);
-        lblTitle.setFont(new java.awt.Font("Segoe UI", 
+        lblTitle.setFont(new java.awt.Font("Segoe UI",
                 bold ? java.awt.Font.BOLD : java.awt.Font.PLAIN, 14));
-        
+
         javax.swing.JLabel lblValue = new javax.swing.JLabel(value);
         lblValue.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 14));
-        
+
         panel.add(lblTitle);
         panel.add(lblValue);
-        
+
         return panel;
     }
 

@@ -730,5 +730,5 @@ public class SuaKhuyenMaiDialog extends javax.swing.JDialog {
     private javax.swing.JTextField txtSoDangKy;
     private javax.swing.JTextField txtTenKhuyenMai;
     private javax.swing.JTextField txtTenSanPham;
-    // End of variables declaration
+    // End of variables declaration    
 }

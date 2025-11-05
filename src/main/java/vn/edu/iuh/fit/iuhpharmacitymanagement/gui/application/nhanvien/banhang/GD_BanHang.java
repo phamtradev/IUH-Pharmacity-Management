@@ -902,7 +902,7 @@ public class GD_BanHang extends javax.swing.JPanel {
         // 6. Cập nhật tổng tiền
         capNhatTongTien();
     }
-
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnMa;
     private javax.swing.JButton btnXoa;

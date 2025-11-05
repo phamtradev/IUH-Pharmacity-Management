@@ -365,7 +365,7 @@ public class GD_QuanLyKhuyenMai extends javax.swing.JPanel {
     }//GEN-LAST:event_btnTimKiemActionPerformed
 
     private void btnLamMoiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLamMoiActionPerformed
-        // Kiểm tra có chọn khuyến mãi không
+        // Kiểm tra có chọn khuyến mãi không        
         JTable table = tableDesign.getTable();
         int selectedRow = table.getSelectedRow();
         if (selectedRow < 0) {
