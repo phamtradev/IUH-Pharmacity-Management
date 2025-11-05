@@ -14,16 +14,9 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
-
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
-import javax.imageio.ImageIO;
-import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonHang;
-import static vn.edu.iuh.fit.iuhpharmacitymanagement.util.QrCodeUtil.chuyenObSangJon;
-import static vn.edu.iuh.fit.iuhpharmacitymanagement.util.QrCodeUtil.taoQRImg;
-import static vn.edu.iuh.fit.iuhpharmacitymanagement.util.QrCodeUtil.themThongTin;
 
 /**
  *
@@ -52,7 +45,7 @@ public class BarcodeUtil {
    public static BufferedImage addTextBelow(BufferedImage qrImage, String text) {
         int width = qrImage.getWidth();
         int height = qrImage.getHeight();
-        int extraHeight = 10;
+        int extraHeight = 20; // Tăng không gian cho text (từ 10 lên 20)
 
         BufferedImage combined = new BufferedImage(width, height + extraHeight,
                 BufferedImage.TYPE_INT_RGB);
@@ -65,11 +58,11 @@ public class BarcodeUtil {
         g.drawImage(qrImage, 0, 0, null);
 
         g.setColor(Color.BLACK);
-        g.setFont(new Font("Arial", Font.BOLD, 5));
+        g.setFont(new Font("Arial", Font.BOLD, 10)); // Tăng font size (từ 5 lên 10) để text rõ hơn
 
         FontMetrics fm = g.getFontMetrics();
         int x = (width - fm.stringWidth(text)) / 2;
-        int y = height + (extraHeight + fm.getAscent()) / 2 - 5;
+        int y = height + (extraHeight + fm.getAscent()) / 2 - 2; // Điều chỉnh vị trí (từ -5 lên -2)
 
         g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
                 RenderingHints.VALUE_TEXT_ANTIALIAS_ON);

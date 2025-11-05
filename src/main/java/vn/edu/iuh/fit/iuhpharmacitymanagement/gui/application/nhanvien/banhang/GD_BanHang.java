@@ -174,13 +174,14 @@ public class GD_BanHang extends javax.swing.JPanel {
 
     private void customUI() {
         // TextField tìm đơn hàng
-        txtTimDonHang.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Mã đơn hàng");
+        txtTimDonHang.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Vui lòng quét mã vạch hoặc nhập mã hóa đơn");
         txtTimDonHang.putClientProperty(FlatClientProperties.OUTLINE, "default");
         txtTimDonHang.putClientProperty(FlatClientProperties.STYLE,
                 "arc:8;"
                 + "borderWidth:1;"
                 + "borderColor:#CCCCCC"
         );
+        txtTimDonHang.setToolTipText("Quét barcode hoặc nhập mã đơn hàng rồi nhấn Enter");
         
         // Button tìm đơn hàng
         btnTimDonHang.putClientProperty(FlatClientProperties.STYLE,
@@ -266,6 +267,17 @@ public class GD_BanHang extends javax.swing.JPanel {
         txtTimDonHang.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 txtTimDonHangActionPerformed(evt);
+            }
+        });
+        
+        // Thêm KeyListener để hỗ trợ quét barcode
+        txtTimDonHang.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                // Khi quét barcode và nhấn Enter, tự động tìm đơn hàng
+                if (evt.getKeyCode() == java.awt.event.KeyEvent.VK_ENTER) {
+                    timDonHang();
+                }
             }
         });
 

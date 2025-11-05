@@ -9,6 +9,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.KeyEvent;
+import java.awt.image.BufferedImage;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -1785,7 +1786,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
         javax.swing.JDialog dialog = new javax.swing.JDialog();
         dialog.setTitle("Hóa Đơn Bán Hàng");
         dialog.setModal(true);
-        dialog.setSize(650, 750);  // Nhỏ gọn hơn, chỉ dài theo chiều dọc
+        dialog.setSize(650, 900);  // Tăng chiều cao để không bị scroll
         dialog.setLocationRelativeTo(null);
         
         // Scroll pane cho toàn bộ hóa đơn
@@ -1828,12 +1829,19 @@ public class Panel_DonHang extends javax.swing.JPanel {
         lblTitle.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 16));  // Giảm size
         lblTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
         mainPanel.add(lblTitle);
-        mainPanel.add(Box.createVerticalStrut(4));
+        mainPanel.add(Box.createVerticalStrut(8));
         
-        javax.swing.JLabel lblInvoiceCode = new javax.swing.JLabel("Ma hoa don: " + donHang.getMaDonHang());
-        lblInvoiceCode.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 11));
-        lblInvoiceCode.setAlignmentX(Component.CENTER_ALIGNMENT);
-        mainPanel.add(lblInvoiceCode);
+        // ========== BARCODE MÃ ĐƠN HÀNG ==========
+        try {
+            BufferedImage barcodeImage = vn.edu.iuh.fit.iuhpharmacitymanagement.util.BarcodeUtil.taoBarcode(donHang.getMaDonHang());
+            BufferedImage barcodeWithText = vn.edu.iuh.fit.iuhpharmacitymanagement.util.BarcodeUtil.addTextBelow(barcodeImage, donHang.getMaDonHang());
+            
+            javax.swing.JLabel lblBarcode = new javax.swing.JLabel(new javax.swing.ImageIcon(barcodeWithText));
+            lblBarcode.setAlignmentX(Component.CENTER_ALIGNMENT);
+            mainPanel.add(lblBarcode);
+        } catch (Exception ex) {
+            System.err.println("Lỗi tạo barcode: " + ex.getMessage());
+        }
         mainPanel.add(Box.createVerticalStrut(2));
         
         String ngayLap = donHang.getNgayDatHang().format(dateFormatter);
