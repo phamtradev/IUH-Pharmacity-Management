@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.imageio.ImageIO;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonHang;
-import static vn.edu.iuh.fit.iuhpharmacitymanagement.util.XuatHoaDonTraHangPDF.generateFileName;
+//import static vn.edu.iuh.fit.iuhpharmacitymanagement.util.XuatHoaDonTraHangPDF.generateFileName;
 
 /**
  *

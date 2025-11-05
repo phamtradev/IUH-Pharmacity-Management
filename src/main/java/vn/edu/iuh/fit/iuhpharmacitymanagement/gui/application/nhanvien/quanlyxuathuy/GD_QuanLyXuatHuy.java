@@ -22,7 +22,6 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonTraHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.HangHong;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietHangHong;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.session.SessionManager;
-import vn.edu.iuh.fit.iuhpharmacitymanagement.util.XuatPhieuXuatHuyPDF;
 import raven.toast.Notifications;
 
 /**
@@ -438,27 +437,17 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
                 }
             }
             
-            // 7. Hiển thị preview hóa đơn
+            // 7. Hiển thị preview hóa đơn (không xuất PDF nữa)
             hienThiPhieuXuatHuy(hangHong, chiTietList);
             
-            // 8. Xuất PDF phiếu xuất hủy
-            String pdfPath = XuatPhieuXuatHuyPDF.xuatPhieuXuatHuyTuDong(hangHong, chiTietList);
+            // 8. Thông báo thành công
+            Notifications.getInstance().show(
+                Notifications.Type.SUCCESS, 
+                "Tạo phiếu xuất hủy thành công! Mã: " + hangHong.getMaHangHong()
+            );
             
-            if (pdfPath != null) {
-                Notifications.getInstance().show(
-                    Notifications.Type.SUCCESS, 
-                    "Tạo phiếu xuất hủy thành công! Mã: " + hangHong.getMaHangHong()
-                );
-                
-                // 9. Xóa trắng tất cả các sản phẩm đã tạo phiếu
-                xoaTrangDanhSachSanPham();
-                
-            } else {
-                Notifications.getInstance().show(
-                    Notifications.Type.WARNING, 
-                    "Đã lưu phiếu vào database nhưng không thể xuất PDF!"
-                );
-            }
+            // 9. Xóa trắng tất cả các sản phẩm đã tạo phiếu
+            xoaTrangDanhSachSanPham();
             
         } catch (Exception e) {
             e.printStackTrace();

@@ -1382,29 +1382,17 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
                 );
             }
             
-            // Xuất PDF
-            String pdfPath = vn.edu.iuh.fit.iuhpharmacitymanagement.util.XuatHoaDonTraHangPDF
-                .xuatHoaDonTraHangTuDong(donTraHang, chiTietList);
-            
-            // Hiển thị hóa đơn trả hàng
+            // Hiển thị hóa đơn trả hàng (không xuất PDF nữa)
             hienThiHoaDonTraHang(donTraHang, chiTietList);
             
-            // Thông báo thành công với đường dẫn PDF
-            if (pdfPath != null) {
-                raven.toast.Notifications.getInstance().show(
-                    raven.toast.Notifications.Type.SUCCESS, 
-                    "Tạo phiếu trả hàng thành công! Mã: " + donTraHang.getMaDonTraHang() + 
-                    "\nPDF đã lưu tại: " + pdfPath
-                );
-                
-                // Reset form
-                resetForm();
-            } else {
-                raven.toast.Notifications.getInstance().show(
-                    raven.toast.Notifications.Type.WARNING, 
-                    "Lưu phiếu thành công nhưng không thể tạo PDF!"
-                );
-            }
+            // Thông báo thành công
+            raven.toast.Notifications.getInstance().show(
+                raven.toast.Notifications.Type.SUCCESS, 
+                "Tạo phiếu trả hàng thành công! Mã: " + donTraHang.getMaDonTraHang()
+            );
+            
+            // Reset form
+            resetForm();
             
         } catch (Exception e) {
             e.printStackTrace();

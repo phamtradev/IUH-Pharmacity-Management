@@ -6,15 +6,17 @@ public class ChiTietDonHang {
     private int soLuong;
     private double donGia;
     private double thanhTien;
-    private double giamGia;
+    private double giamGiaSanPham;  // Giảm giá sản phẩm (từ khuyến mãi sản phẩm)
+    private double giamGiaHoaDonPhanBo;  // Giảm giá hóa đơn phân bổ cho sản phẩm này
     private LoHang loHang;
-    private DonHang donHang;
+    private DonHang donHang; 
 
     public static final String MA_CHI_TIET_DON_HANG_RONG = "Mã chi tiết đơn hàng không được rỗng";
     public static final String SO_LUONG_SAI = "Số lượng không hợp lệ phải lớn hơn 0, không được rỗng";
     public static final String DON_GIA_SAI = "Đơn giá không hợp lệ phải lớn hơn 0, không được rỗng";
     public static final String THANH_TIEN_SAI = "Thành tiền không hợp lệ phải lớn hơn 0, không được rỗng";
     public static final String GIAM_GIA_SAI = "Giảm giá không hợp lệ phải lớn hơn 0";
+    public static final String GIAM_GIA_HOA_DON_PHAN_BO_SAI = "Giảm giá hóa đơn phân bổ không hợp lệ phải lớn hơn hoặc bằng 0";
     public static final String LO_HANG_SAI = "Lô hàng không hợp lệ (không được null)";
     public static final String DON_HANG_SAI = "Đơn hàng không hợp lệ (không được null)";
 
@@ -25,17 +27,18 @@ public class ChiTietDonHang {
                           int soLuong,
                           double donGia,
                           double thanhTien,
-                          double giamGia,
+                          double giamGiaSanPham,
                           LoHang loHang,
                           DonHang donHang) throws Exception {
         //this.maChiTietDonHang = maChiTietDonHang;
         setSoLuong(soLuong);
         setDonGia(donGia);
         setThanhTien(thanhTien);
-        setGiamGia(giamGia);
+        setGiamGiaSanPham(giamGiaSanPham);
         setLoHang(loHang);
         setDonHang(donHang);
     }
+
 
 //    public String getMaChiTietDonHang() {
 //        return maChiTietDonHang;
@@ -81,15 +84,26 @@ public class ChiTietDonHang {
         this.thanhTien = thanhTien;
     }
 
-    public double getGiamGia() {
-        return giamGia;
+    public double getGiamGiaSanPham() {
+        return giamGiaSanPham;
     }
 
-    public void setGiamGia(double giamGia) throws Exception {
-        if (giamGia < 0) {
+    public void setGiamGiaSanPham(double giamGiaSanPham) throws Exception {
+        if (giamGiaSanPham < 0) {
             throw new Exception(GIAM_GIA_SAI);
         }
-        this.giamGia = giamGia;
+        this.giamGiaSanPham = giamGiaSanPham;
+    }
+
+    public double getGiamGiaHoaDonPhanBo() {
+        return giamGiaHoaDonPhanBo;
+    }
+
+    public void setGiamGiaHoaDonPhanBo(double giamGiaHoaDonPhanBo) throws Exception {
+        if (giamGiaHoaDonPhanBo < 0) {
+            throw new Exception(GIAM_GIA_HOA_DON_PHAN_BO_SAI);
+        }
+        this.giamGiaHoaDonPhanBo = giamGiaHoaDonPhanBo;
     }
 
     public LoHang getLoHang() {
@@ -114,6 +128,7 @@ public class ChiTietDonHang {
         this.donHang = donHang;
     }
 
+
     @Override
     public String toString() {
         return "ChiTietDonHang{" +
@@ -121,7 +136,8 @@ public class ChiTietDonHang {
                 ", soLuong=" + soLuong +
                 ", donGia=" + donGia +
                 ", thanhTien=" + thanhTien +
-                ", giamGia=" + giamGia +
+                ", giamGiaSanPham=" + giamGiaSanPham +
+                ", giamGiaHoaDonPhanBo=" + giamGiaHoaDonPhanBo +
                 ", loHang=" + (loHang != null ? loHang.getMaLoHang() : "null") +
                 ", donHang=" + (donHang != null ? donHang.getMaDonHang() : "null") +
                 '}';

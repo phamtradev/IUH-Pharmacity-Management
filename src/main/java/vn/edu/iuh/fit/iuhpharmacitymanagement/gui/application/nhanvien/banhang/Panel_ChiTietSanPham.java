@@ -28,6 +28,8 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
     private javax.swing.JPanel containerLoHang; // Container chứa nhiều lô (hiển thị dọc)
     private javax.swing.JScrollPane scrollPaneLoHang; // ScrollPane để kiểm soát scrollbar
     private boolean daThongBaoCongDon = false; // Flag để tracking đã thông báo cộng dồn chưa
+    private vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhuyenMai khuyenMaiDuocApDung; // Khuyến mãi được áp dụng cho sản phẩm này (nullable)
+    private double phanTramGiamGia = 0.0; // % giảm giá (dạng thập phân: 0.1 = 10%)
 
     public Panel_ChiTietSanPham() {
         this.currencyFormat = new DecimalFormat("#,###");
@@ -418,6 +420,9 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
      * @param tenKhuyenMai Tên khuyến mãi (hiển thị phía dưới %)
      */
     public void setGiamGia(double phanTramGiamGia, String tenKhuyenMai) {
+        // Lưu giá trị vào biến instance
+        this.phanTramGiamGia = phanTramGiamGia;
+        
         if (phanTramGiamGia > 0) {
             // Hiển thị % giảm giá + tên khuyến mãi
             double phanTram = phanTramGiamGia * 100;
@@ -441,29 +446,11 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
     }
     
     /**
-     * Lấy % giảm giá từ txtDiscount (parse từ text)
+     * Lấy % giảm giá đã lưu
      * @return phần trăm giảm giá (dạng thập phân: 0.1 = 10%), hoặc 0 nếu không có
      */
     public double getGiamGia() {
-        try {
-            String text = txtDiscount.getText();
-            
-            // Loại bỏ HTML tags nếu có
-            text = text.replaceAll("<[^>]*>", "").trim();
-            
-            // Loại bỏ ký tự %, - và khoảng trắng
-            text = text.replace("%", "").replace("-", "").trim();
-            
-            // Tách lấy phần đầu tiên (trước dấu cách) - là số % giảm giá
-            String[] parts = text.split("\\s+");
-            if (parts.length > 0) {
-                double phanTram = Double.parseDouble(parts[0]);
-                return phanTram / 100.0; // Chuyển % sang dạng thập phân
-            }
-        } catch (Exception e) {
-            // Nếu parse lỗi, return 0
-        }
-        return 0.0;
+        return this.phanTramGiamGia;
     }
     
     /**
@@ -472,6 +459,22 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
      */
     public double getSoTienGiamGia() {
         return getTongTien() * getGiamGia();
+    }
+    
+    /**
+     * Lấy khuyến mãi được áp dụng cho sản phẩm này
+     * @return KhuyenMai hoặc null nếu không có (giảm giá thủ công)
+     */
+    public vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhuyenMai getKhuyenMaiDuocApDung() {
+        return khuyenMaiDuocApDung;
+    }
+    
+    /**
+     * Set khuyến mãi được áp dụng cho sản phẩm này
+     * @param khuyenMai KhuyenMai hoặc null (nếu giảm giá thủ công)
+     */
+    public void setKhuyenMaiDuocApDung(vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhuyenMai khuyenMai) {
+        this.khuyenMaiDuocApDung = khuyenMai;
     }
 
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
