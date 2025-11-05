@@ -24,16 +24,17 @@ public class ChiTietDonHangDAO implements DAOInterface<ChiTietDonHang, String> {
 
     @Override
     public boolean insert(ChiTietDonHang t) {
-        String sql = "insert into chitietdonhang(donGia, giamGia, soLuong, thanhTien, maLoHang, maDonHang) values(?, ?, ?, ?, ?, ?)";
+        String sql = "insert into chitietdonhang(donGia, giamGiaSanPham, giamGiaHoaDonPhanBo, soLuong, thanhTien, maLoHang, maDonHang) values(?, ?, ?, ?, ?, ?, ?)";
         try (Connection con = ConnectDB.getConnection();
              PreparedStatement pre = con.prepareStatement(sql)) {
             
             pre.setDouble(1, t.getDonGia());
-            pre.setDouble(2, t.getGiamGia());
-            pre.setInt(3, t.getSoLuong());
-            pre.setDouble(4, t.getThanhTien());
-            pre.setString(5, t.getLoHang().getMaLoHang());
-            pre.setString(6, t.getDonHang().getMaDonHang());
+            pre.setDouble(2, t.getGiamGiaSanPham());
+            pre.setDouble(3, t.getGiamGiaHoaDonPhanBo());
+            pre.setInt(4, t.getSoLuong());
+            pre.setDouble(5, t.getThanhTien());
+            pre.setString(6, t.getLoHang().getMaLoHang());
+            pre.setString(7, t.getDonHang().getMaDonHang());
             
             return pre.executeUpdate() > 0;
         } catch (Exception e) {
@@ -45,17 +46,18 @@ public class ChiTietDonHangDAO implements DAOInterface<ChiTietDonHang, String> {
     @Override
     public boolean update(ChiTietDonHang t) {
         String sql = "update chitietdonhang "
-                + "set donGia = ?, giamGia = ?, soLuong = ?, thanhTien = ? "
+                + "set donGia = ?, giamGiaSanPham = ?, giamGiaHoaDonPhanBo = ?, soLuong = ?, thanhTien = ? "
                 + "where maLoHang like ? and maDonHang like ?";
                 
         try (Connection con = ConnectDB.getConnection();
              PreparedStatement pre = con.prepareStatement(sql)) {
             pre.setDouble(1, t.getDonGia());
-            pre.setDouble(2, t.getGiamGia());
-            pre.setInt(3, t.getSoLuong());
-            pre.setDouble(4, t.getThanhTien());
-            pre.setString(5, t.getLoHang().getMaLoHang());
-            pre.setString(6, t.getDonHang().getMaDonHang());
+            pre.setDouble(2, t.getGiamGiaSanPham());
+            pre.setDouble(3, t.getGiamGiaHoaDonPhanBo());
+            pre.setInt(4, t.getSoLuong());
+            pre.setDouble(5, t.getThanhTien());
+            pre.setString(6, t.getLoHang().getMaLoHang());
+            pre.setString(7, t.getDonHang().getMaDonHang());
             return pre.executeUpdate() > 0;
         } catch (Exception e) {
             e.printStackTrace();
@@ -74,7 +76,8 @@ public class ChiTietDonHangDAO implements DAOInterface<ChiTietDonHang, String> {
             ResultSet rs = pre.executeQuery();
             if(rs.next()){
                 double donGia = rs.getDouble("donGia");
-                double giamGia = rs.getDouble("giamGia");
+                double giamGia = rs.getDouble("giamGiaSanPham");
+                double giamGiaHoaDonPhanBo = rs.getDouble("giamGiaHoaDonPhanBo");
                 int soLuong = rs.getInt("soLuong");
                 double thanhTien = rs.getDouble("thanhTien");
                 String maLo = rs.getString("maLoHang");
@@ -85,6 +88,7 @@ public class ChiTietDonHangDAO implements DAOInterface<ChiTietDonHang, String> {
                 
                 ChiTietDonHang ctdh = new ChiTietDonHang(soLuong, donGia, thanhTien, giamGia, 
                         loHang, new DonHang(maDonHang));
+                ctdh.setGiamGiaHoaDonPhanBo(giamGiaHoaDonPhanBo);
                 return Optional.of(ctdh);            
             }
         } catch (Exception e) {
@@ -106,7 +110,8 @@ public class ChiTietDonHangDAO implements DAOInterface<ChiTietDonHang, String> {
             
             while (rs.next()) {
                 double donGia = rs.getDouble("donGia");
-                double giamGia = rs.getDouble("giamGia");
+                double giamGia = rs.getDouble("giamGiaSanPham");
+                double giamGiaHoaDonPhanBo = rs.getDouble("giamGiaHoaDonPhanBo");
                 int soLuong = rs.getInt("soLuong");
                 double thanhTien = rs.getDouble("thanhTien");
                 String maLo = rs.getString("maLoHang");
@@ -117,6 +122,7 @@ public class ChiTietDonHangDAO implements DAOInterface<ChiTietDonHang, String> {
                 
                 ChiTietDonHang ctdh = new ChiTietDonHang(soLuong, donGia, thanhTien, giamGia, 
                         loHang, new DonHang(maDonHang));
+                ctdh.setGiamGiaHoaDonPhanBo(giamGiaHoaDonPhanBo);
                 dsCtdh.add(ctdh);
             }
         } catch (Exception e) {
@@ -136,7 +142,8 @@ public class ChiTietDonHangDAO implements DAOInterface<ChiTietDonHang, String> {
             
             while (rs.next()) {
                 double donGia = rs.getDouble("donGia");
-                double giamGia = rs.getDouble("giamGia");
+                double giamGia = rs.getDouble("giamGiaSanPham");
+                double giamGiaHoaDonPhanBo = rs.getDouble("giamGiaHoaDonPhanBo");
                 int soLuong = rs.getInt("soLuong");
                 double thanhTien = rs.getDouble("thanhTien");
                 String maLo = rs.getString("maLoHang");
@@ -147,6 +154,7 @@ public class ChiTietDonHangDAO implements DAOInterface<ChiTietDonHang, String> {
                 
                 ChiTietDonHang ctdh = new ChiTietDonHang(soLuong, donGia, thanhTien, giamGia, 
                         loHang, new DonHang(maDonHang));
+                ctdh.setGiamGiaHoaDonPhanBo(giamGiaHoaDonPhanBo);
                 dsCtdh.add(ctdh);
             }
         } catch (Exception e) {
