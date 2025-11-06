@@ -419,11 +419,12 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
                 
                 // Kiểm tra trạng thái đơn trả hàng
                 String trangThaiDon = donTraHang.getTrangThaiXuLy() != null ? 
-                    donTraHang.getTrangThaiXuLy() : "Chưa xử lý";
+                    donTraHang.getTrangThaiXuLy() : "Chờ duyệt";
                 
-                if ("Đã xử lý".equals(trangThaiDon)) {
-                    // Hiển thị label thông báo đã xử lý
-                    javax.swing.JLabel lblStatus = new javax.swing.JLabel("✓ Đã xử lý");
+                if ("Đã xử lý".equals(trangThaiDon) || "Chờ xuất hủy".equals(trangThaiDon)) {
+                    // Hiển thị label thông báo đã xử lý hoặc đã duyệt
+                    String labelText = "Đã xử lý".equals(trangThaiDon) ? "✓ Đã xử lý" : "✓ Đã duyệt";
+                    javax.swing.JLabel lblStatus = new javax.swing.JLabel(labelText);
                     lblStatus.setForeground(new java.awt.Color(40, 167, 69)); // Màu xanh lá
                     lblStatus.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 12));
                     panel.add(lblStatus);
@@ -475,11 +476,12 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
                 
                 // Kiểm tra trạng thái đơn trả hàng
                 String trangThaiDon = donTraHang.getTrangThaiXuLy() != null ? 
-                    donTraHang.getTrangThaiXuLy() : "Chưa xử lý";
+                    donTraHang.getTrangThaiXuLy() : "Chờ duyệt";
                 
-                if ("Đã xử lý".equals(trangThaiDon)) {
-                    // Không cho phép edit nếu đã xử lý
-                    javax.swing.JLabel lblStatus = new javax.swing.JLabel("✓ Đã xử lý");
+                if ("Đã xử lý".equals(trangThaiDon) || "Chờ xuất hủy".equals(trangThaiDon)) {
+                    // Không cho phép edit nếu đã xử lý hoặc đã duyệt
+                    String labelText = "Đã xử lý".equals(trangThaiDon) ? "✓ Đã xử lý" : "✓ Đã duyệt";
+                    javax.swing.JLabel lblStatus = new javax.swing.JLabel(labelText);
                     lblStatus.setForeground(new java.awt.Color(40, 167, 69));
                     lblStatus.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 12));
                     panel.add(lblStatus);
@@ -619,17 +621,45 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
         }
     }
     
-    // Xử lý xuất hủy sản phẩm
+    // Xử lý xuất hủy sản phẩm - Duyệt đơn trả hàng để chờ xuất hủy
     private void xuLyXuatHuy(ChiTietDonTraHang chiTiet, JTable table, int row, DonTraHang donTraHang) {
         try {
             String tenSanPham = chiTiet.getSanPham().getTenSanPham();
             int soLuong = chiTiet.getSoLuong();
             String maDonTra = donTraHang.getMaDonTraHang();
             
-            // Thông báo cho quản lý
-            Notifications.getInstance().show(Notifications.Type.SUCCESS, 
-                String.format("Đã đánh dấu %d sản phẩm '%s' từ đơn '%s' sẵn sàng xuất hủy", 
-                    soLuong, tenSanPham, maDonTra));
+            // Xác nhận từ người dùng
+            int confirm = javax.swing.JOptionPane.showConfirmDialog(
+                null,
+                String.format("Bạn có chắc muốn duyệt xuất hủy %d sản phẩm '%s' từ đơn '%s'?",
+                    soLuong, tenSanPham, maDonTra),
+                "Xác nhận duyệt xuất hủy",
+                javax.swing.JOptionPane.YES_NO_OPTION,
+                javax.swing.JOptionPane.QUESTION_MESSAGE
+            );
+            
+            if (confirm != javax.swing.JOptionPane.YES_OPTION) {
+                return; // Người dùng chọn NO hoặc đóng dialog
+            }
+            
+            // Cập nhật trạng thái đơn trả hàng thành "Chờ xuất hủy"
+            donTraHang.setTrangThaiXuLy("Chờ xuất hủy");
+            boolean success = donTraHangBUS.capNhatDonTraHang(donTraHang);
+            
+            if (success) {
+                // Cập nhật hiển thị trong bảng
+                table.setValueAt("✓ Đã duyệt", row, 7);
+                table.repaint();
+                
+                // Refresh bảng ngoài để cập nhật trạng thái
+                reloadTableData();
+                
+                Notifications.getInstance().show(Notifications.Type.SUCCESS, 
+                    String.format("Đã duyệt xuất hủy đơn '%s'. Sản phẩm sẽ hiển thị ở phiếu xuất hủy của nhân viên.", maDonTra));
+            } else {
+                Notifications.getInstance().show(Notifications.Type.ERROR, 
+                    "Lỗi khi cập nhật trạng thái đơn trả hàng!");
+            }
             
         } catch (Exception e) {
             e.printStackTrace();

@@ -159,7 +159,7 @@ public class ChiTietDonTraHangDAO implements DAOInterface<ChiTietDonTraHang, Str
         return dsCt;
     }
 
-    // Lấy tất cả sản phẩm trong đơn trả CHƯA XỬ LÝ
+    // Lấy tất cả sản phẩm trong đơn trả ĐÃ ĐƯỢC DUYỆT (chờ xuất hủy)
     public List<ChiTietDonTraHang> findAllWithDetails() {
         List<ChiTietDonTraHang> danhSach = new ArrayList<>();
         String sql = "SELECT ct.*, sp.tenSanPham, sp.giaNhap, dv.tenDonVi, dth.trangThaiXuLy "
@@ -167,7 +167,7 @@ public class ChiTietDonTraHangDAO implements DAOInterface<ChiTietDonTraHang, Str
                 + "JOIN SanPham sp ON ct.maSanPham = sp.maSanPham "
                 + "JOIN DonViTinh dv ON sp.maDonVi = dv.maDonVi "
                 + "JOIN DonTraHang dth ON ct.maDonTra = dth.maDonTra "
-                + "WHERE dth.trangThaiXuLy = N'Chưa xử lý' OR dth.trangThaiXuLy IS NULL";
+                + "WHERE dth.trangThaiXuLy = N'Chờ xuất hủy'";
 
         try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
 

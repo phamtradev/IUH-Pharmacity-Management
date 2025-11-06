@@ -427,9 +427,14 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
                         vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonTraHang donTra = 
                             donTraBUS.timDonTraTheoMa(maDonTra);
                         if (donTra != null) {
+                            // Cập nhật trạng thái thành "Đã xử lý" sau khi đã tạo phiếu xuất hủy
                             donTra.setTrangThaiXuLy("Đã xử lý");
-                            donTraBUS.capNhatDonTraHang(donTra);
-                            System.out.println("Đã cập nhật trạng thái đơn trả: " + maDonTra);
+                            boolean updated = donTraBUS.capNhatDonTraHang(donTra);
+                            if (updated) {
+                                System.out.println("✓ Đã cập nhật trạng thái 'Đã xử lý' cho đơn trả: " + maDonTra);
+                            } else {
+                                System.err.println("✗ Lỗi khi cập nhật trạng thái đơn trả: " + maDonTra);
+                            }
                         }
                     } catch (Exception e) {
                         System.err.println("Lỗi khi cập nhật trạng thái đơn trả " + maDonTra + ": " + e.getMessage());
