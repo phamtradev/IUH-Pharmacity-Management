@@ -10,10 +10,10 @@ Real-time pharmacy management system with Java Swing, JDBC, SQL Server, and Flat
 - 23636821 - Đỗ Hoài Nhớ
 - 23633251 - Phạm Minh Thịnh
 
-**Đồ án môn học:** Phát Triển Ứng Dụng
+Course Project: Application Development
 
-**Institution:** Industrial University of Ho Chi Minh City (IUH)  
-**Faculty:** Information Technology
+Institution: Industrial University of Ho Chi Minh City (IUH)  
+Faculty: Information Technology
 
 ## Introduction
 
