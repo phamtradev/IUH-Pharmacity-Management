@@ -297,6 +297,34 @@ public class LoHangDAO implements DAOInterface<LoHang, String> {
         }
         return Optional.empty();
     }
+    
+    /**
+     * Tìm tất cả lô hàng theo sản phẩm và hạn sử dụng
+     * (Có thể có nhiều lô cùng HSD nhưng từ NCC khác nhau)
+     */
+    public List<LoHang> findAllByMaSanPhamAndHanSuDung(String maSanPham, java.time.LocalDate hanSuDung) {
+        List<LoHang> danhSachLoHang = new ArrayList<>();
+        String sql = "SELECT * FROM LoHang WHERE maSanPham = ? AND hanSuDung = ?";
+
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(sql)) {
+
+            stmt.setString(1, maSanPham);
+            stmt.setDate(2, java.sql.Date.valueOf(hanSuDung));
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                LoHang loHang = mapResultSetToLoHang(rs);
+                if (loHang != null) {
+                    danhSachLoHang.add(loHang);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (Exception ex) {
+            System.getLogger(LoHangDAO.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        }
+        return danhSachLoHang;
+    }
 
     /**
      * Cập nhật tồn kho của lô hàng (cộng dồn)
@@ -425,5 +453,82 @@ public class LoHangDAO implements DAOInterface<LoHang, String> {
             System.getLogger(LoHangDAO.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
         }
         return danhSach;
+    }
+    
+    /**
+     * Tìm lô hàng theo số đăng ký sản phẩm và hạn sử dụng
+     * (Số đăng ký đã unique cho mỗi sản phẩm từ mỗi NCC, không cần tham số maNCC)
+     * @param soDangKy Số đăng ký sản phẩm
+     * @param hanSuDung Hạn sử dụng (LocalDate)
+     * @return Optional chứa LoHang nếu tìm thấy
+     */
+    public Optional<LoHang> timLoHangTheoSoDangKyVaHanSuDung(String soDangKy, LocalDate hanSuDung) {
+        String SQL = "SELECT lh.* FROM LoHang lh " +
+                     "INNER JOIN SanPham sp ON lh.maSanPham = sp.maSanPham " +
+                     "WHERE sp.soDangKy = ? " +
+                     "AND lh.hanSuDung = ?";
+        
+        System.out.println("🔍 [DAO] Tìm lô: Số ĐK = '" + soDangKy + "', HSD = " + hanSuDung);
+        
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement ps = con.prepareStatement(SQL)) {
+            
+            ps.setString(1, soDangKy);
+            ps.setDate(2, Date.valueOf(hanSuDung)); // Convert LocalDate -> java.sql.Date
+            
+            // Debug log - thay thế ? bằng giá trị thực
+            String debugSQL = SQL.replaceFirst("\\?", "'" + soDangKy + "'")
+                                 .replaceFirst("\\?", "'" + Date.valueOf(hanSuDung) + "'");
+            System.out.println("🔍 [DAO] SQL: " + debugSQL);
+            
+            // Debug: Kiểm tra có lô nào với số đăng ký này không
+            try (PreparedStatement psDebug = con.prepareStatement(
+                    "SELECT lh.maLoHang, lh.tenLoHang, lh.hanSuDung, sp.soDangKy " +
+                    "FROM LoHang lh INNER JOIN SanPham sp ON lh.maSanPham = sp.maSanPham " +
+                    "WHERE sp.soDangKy = ?")) {
+                psDebug.setString(1, soDangKy);
+                try (ResultSet rsDebug = psDebug.executeQuery()) {
+                    System.out.println("📋 [DEBUG] Tất cả lô có số ĐK '" + soDangKy + "':");
+                    while (rsDebug.next()) {
+                        System.out.println("   - " + rsDebug.getString("maLoHang") + 
+                                         " | " + rsDebug.getString("tenLoHang") + 
+                                         " | HSD=" + rsDebug.getDate("hanSuDung"));
+                    }
+                }
+            }
+            
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    System.out.println("✅ [DAO] Tìm thấy lô: " + rs.getString("maLoHang") + " | " + rs.getString("tenLoHang"));
+                    LoHang loHang = new LoHang();
+                    try {
+                        loHang.setMaLoHang(rs.getString("maLoHang"));
+                        loHang.setTenLoHang(rs.getString("tenLoHang"));
+                        loHang.setHanSuDung(rs.getDate("hanSuDung").toLocalDate());
+                        loHang.setTonKhoNoValidation(rs.getInt("tonKho")); // Dùng NoValidation vì load từ DB
+                        loHang.setTrangThai(rs.getBoolean("trangThai"));
+                        
+                        // Load sản phẩm liên quan
+                        String maSP = rs.getString("maSanPham");
+                        SanPham sp = new SanPham();
+                        sp.setMaSanPham(maSP);
+                        loHang.setSanPham(sp);
+                        
+                        return Optional.of(loHang);
+                    } catch (Exception e) {
+                        System.err.println("Lỗi khi set thuộc tính LoHang: " + e.getMessage());
+                        e.printStackTrace();
+                    }
+                } else {
+                    System.out.println("❌ [DAO] KHÔNG tìm thấy lô nào!");
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("❌ [DAO] Lỗi SQL: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        System.out.println("⚠ [DAO] Return empty");
+        return Optional.empty();
     }
 }

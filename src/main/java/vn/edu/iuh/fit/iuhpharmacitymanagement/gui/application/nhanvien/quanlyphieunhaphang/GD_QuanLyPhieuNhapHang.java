@@ -24,13 +24,13 @@ import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.LoHangBUS;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.NhaCungCapBUS;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.NhanVienBUS;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.SanPhamBUS;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.DonNhapHangBUS;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.ChiTietDonNhapHangBUS;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.SanPhamDAO;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.LoHangDAO;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.LoHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhaCungCap;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham;
@@ -45,7 +45,6 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhanVien;
 public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
     private SanPhamBUS sanPhamBUS;
     private SanPhamDAO sanPhamDAO;
-    private LoHangBUS loHangBUS;
     private NhaCungCapBUS nhaCungCapBUS;
     private DonNhapHangBUS donNhapHangBUS;
     private ChiTietDonNhapHangBUS chiTietDonNhapHangBUS;
@@ -57,7 +56,6 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
     public GD_QuanLyPhieuNhapHang() {
         sanPhamDAO = new SanPhamDAO();
         sanPhamBUS = new SanPhamBUS(sanPhamDAO);
-        loHangBUS = new LoHangBUS();
         donNhapHangBUS = new DonNhapHangBUS();
         chiTietDonNhapHangBUS = new ChiTietDonNhapHangBUS();
         currencyFormat = new DecimalFormat("#,###");
@@ -244,7 +242,13 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
     }
     
     private void themSanPhamVaoPanelNhap(SanPham sanPham, int soLuong, double donGiaNhap, Date hanDung, String loHang) {
-        Panel_ChiTietSanPhamNhap panelSP = new Panel_ChiTietSanPhamNhap(sanPham, soLuong, donGiaNhap, hanDung, loHang);
+        System.out.println("→ Thêm sản phẩm vào panel: " + sanPham.getTenSanPham() 
+            + " | SL=" + soLuong + " | Giá=" + donGiaNhap + " | HSD=" + (hanDung != null ? new SimpleDateFormat("dd/MM/yyyy").format(hanDung) : "null"));
+        
+        // Lấy mã nhà cung cấp hiện tại
+        String maNCC = (nhaCungCapHienTai != null) ? nhaCungCapHienTai.getMaNhaCungCap() : null;
+        
+        Panel_ChiTietSanPhamNhap panelSP = new Panel_ChiTietSanPhamNhap(sanPham, soLuong, donGiaNhap, hanDung, loHang, maNCC);
         
         // Listener để cập nhật tổng tiền
         panelSP.addPropertyChangeListener("tongTien", new PropertyChangeListener() {
@@ -259,6 +263,7 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
         pnSanPham.revalidate();
         pnSanPham.repaint();
         
+        System.out.println("✓ Đã thêm panel vào UI, tổng số panel hiện tại: " + pnSanPham.getComponentCount());
         updateTongTienHang();
     }
     
@@ -621,7 +626,7 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
             }
             
             // Tìm index của các cột theo header (sản phẩm + nhà cung cấp)
-            int colMaSP = -1, colTenSP = -1, colSoLuong = -1, colDonGia = -1, 
+            int colMaSP = -1, colSoLuong = -1, colDonGia = -1, 
                 colHanDung = -1;
             int colMaNCC = -1, colTenNCC = -1, colDiaChi = -1, 
                 colSDT = -1, colEmail = -1, colMaSoThue = -1;
@@ -631,32 +636,51 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
                 if (cell == null) continue;
                 String header = getCellValueAsString(cell).trim().toLowerCase();
                 
+                System.out.println("→ Cột " + i + ": [" + header + "]"); // Debug
+                
                 // Các cột sản phẩm
                 if ((header.contains("số") && header.contains("đăng ký")) || 
                     (header.contains("so") && header.contains("dang ky"))) {
                     colMaSP = i;
-                } else if (header.contains("tên") && header.contains("sản phẩm")) {
-                    colTenSP = i;
-                } else if (header.contains("số lượng")) {
+                    System.out.println("   ✓ Số đăng ký");
+                } else if (header.contains("số lượng") || header.contains("so luong")) {
                     colSoLuong = i;
-                } else if (header.contains("đơn giá") && header.contains("nhập")) {
+                    System.out.println("   ✓ Số lượng");
+                } else if (header.contains("đơn giá") || header.contains("don gia")) {
                     colDonGia = i;
-                } else if (header.contains("hạn") && (header.contains("dùng") || header.contains("sử dụng"))) {
+                    System.out.println("   ✓ Đơn giá");
+                } else if (header.contains("hạn") && (header.contains("dùng") || header.contains("sử dụng") || header.contains("su dung"))) {
                     colHanDung = i;
+                    System.out.println("   ✓ Hạn sử dụng");
+                } else if (header.contains("lô") && header.contains("hàng")) {
+                    // Cột "Lô hàng" - bỏ qua (đã xóa logic tự động chọn lô)
+                    System.out.println("   ℹ Lô hàng (bỏ qua)");
                 }
-                // Các cột nhà cung cấp
-                else if (header.contains("mã") && header.contains("ncc")) {
-                    colMaNCC = i;
+                // ═══════════════════════════════════════════════════════════════
+                // CÁC CỘT NHÀ CUNG CẤP - ƯU TIÊN KIỂM TRA SĐT TRƯỚC (tránh nhầm với "Tên NCC")
+                // ═══════════════════════════════════════════════════════════════
+                else if (header.contains("sđt") || header.contains("sdt")) {
+                    colSDT = i;
+                    System.out.println("   ✓ SĐT NCC");
+                } else if ((header.contains("số") || header.contains("so")) && header.contains("điện thoại")) {
+                    // "Số điện thoại" hoặc "So dien thoai"
+                    if (colSDT == -1) colSDT = i;
+                    System.out.println("   ✓ Số điện thoại NCC");
                 } else if (header.contains("tên") && header.contains("ncc")) {
                     colTenNCC = i;
+                    System.out.println("   ✓ Tên NCC");
+                } else if (header.contains("mã") && header.contains("ncc")) {
+                    colMaNCC = i;
+                    System.out.println("   ✓ Mã NCC");
                 } else if (header.contains("địa chỉ") || header.contains("dia chi")) {
                     colDiaChi = i;
-                } else if (header.contains("sđt") || header.contains("sdt") || (header.contains("số") && header.contains("điện thoại"))) {
-                    colSDT = i;
+                    System.out.println("   ✓ Địa chỉ");
                 } else if (header.contains("email")) {
                     colEmail = i;
+                    System.out.println("   ✓ Email");
                 } else if (header.contains("mã") && header.contains("thuế")) {
                     colMaSoThue = i;
+                    System.out.println("   ✓ Mã số thuế");
                 }
             }
             
@@ -674,10 +698,27 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
                 Row firstDataRow = sheet.getRow(1);
                 if (firstDataRow != null) {
                     try {
-                        System.out.println("→ DEBUG: Đọc NCC từ dòng 2, colTenNCC=" + colTenNCC);
+                        System.out.println("\n═══ ĐỌC THÔNG TIN NHÀ CUNG CẤP TỪ EXCEL ═══");
+                        System.out.println("→ Index cột Tên NCC: " + colTenNCC);
+                        System.out.println("→ Index cột SĐT: " + colSDT);
+                        System.out.println("→ Index cột Địa chỉ: " + colDiaChi);
+                        System.out.println("→ Index cột Email: " + colEmail);
+                        
                         if (colTenNCC != -1) {
                             String tenNCCDebug = getCellValueAsString(firstDataRow.getCell(colTenNCC));
-                            System.out.println("→ DEBUG: Tên NCC từ Excel = [" + tenNCCDebug + "]");
+                            System.out.println("→ Tên NCC từ Excel: [" + tenNCCDebug + "]");
+                        }
+                        if (colSDT != -1) {
+                            String sdtDebug = getCellValueAsString(firstDataRow.getCell(colSDT));
+                            System.out.println("→ SĐT từ Excel: [" + sdtDebug + "]");
+                        }
+                        if (colDiaChi != -1) {
+                            String diaChiDebug = getCellValueAsString(firstDataRow.getCell(colDiaChi));
+                            System.out.println("→ Địa chỉ từ Excel: [" + diaChiDebug + "]");
+                        }
+                        if (colEmail != -1) {
+                            String emailDebug = getCellValueAsString(firstDataRow.getCell(colEmail));
+                            System.out.println("→ Email từ Excel: [" + emailDebug + "]");
                         }
                         
                         nhaCungCap = xuLyThongTinNhaCungCap(firstDataRow, 
@@ -742,8 +783,63 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
                         continue;
                     }
                     
-                    // Thêm sản phẩm vào panel (người dùng sẽ chọn lô sau)
-                    themSanPhamVaoPanelNhap(sanPham, soLuong, donGiaNhap, hanDung, null);
+                    // ═══════════════════════════════════════════════════════════════════
+                    // KIỂM TRA XEM CÓ LÔ HÀNG NÀO TRÙNG HOÀN TOÀN (số đăng ký + hạn sử dụng)
+                    // ═══════════════════════════════════════════════════════════════════
+                    String maLoHangTuDong = null;
+                    try {
+                        // Lấy danh sách lô hàng của sản phẩm này
+                        LoHangDAO loHangDAO = new LoHangDAO();
+                        List<LoHang> dsLoHang = loHangDAO.findByMaSanPham(sanPham.getMaSanPham());
+                        
+                        System.out.println("→ Kiểm tra tự động chọn lô cho SP: " + sanPham.getTenSanPham());
+                        System.out.println("   - Số đăng ký từ Excel: " + maSP);
+                        System.out.println("   - HSD từ Excel: " + (hanDung != null ? new SimpleDateFormat("dd/MM/yyyy").format(hanDung) : "null"));
+                        System.out.println("   - Tìm thấy " + dsLoHang.size() + " lô hàng");
+                        
+                        // Tìm lô hàng có CÙNG số đăng ký VÀ CÙNG hạn sử dụng
+                        List<LoHang> loTrungKhop = new ArrayList<>();
+                        for (LoHang lo : dsLoHang) {
+                            boolean trungSDK = maSP.equalsIgnoreCase(lo.getSanPham().getSoDangKy());
+                            
+                            // So sánh ngày: Chuyển java.util.Date → LocalDate
+                            boolean trungHSD = false;
+                            if (hanDung != null && lo.getHanSuDung() != null) {
+                                // Chuyển Date → LocalDate
+                                LocalDate hsdExcel = new java.sql.Date(hanDung.getTime()).toLocalDate();
+                                LocalDate hsdLoHang = lo.getHanSuDung();
+                                trungHSD = hsdExcel.equals(hsdLoHang);
+                            }
+                            
+                            System.out.println("   - Lô " + lo.getMaLoHang() + ": SDK=" + trungSDK + ", HSD=" + trungHSD);
+                            
+                            if (trungSDK && trungHSD) {
+                                loTrungKhop.add(lo);
+                            }
+                        }
+                        
+                        if (loTrungKhop.size() == 1) {
+                            // Chỉ có 1 lô trùng hoàn toàn → TỰ ĐỘNG CHỌN
+                            maLoHangTuDong = loTrungKhop.get(0).getMaLoHang();
+                            System.out.println("   ✓ TỰ ĐỘNG CHỌN lô: " + maLoHangTuDong);
+                        } else if (loTrungKhop.size() > 1) {
+                            // Có nhiều lô trùng → Để user chọn
+                            System.out.println("   ⚠ Có " + loTrungKhop.size() + " lô trùng → Để user chọn");
+                        } else if (!dsLoHang.isEmpty()) {
+                            // Có lô cùng sản phẩm nhưng khác HSD → Để user chọn
+                            System.out.println("   ⚠ Có lô cùng SP nhưng khác HSD → Để user chọn");
+                        } else {
+                            // Không có lô nào → Tạo mới
+                            System.out.println("   ℹ Không có lô nào → Sẽ tạo lô mới");
+                        }
+                        
+                    } catch (Exception ex) {
+                        System.err.println("Lỗi kiểm tra lô hàng: " + ex.getMessage());
+                        ex.printStackTrace();
+                    }
+                    
+                    // Thêm sản phẩm vào panel
+                    themSanPhamVaoPanelNhap(sanPham, soLuong, donGiaNhap, hanDung, maLoHangTuDong);
                     successCount++;
                     
                 } catch (Exception e) {
@@ -815,18 +911,29 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
             return cal.getTime();
         }
         
+        System.out.println("📅 [EXCEL] Cell Type: " + cell.getCellType());
+        System.out.println("📅 [EXCEL] Cell Value: " + cell);
+        
         if (cell.getCellType() == CellType.NUMERIC && DateUtil.isCellDateFormatted(cell)) {
-            return cell.getDateCellValue();
+            Date date = cell.getDateCellValue();
+            System.out.println("📅 [EXCEL] Đọc DATE từ NUMERIC cell: " + dateFormat.format(date));
+            return date;
         } else if (cell.getCellType() == CellType.STRING) {
+            String dateStr = cell.getStringCellValue();
+            System.out.println("📅 [EXCEL] Đọc STRING từ cell: '" + dateStr + "'");
             try {
-                return dateFormat.parse(cell.getStringCellValue());
+                Date date = dateFormat.parse(dateStr);
+                System.out.println("📅 [EXCEL] Parse thành DATE: " + dateFormat.format(date));
+                return date;
             } catch (Exception e) {
+                System.out.println("❌ [EXCEL] Parse FAILED: " + e.getMessage());
                 Calendar cal = Calendar.getInstance();
                 cal.add(Calendar.YEAR, 2);
                 return cal.getTime();
             }
         }
         
+        System.out.println("⚠️ [EXCEL] Cell type không hợp lệ, dùng default 2 năm sau");
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.YEAR, 2);
         return cal.getTime();
@@ -864,61 +971,59 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
         
         NhaCungCap ncc = null;
         
-        // Kiểm tra tên NCC bắt buộc phải có
-        if (tenNCC == null || tenNCC.trim().isEmpty()) {
-            throw new Exception("Tên nhà cung cấp không được để trống");
-        }
+        // ═══════════════════════════════════════════════════════════════
+        // LOGIC MỚI: Ưu tiên tìm theo SĐT TRƯỚC (key chính xác nhất)
+        // ═══════════════════════════════════════════════════════════════
         
-        // Ưu tiên 1: Tìm theo TÊN
-        ncc = nhaCungCapBUS.layNhaCungCapTheoTen(tenNCC.trim());
-        if (ncc != null) {
-            System.out.println("✓ Tìm thấy nhà cung cấp theo tên: " + tenNCC);
-            
-            // Kiểm tra conflict: Nếu tìm thấy theo tên, nhưng SĐT khác với Excel
-            if (sdt != null && !sdt.trim().isEmpty() && 
-                ncc.getSoDienThoai() != null &&
-                !sdt.trim().equals(ncc.getSoDienThoai())) {
-                System.out.println("⚠ CẢNH BÁO: NCC '" + tenNCC + "' trong DB có SĐT: " + ncc.getSoDienThoai() 
-                    + ", nhưng Excel có SĐT: " + sdt);
-                throw new Exception("Xung đột dữ liệu: Nhà cung cấp '" + tenNCC + 
-                    "' đã tồn tại trong hệ thống với SĐT khác!\n" +
-                    "SĐT trong DB: " + ncc.getSoDienThoai() + "\n" +
-                    "SĐT trong Excel: " + sdt);
-            }
-            
-            return ncc;
-        }
-        
-        // Ưu tiên 2: Nếu KHÔNG TÌM THẤY theo TÊN, thử tìm theo SĐT
-        // → Nếu tìm thấy theo SĐT nhưng TÊN KHÁC → BÁO LỖI CONFLICT
+        // ✅ ƯU TIÊN 1: Tìm theo SĐT (nếu có SĐT trong Excel)
         if (sdt != null && !sdt.trim().isEmpty()) {
-            NhaCungCap nccTheoSDT = nhaCungCapBUS.layNhaCungCapTheoSoDienThoai(sdt.trim());
-            if (nccTheoSDT != null) {
-                // Kiểm tra tên có khớp không
-                if (!tenNCC.trim().equalsIgnoreCase(nccTheoSDT.getTenNhaCungCap())) {
-                    System.out.println("⚠ CONFLICT: SĐT " + sdt + " thuộc về NCC '" + 
-                        nccTheoSDT.getTenNhaCungCap() + "', nhưng Excel yêu cầu tên: '" + tenNCC + "'");
-                    
-                    throw new Exception("⚠️ XUNG ĐỘT DỮ LIỆU ⚠️\n\n" +
-                        "Số điện thoại " + sdt + " đã thuộc về nhà cung cấp:\n" +
-                        "   \"" + nccTheoSDT.getTenNhaCungCap() + "\"\n\n" +
-                        "Nhưng trong file Excel bạn yêu cầu tạo NCC mới tên:\n" +
-                        "   \"" + tenNCC + "\"\n\n" +
-                        "➜ Vui lòng kiểm tra lại:\n" +
-                        "   1. Tên NCC trong Excel có đúng không?\n" +
-                        "   2. Số điện thoại có bị nhầm không?");
+            System.out.println("→ Tìm nhà cung cấp theo SĐT: " + sdt);
+            ncc = nhaCungCapBUS.layNhaCungCapTheoSoDienThoai(sdt.trim());
+            
+            if (ncc != null) {
+                System.out.println("✓ Tìm thấy nhà cung cấp theo SĐT: " + ncc.getTenNhaCungCap() + " (Mã: " + ncc.getMaNhaCungCap() + ")");
+                
+                // Cảnh báo nếu tên trong Excel khác với DB (nhưng vẫn cho phép)
+                if (tenNCC != null && !tenNCC.trim().isEmpty() && 
+                    !tenNCC.trim().equalsIgnoreCase(ncc.getTenNhaCungCap())) {
+                    System.out.println("⚠ LƯU Ý: Tên NCC trong Excel là '" + tenNCC + 
+                        "', nhưng trong DB là '" + ncc.getTenNhaCungCap() + "' → Sử dụng thông tin từ DB");
                 }
                 
-                System.out.println("✓ Tìm thấy nhà cung cấp theo SĐT: " + sdt);
-                return nccTheoSDT;
+                return ncc;
             }
+            
+            // Không tìm thấy theo SĐT → Sẽ tạo mới (xử lý ở cuối hàm)
+            System.out.println("→ Không tìm thấy NCC với SĐT: " + sdt + " → Sẽ tạo mới");
         }
         
-        // Không tìm thấy -> Tạo object TẠM (chưa lưu DB)
-        System.out.println("→ Không tìm thấy nhà cung cấp '" + tenNCC + "' trong database");
-        System.out.println("   Sẽ tạo mới khi bấm nút 'Nhập hàng'");
+        // ✅ ƯU TIÊN 2: Nếu KHÔNG CÓ SĐT, thử tìm theo TÊN
+        else if (tenNCC != null && !tenNCC.trim().isEmpty()) {
+            System.out.println("→ Không có SĐT trong Excel, tìm theo tên: " + tenNCC);
+            ncc = nhaCungCapBUS.layNhaCungCapTheoTen(tenNCC.trim());
+            
+            if (ncc != null) {
+                System.out.println("✓ Tìm thấy nhà cung cấp theo tên: " + tenNCC);
+                return ncc;
+            }
+            
+            System.out.println("→ Không tìm thấy NCC với tên: " + tenNCC + " → Sẽ tạo mới");
+        }
         
-        // Validate thông tin
+        // ⚠️ Nếu KHÔNG CÓ TÊN và KHÔNG CÓ SĐT → Báo lỗi
+        else {
+            throw new Exception("Phải có ít nhất TÊN hoặc SĐT nhà cung cấp!");
+        }
+        
+        // ═══════════════════════════════════════════════════════════════
+        // Không tìm thấy → TẠO MỚI NHÀ CUNG CẤP
+        // ═══════════════════════════════════════════════════════════════
+        
+        System.out.println("→ Không tìm thấy nhà cung cấp trong database → Tạo mới");
+        System.out.println("   - Tên NCC: " + (tenNCC != null ? tenNCC : "(trống)"));
+        System.out.println("   - SĐT: " + (sdt != null ? sdt : "(trống)"));
+        
+        // ✅ Validate dữ liệu trước khi tạo
         if (sdt != null && !sdt.trim().isEmpty() && !sdt.trim().matches(NhaCungCap.SO_DIEN_THOAI_REGEX)) {
             throw new Exception("Số điện thoại không đúng định dạng: " + sdt);
         }
@@ -927,12 +1032,17 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
             throw new Exception("Email không đúng định dạng: " + email);
         }
         
+        // ✅ Tên NCC: Nếu không có → Dùng SĐT làm tên tạm
+        String tenNCCMoi = (tenNCC != null && !tenNCC.trim().isEmpty()) 
+            ? tenNCC.trim() 
+            : ("NCC_" + (sdt != null ? sdt.trim() : "UNKNOWN"));
+        
         // Tạo nhà cung cấp TẠM (chưa lưu DB)
         NhaCungCap nccTam = new NhaCungCap();
         
         try {
             // Không set mã - sẽ tự sinh khi lưu
-            nccTam.setTenNhaCungCap(tenNCC.trim());
+            nccTam.setTenNhaCungCap(tenNCCMoi);
             
             // Set các trường optional
             if (diaChi != null && !diaChi.trim().isEmpty()) {
@@ -1043,123 +1153,62 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
             List<ChiTietDonNhapHang> danhSachChiTiet = new ArrayList<>();
             boolean allDetailsSaved = true;
             
+            // Map để kiểm tra lô đã được chọn
+            java.util.Map<String, String> mapLoHangDaChon = new java.util.HashMap<>();
+            
             for (Panel_ChiTietSanPhamNhap panel : danhSachPanel) {
                 SanPham sanPham = panel.getSanPham();
                 int soLuong = panel.getSoLuong();
                 double donGia = panel.getDonGiaNhap();
                 double thanhTien = panel.getTongTien();
                 
-                // Xác định lô hàng
-                LoHang loHang = null;
+                // ✅ LẤY LÔ ĐÃ CHỌN TỪ PANEL (User phải chọn thủ công qua nút "Chọn lô")
+                LoHang loHang = panel.getLoHangDaChon();
                 
-                // Case 1: Đã chọn lô có sẵn (từ dialog "Chọn lô có sẵn")
-                if (panel.getLoHangDaChon() != null) {
-                    loHang = panel.getLoHangDaChon();
-                    System.out.println("→ Sử dụng lô đã chọn: " + loHang.getTenLoHang());
-                }
-                // Case 2: Tạo lô mới (từ dialog "Tạo lô mới")
-                else if (panel.getTenLoMoi() != null && !panel.getTenLoMoi().trim().isEmpty()) {
-                    String tenLo = panel.getTenLoMoi();
-                    Date hanDung = panel.getHanDung();
-                    
-                    // Kiểm tra HSD phải > 6 tháng (đã check ở Panel nhưng check thêm ở đây để đảm bảo)
-                    LocalDate hsd = hanDung.toInstant()
-                            .atZone(java.time.ZoneId.systemDefault())
-                            .toLocalDate();
-                    LocalDate ngayGioiHan = LocalDate.now().plusMonths(6);
-                    
-                    if (hsd.isBefore(ngayGioiHan) || hsd.isEqual(ngayGioiHan)) {
-                        System.out.println("✗ HSD không hợp lệ (≤ 6 tháng) cho lô: " + tenLo);
-                        Notifications.getInstance().show(Notifications.Type.WARNING,
-                            Notifications.Location.TOP_CENTER,
-                            "Không thể tạo lô '" + tenLo + "': HSD phải lớn hơn 6 tháng!");
-                        continue; // Skip sản phẩm này
-                    }
-                    
-                    System.out.println("→ Tạo lô mới từ dialog: " + tenLo);
-                    
-                    LoHang loMoi = new LoHang();
-                    loMoi.setTenLoHang(tenLo);
-                    loMoi.setHanSuDung(hsd);
-                    loMoi.setTonKho(0);  // Bắt đầu từ 0, sẽ cập nhật khi lưu chi tiết
-                    loMoi.setTrangThai(true);
-                    loMoi.setSanPham(sanPham);
-                    
-                    boolean loSaved = loHangBUS.themLoHang(loMoi);
-                    if (loSaved) {
-                        // Đọc lại từ DB
-                        loHang = loHangBUS.getLoHangBySanPham(sanPham).stream()
-                                .filter(lo -> lo.getTenLoHang().equalsIgnoreCase(tenLo))
-                                .findFirst()
-                                .orElse(null);
-                        System.out.println("✓ Đã tạo lô hàng mới: " + tenLo);
-                    } else {
-                        System.out.println("✗ Lỗi tạo lô hàng: " + tenLo);
-                    }
-                }
-                // Case 3: Có tên lô từ Excel
-                else if (panel.getTenLoHangTuExcel() != null && !panel.getTenLoHangTuExcel().trim().isEmpty()) {
-                    String tenLo = panel.getTenLoHangTuExcel();
-                    
-                    // Tìm trong DB
-                    loHang = loHangBUS.getLoHangBySanPham(sanPham).stream()
-                            .filter(lo -> lo.getTenLoHang().equalsIgnoreCase(tenLo))
-                            .findFirst()
-                            .orElse(null);
-                    
-                    // Nếu chưa có, tạo mới NGAY BÂY GIỜ
-                    if (loHang == null) {
-                        System.out.println("→ Lô '" + tenLo + "' chưa tồn tại, đang tạo mới...");
-                        Date hanDung = panel.getHanDung();
-                        
-                        // Kiểm tra HSD phải > 6 tháng
-                        LocalDate hsd = hanDung.toInstant()
-                                .atZone(java.time.ZoneId.systemDefault())
-                                .toLocalDate();
-                        LocalDate ngayGioiHan = LocalDate.now().plusMonths(6);
-                        
-                        if (hsd.isBefore(ngayGioiHan) || hsd.isEqual(ngayGioiHan)) {
-                            System.out.println("✗ HSD không hợp lệ (≤ 6 tháng) cho lô Excel: " + tenLo);
-                            Notifications.getInstance().show(Notifications.Type.WARNING,
-                                Notifications.Location.TOP_CENTER,
-                                "Không thể tạo lô '" + tenLo + "' từ Excel: HSD phải lớn hơn 6 tháng!");
-                            continue; // Skip sản phẩm này
-                        }
-                        
-                        LoHang loMoi = new LoHang();
-                        loMoi.setTenLoHang(tenLo);
-                        loMoi.setHanSuDung(hsd);
-                        loMoi.setTonKho(0);  // Bắt đầu từ 0, sẽ cập nhật khi lưu chi tiết
-                        loMoi.setTrangThai(true);
-                        loMoi.setSanPham(sanPham);
-                        
-                        boolean loSaved = loHangBUS.themLoHang(loMoi);
-                        if (loSaved) {
-                            // Đọc lại từ DB
-                            loHang = loHangBUS.getLoHangBySanPham(sanPham).stream()
-                                    .filter(lo -> lo.getTenLoHang().equalsIgnoreCase(tenLo))
-                                    .findFirst()
-                                    .orElse(null);
-                            System.out.println("✓ Đã tạo lô hàng mới: " + tenLo);
-                        } else {
-                            System.out.println("✗ Lỗi tạo lô hàng: " + tenLo);
-                        }
-                    } else {
-                        System.out.println("→ Sử dụng lô có sẵn: " + tenLo);
-                    }
-                }
-                // Case 4: Không có lô nào được chọn -> Hiển thị cảnh báo
-                else {
+                // Nếu chưa chọn lô → Bắt buộc phải chọn
+                if (loHang == null) {
                     System.out.println("✗ Chưa chọn lô cho sản phẩm: " + sanPham.getTenSanPham());
                     Notifications.getInstance().show(Notifications.Type.WARNING, 
                         Notifications.Location.TOP_CENTER,
-                        "Vui lòng chọn lô cho sản phẩm: " + sanPham.getTenSanPham());
+                        "Vui lòng chọn lô hàng cho sản phẩm: " + sanPham.getTenSanPham());
                     allDetailsSaved = false;
                     continue;
                 }
                 
-                if (loHang == null) {
-                    System.out.println("✗ Không thể xác định lô hàng cho sản phẩm: " + sanPham.getTenSanPham());
+                // ✅ VALIDATE: Kiểm tra lô phải cùng sản phẩm
+                if (loHang.getSanPham() == null || 
+                    !loHang.getSanPham().getMaSanPham().equals(sanPham.getMaSanPham())) {
+                    System.out.println("✗ Lô '" + loHang.getTenLoHang() + "' không thuộc sản phẩm: " + sanPham.getTenSanPham());
+                    Notifications.getInstance().show(Notifications.Type.ERROR, 
+                        Notifications.Location.TOP_CENTER,
+                        "Lô '" + loHang.getTenLoHang() + "' không thuộc sản phẩm: " + sanPham.getTenSanPham() + "!\nVui lòng chọn lô đúng.");
+                    allDetailsSaved = false;
+                    continue;
+                }
+                
+                // ✅ VALIDATE: Kiểm tra lô đã được chọn ở panel khác chưa
+                String maLoHang = loHang.getMaLoHang();
+                if (mapLoHangDaChon.containsKey(maLoHang)) {
+                    String tenSPTruoc = mapLoHangDaChon.get(maLoHang);
+                    System.out.println("✗ Lô '" + loHang.getTenLoHang() + "' đã được chọn cho sản phẩm: " + tenSPTruoc);
+                    Notifications.getInstance().show(Notifications.Type.ERROR, 
+                        Notifications.Location.TOP_CENTER,
+                        "Lô '" + loHang.getTenLoHang() + "' đã được chọn cho sản phẩm: " + tenSPTruoc + "!\nVui lòng chọn lô khác.");
+                    allDetailsSaved = false;
+                    continue;
+                }
+                
+                // Đánh dấu lô đã được chọn
+                mapLoHangDaChon.put(maLoHang, sanPham.getTenSanPham());
+                
+                // Kiểm tra HSD phải > 6 tháng
+                LocalDate hsd = loHang.getHanSuDung();
+                LocalDate ngayGioiHan = LocalDate.now().plusMonths(6);
+                if (hsd.isBefore(ngayGioiHan) || hsd.isEqual(ngayGioiHan)) {
+                    System.out.println("✗ HSD không hợp lệ (≤ 6 tháng) cho lô: " + loHang.getTenLoHang());
+                    Notifications.getInstance().show(Notifications.Type.WARNING,
+                        Notifications.Location.TOP_CENTER,
+                        "HSD của lô '" + loHang.getTenLoHang() + "' phải lớn hơn 6 tháng!");
                     allDetailsSaved = false;
                     continue;
                 }
@@ -1388,7 +1437,6 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
         return panel;
     }
 
-    private double tongTienHang;
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnConfirmPurchase;
     private javax.swing.JButton btnImportExcel;

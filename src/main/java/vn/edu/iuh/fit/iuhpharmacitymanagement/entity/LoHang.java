@@ -51,7 +51,8 @@ public class LoHang {
     }
 
     public void setMaLoHang(String maLoHang) throws Exception {
-        if (!maLoHang.matches(MA_LO_HANG_REGEX)) {
+        // Cho phép null (sẽ tự sinh trong DAO)
+        if (maLoHang != null && !maLoHang.matches(MA_LO_HANG_REGEX)) {
             throw new Exception(MA_LO_HANG_SAI);
         }
         this.maLoHang = maLoHang;

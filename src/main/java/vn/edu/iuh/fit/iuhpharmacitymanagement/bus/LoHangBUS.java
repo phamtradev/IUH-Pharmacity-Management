@@ -132,4 +132,41 @@ public class LoHangBUS {
         danhSach.sort((lo1, lo2) -> lo1.getHanSuDung().compareTo(lo2.getHanSuDung()));
         return danhSach;
     }
+    
+    /**
+     * Tìm tất cả lô hàng theo Số đăng ký + Hạn sử dụng
+     * Dùng để kiểm tra khi import Excel: nếu có lô trùng → tự động chọn
+     */
+    public List<LoHang> timLoHangTheoSanPhamVaHSD(String maSanPham, LocalDate hanSuDung) {
+        return loHangDAO.findAllByMaSanPhamAndHanSuDung(maSanPham, hanSuDung);
+    }
+    
+    /**
+     * Tạo mã lô mới tự động (LHxxxxx)
+     * Sử dụng logic có sẵn trong DAO
+     */
+    public String taoMaLoHangMoi() {
+        String maCuoi = loHangDAO.getLastMaLoHang();
+        if (maCuoi != null) {
+            String phanSo = maCuoi.substring(2); // Bỏ "LH"
+            int soTiepTheo = Integer.parseInt(phanSo) + 1;
+            return String.format("LH%05d", soTiepTheo);
+        }
+        return "LH00001";
+    }
+    
+    /**
+     * Tìm lô hàng theo Số đăng ký sản phẩm + Hạn sử dụng
+     * (Số đăng ký đã unique cho mỗi sản phẩm từ mỗi NCC, không cần tham số maNCC)
+     * Dùng để tự động chọn lô khi import Excel
+     * @param soDangKy Số đăng ký sản phẩm
+     * @param hanSuDung Hạn sử dụng (LocalDate)
+     * @return Optional chứa LoHang nếu tìm thấy
+     */
+    public Optional<LoHang> timLoHangTheoSoDangKyVaHanSuDung(String soDangKy, LocalDate hanSuDung) {
+        if (soDangKy == null || hanSuDung == null) {
+            return Optional.empty();
+        }
+        return loHangDAO.timLoHangTheoSoDangKyVaHanSuDung(soDangKy, hanSuDung);
+    }
 }

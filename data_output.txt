@@ -1,2 +1,0 @@
-Msg 207, Level 16, State 1, Server PhamTra\SQLEXPRESS, Line 11
-Invalid column name 'lyDoTra'.

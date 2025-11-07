@@ -38,7 +38,7 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
         this.sanPhamBUS = new SanPhamBUS(new SanPhamDAO());
         initComponents();
         
-        styleButton(btnAdd, "THÊM");
+        // styleButton(btnAdd, "THÊM"); // ❌ Đã ẩn nút Thêm
         styleButton(btnUpdate, "SỬA");
         styleButton(btnDelete, "Xóa");
         styleButton(btnSearch, "Tìm kiếm");
@@ -617,6 +617,7 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
         actionPanel.setPreferredSize(new java.awt.Dimension(320, 60));
         actionPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 6, 10));
 
+        // ❌ Nút Thêm đã bị tắt - Lô hàng sẽ tự động tạo khi nhập hàng từ Excel
         btnAdd.setBackground(new java.awt.Color(115, 165, 71));
         btnAdd.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         btnAdd.setForeground(new java.awt.Color(255, 255, 255));
@@ -624,12 +625,13 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
         btnAdd.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnAdd.setFocusPainted(false);
         btnAdd.setPreferredSize(new java.awt.Dimension(95, 40));
+        btnAdd.setVisible(false); // ẨN NÚT THÊM
         btnAdd.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnAddActionPerformed(evt);
             }
         });
-        actionPanel.add(btnAdd);
+        // actionPanel.add(btnAdd); // KHÔNG THÊM VÀO PANEL
 
         btnUpdate.setBackground(new java.awt.Color(255, 193, 7));
         btnUpdate.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
@@ -1147,8 +1149,8 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
 
             // Set sản phẩm đã chọn
             if (loHangEdit.getSanPham() != null) {
-                String maSP = loHangEdit.getSanPham().getMaSanPham();
-                txtBarcodeEdit.setText(maSP);
+                String soDangKy = loHangEdit.getSanPham().getSoDangKy();
+                txtBarcodeEdit.setText(soDangKy);
                 selectedProductEdit = loHangEdit.getSanPham();
                 lblProductNameEdit.setText("✓ " + loHangEdit.getSanPham().getTenSanPham());
                 lblProductNameEdit.setForeground(new java.awt.Color(34, 139, 34));
