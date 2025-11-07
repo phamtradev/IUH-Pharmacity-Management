@@ -38,7 +38,7 @@ Follow these steps to set up and run the IUH Pharmacity Management System on you
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/IUH-Pharmacity-Management.git
+git clone https://github.com/phamtradev/IUH-Pharmacity-Management.git
 cd IUH-Pharmacity-Management
 ```
 
