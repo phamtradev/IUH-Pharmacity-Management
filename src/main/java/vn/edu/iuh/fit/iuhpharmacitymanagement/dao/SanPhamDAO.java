@@ -69,6 +69,19 @@ public class SanPhamDAO implements DAOInterface<SanPham, String> {
             "LEFT JOIN DonViTinh dv ON sp.maDonVi = dv.maDonVi " +
             "WHERE sp.soDangKy = ?";
     
+    /**
+     * SQL: Lấy danh sách Nhà Cung Cấp đã từng nhập sản phẩm có số đăng ký này
+     * Logic: SoDangKy → SanPham → LoHang → ChiTietDonNhapHang → DonNhapHang → NhaCungCap
+     */
+    private final String SQL_LAY_NHA_CUNG_CAP_THEO_SO_DANG_KY = 
+            "SELECT DISTINCT ncc.maNhaCungCap, ncc.tenNhaCungCap, ncc.diaChi, " +
+            "ncc.soDienThoai, ncc.email, ncc.maSoThue " +
+            "FROM NhaCungCap ncc " +
+            "INNER JOIN DonNhapHang dnh ON ncc.maNhaCungCap = dnh.maNhaCungCap " +
+            "INNER JOIN ChiTietDonNhapHang ctdnh ON dnh.maDonNhapHang = ctdnh.maDonNhapHang " +
+            "INNER JOIN LoHang lh ON ctdnh.maLoHang = lh.maLoHang " +
+            "INNER JOIN SanPham sp ON lh.maSanPham = sp.maSanPham " +
+            "WHERE sp.soDangKy = ?";
 
     @Override
     public boolean insert(SanPham sanPham) {
@@ -309,5 +322,63 @@ public class SanPhamDAO implements DAOInterface<SanPham, String> {
             e.printStackTrace();
         }
         return Optional.empty();
+    }
+    
+    /**
+     * Lấy danh sách Nhà Cung Cấp đã từng nhập sản phẩm có số đăng ký này
+     * @param soDangKy Số đăng ký sản phẩm
+     * @return List mã nhà cung cấp (có thể rỗng nếu chưa nhập lần nào)
+     */
+    public List<String> getMaNhaCungCapBySoDangKy(String soDangKy) {
+        List<String> danhSachMaNCC = new ArrayList<>();
+        
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(SQL_LAY_NHA_CUNG_CAP_THEO_SO_DANG_KY)) {
+            
+            stmt.setString(1, soDangKy);
+            ResultSet rs = stmt.executeQuery();
+            
+            while (rs.next()) {
+                String maNCC = rs.getString("maNhaCungCap");
+                danhSachMaNCC.add(maNCC);
+            }
+            
+            System.out.println("🔍 [DAO] Số đăng ký '" + soDangKy + "' đã được nhập bởi " + 
+                             danhSachMaNCC.size() + " nhà cung cấp: " + danhSachMaNCC);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        
+        return danhSachMaNCC;
+    }
+    
+    /**
+     * Lấy danh sách Số Điện Thoại NCC đã từng nhập sản phẩm có số đăng ký này
+     * @param soDangKy Số đăng ký sản phẩm
+     * @return List SĐT nhà cung cấp (có thể rỗng nếu chưa nhập lần nào)
+     */
+    public List<String> getSoDienThoaiNCCBySoDangKy(String soDangKy) {
+        List<String> danhSachSDT = new ArrayList<>();
+        
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(SQL_LAY_NHA_CUNG_CAP_THEO_SO_DANG_KY)) {
+            
+            stmt.setString(1, soDangKy);
+            ResultSet rs = stmt.executeQuery();
+            
+            while (rs.next()) {
+                String sdt = rs.getString("soDienThoai");
+                if (sdt != null && !sdt.trim().isEmpty()) {
+                    danhSachSDT.add(sdt.trim());
+                }
+            }
+            
+            System.out.println("🔍 [DAO] Số đăng ký '" + soDangKy + "' đã được nhập bởi " + 
+                             danhSachSDT.size() + " số điện thoại NCC: " + danhSachSDT);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        
+        return danhSachSDT;
     }
 }

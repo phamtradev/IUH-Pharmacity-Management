@@ -68,8 +68,6 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
             List<NhanVien> danhSachNV = nhanVienBUS.layTatCaNhanVien();
             if (danhSachNV != null && !danhSachNV.isEmpty()) {
                 nhanVienHienTai = danhSachNV.get(0);
-                System.out.println("✓ Sử dụng nhân viên: " + nhanVienHienTai.getMaNhanVien() + 
-                    " (" + nhanVienHienTai.getTenNhanVien() + ")");
             } else {
                 throw new RuntimeException("Không tìm thấy nhân viên nào trong hệ thống!");
             }
@@ -241,14 +239,12 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
         updateTongTienHang();
     }
     
-    private void themSanPhamVaoPanelNhap(SanPham sanPham, int soLuong, double donGiaNhap, Date hanDung, String loHang) {
-        System.out.println("→ Thêm sản phẩm vào panel: " + sanPham.getTenSanPham() 
-            + " | SL=" + soLuong + " | Giá=" + donGiaNhap + " | HSD=" + (hanDung != null ? new SimpleDateFormat("dd/MM/yyyy").format(hanDung) : "null"));
+    private void themSanPhamVaoPanelNhap(SanPham sanPham, int soLuong, double donGiaNhap, Date hanDung, String loHang) throws Exception {
         
-        // Lấy mã nhà cung cấp hiện tại
-        String maNCC = (nhaCungCapHienTai != null) ? nhaCungCapHienTai.getMaNhaCungCap() : null;
+        // Lấy số điện thoại nhà cung cấp hiện tại
+        String soDienThoaiNCC = (nhaCungCapHienTai != null) ? nhaCungCapHienTai.getSoDienThoai() : null;
         
-        Panel_ChiTietSanPhamNhap panelSP = new Panel_ChiTietSanPhamNhap(sanPham, soLuong, donGiaNhap, hanDung, loHang, maNCC);
+        Panel_ChiTietSanPhamNhap panelSP = new Panel_ChiTietSanPhamNhap(sanPham, soLuong, donGiaNhap, hanDung, loHang, soDienThoaiNCC);
         
         // Listener để cập nhật tổng tiền
         panelSP.addPropertyChangeListener("tongTien", new PropertyChangeListener() {
@@ -263,7 +259,6 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
         pnSanPham.revalidate();
         pnSanPham.repaint();
         
-        System.out.println("✓ Đã thêm panel vào UI, tổng số panel hiện tại: " + pnSanPham.getComponentCount());
         updateTongTienHang();
     }
     
@@ -588,6 +583,34 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
             return;
         }
         
+        // ═══════════════════════════════════════════════════════════════════
+        // KIỂM TRA BUSINESS RULE: Số đăng ký chỉ được nhập bởi 1 nhà cung cấp
+        // ═══════════════════════════════════════════════════════════════════
+        if (nhaCungCapHienTai != null && nhaCungCapHienTai.getMaNhaCungCap() != null) {
+            String soDangKy = sanPham.getSoDangKy();
+            String maNCC = nhaCungCapHienTai.getMaNhaCungCap();
+            
+            boolean coTheNhap = sanPhamBUS.kiemTraNhaCungCapCoTheNhapSoDangKy(soDangKy, maNCC);
+            
+            if (!coTheNhap) {
+                // Lấy mã NCC đã nhập để hiển thị
+                String nccDaNhap = sanPhamBUS.layTenNhaCungCapDaNhapSoDangKy(soDangKy);
+                Notifications.getInstance().show(Notifications.Type.ERROR, 
+                    Notifications.Location.TOP_CENTER,
+                    "❌ KHÔNG THỂ THÊM!\n" +
+                    "Sản phẩm '" + sanPham.getTenSanPham() + "' (SDK: " + soDangKy + ")\n" +
+                    "đã được nhập bởi nhà cung cấp " + nccDaNhap + ".\n" +
+                    "Không thể nhập từ nhà cung cấp khác!");
+                return;
+            }
+        } else {
+            // Chưa có nhà cung cấp → Cảnh báo
+            Notifications.getInstance().show(Notifications.Type.WARNING, 
+                Notifications.Location.TOP_CENTER,
+                "⚠ Vui lòng chọn/import nhà cung cấp trước khi thêm sản phẩm!");
+            return;
+        }
+        
         // Thêm sản phẩm vào panel
         themSanPhamVaoPanelNhap(sanPham);
         txtSearchProduct.setText("");
@@ -642,45 +665,33 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
                 if ((header.contains("số") && header.contains("đăng ký")) || 
                     (header.contains("so") && header.contains("dang ky"))) {
                     colMaSP = i;
-                    System.out.println("   ✓ Số đăng ký");
                 } else if (header.contains("số lượng") || header.contains("so luong")) {
                     colSoLuong = i;
-                    System.out.println("   ✓ Số lượng");
                 } else if (header.contains("đơn giá") || header.contains("don gia")) {
                     colDonGia = i;
-                    System.out.println("   ✓ Đơn giá");
                 } else if (header.contains("hạn") && (header.contains("dùng") || header.contains("sử dụng") || header.contains("su dung"))) {
                     colHanDung = i;
-                    System.out.println("   ✓ Hạn sử dụng");
                 } else if (header.contains("lô") && header.contains("hàng")) {
                     // Cột "Lô hàng" - bỏ qua (đã xóa logic tự động chọn lô)
-                    System.out.println("   ℹ Lô hàng (bỏ qua)");
                 }
                 // ═══════════════════════════════════════════════════════════════
                 // CÁC CỘT NHÀ CUNG CẤP - ƯU TIÊN KIỂM TRA SĐT TRƯỚC (tránh nhầm với "Tên NCC")
                 // ═══════════════════════════════════════════════════════════════
                 else if (header.contains("sđt") || header.contains("sdt")) {
                     colSDT = i;
-                    System.out.println("   ✓ SĐT NCC");
                 } else if ((header.contains("số") || header.contains("so")) && header.contains("điện thoại")) {
                     // "Số điện thoại" hoặc "So dien thoai"
                     if (colSDT == -1) colSDT = i;
-                    System.out.println("   ✓ Số điện thoại NCC");
                 } else if (header.contains("tên") && header.contains("ncc")) {
                     colTenNCC = i;
-                    System.out.println("   ✓ Tên NCC");
                 } else if (header.contains("mã") && header.contains("ncc")) {
                     colMaNCC = i;
-                    System.out.println("   ✓ Mã NCC");
                 } else if (header.contains("địa chỉ") || header.contains("dia chi")) {
                     colDiaChi = i;
-                    System.out.println("   ✓ Địa chỉ");
                 } else if (header.contains("email")) {
                     colEmail = i;
-                    System.out.println("   ✓ Email");
                 } else if (header.contains("mã") && header.contains("thuế")) {
                     colMaSoThue = i;
-                    System.out.println("   ✓ Mã số thuế");
                 }
             }
             
@@ -733,7 +744,6 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
                                 txtSupplierId.setText("(chưa có - sẽ tự sinh)");
                             }
                             txtSupplierName.setText(nhaCungCap.getTenNhaCungCap());
-                            System.out.println("✓ Đã tải thông tin nhà cung cấp: " + nhaCungCap.getTenNhaCungCap());
                         }
                     } catch (Exception ex) {
                         errors.append("Lỗi xử lý thông tin nhà cung cấp: ").append(ex.getMessage()).append("\n");
@@ -784,6 +794,29 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
                     }
                     
                     // ═══════════════════════════════════════════════════════════════════
+                    // KIỂM TRA BUSINESS RULE: Số đăng ký chỉ được nhập bởi 1 nhà cung cấp
+                    // ═══════════════════════════════════════════════════════════════════
+                    if (nhaCungCap != null && nhaCungCap.getMaNhaCungCap() != null) {
+                        String soDangKy = sanPham.getSoDangKy();
+                        String maNCC = nhaCungCap.getMaNhaCungCap();
+                        
+                        boolean coTheNhap = sanPhamBUS.kiemTraNhaCungCapCoTheNhapSoDangKy(soDangKy, maNCC);
+                        
+                        if (!coTheNhap) {
+                            // Lấy mã NCC đã nhập để hiển thị
+                            String nccDaNhap = sanPhamBUS.layTenNhaCungCapDaNhapSoDangKy(soDangKy);
+                            errors.append("Dòng ").append(i + 1)
+                                  .append(": Sản phẩm '").append(sanPham.getTenSanPham())
+                                  .append("' (SDK: ").append(soDangKy)
+                                  .append(") đã được nhập bởi nhà cung cấp ")
+                                  .append(nccDaNhap)
+                                  .append(". Không thể nhập từ nhà cung cấp khác!\n");
+                            errorCount++;
+                            continue;
+                        }
+                    }
+                    
+                    // ═══════════════════════════════════════════════════════════════════
                     // KIỂM TRA XEM CÓ LÔ HÀNG NÀO TRÙNG HOÀN TOÀN (số đăng ký + hạn sử dụng)
                     // ═══════════════════════════════════════════════════════════════════
                     String maLoHangTuDong = null;
@@ -821,7 +854,6 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
                         if (loTrungKhop.size() == 1) {
                             // Chỉ có 1 lô trùng hoàn toàn → TỰ ĐỘNG CHỌN
                             maLoHangTuDong = loTrungKhop.get(0).getMaLoHang();
-                            System.out.println("   ✓ TỰ ĐỘNG CHỌN lô: " + maLoHangTuDong);
                         } else if (loTrungKhop.size() > 1) {
                             // Có nhiều lô trùng → Để user chọn
                             System.out.println("   ⚠ Có " + loTrungKhop.size() + " lô trùng → Để user chọn");
@@ -980,19 +1012,17 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
             System.out.println("→ Tìm nhà cung cấp theo SĐT: " + sdt);
             ncc = nhaCungCapBUS.layNhaCungCapTheoSoDienThoai(sdt.trim());
             
-            if (ncc != null) {
-                System.out.println("✓ Tìm thấy nhà cung cấp theo SĐT: " + ncc.getTenNhaCungCap() + " (Mã: " + ncc.getMaNhaCungCap() + ")");
-                
+        if (ncc != null) {
                 // Cảnh báo nếu tên trong Excel khác với DB (nhưng vẫn cho phép)
                 if (tenNCC != null && !tenNCC.trim().isEmpty() && 
                     !tenNCC.trim().equalsIgnoreCase(ncc.getTenNhaCungCap())) {
                     System.out.println("⚠ LƯU Ý: Tên NCC trong Excel là '" + tenNCC + 
                         "', nhưng trong DB là '" + ncc.getTenNhaCungCap() + "' → Sử dụng thông tin từ DB");
-                }
-                
-                return ncc;
             }
             
+            return ncc;
+        }
+        
             // Không tìm thấy theo SĐT → Sẽ tạo mới (xử lý ở cuối hàm)
             System.out.println("→ Không tìm thấy NCC với SĐT: " + sdt + " → Sẽ tạo mới");
         }
@@ -1003,7 +1033,6 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
             ncc = nhaCungCapBUS.layNhaCungCapTheoTen(tenNCC.trim());
             
             if (ncc != null) {
-                System.out.println("✓ Tìm thấy nhà cung cấp theo tên: " + tenNCC);
                 return ncc;
             }
             
@@ -1180,8 +1209,8 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
                     !loHang.getSanPham().getMaSanPham().equals(sanPham.getMaSanPham())) {
                     System.out.println("✗ Lô '" + loHang.getTenLoHang() + "' không thuộc sản phẩm: " + sanPham.getTenSanPham());
                     Notifications.getInstance().show(Notifications.Type.ERROR, 
-                        Notifications.Location.TOP_CENTER,
-                        "Lô '" + loHang.getTenLoHang() + "' không thuộc sản phẩm: " + sanPham.getTenSanPham() + "!\nVui lòng chọn lô đúng.");
+                            Notifications.Location.TOP_CENTER,
+                        "Lô không đúng sản phẩm! Vui lòng chọn lại.");
                     allDetailsSaved = false;
                     continue;
                 }
@@ -1193,21 +1222,21 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
                     System.out.println("✗ Lô '" + loHang.getTenLoHang() + "' đã được chọn cho sản phẩm: " + tenSPTruoc);
                     Notifications.getInstance().show(Notifications.Type.ERROR, 
                         Notifications.Location.TOP_CENTER,
-                        "Lô '" + loHang.getTenLoHang() + "' đã được chọn cho sản phẩm: " + tenSPTruoc + "!\nVui lòng chọn lô khác.");
+                        "Lô này đã được chọn! Vui lòng chọn lô khác.");
                     allDetailsSaved = false;
                     continue;
                 }
                 
                 // Đánh dấu lô đã được chọn
                 mapLoHangDaChon.put(maLoHang, sanPham.getTenSanPham());
-                
-                // Kiểm tra HSD phải > 6 tháng
+                        
+                        // Kiểm tra HSD phải > 6 tháng
                 LocalDate hsd = loHang.getHanSuDung();
-                LocalDate ngayGioiHan = LocalDate.now().plusMonths(6);
-                if (hsd.isBefore(ngayGioiHan) || hsd.isEqual(ngayGioiHan)) {
+                        LocalDate ngayGioiHan = LocalDate.now().plusMonths(6);
+                        if (hsd.isBefore(ngayGioiHan) || hsd.isEqual(ngayGioiHan)) {
                     System.out.println("✗ HSD không hợp lệ (≤ 6 tháng) cho lô: " + loHang.getTenLoHang());
-                    Notifications.getInstance().show(Notifications.Type.WARNING,
-                        Notifications.Location.TOP_CENTER,
+                            Notifications.getInstance().show(Notifications.Type.WARNING,
+                                Notifications.Location.TOP_CENTER,
                         "HSD của lô '" + loHang.getTenLoHang() + "' phải lớn hơn 6 tháng!");
                     allDetailsSaved = false;
                     continue;

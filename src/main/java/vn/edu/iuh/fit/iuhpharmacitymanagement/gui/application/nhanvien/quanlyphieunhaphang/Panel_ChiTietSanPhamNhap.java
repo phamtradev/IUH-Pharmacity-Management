@@ -7,6 +7,7 @@ package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlyph
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.LoHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.LoHangBUS;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.SanPhamDAO;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -43,9 +44,11 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
     
     private double cachedTongTien = 0; // Cache giá trị tổng tiền để detect thay đổi
     private LoHangBUS loHangBUS;
+    private SanPhamDAO sanPhamDAO;
     private List<LoHang> danhSachLoHang;
     private LoHang loHangDaChon = null;
     private String tenLoHangTuExcel = null; // Lưu tên lô từ Excel
+    private String soDienThoaiNCCTuExcel = null; // Lưu SĐT NCC từ Excel
     
     // Thông tin lô mới sẽ tạo
     private String tenLoMoi = null;
@@ -56,6 +59,7 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
         this.currencyFormat = new DecimalFormat("#,###");
         this.dateFormat = new SimpleDateFormat("dd/MM/yyyy");
         this.loHangBUS = new LoHangBUS();
+        this.sanPhamDAO = new SanPhamDAO();
         initComponents();
     }
     
@@ -68,6 +72,7 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
         this.currencyFormat = new DecimalFormat("#,###");
         this.dateFormat = new SimpleDateFormat("dd/MM/yyyy");
         this.loHangBUS = new LoHangBUS();
+        this.sanPhamDAO = new SanPhamDAO();
         this.tenLoHangTuExcel = null; // Không có lô từ Excel
         initComponents();
         loadSanPhamData();
@@ -76,16 +81,18 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
     
     /**
      * Constructor khi CÓ thông tin lô từ Excel
-     * Tự động chọn lô nếu có cùng Số ĐK + HSD + NCC, nếu không → tạo lô mới hoặc hiển thị nút "Chọn lô"
+     * Tự động chọn lô nếu có cùng Số ĐK + HSD + SĐT NCC khớp, nếu không → báo lỗi
      */
-    public Panel_ChiTietSanPhamNhap(SanPham sanPham, int soLuong, double donGiaNhap, Date hanDung, String tenLoHang, String maNCC) {
-        System.out.println("→→ Panel Constructor: " + sanPham.getTenSanPham() + " | SL=" + soLuong + " | TênLô=" + tenLoHang + " | NCC=" + maNCC);
+    public Panel_ChiTietSanPhamNhap(SanPham sanPham, int soLuong, double donGiaNhap, Date hanDung, String tenLoHang, String soDienThoaiNCC) throws Exception {
+        System.out.println("→→ Panel Constructor: " + sanPham.getTenSanPham() + " | SL=" + soLuong + " | TênLô=" + tenLoHang + " | SĐT NCC=" + soDienThoaiNCC);
         
         this.sanPham = sanPham;
         this.currencyFormat = new DecimalFormat("#,###");
         this.dateFormat = new SimpleDateFormat("dd/MM/yyyy");
         this.loHangBUS = new LoHangBUS();
+        this.sanPhamDAO = new SanPhamDAO();
         this.tenLoHangTuExcel = tenLoHang; // Lưu tên lô từ Excel
+        this.soDienThoaiNCCTuExcel = soDienThoaiNCC; // Lưu SĐT NCC từ Excel
         
         try {
             initComponents();
@@ -96,10 +103,10 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
             spinnerSoLuong.setValue(soLuong);
             txtDonGia.setText(currencyFormat.format(donGiaNhap) + " đ");
             
-            // 🔍 TÌM LÔ HÀNG THEO SỐ ĐĂNG KÝ + HẠN SỬ DỤNG
-            // (Số đăng ký đã unique cho mỗi sản phẩm từ mỗi NCC, không cần lọc theo NCC)
+            // 🔍 TÌM LÔ HÀNG THEO SỐ ĐĂNG KÝ + HẠN SỬ DỤNG + SĐT NCC
             System.out.println("📅 [PANEL] Date từ Excel: " + hanDung);
             System.out.println("📅 [PANEL] Date format: " + dateFormat.format(hanDung));
+            System.out.println("📞 [PANEL] SĐT NCC từ Excel: " + soDienThoaiNCC);
             
             LocalDate hsd = hanDung.toInstant()
                 .atZone(java.time.ZoneId.systemDefault())
@@ -107,18 +114,38 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
             
             System.out.println("📅 [PANEL] LocalDate sau convert: " + hsd);
             
+            // ═══════════════════════════════════════════════════════════════════
+            // KIỂM TRA SỐ ĐIỆN THOẠI NCC
+            // ═══════════════════════════════════════════════════════════════════
+            if (soDienThoaiNCC != null && !soDienThoaiNCC.trim().isEmpty()) {
+                // Lấy danh sách SĐT của các NCC đã nhập sản phẩm này
+                List<String> danhSachSDT = sanPhamDAO.getSoDienThoaiNCCBySoDangKy(sanPham.getSoDangKy());
+                
+                if (!danhSachSDT.isEmpty() && !danhSachSDT.contains(soDienThoaiNCC.trim())) {
+                    // ❌ SĐT NCC KHÔNG KHỚP → BÁO LỖI
+                    String errorMsg = "Sản phẩm '" + sanPham.getTenSanPham() + 
+                        "' có số đăng ký " + sanPham.getSoDangKy() + 
+                        " không thể nhập từ nhiều nhà cung cấp khác nhau";
+                    
+                    System.out.println("❌ [PANEL] " + errorMsg);
+                    throw new Exception(errorMsg);
+                }
+            }
+            
+            // ═══════════════════════════════════════════════════════════════════
+            // TÌM LÔ HÀNG THEO SỐ ĐĂNG KÝ + HẠN SỬ DỤNG
+            // ═══════════════════════════════════════════════════════════════════
             Optional<LoHang> loTrung = loHangBUS.timLoHangTheoSoDangKyVaHanSuDung(
-                sanPham.getSoDangKy(), // Tìm theo số đăng ký
+                sanPham.getSoDangKy(),
                 hsd
             );
             
             if (loTrung.isPresent()) {
                 // ✅ TÌM THẤY LÔ TRÙNG → TỰ ĐỘNG CHỌN
                 loHangDaChon = loTrung.get();
-                System.out.println("✓✓ Tự động chọn lô: " + loHangDaChon.getTenLoHang() + " (Mã: " + loHangDaChon.getMaLoHang() + ")");
                 updateLoInfo(); // Hiển thị thẻ lô
             } else {
-                // ❌ KHÔNG TÌM THẤY → TẠO LÔ MỚI TỰ ĐỘNG
+                // ❌ KHÔNG TÌM THẤY LÔ → TẠO LÔ MỚI TỰ ĐỘNG
                 System.out.println("→→ Không tìm thấy lô trùng, tạo lô mới tự động");
                 tenLoMoi = tenLoHang;
                 hsdLoMoi = hanDung;
@@ -128,10 +155,9 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
             
             // Cập nhật tổng tiền
             updateTongTien();
-            System.out.println("✓✓ Panel khởi tạo thành công");
         } catch (Exception e) {
             System.out.println("✗✗ LỖI khởi tạo panel: " + e.getMessage());
-            e.printStackTrace();
+            throw e; // ⚠️ THROW LẠI để method gọi bắt được
         }
     }
     
