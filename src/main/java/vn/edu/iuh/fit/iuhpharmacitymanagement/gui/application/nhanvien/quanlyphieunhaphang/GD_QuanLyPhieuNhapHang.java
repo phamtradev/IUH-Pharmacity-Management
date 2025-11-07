@@ -241,6 +241,12 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
     
     private void themSanPhamVaoPanelNhap(SanPham sanPham, int soLuong, double donGiaNhap, Date hanDung, String loHang) throws Exception {
         
+        // ✅ KIỂM TRA TRÙNG LẶP: Nếu sản phẩm đã tồn tại → bỏ qua
+        if (kiemTraSanPhamDaTonTai(sanPham.getMaSanPham())) {
+            System.out.println("⚠ Sản phẩm " + sanPham.getMaSanPham() + " đã tồn tại trong danh sách → BỎ QUA");
+            throw new Exception("Sản phẩm '" + sanPham.getTenSanPham() + "' đã có trong danh sách nhập");
+        }
+        
         // Lấy số điện thoại nhà cung cấp hiện tại
         String soDienThoaiNCC = (nhaCungCapHienTai != null) ? nhaCungCapHienTai.getSoDienThoai() : null;
         
@@ -260,6 +266,23 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
         pnSanPham.repaint();
         
         updateTongTienHang();
+    }
+    
+    /**
+     * Kiểm tra sản phẩm đã tồn tại trong panel chưa
+     * @param maSanPham Mã sản phẩm cần kiểm tra
+     * @return true nếu đã tồn tại, false nếu chưa
+     */
+    private boolean kiemTraSanPhamDaTonTai(String maSanPham) {
+        for (Component comp : pnSanPham.getComponents()) {
+            if (comp instanceof Panel_ChiTietSanPhamNhap) {
+                Panel_ChiTietSanPhamNhap panel = (Panel_ChiTietSanPhamNhap) comp;
+                if (panel.getSanPham().getMaSanPham().equals(maSanPham)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
     
     private void updateTongTienHang() {
@@ -650,7 +673,7 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
             
             // Tìm index của các cột theo header (sản phẩm + nhà cung cấp)
             int colMaSP = -1, colSoLuong = -1, colDonGia = -1, 
-                colHanDung = -1;
+                colHanDung = -1, colLoHang = -1;
             int colMaNCC = -1, colTenNCC = -1, colDiaChi = -1, 
                 colSDT = -1, colEmail = -1, colMaSoThue = -1;
             
@@ -672,7 +695,7 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
                 } else if (header.contains("hạn") && (header.contains("dùng") || header.contains("sử dụng") || header.contains("su dung"))) {
                     colHanDung = i;
                 } else if (header.contains("lô") && header.contains("hàng")) {
-                    // Cột "Lô hàng" - bỏ qua (đã xóa logic tự động chọn lô)
+                    colLoHang = i; // Lưu index cột "Lô hàng"
                 }
                 // ═══════════════════════════════════════════════════════════════
                 // CÁC CỘT NHÀ CUNG CẤP - ƯU TIÊN KIỂM TRA SĐT TRƯỚC (tránh nhầm với "Tên NCC")
@@ -775,6 +798,15 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
                         hanDung = cal.getTime();
                     }
                     
+                    // Đọc tên lô từ cột "Lô hàng" (nếu có)
+                    String tenLoHang = null;
+                    if (colLoHang != -1) {
+                        tenLoHang = getCellValueAsString(row.getCell(colLoHang));
+                        System.out.println("📦 [EXCEL] Tên lô từ cột 'Lô hàng': [" + tenLoHang + "]");
+                    } else {
+                        System.out.println("⚠ [EXCEL] Không có cột 'Lô hàng'");
+                    }
+                    
                     // Tìm sản phẩm
                     SanPham sanPham = null;
                     try {
@@ -871,7 +903,8 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
                     }
                     
                     // Thêm sản phẩm vào panel
-                    themSanPhamVaoPanelNhap(sanPham, soLuong, donGiaNhap, hanDung, maLoHangTuDong);
+                    // Truyền tên lô từ Excel (nếu có) để tự động điền vào form tạo lô mới
+                    themSanPhamVaoPanelNhap(sanPham, soLuong, donGiaNhap, hanDung, tenLoHang);
                     successCount++;
                     
                 } catch (Exception e) {
@@ -1185,11 +1218,25 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
             // Map để kiểm tra lô đã được chọn
             java.util.Map<String, String> mapLoHangDaChon = new java.util.HashMap<>();
             
+            // ✅ Map để kiểm tra sản phẩm trùng lặp (1 đơn nhập không được có 2 dòng cùng mã SP)
+            java.util.Set<String> setSanPhamDaXuLy = new java.util.HashSet<>();
+            
             for (Panel_ChiTietSanPhamNhap panel : danhSachPanel) {
                 SanPham sanPham = panel.getSanPham();
                 int soLuong = panel.getSoLuong();
                 double donGia = panel.getDonGiaNhap();
                 double thanhTien = panel.getTongTien();
+                
+                // ✅ VALIDATE: Kiểm tra sản phẩm đã tồn tại trong đơn nhập này chưa
+                String maSanPham = sanPham.getMaSanPham();
+                if (setSanPhamDaXuLy.contains(maSanPham)) {
+                    System.out.println("✗ Sản phẩm '" + sanPham.getTenSanPham() + "' đã có trong đơn nhập này!");
+                    Notifications.getInstance().show(Notifications.Type.ERROR, 
+                        Notifications.Location.TOP_CENTER,
+                        "Không thể nhập trùng sản phẩm '" + sanPham.getTenSanPham() + "'! Vui lòng xóa sản phẩm trùng.");
+                    allDetailsSaved = false;
+                    continue;
+                }
                 
                 // ✅ LẤY LÔ ĐÃ CHỌN TỪ PANEL (User phải chọn thủ công qua nút "Chọn lô")
                 LoHang loHang = panel.getLoHangDaChon();
@@ -1227,8 +1274,9 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
                     continue;
                 }
                 
-                // Đánh dấu lô đã được chọn
+                // Đánh dấu lô và sản phẩm đã được xử lý
                 mapLoHangDaChon.put(maLoHang, sanPham.getTenSanPham());
+                setSanPhamDaXuLy.add(maSanPham);
                         
                         // Kiểm tra HSD phải > 6 tháng
                 LocalDate hsd = loHang.getHanSuDung();

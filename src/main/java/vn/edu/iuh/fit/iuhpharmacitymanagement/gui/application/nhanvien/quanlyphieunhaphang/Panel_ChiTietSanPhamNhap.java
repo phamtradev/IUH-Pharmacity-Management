@@ -14,10 +14,7 @@ import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.Calendar;
 import javax.swing.ImageIcon;
-import javax.swing.JSpinner;
-import javax.swing.SpinnerDateModel;
 import javax.swing.JToggleButton;
 import javax.swing.ButtonGroup;
 import java.awt.Component;
@@ -54,6 +51,10 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
     private String tenLoMoi = null;
     private Date hsdLoMoi = null;
     private int soLuongLoMoi = 1;
+    
+    // Dữ liệu từ Excel để tự động điền vào form tạo lô mới
+    private Date hsdTuExcel = null;
+    private Integer soLuongTuExcel = null;
 
     public Panel_ChiTietSanPhamNhap() {
         this.currencyFormat = new DecimalFormat("#,###");
@@ -93,6 +94,10 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
         this.sanPhamDAO = new SanPhamDAO();
         this.tenLoHangTuExcel = tenLoHang; // Lưu tên lô từ Excel
         this.soDienThoaiNCCTuExcel = soDienThoaiNCC; // Lưu SĐT NCC từ Excel
+        
+        // Lưu dữ liệu từ Excel để tự động điền vào form tạo lô mới
+        this.hsdTuExcel = hanDung;
+        this.soLuongTuExcel = soLuong;
         
         try {
             initComponents();
@@ -145,12 +150,11 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
                 loHangDaChon = loTrung.get();
                 updateLoInfo(); // Hiển thị thẻ lô
             } else {
-                // ❌ KHÔNG TÌM THẤY LÔ → TẠO LÔ MỚI TỰ ĐỘNG
-                System.out.println("→→ Không tìm thấy lô trùng, tạo lô mới tự động");
-                tenLoMoi = tenLoHang;
-                hsdLoMoi = hanDung;
-                soLuongLoMoi = soLuong;
-                updateLoInfo(); // Hiển thị thẻ lô mới
+                // ❌ KHÔNG TÌM THẤY LÔ → HIỂN thị nút "Chọn lô" (dữ liệu Excel sẽ tự động điền vào form)
+                System.out.println("→→ Không tìm thấy lô trùng, hiển thị nút 'Chọn lô' với dữ liệu từ Excel");
+                // Không tự động tạo lô, để user bấm "Chọn lô" và chọn tab "Tạo lô mới"
+                // Dữ liệu từ Excel (tenLoHangTuExcel, hsdTuExcel, soLuongTuExcel) đã được lưu
+                // và sẽ tự động điền vào form khi mở dialog
             }
             
             // Cập nhật tổng tiền
@@ -385,7 +389,7 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
         dialog.setTitle("Chọn lô hàng");
         dialog.setModal(true);
         dialog.setSize(750, 500); // Giảm kích thước sau khi bỏ phần NCC
-        dialog.setLocationRelativeTo(this);
+        dialog.setLocationRelativeTo(null); // null = giữa màn hình
         
         // Tạo tabbed pane
         javax.swing.JTabbedPane tabbedPane = new javax.swing.JTabbedPane();
@@ -474,6 +478,12 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
         javax.swing.JTextField txtTenLoMoi = new javax.swing.JTextField(20);
         txtTenLoMoi.setFont(new java.awt.Font("Segoe UI", 0, 14));
         txtTenLoMoi.setPreferredSize(new java.awt.Dimension(300, 35));
+        
+        // Tự động điền tên lô từ Excel (nếu có)
+        if (tenLoHangTuExcel != null && !tenLoHangTuExcel.trim().isEmpty()) {
+            txtTenLoMoi.setText(tenLoHangTuExcel);
+        }
+        
         gbcTab2.gridx = 1;
         gbcTab2.weightx = 1.0;
         tabTaoLoMoi.add(txtTenLoMoi, gbcTab2);
@@ -486,22 +496,22 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
         gbcTab2.weightx = 0.0;
         tabTaoLoMoi.add(lblHSD, gbcTab2);
         
-        Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.MONTH, 6);
-        Date initDate = calendar.getTime();
-        calendar.add(Calendar.YEAR, -1);
-        Date earliestDate = calendar.getTime();
-        calendar.add(Calendar.YEAR, 10);
-        Date latestDate = calendar.getTime();
+        // Thay JSpinner thành JTextField
+        javax.swing.JTextField txtHSDMoi = new javax.swing.JTextField(20);
+        txtHSDMoi.setFont(new java.awt.Font("Segoe UI", 0, 14));
+        txtHSDMoi.setPreferredSize(new java.awt.Dimension(300, 35));
         
-        JSpinner spinnerHSDMoi = new JSpinner(new SpinnerDateModel(initDate, earliestDate, latestDate, Calendar.DAY_OF_MONTH));
-        JSpinner.DateEditor editor = new JSpinner.DateEditor(spinnerHSDMoi, "dd/MM/yyyy");
-        spinnerHSDMoi.setEditor(editor);
-        spinnerHSDMoi.setFont(new java.awt.Font("Segoe UI", 0, 14));
-        spinnerHSDMoi.setPreferredSize(new java.awt.Dimension(300, 35));
+        // Tự động điền HSD từ Excel (nếu có)
+        if (hsdTuExcel != null) {
+            txtHSDMoi.setText(dateFormat.format(hsdTuExcel));
+        } else {
+            // Placeholder
+            txtHSDMoi.putClientProperty("JTextField.placeholderText", "dd/MM/yyyy");
+        }
+        
         gbcTab2.gridx = 1;
         gbcTab2.weightx = 1.0;
-        tabTaoLoMoi.add(spinnerHSDMoi, gbcTab2);
+        tabTaoLoMoi.add(txtHSDMoi, gbcTab2);
         
         // Số lượng
         javax.swing.JLabel lblSoLuongMoi = new javax.swing.JLabel("Số lượng:");
@@ -512,12 +522,20 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
         gbcTab2.weighty = 0.0;
         tabTaoLoMoi.add(lblSoLuongMoi, gbcTab2);
         
-        javax.swing.JSpinner spinnerSoLuongMoi = new javax.swing.JSpinner(new javax.swing.SpinnerNumberModel(1, 1, 999999, 1));
-        spinnerSoLuongMoi.setFont(new java.awt.Font("Segoe UI", 0, 14));
-        spinnerSoLuongMoi.setPreferredSize(new java.awt.Dimension(300, 35));
+        javax.swing.JTextField txtSoLuongMoi = new javax.swing.JTextField(20);
+        txtSoLuongMoi.setFont(new java.awt.Font("Segoe UI", 0, 14));
+        txtSoLuongMoi.setPreferredSize(new java.awt.Dimension(300, 35));
+        
+        // Tự động điền số lượng từ Excel (nếu có)
+        if (soLuongTuExcel != null) {
+            txtSoLuongMoi.setText(String.valueOf(soLuongTuExcel));
+        } else {
+            txtSoLuongMoi.setText("1");
+        }
+        
         gbcTab2.gridx = 1;
         gbcTab2.weightx = 1.0;
-        tabTaoLoMoi.add(spinnerSoLuongMoi, gbcTab2);
+        tabTaoLoMoi.add(txtSoLuongMoi, gbcTab2);
         
         // ✅ ĐÃ XÓA: Phần thông tin nhà cung cấp (separator, số điện thoại, tên, địa chỉ, email)
         // Lý do: Thông tin NCC đã được nhập trong file Excel rồi, không cần nhập lại ở đây
@@ -589,18 +607,55 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
                     return;
                 }
                 
-                // Lấy số lượng
-                int soLuong = (Integer) spinnerSoLuongMoi.getValue();
-                if (soLuong <= 0) {
+                // Lấy và parse số lượng
+                String soLuongText = txtSoLuongMoi.getText().trim();
+                if (soLuongText.isEmpty()) {
                     javax.swing.JOptionPane.showMessageDialog(dialog,
-                        "Số lượng phải lớn hơn 0!",
+                        "Vui lòng nhập số lượng!",
                         "Thông báo",
                         javax.swing.JOptionPane.WARNING_MESSAGE);
                     return;
                 }
                 
-                // Kiểm tra hạn sử dụng phải > 6 tháng
-                Date hsdDate = (Date) spinnerHSDMoi.getValue();
+                int soLuong;
+                try {
+                    soLuong = Integer.parseInt(soLuongText);
+                    if (soLuong <= 0) {
+                        javax.swing.JOptionPane.showMessageDialog(dialog,
+                            "Số lượng phải lớn hơn 0!",
+                            "Thông báo",
+                            javax.swing.JOptionPane.WARNING_MESSAGE);
+                        return;
+                    }
+                } catch (NumberFormatException ex) {
+                    javax.swing.JOptionPane.showMessageDialog(dialog,
+                        "Số lượng không hợp lệ! Vui lòng nhập số nguyên.",
+                        "Thông báo",
+                        javax.swing.JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+                
+                // Kiểm tra và parse hạn sử dụng
+                String hsdText = txtHSDMoi.getText().trim();
+                if (hsdText.isEmpty()) {
+                    javax.swing.JOptionPane.showMessageDialog(dialog,
+                        "Vui lòng nhập hạn sử dụng!",
+                        "Thông báo",
+                        javax.swing.JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+                
+                Date hsdDate;
+                try {
+                    hsdDate = dateFormat.parse(hsdText);
+                } catch (Exception ex) {
+                    javax.swing.JOptionPane.showMessageDialog(dialog,
+                        "Định dạng ngày không hợp lệ! Vui lòng nhập theo định dạng dd/MM/yyyy",
+                        "Thông báo",
+                        javax.swing.JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+                
                 LocalDate hsd = hsdDate.toInstant()
                     .atZone(java.time.ZoneId.systemDefault())
                     .toLocalDate();
