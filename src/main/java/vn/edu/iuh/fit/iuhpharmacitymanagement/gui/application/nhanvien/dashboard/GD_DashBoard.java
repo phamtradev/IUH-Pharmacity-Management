@@ -16,11 +16,10 @@ import org.jdesktop.animation.timing.Animator;
 import org.jdesktop.animation.timing.TimingTargetAdapter;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.DonHangBUS;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.DonNhapHangBUS;
-import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.HangHongBUS;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.LoHangDAO;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.SanPhamDAO;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlyxuathuy.GD_QuanLyXuatHuy;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonHang;
-import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.HangHong;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.LoHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhanVien;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham;
@@ -47,7 +46,6 @@ public class GD_DashBoard extends javax.swing.JPanel {
     // Business logic
     private DonHangBUS donHangBUS;
     private DonNhapHangBUS donNhapHangBUS;
-    private HangHongBUS hangHongBUS;
     private SanPhamDAO sanPhamDAO;
     private LoHangDAO loHangDAO;
     
@@ -67,7 +65,6 @@ public class GD_DashBoard extends javax.swing.JPanel {
         currencyFormat = new DecimalFormat("#,###");
         donHangBUS = new DonHangBUS();
         donNhapHangBUS = new DonNhapHangBUS();
-        hangHongBUS = new HangHongBUS();
         sanPhamDAO = new SanPhamDAO();
         loHangDAO = new LoHangDAO();
         
@@ -227,11 +224,11 @@ public class GD_DashBoard extends javax.swing.JPanel {
                 "10.svg"  // Icon đơn hàng
         );
 
-        // Card 4: Đơn xuất hủy
+        // Card 4: Số đơn cần xuất hủy
         cardDonXuatHuy = new DashboardCard(
-                "ĐƠN XUẤT HỦY",
+                "SỐ ĐƠN CẦN XUẤT HỦY",
                 "0",
-                "Xuất hủy hôm nay",
+                "Cần xử lý",
                 new Color(244, 67, 54),
                 Color.WHITE,
                 "8.svg"  // Icon trả hàng
@@ -382,17 +379,16 @@ public class GD_DashBoard extends javax.swing.JPanel {
             // Đếm số đơn nhập hàng trong tuần
             int soDonNhapHangTrongTuan = donNhapHangBUS.demDonNhapHangTrongTuan();
             
-            // ========== LẤY DỮ LIỆU ĐƠN XUẤT HỦY ==========
-            List<HangHong> allHangHong = hangHongBUS.layTatCaHangHong();
-            int soDonXuatHuy = (int) allHangHong.stream()
-                    .filter(hh -> hh.getNgayNhap() != null && hh.getNgayNhap().equals(today))
-                    .count();
+            // ========== LẤY DỮ LIỆU SỐ ĐƠN CẦN XUẤT HỦY ==========
+            // Tạo instance của GD_QuanLyXuatHuy để lấy số lượng đơn cần xuất hủy
+            GD_QuanLyXuatHuy gdXuatHuy = new GD_QuanLyXuatHuy();
+            int soDonCanXuatHuy = gdXuatHuy.demSoDonCanXuatHuy();
 
             // ========== CẬP NHẬT CARDS ==========
             cardDoanhThu.updateValue(currencyFormat.format(tongDoanhThu) + " đ");
             cardDonHang.updateValue(String.valueOf(soDonHang) + " đơn");
             cardDonNhapHang.updateValue(String.valueOf(soDonNhapHangTrongTuan) + " đơn");
-            cardDonXuatHuy.updateValue(String.valueOf(soDonXuatHuy) + " đơn");
+            cardDonXuatHuy.updateValue(String.valueOf(soDonCanXuatHuy) + " đơn");
             
             // ========== LOAD BIỂU ĐỒ 7 NGÀY ==========
             loadChartData();

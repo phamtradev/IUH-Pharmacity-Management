@@ -60,6 +60,25 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
             System.err.println("Er: khong co gnuoi dung trong Session!");
         }
     }
+    
+    /**
+     * Đếm tổng số đơn cần xuất hủy (cho Dashboard)
+     * @return Tổng số lô hàng hết hạn + số sản phẩm từ đơn trả hàng
+     */
+    public int demSoDonCanXuatHuy() {
+        try {
+            // Đếm lô hàng hết hạn
+            List<LoHang> danhSachLoHangHetHan = loHangBUS.layTatCaLoHangHetHan();
+            
+            // Đếm hàng trả cần hủy
+            List<ChiTietDonTraHang> danhSachHangTra = chiTietDonTraHangBUS.layTatCaChiTietCanHuy();
+            
+            return danhSachLoHangHetHan.size() + danhSachHangTra.size();
+        } catch (Exception e) {
+            System.err.println("Lỗi khi đếm số đơn cần xuất hủy: " + e.getMessage());
+            return 0;
+        }
+    }
 
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
