@@ -143,7 +143,7 @@ public class LoHangDAO implements DAOInterface<LoHang, String> {
         // Không đọc ngaySanXuat vì cột này không tồn tại trong database
         // loHang.setNgaySanXuat(rs.getDate("ngaySanXuat").toLocalDate());
         loHang.setHanSuDung(rs.getDate("hanSuDung").toLocalDate());
-        loHang.setTonKho(rs.getInt("tonKho"));
+        loHang.setTonKhoNoValidation(rs.getInt("tonKho")); // Dùng NoValidation khi load từ DB
         loHang.setTrangThai(rs.getBoolean("trangThai"));
 
         //lấy mã sản phẩm từ CSDL và dùng SanPhamDAO để tìm đối tượng SanPham tương ứng
@@ -347,7 +347,7 @@ public class LoHangDAO implements DAOInterface<LoHang, String> {
                 loHang.setMaLoHang(rs.getString("maLoHang"));
                 loHang.setTenLoHang(rs.getString("tenLoHang"));
                 loHang.setHanSuDung(rs.getDate("hanSuDung").toLocalDate());
-                loHang.setTonKho(rs.getInt("tonKho"));
+                loHang.setTonKhoNoValidation(rs.getInt("tonKho")); // Dùng NoValidation khi load từ DB
                 loHang.setSanPham(sanPham); // Gán sản phẩm vào lô hàng
 
                 danhSach.add(loHang);
@@ -406,7 +406,7 @@ public class LoHangDAO implements DAOInterface<LoHang, String> {
                 loHang.setMaLoHang(rs.getString("maLoHang"));
                 loHang.setTenLoHang(rs.getString("tenLoHang"));
                 loHang.setHanSuDung(rs.getDate("hanSuDung").toLocalDate());
-                loHang.setTonKho(rs.getInt("tonKho"));
+                loHang.setTonKhoNoValidation(rs.getInt("tonKho")); // Dùng NoValidation khi load từ DB
                 loHang.setSanPham(sanPham);
 
                 String lyDoTra = rs.getString("lyDoTra");

@@ -97,6 +97,14 @@ public class LoHang {
         }
         this.tonKho = tonKho;
     }
+    
+    /**
+     * Set tồn kho không validation - dùng khi load từ DB
+     * @param tonKho số lượng tồn kho
+     */
+    public void setTonKhoNoValidation(int tonKho) {
+        this.tonKho = tonKho;
+    }
 
     public boolean isTrangThai() {
         return trangThai;
