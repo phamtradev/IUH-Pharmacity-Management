@@ -23,6 +23,7 @@ import java.text.NumberFormat;
 import java.util.Locale;
 import javax.swing.JTable;
 import javax.swing.UIManager;
+import javax.swing.ImageIcon;
 import raven.toast.Notifications;
 
 /**
@@ -384,63 +385,141 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         // Tạo header panel thông tin phiếu
         javax.swing.JPanel headerInfoPanel = createHeaderInfoPanel(hangHong);
         
-        // Tạo bảng chi tiết
-        String[] headers = {"Mã lô hàng", "Tên sản phẩm", "Đơn vị tính", "Số lượng", "Đơn giá", "Thành tiền"};
-        List<Integer> tableWidths = Arrays.asList(150, 250, 120, 120, 150, 150);
-        TableDesign tableDetail = new TableDesign(headers, tableWidths);
-        scrollTableDetail.setViewportView(tableDetail.getTable());
-        scrollTableDetail.setBorder(BorderFactory.createEmptyBorder(15, 20, 20, 20));
+        // Sử dụng Map để cộng dồn các sản phẩm cùng mã
+        Map<String, ChiTietHangHong> productMap = new HashMap<>();
 
-            // Sử dụng Map để cộng dồn các sản phẩm cùng mã
-            Map<String, Object[]> productMap = new HashMap<>();
+        for (ChiTietHangHong chiTiet : chiTietHangHongs) {
+            String maLoHang = chiTiet.getLoHang() != null ? chiTiet.getLoHang().getMaLoHang() : "N/A";
+            String tenSanPham = "N/A";
 
-            for (ChiTietHangHong chiTiet : chiTietHangHongs) {
-                String maLoHang = chiTiet.getLoHang() != null ? chiTiet.getLoHang().getMaLoHang() : "N/A";
-                String tenSanPham = "N/A";
-                String donViTinh = "N/A";
-
-                // Lấy thông tin sản phẩm từ lô hàng nếu có
-                if (chiTiet.getLoHang() != null && chiTiet.getLoHang().getSanPham() != null) {
-                    tenSanPham = chiTiet.getLoHang().getSanPham().getTenSanPham();
-                    if (chiTiet.getLoHang().getSanPham().getDonViTinh() != null) {
-                        donViTinh = chiTiet.getLoHang().getSanPham().getDonViTinh().getTenDonVi();
-                    }
-                }
-
-                int soLuong = chiTiet.getSoLuong();
-                double donGia = chiTiet.getDonGia();
-                double thanhTien = chiTiet.getThanhTien();
-
-                String productKey = maLoHang + "_" + tenSanPham; // Key duy nhất cho mỗi sản phẩm
-
-                if (productMap.containsKey(productKey)) {
-                    // Nếu sản phẩm đã tồn tại trong Map, cộng dồn số lượng và thành tiền
-                    Object[] existingData = productMap.get(productKey);
-                    existingData[3] = (int) existingData[3] + soLuong;
-                    existingData[5] = (double) existingData[5] + thanhTien;
-                } else {
-                    // Nếu sản phẩm chưa tồn tại trong Map, thêm mới vào Map
-                    productMap.put(productKey, new Object[]{maLoHang, tenSanPham, donViTinh, soLuong, donGia, thanhTien});
-                }
+            // Lấy thông tin sản phẩm từ lô hàng nếu có
+            if (chiTiet.getLoHang() != null && chiTiet.getLoHang().getSanPham() != null) {
+                tenSanPham = chiTiet.getLoHang().getSanPham().getTenSanPham();
             }
 
-            // Xóa dữ liệu cũ trong bảng
-            tableDetail.getModelTable().setRowCount(0);
+            String productKey = maLoHang + "_" + tenSanPham; // Key duy nhất cho mỗi sản phẩm
 
-            // Thêm các sản phẩm đã cộng dồn vào bảng
-            for (Object[] productData : productMap.values()) {
-                productData[4] = formatToVND((double) productData[4]);
-                productData[5] = formatToVND((double) productData[5]);
-                tableDetail.getModelTable().addRow(productData);
+            if (productMap.containsKey(productKey)) {
+                // Nếu sản phẩm đã tồn tại trong Map, cộng dồn số lượng và thành tiền
+                ChiTietHangHong existing = productMap.get(productKey);
+                try {
+                    existing.setSoLuong(existing.getSoLuong() + chiTiet.getSoLuong());
+                    existing.setThanhTien(existing.getThanhTien() + chiTiet.getThanhTien());
+                } catch (Exception e) {
+                    System.err.println("Lỗi khi cộng dồn số lượng: " + e.getMessage());
+                }
+            } else {
+                // Nếu sản phẩm chưa tồn tại trong Map, thêm mới vào Map
+                productMap.put(productKey, chiTiet);
+            }
+        }
+
+        // Tạo bảng hiển thị chi tiết sản phẩm
+        String[] columnNames = {"STT", "Hình ảnh", "Tên sản phẩm", "Lô hàng", "HSD", "Đơn vị", "Số lượng", "Đơn giá", "Thành tiền", "Lý do"};
+        javax.swing.table.DefaultTableModel tableModel = new javax.swing.table.DefaultTableModel(columnNames, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
             }
             
-            // Cập nhật jPanel1 với header và table
-            jPanel1.removeAll();
-            jPanel1.setLayout(new java.awt.BorderLayout());
-            jPanel1.add(headerInfoPanel, java.awt.BorderLayout.NORTH);
-            jPanel1.add(scrollTableDetail, java.awt.BorderLayout.CENTER);
-            jPanel1.revalidate();
-            jPanel1.repaint();
+            @Override
+            public Class<?> getColumnClass(int columnIndex) {
+                if (columnIndex == 1) { // Cột hình ảnh
+                    return ImageIcon.class;
+                }
+                return Object.class;
+            }
+        };
+        
+        // Thêm dữ liệu vào bảng
+        int stt = 1;
+        for (ChiTietHangHong chiTiet : productMap.values()) {
+            if (chiTiet.getLoHang() != null && chiTiet.getLoHang().getSanPham() != null) {
+                LoHang loHang = chiTiet.getLoHang();
+                SanPham sp = loHang.getSanPham();
+                
+                // Load hình ảnh
+                ImageIcon imageIcon = null;
+                String hinhAnh = sp.getHinhAnh();
+                if (hinhAnh != null && !hinhAnh.trim().isEmpty()) {
+                    try {
+                        java.io.File imageFile = new java.io.File("src/main/resources/img/" + hinhAnh);
+                        if (!imageFile.exists()) {
+                            imageFile = new java.io.File(hinhAnh);
+                        }
+                        if (imageFile.exists()) {
+                            java.awt.Image img = javax.imageio.ImageIO.read(imageFile);
+                            if (img != null) {
+                                java.awt.Image scaledImg = img.getScaledInstance(60, 60, java.awt.Image.SCALE_SMOOTH);
+                                imageIcon = new ImageIcon(scaledImg);
+                            }
+                        }
+                    } catch (Exception e) {
+                        System.err.println("Lỗi khi load hình ảnh: " + hinhAnh + " - " + e.getMessage());
+                    }
+                }
+                
+                String tenSP = sp.getTenSanPham();
+                String maLoHang = loHang.getMaLoHang();
+                String hsd = loHang.getHanSuDung() != null ? loHang.getHanSuDung().toString() : "N/A";
+                String donVi = sp.getDonViTinh() != null ? sp.getDonViTinh().getTenDonVi() : "N/A";
+                int soLuong = chiTiet.getSoLuong();
+                String donGia = formatToVND(chiTiet.getDonGia());
+                String thanhTien = formatToVND(chiTiet.getThanhTien());
+                String lyDo = chiTiet.getLyDoXuatHuy() != null && !chiTiet.getLyDoXuatHuy().trim().isEmpty() 
+                              ? chiTiet.getLyDoXuatHuy() : "N/A";
+                
+                tableModel.addRow(new Object[]{stt++, imageIcon, tenSP, maLoHang, hsd, donVi, soLuong, donGia, thanhTien, lyDo});
+            }
+        }
+        
+        // Tạo JTable
+        javax.swing.JTable tableDetail = new javax.swing.JTable(tableModel);
+        tableDetail.setRowHeight(70);
+        tableDetail.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 13));
+        tableDetail.getTableHeader().setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 13));
+        tableDetail.getTableHeader().setBackground(new java.awt.Color(240, 240, 240));
+        tableDetail.setGridColor(new java.awt.Color(220, 220, 220));
+        tableDetail.setSelectionBackground(new java.awt.Color(245, 245, 245));
+        
+        // Thiết lập renderer cho cột hình ảnh
+        tableDetail.getColumnModel().getColumn(1).setCellRenderer(new vn.edu.iuh.fit.iuhpharmacitymanagement.common.ImageTableCellRenderer());
+        
+        // Thiết lập độ rộng cột
+        tableDetail.getColumnModel().getColumn(0).setPreferredWidth(50);   // STT
+        tableDetail.getColumnModel().getColumn(1).setPreferredWidth(80);   // Hình ảnh
+        tableDetail.getColumnModel().getColumn(2).setPreferredWidth(200);  // Tên sản phẩm
+        tableDetail.getColumnModel().getColumn(3).setPreferredWidth(100);  // Lô hàng
+        tableDetail.getColumnModel().getColumn(4).setPreferredWidth(100);  // HSD
+        tableDetail.getColumnModel().getColumn(5).setPreferredWidth(80);   // Đơn vị
+        tableDetail.getColumnModel().getColumn(6).setPreferredWidth(80);   // Số lượng
+        tableDetail.getColumnModel().getColumn(7).setPreferredWidth(100);  // Đơn giá
+        tableDetail.getColumnModel().getColumn(8).setPreferredWidth(120);  // Thành tiền
+        tableDetail.getColumnModel().getColumn(9).setPreferredWidth(150);  // Lý do
+        
+        // Center align cho các cột số
+        javax.swing.table.DefaultTableCellRenderer centerRenderer = new javax.swing.table.DefaultTableCellRenderer();
+        centerRenderer.setHorizontalAlignment(javax.swing.JLabel.CENTER);
+        tableDetail.getColumnModel().getColumn(0).setCellRenderer(centerRenderer);
+        tableDetail.getColumnModel().getColumn(5).setCellRenderer(centerRenderer);
+        tableDetail.getColumnModel().getColumn(6).setCellRenderer(centerRenderer);
+        
+        // Right align cho các cột tiền
+        javax.swing.table.DefaultTableCellRenderer rightRenderer = new javax.swing.table.DefaultTableCellRenderer();
+        rightRenderer.setHorizontalAlignment(javax.swing.JLabel.RIGHT);
+        tableDetail.getColumnModel().getColumn(7).setCellRenderer(rightRenderer);
+        tableDetail.getColumnModel().getColumn(8).setCellRenderer(rightRenderer);
+        
+        scrollTableDetail.setViewportView(tableDetail);
+        scrollTableDetail.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        
+        // Cập nhật jPanel1 với header và table
+        jPanel1.removeAll();
+        jPanel1.setLayout(new java.awt.BorderLayout());
+        jPanel1.add(headerInfoPanel, java.awt.BorderLayout.NORTH);
+        jPanel1.add(scrollTableDetail, java.awt.BorderLayout.CENTER);
+        jPanel1.revalidate();
+        jPanel1.repaint();
 
             modalPurchaseOrderDetail.setLocationRelativeTo(null);
             modalPurchaseOrderDetail.setVisible(true);
@@ -489,7 +568,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         
         return panel;
     }
-
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnSearch;
     private javax.swing.JButton btnView;

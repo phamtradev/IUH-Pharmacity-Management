@@ -376,44 +376,72 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
             }
             
             // 6. Tạo danh sách ChiTietHangHong và track các đơn trả cần cập nhật
-            List<ChiTietHangHong> chiTietList = new ArrayList<>();
+            // Sử dụng Map để GỘP các panel cùng lô hàng
+            java.util.Map<String, ChiTietHangHong> mapChiTiet = new java.util.HashMap<>();
             java.util.Set<String> danhSachDonTraDaXuLy = new java.util.HashSet<>();
             
+            System.out.println("DEBUG: Bắt đầu xử lý " + danhSachPanel.size() + " panel...");
+            
             for (Panel_ChiTietSanPhamXuatHuy panel : danhSachPanel) {
-                ChiTietHangHong chiTiet = new ChiTietHangHong();
-                chiTiet.setSoLuong(panel.getSoLuongHuy());
-                chiTiet.setDonGia(panel.getDonGia());
-                chiTiet.setThanhTien(panel.getTongTienHuy());
-                chiTiet.setHangHong(hangHong);
-                
-                // Lấy lý do xuất hủy từ panel
-                String lyDoXuatHuy = panel.getLyDoXuatHuy();
-                if (lyDoXuatHuy != null && !lyDoXuatHuy.trim().isEmpty()) {
-                    chiTiet.setLyDoXuatHuy(lyDoXuatHuy);
-                } else {
-                    chiTiet.setLyDoXuatHuy("Chưa rõ lý do");
-                }
-                
-                // Lấy LoHang từ panel
                 LoHang loHang = panel.getLoHang();
-                if (loHang != null) {
-                    chiTiet.setLoHang(loHang);
-                } else {
+                if (loHang == null) {
                     System.err.println("Warning: Panel không có thông tin lô hàng");
+                    continue;
                 }
                 
-                chiTietList.add(chiTiet);
+                String maLoHang = loHang.getMaLoHang();
+                int soLuong = panel.getSoLuongHuy();
+                double donGia = panel.getDonGia();
+                double thanhTienPanel = panel.getTongTienHuy();
+                String lyDoXuatHuy = panel.getLyDoXuatHuy();
+                if (lyDoXuatHuy == null || lyDoXuatHuy.trim().isEmpty()) {
+                    lyDoXuatHuy = "Chưa rõ lý do";
+                }
                 
-                // Lưu chi tiết vào database
-                boolean successChiTiet = chiTietHangHongBUS.taoChiTietHangHong(chiTiet);
-                if (!successChiTiet) {
-                    System.err.println("Lỗi khi lưu chi tiết hàng hỏng");
+                // Tạo key duy nhất: maLoHang + lyDoXuatHuy
+                // → Chỉ gộp khi CÙNG lô hàng VÀ CÙNG lý do
+                String keyUnique = maLoHang + "___" + lyDoXuatHuy;
+                
+                // Nếu lô hàng này (với lý do này) đã tồn tại trong map → CỘNG DỒN số lượng
+                if (mapChiTiet.containsKey(keyUnique)) {
+                    ChiTietHangHong chiTietCu = mapChiTiet.get(keyUnique);
+                    int soLuongCu = chiTietCu.getSoLuong();
+                    int soLuongMoi = soLuongCu + soLuong;
+                    chiTietCu.setSoLuong(soLuongMoi);
+                    chiTietCu.setThanhTien(chiTietCu.getThanhTien() + thanhTienPanel);
+                    System.out.println("DEBUG: Gộp lô " + maLoHang + " (lý do: " + lyDoXuatHuy + ") - Số lượng " + soLuongCu + " + " + soLuong + " = " + soLuongMoi);
+                } else {
+                    // Lô hàng mới (hoặc lý do mới) → Tạo chi tiết mới
+                    ChiTietHangHong chiTiet = new ChiTietHangHong();
+                    chiTiet.setSoLuong(soLuong);
+                    chiTiet.setDonGia(donGia);
+                    chiTiet.setThanhTien(thanhTienPanel);
+                    chiTiet.setHangHong(hangHong);
+                    chiTiet.setLoHang(loHang);
+                    chiTiet.setLyDoXuatHuy(lyDoXuatHuy);
+                    
+                    mapChiTiet.put(keyUnique, chiTiet);
+                    System.out.println("DEBUG: Thêm lô mới " + maLoHang + " (lý do: " + lyDoXuatHuy + ") - Số lượng: " + soLuong);
                 }
                 
                 // Track đơn trả cần cập nhật
                 if (panel.getChiTietDonTra() != null) {
                     String maDonTra = panel.getChiTietDonTra().getDonTraHang().getMaDonTraHang();
                     danhSachDonTraDaXuLy.add(maDonTra);
+                }
+            }
+            
+            // Chuyển map thành list và lưu vào database
+            List<ChiTietHangHong> chiTietList = new ArrayList<>(mapChiTiet.values());
+            System.out.println("DEBUG: Sau khi gộp, còn " + chiTietList.size() + " chi tiết duy nhất");
+            
+            for (ChiTietHangHong chiTiet : chiTietList) {
+                System.out.println("DEBUG: Insert lô " + chiTiet.getLoHang().getMaLoHang() + " - SL: " + chiTiet.getSoLuong());
+                boolean successChiTiet = chiTietHangHongBUS.taoChiTietHangHong(chiTiet);
+                if (!successChiTiet) {
+                    System.err.println("Lỗi khi lưu chi tiết hàng hỏng: " + chiTiet.getLoHang().getMaLoHang());
+                } else {
+                    System.out.println("DEBUG: Insert thành công!");
                 }
             }
             
@@ -526,27 +554,38 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
                 for (ChiTietDonTraHang chiTiet : danhSachHangTra) {
                     SanPham sanPham = chiTiet.getSanPham();
                     
+                    // TÌM LÔ HÀNG THẬT của sản phẩm này (ưu tiên lô cũ nhất, có tồn kho)
+                    String maSanPham = sanPham.getMaSanPham();
+                    List<LoHang> danhSachLo = loHangBUS.layDanhSachLoHangTheoSanPham(maSanPham);
+                    
+                    LoHang loHangChon = null;
+                    for (LoHang lo : danhSachLo) {
+                        if (lo.getTonKho() > 0) {
+                            loHangChon = lo;
+                            break; // Lấy lô đầu tiên có tồn kho (đã sort theo HSD)
+                        }
+                    }
+                    
+                    // Nếu không tìm thấy lô nào có tồn kho → BỎ QUA (không hiển thị)
+                    if (loHangChon == null) {
+                        System.err.println("WARNING: Không tìm thấy lô hàng có tồn kho cho sản phẩm: " 
+                            + sanPham.getTenSanPham() + " (Đơn trả: " + chiTiet.getDonTraHang().getMaDonTraHang() + ")");
+                        continue;
+                    }
+                    
                     Panel_ChiTietSanPhamXuatHuy panel = new Panel_ChiTietSanPhamXuatHuy();
                     
                     panel.setTenSanPham(sanPham.getTenSanPham());
                     panel.setHinhAnh(sanPham.getHinhAnh()); // Load hình ảnh
-                    // Hiển thị thông tin đơn trả (không có lô hàng và HSD vì đây là hàng đã bán)
+                    // Hiển thị thông tin lô hàng THẬT + thông tin đơn trả
                     panel.setLoHang(
-                        "Đơn trả: " + chiTiet.getDonTraHang().getMaDonTraHang(), 
-                        "N/A", // Không có HSD vì là hàng trả
+                        loHangChon.getTenLoHang() + " (Đơn trả: " + chiTiet.getDonTraHang().getMaDonTraHang() + ")", 
+                        loHangChon.getHanSuDung() != null ? loHangChon.getHanSuDung().toString() : "N/A",
                         chiTiet.getSoLuong()
                     ); 
                     
-                    // Tạo LoHang giả cho hàng trả (để tránh NullPointerException)
-                    LoHang loHangGia = new LoHang();
-                    // Dùng mã LH00000 (mã đặc biệt cho hàng trả, không tồn tại trong DB)
-                    loHangGia.setMaLoHang("LH00000");
-                    loHangGia.setTenLoHang("Đơn trả: " + chiTiet.getDonTraHang().getMaDonTraHang());
-                    loHangGia.setTonKho(chiTiet.getSoLuong());
-                    loHangGia.setSanPham(sanPham); // QUAN TRỌNG: Set SanPham vào LoHang
-                    loHangGia.setHanSuDung(null); // Hàng trả không có HSD
-                    
-                    panel.setLoHangObject(loHangGia);
+                    // Lưu lô hàng THẬT vào panel
+                    panel.setLoHangObject(loHangChon);
                     
                     // LƯU THÔNG TIN CHI TIẾT ĐƠN TRẢ VÀO PANEL
                     panel.setChiTietDonTra(chiTiet);

@@ -121,4 +121,15 @@ public class LoHangBUS {
     public List<Map<String, Object>> layDanhSachCanHuyTuDonTra() {
         return loHangDAO.findForDisposalFromReturns();
     }
+    
+    /**
+     * Lấy danh sách lô hàng theo mã sản phẩm (sắp xếp theo HSD từ cũ đến mới)
+     */
+    public List<LoHang> layDanhSachLoHangTheoSanPham(String maSanPham) {
+        List<LoHang> danhSach = loHangDAO.findByMaSanPham(maSanPham);
+        danhSach.forEach(this::capNhatTrangThaiTuDong);
+        // Sort theo HSD (cũ nhất trước) để ưu tiên xuất hủy lô cũ trước
+        danhSach.sort((lo1, lo2) -> lo1.getHanSuDung().compareTo(lo2.getHanSuDung()));
+        return danhSach;
+    }
 }
