@@ -643,16 +643,12 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
             String tenSanPham = chiTiet.getSanPham().getTenSanPham();
             int soLuong = chiTiet.getSoLuong();
             String maDonTra = donTraHang.getMaDonTraHang();
-            // Lấy mã đơn hàng gốc
-            String maDonHang = donTraHang.getDonHang() != null ? 
-                donTraHang.getDonHang().getMaDonHang() : "N/A";
             
-            // Xác nhận từ người dùng - hiển thị cả mã đơn trả và mã đơn hàng
+            // Xác nhận từ người dùng
             int confirm = javax.swing.JOptionPane.showConfirmDialog(
                 null,
-                String.format("Bạn có chắc muốn duyệt xuất hủy %d sản phẩm '%s'?\n" +
-                             "Đơn trả: %s\nĐơn hàng gốc: %s",
-                    soLuong, tenSanPham, maDonTra, maDonHang),
+                String.format("Bạn có chắc muốn duyệt xuất hủy %d sản phẩm '%s'?\nĐơn trả: %s",
+                    soLuong, tenSanPham, maDonTra),
                 "Xác nhận duyệt xuất hủy",
                 javax.swing.JOptionPane.YES_NO_OPTION,
                 javax.swing.JOptionPane.QUESTION_MESSAGE

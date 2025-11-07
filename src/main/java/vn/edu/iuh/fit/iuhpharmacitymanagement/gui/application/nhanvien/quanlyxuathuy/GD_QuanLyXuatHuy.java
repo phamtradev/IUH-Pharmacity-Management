@@ -445,6 +445,40 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
                 }
             }
             
+            // 6.3. Giảm tồn kho của các lô hàng đã xuất hủy
+            for (ChiTietHangHong chiTiet : chiTietList) {
+                LoHang loHang = chiTiet.getLoHang();
+                String maLoHang = loHang.getMaLoHang();
+                int soLuongXuatHuy = chiTiet.getSoLuong();
+                String lyDoXuatHuy = chiTiet.getLyDoXuatHuy();
+                
+                boolean updateTonKhoSuccess;
+                
+                // Phân biệt 2 trường hợp:
+                // 1. Lô hết hạn (lý do chứa "Hết hạn") → Giảm toàn bộ tồn kho về 0
+                // 2. Hàng hư từ đơn trả → Giảm theo số lượng xuất hủy
+                if (lyDoXuatHuy != null && lyDoXuatHuy.contains("Hết hạn")) {
+                    // Lô hết hạn → Giảm toàn bộ tồn kho về 0
+                    int tonKhoHienTai = loHang.getTonKho();
+                    updateTonKhoSuccess = loHangBUS.updateTonKho(maLoHang, -tonKhoHienTai);
+                    
+                    if (updateTonKhoSuccess) {
+                        System.out.println("✓ Đã giảm tồn kho lô HẾT HẠN '" + maLoHang + "' từ " + tonKhoHienTai + " → 0");
+                    } else {
+                        System.err.println("✗ Lỗi khi giảm tồn kho lô hết hạn '" + maLoHang + "'");
+                    }
+                } else {
+                    // Hàng hư từ đơn trả → Giảm theo số lượng xuất hủy
+                    updateTonKhoSuccess = loHangBUS.updateTonKho(maLoHang, -soLuongXuatHuy);
+                    
+                    if (updateTonKhoSuccess) {
+                        System.out.println("✓ Đã giảm tồn kho lô HÀNG HƯ '" + maLoHang + "' xuống " + soLuongXuatHuy + " sản phẩm");
+                    } else {
+                        System.err.println("✗ Lỗi khi giảm tồn kho lô hàng hư '" + maLoHang + "'");
+                    }
+                }
+            }
+            
             // 6.5. Cập nhật trạng thái các đơn trả hàng đã xuất hủy
             if (!danhSachDonTraDaXuLy.isEmpty()) {
                 vn.edu.iuh.fit.iuhpharmacitymanagement.bus.DonTraHangBUS donTraBUS = 
