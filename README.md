@@ -56,13 +56,48 @@ private static final String USER = "YOUR_SQL_USERNAME";
 private static final String PASSWORD = "YOUR_SQL_PASSWORD";
 ```
 
-### 4. Build the Project
+### 4. Configure Email (Optional - For sending promotions and notifications)
+
+Update `src/main/resources/email.properties`:
+
+```properties
+mail.smtp.host=smtp.gmail.com
+mail.smtp.port=587
+mail.smtp.auth=true
+mail.smtp.starttls.enable=true
+
+sender.email=YOUR_EMAIL@gmail.com
+sender.password=YOUR_APP_PASSWORD
+sender.name=IUH Pharmacity Store
+```
+
+To get Gmail App Password:
+1. Enable 2-Factor Authentication on your Google Account
+2. Visit https://myaccount.google.com/apppasswords
+3. Generate App Password for "Mail"
+4. Use the generated 16-character password in email.properties
+
+### 5. Barcode Scanning Setup (Optional - For product scanning)
+
+The system supports two methods for barcode scanning:
+
+Method 1: USB Barcode Scanner (Recommended)
+- Connect USB barcode scanner to your computer
+- The scanner acts as a keyboard input device
+- Simply scan the barcode, it will automatically input the code
+
+Method 2: Software Barcode Scanner
+- Use camera-based barcode scanning software
+- Install barcode scanner application on your device
+- Configure the software to send scanned codes to the application
+
+### 6. Build the Project
 
 ```bash
 mvn clean install
 ```
 
-### 5. Run the Application
+### 7. Run the Application
 
 You can run the application using Maven:
 
