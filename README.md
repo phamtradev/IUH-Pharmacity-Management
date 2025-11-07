@@ -2,9 +2,36 @@
 
 Real-time pharmacy management system with Java Swing, JDBC, SQL Server, and FlatLaf for efficient operations and modern user experience. 💊📊
 
+## Development Team
+
+- 23633471 - Phạm Văn Trà (Team Leader)
+- 23635991 - Tô Nguyễn An Thuyên
+- 23633961 - Nguyễn Công Tuyến
+- 23636821 - Đỗ Hoài Nhớ
+- 23633251 - Phạm Minh Thịnh
+
+**Đồ án môn học:** Phát Triển Ứng Dụng
+
+**Institution:** Industrial University of Ho Chi Minh City (IUH)  
+**Faculty:** Information Technology
+
 ## Introduction
 
 IUH Pharmacity Management System is a comprehensive pharmacy management application built with Java Swing and a layered architecture to enable efficient pharmacy operations. Using JDBC for database connectivity, SQL Server for database management, and FlatLaf for modern UI, the system ensures smooth and professional management of sales, inventory, customers, and suppliers. It is developed using Java 21, Maven, and various modern technologies to provide a robust and scalable solution for pharmacy businesses.
+
+
+## Technologies Used
+
+- Java 21: The primary programming language for the application.
+- Maven: Build tool for managing dependencies and building the project.
+- Java Swing: Framework for building desktop GUI applications.
+- JDBC: Java Database Connectivity for database operations.
+- FlatLaf: Modern Look & Feel for professional UI design.
+- Microsoft SQL Server: Relational database management system.
+- Apache POI: Library for reading and writing Excel files.
+- iText: PDF generation library for reports and invoices.
+- JavaMail: Email functionality for notifications and password recovery.
+- ZXing: QR code generation for products and orders.
 
 ## Prerequisites
 
@@ -114,27 +141,3 @@ java -jar target/iuhpharmacitymanagement-1.0-SNAPSHOT.jar
 
 Or use your IDE (NetBeans/IntelliJ IDEA/Eclipse):
 - Main Class: `vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.MainApplication`
-
-## Technologies Used
-
-- Java 21: The primary programming language for the application.
-- Maven: Build tool for managing dependencies and building the project.
-- Java Swing: Framework for building desktop GUI applications.
-- JDBC: Java Database Connectivity for database operations.
-- FlatLaf: Modern Look & Feel for professional UI design.
-- Microsoft SQL Server: Relational database management system.
-- Apache POI: Library for reading and writing Excel files.
-- iText: PDF generation library for reports and invoices.
-- JavaMail: Email functionality for notifications and password recovery.
-- ZXing: QR code generation for products and orders.
-
-## Development Team
-
-- 23633471 - Phạm Văn Trà (Team Leader)
-- 23635991 - Tô Nguyễn An Thuyên
-- 23633961 - Nguyễn Công Tuyến
-- 23636821 - Đỗ Hoài Nhớ
-- 23633251 - Phạm Minh Thịnh
-
-Institution: Industrial University of Ho Chi Minh City (IUH)
-Faculty: Information Technology
