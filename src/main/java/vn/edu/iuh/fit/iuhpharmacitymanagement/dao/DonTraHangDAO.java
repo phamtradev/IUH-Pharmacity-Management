@@ -64,6 +64,21 @@ public class DonTraHangDAO implements DAOInterface<DonTraHang, String> {
 
     @Override
     public boolean update(DonTraHang donTraHang) {
+        // Nếu object không đầy đủ thông tin, load lại từ DB trước
+        if (donTraHang.getNgayTraHang() == null) {
+            Optional<DonTraHang> fullData = findById(donTraHang.getMaDonTraHang());
+            if (fullData.isPresent()) {
+                DonTraHang full = fullData.get();
+                // Giữ lại trạng thái mới, còn lại lấy từ DB
+                String trangThaiMoi = donTraHang.getTrangThaiXuLy();
+                donTraHang = full;
+                donTraHang.setTrangThaiXuLy(trangThaiMoi);
+            } else {
+                System.err.println("Không tìm thấy đơn trả hàng: " + donTraHang.getMaDonTraHang());
+                return false;
+            }
+        }
+        
         try (Connection con = ConnectDB.getConnection();
              PreparedStatement stmt = con.prepareStatement(SQL_CAP_NHAT)) {
 

@@ -539,8 +539,16 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
     }
     
     // Xử lý thêm sản phẩm trả về vào kho
-    private void xuLyThemVaoKho(ChiTietDonTraHang chiTiet, JTable table, int row, DonTraHang donTraHang) {
+    private void xuLyThemVaoKho(ChiTietDonTraHang chiTiet, JTable table, int row, DonTraHang donTraHangParam) {
         try {
+            // Lấy đơn trả hàng từ chi tiết để đảm bảo đúng
+            DonTraHang donTraHang = chiTiet.getDonTraHang();
+            if (donTraHang == null) {
+                Notifications.getInstance().show(Notifications.Type.ERROR, 
+                    "Không tìm thấy thông tin đơn trả hàng!");
+                return;
+            }
+            
             String maSanPham = chiTiet.getSanPham().getMaSanPham();
             String tenSanPham = chiTiet.getSanPham().getTenSanPham();
             int soLuong = chiTiet.getSoLuong();
@@ -622,17 +630,29 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
     }
     
     // Xử lý xuất hủy sản phẩm - Duyệt đơn trả hàng để chờ xuất hủy
-    private void xuLyXuatHuy(ChiTietDonTraHang chiTiet, JTable table, int row, DonTraHang donTraHang) {
+    private void xuLyXuatHuy(ChiTietDonTraHang chiTiet, JTable table, int row, DonTraHang donTraHangParam) {
         try {
+            // Lấy đơn trả hàng từ chi tiết để đảm bảo đúng
+            DonTraHang donTraHang = chiTiet.getDonTraHang();
+            if (donTraHang == null) {
+                Notifications.getInstance().show(Notifications.Type.ERROR, 
+                    "Không tìm thấy thông tin đơn trả hàng!");
+                return;
+            }
+            
             String tenSanPham = chiTiet.getSanPham().getTenSanPham();
             int soLuong = chiTiet.getSoLuong();
             String maDonTra = donTraHang.getMaDonTraHang();
+            // Lấy mã đơn hàng gốc
+            String maDonHang = donTraHang.getDonHang() != null ? 
+                donTraHang.getDonHang().getMaDonHang() : "N/A";
             
-            // Xác nhận từ người dùng
+            // Xác nhận từ người dùng - hiển thị cả mã đơn trả và mã đơn hàng
             int confirm = javax.swing.JOptionPane.showConfirmDialog(
                 null,
-                String.format("Bạn có chắc muốn duyệt xuất hủy %d sản phẩm '%s' từ đơn '%s'?",
-                    soLuong, tenSanPham, maDonTra),
+                String.format("Bạn có chắc muốn duyệt xuất hủy %d sản phẩm '%s'?\n" +
+                             "Đơn trả: %s\nĐơn hàng gốc: %s",
+                    soLuong, tenSanPham, maDonTra, maDonHang),
                 "Xác nhận duyệt xuất hủy",
                 javax.swing.JOptionPane.YES_NO_OPTION,
                 javax.swing.JOptionPane.QUESTION_MESSAGE

@@ -385,22 +385,21 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         // Tạo header panel thông tin phiếu
         javax.swing.JPanel headerInfoPanel = createHeaderInfoPanel(hangHong);
         
-        // Sử dụng Map để cộng dồn các sản phẩm cùng mã
+        // Sử dụng Map để cộng dồn các chi tiết CÙNG lô hàng VÀ CÙNG lý do
+        // (KHÔNG gộp nếu khác lý do xuất hủy)
         Map<String, ChiTietHangHong> productMap = new HashMap<>();
 
         for (ChiTietHangHong chiTiet : chiTietHangHongs) {
             String maLoHang = chiTiet.getLoHang() != null ? chiTiet.getLoHang().getMaLoHang() : "N/A";
-            String tenSanPham = "N/A";
+            String lyDoXuatHuy = chiTiet.getLyDoXuatHuy() != null && !chiTiet.getLyDoXuatHuy().trim().isEmpty() 
+                                 ? chiTiet.getLyDoXuatHuy() : "N/A";
 
-            // Lấy thông tin sản phẩm từ lô hàng nếu có
-            if (chiTiet.getLoHang() != null && chiTiet.getLoHang().getSanPham() != null) {
-                tenSanPham = chiTiet.getLoHang().getSanPham().getTenSanPham();
-            }
-
-            String productKey = maLoHang + "_" + tenSanPham; // Key duy nhất cho mỗi sản phẩm
+            // Key duy nhất: maLoHang + lyDoXuatHuy
+            // → Chỉ gộp khi CÙNG lô hàng VÀ CÙNG lý do
+            String productKey = maLoHang + "___" + lyDoXuatHuy;
 
             if (productMap.containsKey(productKey)) {
-                // Nếu sản phẩm đã tồn tại trong Map, cộng dồn số lượng và thành tiền
+                // Nếu chi tiết đã tồn tại trong Map (cùng lô, cùng lý do), cộng dồn số lượng và thành tiền
                 ChiTietHangHong existing = productMap.get(productKey);
                 try {
                     existing.setSoLuong(existing.getSoLuong() + chiTiet.getSoLuong());
@@ -409,7 +408,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
                     System.err.println("Lỗi khi cộng dồn số lượng: " + e.getMessage());
                 }
             } else {
-                // Nếu sản phẩm chưa tồn tại trong Map, thêm mới vào Map
+                // Nếu chi tiết chưa tồn tại trong Map (khác lô hoặc khác lý do), thêm mới vào Map
                 productMap.put(productKey, chiTiet);
             }
         }
@@ -480,7 +479,8 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         tableDetail.getTableHeader().setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 13));
         tableDetail.getTableHeader().setBackground(new java.awt.Color(240, 240, 240));
         tableDetail.setGridColor(new java.awt.Color(220, 220, 220));
-        tableDetail.setSelectionBackground(new java.awt.Color(245, 245, 245));
+        tableDetail.setSelectionBackground(new java.awt.Color(173, 216, 230)); // Light Blue
+        tableDetail.setSelectionForeground(new java.awt.Color(0, 0, 0)); // Black text
         
         // Thiết lập renderer cho cột hình ảnh
         tableDetail.getColumnModel().getColumn(1).setCellRenderer(new vn.edu.iuh.fit.iuhpharmacitymanagement.common.ImageTableCellRenderer());
