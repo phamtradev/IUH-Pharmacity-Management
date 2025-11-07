@@ -1,5 +1,16 @@
 /target/
 
-# Bảo vệ file cấu hình email (chứa API Key)
-src/main/resources/email.properties.DS_Store
+# ========================================
+# BẢO VỆ THÔNG TIN NHẠY CẢM
+# ========================================
+
+# File cấu hình email (chứa mật khẩu SMTP)
+src/main/resources/email.properties
+
+# File backup và temp
+*.DS_Store
+*.bak
+*.tmp
+
+# PDF hóa đơn (chứa thông tin khách hàng)
 src/main/resources/img/hoadonbanhang/*.pdf 

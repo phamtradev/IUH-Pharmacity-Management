@@ -1,0 +1,35 @@
+# ========================================
+# CẤU HÌNH EMAIL - JAVA MAIL (SMTP)
+# ========================================
+# Hướng dẫn setup:
+# 1. Copy file này thành "email.properties"
+# 2. Sử dụng Gmail hoặc SMTP server khác
+# 3. Với Gmail: Bật "App Passwords" tại https://myaccount.google.com/apppasswords
+# 4. Điền thông tin SMTP và email của bạn vào dưới đây
+
+# Cấu hình SMTP Server
+mail.smtp.host=smtp.gmail.com
+mail.smtp.port=587
+mail.smtp.auth=true
+mail.smtp.starttls.enable=true
+
+# Thông tin đăng nhập email
+sender.email=your-email@gmail.com
+
+# QUAN TRỌNG: Thay YOUR_APP_PASSWORD_HERE bằng App Password của bạn
+# Không dùng mật khẩu Gmail thông thường!
+sender.password=YOUR_APP_PASSWORD_HERE
+
+
+# Tên người gửi (hiển thị trong email)
+sender.name=IUH Pharmacity Store
+
+# ========================================
+# LƯU Ý:
+# - Với Gmail: Bật xác thực 2 bước và tạo App Password
+# - Không sử dụng mật khẩu Gmail thông thường
+# - Có thể sử dụng SMTP server khác (thay đổi host và port)
+# - KHÔNG commit file "email.properties" lên Git
+# ========================================
+
+
