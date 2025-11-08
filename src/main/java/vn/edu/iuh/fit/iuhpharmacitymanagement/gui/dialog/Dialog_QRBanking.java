@@ -126,6 +126,39 @@ public class Dialog_QRBanking extends JDialog {
         JPanel pnFooter = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 15));
         pnFooter.setBackground(Color.WHITE);
         
+        // Nút Mô Phỏng Thanh Toán (để test)
+        JButton btnMoPhong = new JButton("🧪 Mô Phỏng Thanh Toán");
+        btnMoPhong.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btnMoPhong.setPreferredSize(new Dimension(200, 40));
+        btnMoPhong.setFocusPainted(false);
+        btnMoPhong.setToolTipText("Nhấn để giả lập khách hàng đã quét QR và thanh toán");
+        
+        // Style FlatLaf - màu cam cảnh báo
+        btnMoPhong.putClientProperty(FlatClientProperties.STYLE, 
+            "arc:8;borderWidth:0;focusWidth:0;innerFocusWidth:0;background:#ff9800;foreground:#FFFFFF");
+        
+        btnMoPhong.addActionListener(e -> {
+            // Đánh dấu đơn hàng đã thanh toán (simulation)
+            QRBankingUtil.markAsPaid(maDonHang, soTien);
+            
+            // Hiển thị thông báo
+            JOptionPane.showMessageDialog(
+                this,
+                "✅ Đã mô phỏng thanh toán thành công!\n\n" +
+                "Mã đơn: " + maDonHang + "\n" +
+                "Số tiền: " + df.format(soTien) + "\n\n" +
+                "Hệ thống sẽ tự động cập nhật phương thức thanh toán trong 2 giây...",
+                "Mô Phỏng Thanh Toán",
+                JOptionPane.INFORMATION_MESSAGE
+            );
+            
+            // Disable nút sau khi click
+            btnMoPhong.setEnabled(false);
+            btnMoPhong.setText("✅ Đã Thanh Toán");
+            btnMoPhong.putClientProperty(FlatClientProperties.STYLE, 
+                "arc:8;borderWidth:0;focusWidth:0;innerFocusWidth:0;background:#28a745;foreground:#FFFFFF");
+        });
+        
         JButton btnDong = new JButton("Đóng");
         btnDong.setFont(new Font("Segoe UI", Font.BOLD, 14));
         btnDong.setPreferredSize(new Dimension(150, 40));
@@ -137,6 +170,7 @@ public class Dialog_QRBanking extends JDialog {
         
         btnDong.addActionListener(e -> dispose());
         
+        pnFooter.add(btnMoPhong);
         pnFooter.add(btnDong);
         
         // ========== ADD TO DIALOG ==========

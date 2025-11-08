@@ -118,4 +118,67 @@ public class QRBankingUtil {
     public static String formatMoney(double amount) {
         return String.format("%,.0f đ", amount);
     }
+    
+    // ==================== PAYMENT CHECKING (SIMULATION) ====================
+    
+    /**
+     * Map để lưu trạng thái thanh toán (simulation)
+     * Key: maDonHang
+     * Value: [isPaid, amount]
+     */
+    private static final java.util.Map<String, double[]> PAYMENT_STATUS = 
+        new java.util.concurrent.ConcurrentHashMap<>();
+    
+    /**
+     * Mô phỏng: Đánh dấu đơn hàng đã thanh toán
+     * (Trong thực tế: API ngân hàng sẽ callback hoặc polling API)
+     * 
+     * @param maDonHang Mã đơn hàng
+     * @param amount Số tiền đã thanh toán
+     */
+    public static void markAsPaid(String maDonHang, double amount) {
+        PAYMENT_STATUS.put(maDonHang, new double[]{1.0, amount});
+        System.out.println("✅ [QR Banking] Đơn hàng " + maDonHang + 
+            " đã được thanh toán: " + formatMoney(amount));
+    }
+    
+    /**
+     * Kiểm tra xem đơn hàng đã được thanh toán chưa
+     * 
+     * @param maDonHang Mã đơn hàng cần kiểm tra
+     * @return true nếu đã thanh toán
+     */
+    public static boolean isPaid(String maDonHang) {
+        double[] status = PAYMENT_STATUS.get(maDonHang);
+        return status != null && status[0] == 1.0;
+    }
+    
+    /**
+     * Lấy số tiền đã thanh toán
+     * 
+     * @param maDonHang Mã đơn hàng
+     * @return Số tiền đã thanh toán (0 nếu chưa thanh toán)
+     */
+    public static double getPaidAmount(String maDonHang) {
+        double[] status = PAYMENT_STATUS.get(maDonHang);
+        return (status != null && status[0] == 1.0) ? status[1] : 0;
+    }
+    
+    /**
+     * Reset trạng thái thanh toán (để test lại)
+     * 
+     * @param maDonHang Mã đơn hàng cần reset
+     */
+    public static void resetPaymentStatus(String maDonHang) {
+        PAYMENT_STATUS.remove(maDonHang);
+        System.out.println("🔄 [QR Banking] Reset trạng thái thanh toán: " + maDonHang);
+    }
+    
+    /**
+     * Clear tất cả trạng thái thanh toán
+     */
+    public static void clearAllPaymentStatus() {
+        PAYMENT_STATUS.clear();
+        System.out.println("🗑️ [QR Banking] Đã xóa tất cả trạng thái thanh toán");
+    }
 }

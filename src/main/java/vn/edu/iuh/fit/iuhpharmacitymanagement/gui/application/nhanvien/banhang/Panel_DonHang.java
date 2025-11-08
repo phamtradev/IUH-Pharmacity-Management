@@ -1895,6 +1895,90 @@ public class Panel_DonHang extends javax.swing.JPanel {
         mainPanel.add(footerPanel, BorderLayout.SOUTH);
         
         dialog.add(mainPanel);
+        
+        // ==================== AUTO-CHECK THANH TOÁN QR ====================
+        // Tạo polling thread để kiểm tra thanh toán
+        final java.util.concurrent.atomic.AtomicBoolean stopPolling = new java.util.concurrent.atomic.AtomicBoolean(false);
+        final String maDonHangFinal = donHang.getMaDonHang();
+        final double tongTienFinal = donHang.getThanhTien();
+        
+        Thread pollingThread = new Thread(() -> {
+            System.out.println("🔍 [QR Banking] Bắt đầu kiểm tra thanh toán cho đơn: " + maDonHangFinal);
+            
+            while (!stopPolling.get()) {
+                try {
+                    // Kiểm tra xem đã thanh toán chưa
+                    if (vn.edu.iuh.fit.iuhpharmacitymanagement.util.QRBankingUtil.isPaid(maDonHangFinal)) {
+                        double paidAmount = vn.edu.iuh.fit.iuhpharmacitymanagement.util.QRBankingUtil.getPaidAmount(maDonHangFinal);
+                        
+                        // Cập nhật phương thức thanh toán trong database
+                        javax.swing.SwingUtilities.invokeLater(() -> {
+                            try {
+                                donHang.setPhuongThucThanhToan(PhuongThucThanhToan.CHUYEN_KHOAN_NGAN_HANG);
+                                
+                                if (donHangBUS.capNhatDonHang(donHang)) {
+                                    // Hiển thị thông báo thành công
+                                    Notifications.getInstance().show(
+                                        Notifications.Type.SUCCESS, 
+                                        Notifications.Location.TOP_CENTER,
+                                        String.format("✅ Đã nhận thanh toán QR: %,.0f đ\nPhương thức thanh toán đã được cập nhật!", paidAmount)
+                                    );
+                                    
+                                    // Đổi màu nút QR Banking thành xanh lá (đã thanh toán)
+                                    btnQRBanking.setBackground(new Color(40, 167, 69));
+                                    btnQRBanking.setText("✅ Đã Thanh Toán QR");
+                                    btnQRBanking.setEnabled(false);
+                                    
+                                    System.out.println("✅ [QR Banking] Đã cập nhật phương thức thanh toán: CHUYEN_KHOAN_NGAN_HANG");
+                                } else {
+                                    Notifications.getInstance().show(
+                                        Notifications.Type.WARNING, 
+                                        Notifications.Location.TOP_CENTER,
+                                        "⚠️ Đã nhận thanh toán nhưng không thể cập nhật phương thức!"
+                                    );
+                                }
+                            } catch (Exception ex) {
+                                ex.printStackTrace();
+                                Notifications.getInstance().show(
+                                    Notifications.Type.ERROR, 
+                                    Notifications.Location.TOP_CENTER,
+                                    "Lỗi khi cập nhật phương thức thanh toán: " + ex.getMessage()
+                                );
+                            }
+                        });
+                        
+                        // Dừng polling
+                        stopPolling.set(true);
+                        break;
+                    }
+                    
+                    // Chờ 2 giây trước khi check lại
+                    Thread.sleep(2000);
+                    
+                } catch (InterruptedException ex) {
+                    System.out.println("⚠️ [QR Banking] Polling thread bị interrupt");
+                    break;
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+            
+            System.out.println("🛑 [QR Banking] Dừng kiểm tra thanh toán cho đơn: " + maDonHangFinal);
+        });
+        
+        // Đặt thread là daemon để tự động tắt khi app đóng
+        pollingThread.setDaemon(true);
+        pollingThread.start();
+        
+        // Dừng polling khi dialog đóng
+        dialog.addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent e) {
+                stopPolling.set(true);
+                System.out.println("🔴 [QR Banking] Dialog đóng - dừng polling");
+            }
+        });
+        
         dialog.setVisible(true);
         
         // Trả về trạng thái hủy đơn
