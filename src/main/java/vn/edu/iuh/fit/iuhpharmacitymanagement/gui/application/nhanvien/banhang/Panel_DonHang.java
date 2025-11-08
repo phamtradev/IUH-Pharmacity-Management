@@ -136,6 +136,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
         pnLeft = new javax.swing.JPanel();
         txtTimKhachHang = new javax.swing.JTextField();
         btnBanHang = new javax.swing.JButton();
+        btnThanhToanQR = new javax.swing.JButton();
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         txtDiscountOrder = new javax.swing.JTextField();
@@ -185,6 +186,18 @@ public class Panel_DonHang extends javax.swing.JPanel {
         btnBanHang.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
                 btnBanHangKeyPressed(evt);
+            }
+        });
+
+        btnThanhToanQR.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        btnThanhToanQR.setText("💳 QR Banking");
+        btnThanhToanQR.setVisible(false); // Ẩn mặc định, chỉ hiện khi có sản phẩm
+        btnThanhToanQR.setFocusPainted(false);
+        btnThanhToanQR.putClientProperty(FlatClientProperties.STYLE, 
+            "arc:8;borderWidth:0;focusWidth:0;innerFocusWidth:0;background:#0066CC;foreground:#FFFFFF");
+        btnThanhToanQR.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnThanhToanQRActionPerformed(evt);
             }
         });
 
@@ -439,7 +452,10 @@ public class Panel_DonHang extends javax.swing.JPanel {
             .addGroup(pnLeftLayout.createSequentialGroup()
                 .addContainerGap(14, Short.MAX_VALUE)
                 .addGroup(pnLeftLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(btnBanHang, javax.swing.GroupLayout.PREFERRED_SIZE, 165, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(pnLeftLayout.createSequentialGroup()
+                        .addComponent(btnThanhToanQR, javax.swing.GroupLayout.PREFERRED_SIZE, 165, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(8, 8, 8)
+                        .addComponent(btnBanHang, javax.swing.GroupLayout.PREFERRED_SIZE, 165, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(pnLeftLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                         .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jPanel2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -475,7 +491,9 @@ public class Panel_DonHang extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(pnPriceSuggest, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
-                .addComponent(btnBanHang, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(pnLeftLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnBanHang, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnThanhToanQR, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(43, 43, 43))
         );
 
@@ -885,6 +903,52 @@ public class Panel_DonHang extends javax.swing.JPanel {
             createOrder();
         }
     }//GEN-LAST:event_btnBanHangKeyPressed
+    
+    private void btnThanhToanQRActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnThanhToanQRActionPerformed
+        hienThiQRBanking();
+    }//GEN-LAST:event_btnThanhToanQRActionPerformed
+    
+    /**
+     * Hiển thị dialog QR Banking để thanh toán
+     */
+    private void hienThiQRBanking() {
+        // Kiểm tra có sản phẩm trong giỏ chưa
+        if (tongTienHang <= 0) {
+            Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER, 
+                "Chưa có sản phẩm trong giỏ hàng");
+            return;
+        }
+        
+        // Tính tổng tiền cần thanh toán
+        double tongThanhToan = tongTienHang - discountProduct - discountOrder;
+        
+        if (tongThanhToan <= 0) {
+            Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER, 
+                "Số tiền thanh toán phải lớn hơn 0");
+            return;
+        }
+        
+        // Tạo mã đơn hàng tạm (để hiển thị trong QR)
+        String maDonHangTam = "DH" + java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("ddMMyyyy")) + 
+                             String.format("%04d", (int)(Math.random() * 10000));
+        
+        // Hiển thị dialog QR
+        try {
+            java.awt.Frame parentFrame = (java.awt.Frame) javax.swing.SwingUtilities.getWindowAncestor(this);
+            vn.edu.iuh.fit.iuhpharmacitymanagement.gui.dialog.Dialog_QRBanking dialog = 
+                new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.dialog.Dialog_QRBanking(
+                    parentFrame, maDonHangTam, tongThanhToan);
+            dialog.setVisible(true);
+            
+            // Sau khi đóng dialog, có thể xử lý thêm (nếu cần confirm thanh toán)
+            Notifications.getInstance().show(Notifications.Type.INFO, Notifications.Location.TOP_CENTER, 
+                "Vui lòng quét mã QR để hoàn tất thanh toán");
+        } catch (Exception e) {
+            Notifications.getInstance().show(Notifications.Type.ERROR, Notifications.Location.TOP_CENTER, 
+                "Lỗi khi hiển thị QR Code: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
 
     private double tongTienHang;
     private double discountProduct;
@@ -896,6 +960,9 @@ public class Panel_DonHang extends javax.swing.JPanel {
     public void updateTongTienHang(double tongTien) {
         this.tongTienHang = tongTien;
         txtTongTienHang.setText(String.format("%,.0f đ", tongTien));
+        
+        // Hiển thị/ẩn nút QR Banking dựa vào có sản phẩm hay không
+        btnThanhToanQR.setVisible(tongTien > 0);
         
         updateTongHoaDon();
     }
@@ -2187,6 +2254,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnBanHang;
+    private javax.swing.JButton btnThanhToanQR;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel14;
