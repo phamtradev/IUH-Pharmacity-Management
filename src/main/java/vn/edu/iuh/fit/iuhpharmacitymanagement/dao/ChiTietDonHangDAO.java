@@ -163,6 +163,46 @@ public class ChiTietDonHangDAO implements DAOInterface<ChiTietDonHang, String> {
         return dsCtdh;
     }
 
+    /**
+     * Xóa chi tiết đơn hàng theo mã lô hàng và mã đơn hàng
+     * @param maLoHang Mã lô hàng
+     * @param maDonHang Mã đơn hàng
+     * @return true nếu xóa thành công, false nếu thất bại
+     */
+    public boolean delete(String maLoHang, String maDonHang) {
+        String sql = "DELETE FROM ChiTietDonHang WHERE maLoHang = ? AND maDonHang = ?";
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(sql)) {
+            
+            stmt.setString(1, maLoHang);
+            stmt.setString(2, maDonHang);
+            return stmt.executeUpdate() > 0;
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+    /**
+     * Xóa tất cả chi tiết đơn hàng theo mã đơn hàng
+     * @param maDonHang Mã đơn hàng
+     * @return true nếu xóa thành công, false nếu thất bại
+     */
+    public boolean deleteByMaDonHang(String maDonHang) {
+        String sql = "DELETE FROM ChiTietDonHang WHERE maDonHang = ?";
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(sql)) {
+            
+            stmt.setString(1, maDonHang);
+            return stmt.executeUpdate() > 0;
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
     //Đếm số lượng chi tiết đơn hàng (số lần bán) của một lô hàng cụ thể
     public long countByLoHang(String maLoHang) {
         String sql = "SELECT COUNT(*) as total FROM ChiTietDonHang WHERE maLoHang = ?";

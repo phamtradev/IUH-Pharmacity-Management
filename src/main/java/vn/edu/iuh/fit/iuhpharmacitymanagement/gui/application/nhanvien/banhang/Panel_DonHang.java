@@ -189,17 +189,9 @@ public class Panel_DonHang extends javax.swing.JPanel {
             }
         });
 
-        btnThanhToanQR.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        btnThanhToanQR.setText("💳 QR Banking");
-        btnThanhToanQR.setVisible(false); // Ẩn mặc định, chỉ hiện khi có sản phẩm
-        btnThanhToanQR.setFocusPainted(false);
-        btnThanhToanQR.putClientProperty(FlatClientProperties.STYLE, 
-            "arc:8;borderWidth:0;focusWidth:0;innerFocusWidth:0;background:#0066CC;foreground:#FFFFFF");
-        btnThanhToanQR.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnThanhToanQRActionPerformed(evt);
-            }
-        });
+        // Nút QR Banking đã được chuyển vào dialog xác nhận hóa đơn
+        btnThanhToanQR.setVisible(false); // Ẩn hoàn toàn
+        btnThanhToanQR.setEnabled(false);
 
         jPanel1.setBackground(new java.awt.Color(255, 255, 255));
         jPanel1.setLayout(new BoxLayout(jPanel1, BoxLayout.Y_AXIS));
@@ -866,11 +858,14 @@ public class Panel_DonHang extends javax.swing.JPanel {
                 message);
             
             // 8. Hiển thị dialog xác nhận hóa đơn
-            hienThiXacNhanHoaDon(donHang, chiTietDonHangList, kmSanPham);
+            boolean isDonHangCancelled = hienThiXacNhanHoaDon(donHang, chiTietDonHangList, kmSanPham);
             
-            // 10. Reset giỏ hàng
-            gdBanHang.xoaToanBoGioHang();
-            resetThanhToan();
+            // 10. Reset giỏ hàng CHỈ KHI KHÔNG HỦY đơn
+            if (!isDonHangCancelled) {
+                gdBanHang.xoaToanBoGioHang();
+                resetThanhToan();
+            }
+            // Nếu hủy đơn, giỏ hàng vẫn giữ nguyên để tiếp tục
             
         } catch (Exception e) {
             e.printStackTrace();
@@ -905,50 +900,8 @@ public class Panel_DonHang extends javax.swing.JPanel {
     }//GEN-LAST:event_btnBanHangKeyPressed
     
     private void btnThanhToanQRActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnThanhToanQRActionPerformed
-        hienThiQRBanking();
+        // Nút này đã được thay thế - QR code hiện ở dialog xác nhận hóa đơn
     }//GEN-LAST:event_btnThanhToanQRActionPerformed
-    
-    /**
-     * Hiển thị dialog QR Banking để thanh toán
-     */
-    private void hienThiQRBanking() {
-        // Kiểm tra có sản phẩm trong giỏ chưa
-        if (tongTienHang <= 0) {
-            Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER, 
-                "Chưa có sản phẩm trong giỏ hàng");
-            return;
-        }
-        
-        // Tính tổng tiền cần thanh toán
-        double tongThanhToan = tongTienHang - discountProduct - discountOrder;
-        
-        if (tongThanhToan <= 0) {
-            Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER, 
-                "Số tiền thanh toán phải lớn hơn 0");
-            return;
-        }
-        
-        // Tạo mã đơn hàng tạm (để hiển thị trong QR)
-        String maDonHangTam = "DH" + java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("ddMMyyyy")) + 
-                             String.format("%04d", (int)(Math.random() * 10000));
-        
-        // Hiển thị dialog QR
-        try {
-            java.awt.Frame parentFrame = (java.awt.Frame) javax.swing.SwingUtilities.getWindowAncestor(this);
-            vn.edu.iuh.fit.iuhpharmacitymanagement.gui.dialog.Dialog_QRBanking dialog = 
-                new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.dialog.Dialog_QRBanking(
-                    parentFrame, maDonHangTam, tongThanhToan);
-            dialog.setVisible(true);
-            
-            // Sau khi đóng dialog, có thể xử lý thêm (nếu cần confirm thanh toán)
-            Notifications.getInstance().show(Notifications.Type.INFO, Notifications.Location.TOP_CENTER, 
-                "Vui lòng quét mã QR để hoàn tất thanh toán");
-        } catch (Exception e) {
-            Notifications.getInstance().show(Notifications.Type.ERROR, Notifications.Location.TOP_CENTER, 
-                "Lỗi khi hiển thị QR Code: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
 
     private double tongTienHang;
     private double discountProduct;
@@ -961,8 +914,8 @@ public class Panel_DonHang extends javax.swing.JPanel {
         this.tongTienHang = tongTien;
         txtTongTienHang.setText(String.format("%,.0f đ", tongTien));
         
-        // Hiển thị/ẩn nút QR Banking dựa vào có sản phẩm hay không
-        btnThanhToanQR.setVisible(tongTien > 0);
+        // Nút QR Banking đã chuyển sang dialog xác nhận hóa đơn
+        // btnThanhToanQR.setVisible(tongTien > 0); // Không cần nữa
         
         updateTongHoaDon();
     }
@@ -1560,12 +1513,16 @@ public class Panel_DonHang extends javax.swing.JPanel {
     
     /**
      * Hiển thị dialog xác nhận hóa đơn (với nút In hóa đơn)
+     * @return true nếu đơn hàng bị hủy, false nếu giữ đơn hàng
      */
-    private void hienThiXacNhanHoaDon(DonHang donHang, List<ChiTietDonHang> danhSachChiTiet, KhuyenMai khuyenMaiSanPham) {
+    private boolean hienThiXacNhanHoaDon(DonHang donHang, List<ChiTietDonHang> danhSachChiTiet, KhuyenMai khuyenMaiSanPham) {
+        // Biến để lưu trạng thái hủy đơn (dùng array để có thể thay đổi trong lambda)
+        final boolean[] isCancelled = {false};
+        
         javax.swing.JDialog dialog = new javax.swing.JDialog();
         dialog.setTitle("Xác Nhận Hóa Đơn");
         dialog.setModal(true);
-        dialog.setSize(900, 700);
+        dialog.setSize(1000, 700); // Tăng chiều rộng để chứa 3 nút
         dialog.setLocationRelativeTo(null);
         
         // Panel chính
@@ -1816,11 +1773,37 @@ public class Panel_DonHang extends javax.swing.JPanel {
         footerPanel.add(tongTienPanel);
         footerPanel.add(Box.createVerticalStrut(20));
         
-        // Nút "In Hóa Đơn"
-        javax.swing.JPanel buttonPanel = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER));
+        // Nút "In Hóa Đơn" và "Xem QR Thanh Toán"
+        javax.swing.JPanel buttonPanel = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 15, 0));
         buttonPanel.setBackground(Color.WHITE);
         
-        javax.swing.JButton btnInHoaDon = new javax.swing.JButton("In Hóa Đơn");
+        // Nút QR Thanh Toán
+        javax.swing.JButton btnQRBanking = new javax.swing.JButton("🏦 QR Thanh Toán");
+        btnQRBanking.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 16));
+        btnQRBanking.setPreferredSize(new java.awt.Dimension(220, 45));
+        btnQRBanking.setBackground(new Color(33, 150, 243)); // Xanh dương
+        btnQRBanking.setForeground(Color.WHITE);
+        btnQRBanking.setFocusPainted(false);
+        btnQRBanking.setBorderPainted(false);
+        btnQRBanking.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        
+        btnQRBanking.addActionListener(e -> {
+            // Hiển thị QR Banking với mã đơn hàng THẬT
+            try {
+                java.awt.Frame parentFrame = javax.swing.JOptionPane.getFrameForComponent(dialog);
+                vn.edu.iuh.fit.iuhpharmacitymanagement.gui.dialog.Dialog_QRBanking qrDialog = 
+                    new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.dialog.Dialog_QRBanking(
+                        parentFrame, donHang.getMaDonHang(), donHang.getThanhTien());
+                qrDialog.setVisible(true);
+            } catch (Exception ex) {
+                Notifications.getInstance().show(Notifications.Type.ERROR, Notifications.Location.TOP_CENTER, 
+                    "Lỗi khi hiển thị QR Code: " + ex.getMessage());
+                ex.printStackTrace();
+            }
+        });
+        
+        // Nút In Hóa Đơn
+        javax.swing.JButton btnInHoaDon = new javax.swing.JButton("📄 In Hóa Đơn");
         btnInHoaDon.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 16));
         btnInHoaDon.setPreferredSize(new java.awt.Dimension(200, 45));
         btnInHoaDon.setBackground(new Color(40, 167, 69));
@@ -1837,13 +1820,85 @@ public class Panel_DonHang extends javax.swing.JPanel {
             hienThiHoaDonBanHang(donHang, danhSachChiTiet, khuyenMaiSanPham);
         });
         
+        // Nút Hủy Đơn - Xóa đơn hàng và khôi phục tồn kho
+        javax.swing.JButton btnHuyDon = new javax.swing.JButton("❌ Hủy Đơn");
+        btnHuyDon.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 16));
+        btnHuyDon.setPreferredSize(new java.awt.Dimension(180, 45));
+        btnHuyDon.setBackground(new Color(220, 53, 69)); // Đỏ
+        btnHuyDon.setForeground(Color.WHITE);
+        btnHuyDon.setFocusPainted(false);
+        btnHuyDon.setBorderPainted(false);
+        btnHuyDon.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        
+        btnHuyDon.addActionListener(e -> {
+            // Xác nhận trước khi hủy
+            int confirm = javax.swing.JOptionPane.showConfirmDialog(
+                dialog,
+                "Bạn có chắc muốn hủy đơn hàng này?\nKhách hàng muốn mua thêm sản phẩm?",
+                "Xác nhận hủy đơn",
+                javax.swing.JOptionPane.YES_NO_OPTION,
+                javax.swing.JOptionPane.WARNING_MESSAGE
+            );
+            
+            if (confirm == javax.swing.JOptionPane.YES_OPTION) {
+                try {
+                    // 1. Khôi phục tồn kho cho tất cả sản phẩm
+                    for (ChiTietDonHang chiTiet : danhSachChiTiet) {
+                        LoHang loHang = chiTiet.getLoHang();
+                        int soLuongTra = chiTiet.getSoLuong();
+                        
+                        // Cập nhật tồn kho
+                        loHang.setTonKho(loHang.getTonKho() + soLuongTra);
+                        
+                        if (!loHangBUS.capNhatLoHang(loHang)) {
+                            Notifications.getInstance().show(Notifications.Type.ERROR, 
+                                Notifications.Location.TOP_CENTER,
+                                "Lỗi khi khôi phục tồn kho cho lô: " + loHang.getMaLoHang());
+                            return;
+                        }
+                    }
+                    
+                    // 2. Xóa đơn hàng (bao gồm chi tiết đơn hàng)
+                    if (donHangBUS.xoaDonHang(donHang.getMaDonHang())) {
+                        Notifications.getInstance().show(Notifications.Type.SUCCESS, 
+                            Notifications.Location.TOP_CENTER,
+                            "Hủy đơn hàng thành công! Tồn kho đã được khôi phục.");
+                        
+                        // 3. Đánh dấu đơn đã bị hủy
+                        isCancelled[0] = true;
+                        
+                        // 4. Đóng dialog
+                        dialog.dispose();
+                        
+                        // 5. Giỏ hàng SẼ KHÔNG bị xóa - giữ nguyên để nhân viên tiếp tục thanh toán
+                        
+                    } else {
+                        Notifications.getInstance().show(Notifications.Type.ERROR, 
+                            Notifications.Location.TOP_CENTER,
+                            "Lỗi khi xóa đơn hàng! Vui lòng thử lại.");
+                    }
+                    
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    Notifications.getInstance().show(Notifications.Type.ERROR, 
+                        Notifications.Location.TOP_CENTER,
+                        "Lỗi: " + ex.getMessage());
+                }
+            }
+        });
+        
+        buttonPanel.add(btnQRBanking);
         buttonPanel.add(btnInHoaDon);
+        buttonPanel.add(btnHuyDon);
         footerPanel.add(buttonPanel);
         
         mainPanel.add(footerPanel, BorderLayout.SOUTH);
         
         dialog.add(mainPanel);
         dialog.setVisible(true);
+        
+        // Trả về trạng thái hủy đơn
+        return isCancelled[0];
     }
     
     /**
