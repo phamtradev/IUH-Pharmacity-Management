@@ -46,6 +46,7 @@ Before setting up and running the application, ensure you have the following ins
 ## Features
 
 - Real-time Sales Processing: Point of Sale (POS) system for quick and efficient sales transactions.
+- Demo method payment with QR scanner.
 - Inventory Management: Track products, batches, expiration dates, and stock levels with automatic alerts.
 - Customer & Supplier Management: Comprehensive database for managing relationships and transactions.
 - Employee Management: Staff registration, role assignment, and performance tracking.

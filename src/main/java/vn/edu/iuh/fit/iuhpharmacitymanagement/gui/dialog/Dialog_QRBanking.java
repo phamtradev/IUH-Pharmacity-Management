@@ -26,6 +26,7 @@ public class Dialog_QRBanking extends JDialog {
     private JLabel lblThongTinChuyenKhoan;
     private JTextField txtBarcodeScan; // TextField ẩn để nhận input từ barcode scanner
     private JButton btnDong;
+    private JPanel barcodePanel; // Panel chứa barcode textfield (có thể ẩn/hiện)
     private static final DecimalFormat df = new DecimalFormat("#,### đ");
 
     // Biến lưu trạng thái thanh toán
@@ -108,37 +109,9 @@ public class Dialog_QRBanking extends JDialog {
         lblHuongDan.setAlignmentX(Component.CENTER_ALIGNMENT);
         lblHuongDan.setForeground(new Color(51, 51, 51));
 
-        // TextField ĐỂ NHẬN INPUT TỪ BARCODE SCANNER (TO VÀ DỄ THẤY)
-        JPanel barcodePanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
-        barcodePanel.setBackground(new Color(255, 255, 230)); // Màu vàng nhạt để nổi bật
-        barcodePanel.setMaximumSize(new Dimension(500, 60));
-        barcodePanel.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(new Color(255, 193, 7), 2),
-            BorderFactory.createEmptyBorder(5, 10, 5, 10)
-        ));
-        
-        JLabel lblBarcode = new JLabel("🔍 Barcode:");
-        lblBarcode.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        lblBarcode.setForeground(new Color(255, 111, 0));
-        
-        txtBarcodeScan = new JTextField();
-        txtBarcodeScan.setPreferredSize(new Dimension(300, 35)); // TO HƠN
-        txtBarcodeScan.setFont(new Font("Consolas", Font.BOLD, 14)); // CHỮ TO HƠN
-        txtBarcodeScan.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(new Color(255, 111, 0), 2),
-            BorderFactory.createEmptyBorder(5, 10, 5, 10)
-        ));
-        txtBarcodeScan.setToolTipText("⚡ Ô này sẽ tự động nhận dữ liệu từ máy quét barcode");
-        txtBarcodeScan.setBackground(Color.WHITE);
-
-        barcodePanel.add(lblBarcode);
-        barcodePanel.add(txtBarcodeScan);
-
         pnCenter.add(qrContainer);
         pnCenter.add(Box.createVerticalStrut(20));
         pnCenter.add(lblHuongDan);
-        pnCenter.add(Box.createVerticalStrut(10));
-        pnCenter.add(barcodePanel); // Thêm panel chứa textfield
 
         // ========== THÔNG TIN CHUYỂN KHOẢN ==========
         JPanel pnInfo = new JPanel();
@@ -158,10 +131,33 @@ public class Dialog_QRBanking extends JDialog {
         pnInfo.add(Box.createVerticalStrut(8));
         pnInfo.add(lblThongTinChuyenKhoan);
 
-        // ========== FOOTER (BUTTONS) ==========
-        JPanel pnFooter = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 15));
+        // ========== FOOTER (BARCODE INPUT + BUTTONS) ==========
+        JPanel pnFooter = new JPanel();
+        pnFooter.setLayout(new BoxLayout(pnFooter, BoxLayout.Y_AXIS));
         pnFooter.setBackground(Color.WHITE);
+        pnFooter.setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
 
+        // TextField để nhận input từ barcode scanner (hiện nhưng không viền)
+        barcodePanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        barcodePanel.setBackground(Color.WHITE);
+        barcodePanel.setVisible(true); // hiện textfield
+        
+        
+        
+        
+        txtBarcodeScan = new JTextField();
+        txtBarcodeScan.setPreferredSize(new Dimension(200, 25));
+        txtBarcodeScan.setFont(new Font("Consolas", Font.PLAIN, 12));
+        txtBarcodeScan.setBorder(null); // Bỏ viền
+
+        
+        
+        barcodePanel.add(txtBarcodeScan);
+
+        // Button panel
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        buttonPanel.setBackground(Color.WHITE);
+        
         btnDong = new JButton("Đóng");
         btnDong.setFont(new Font("Segoe UI", Font.BOLD, 14));
         btnDong.setPreferredSize(new Dimension(150, 40));
@@ -173,7 +169,12 @@ public class Dialog_QRBanking extends JDialog {
 
         btnDong.addActionListener(e -> dispose());
 
-        pnFooter.add(btnDong);
+        buttonPanel.add(btnDong);
+
+        // Thêm vào footer
+        pnFooter.add(barcodePanel);
+        pnFooter.add(Box.createVerticalStrut(10));
+        pnFooter.add(buttonPanel);
 
         // ========== ADD TO DIALOG ==========
         add(pnHeader, BorderLayout.NORTH);
@@ -181,7 +182,7 @@ public class Dialog_QRBanking extends JDialog {
         add(pnInfo, BorderLayout.SOUTH);
         add(pnFooter, BorderLayout.PAGE_END);
     }
-
+    
     /**
      * Thiết lập barcode scanner listener Khi máy quét barcode quét QR code, nó
      * sẽ nhập text vào textfield Sử dụng DocumentListener để tự động xử lý khi

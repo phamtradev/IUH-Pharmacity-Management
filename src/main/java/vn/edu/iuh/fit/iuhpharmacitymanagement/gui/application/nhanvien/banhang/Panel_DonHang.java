@@ -1773,71 +1773,6 @@ public class Panel_DonHang extends javax.swing.JPanel {
         footerPanel.add(tongTienPanel);
         footerPanel.add(Box.createVerticalStrut(20));
         
-        // Textfield barcode scanner đơn giản
-        javax.swing.JPanel barcodeScanPanel = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 10, 0));
-        barcodeScanPanel.setBackground(Color.WHITE);
-        
-        javax.swing.JLabel lblBarcodeScanner = new javax.swing.JLabel("Quét mã:");
-        lblBarcodeScanner.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 14));
-        
-        javax.swing.JTextField txtBarcodeScanInput = new javax.swing.JTextField();
-        txtBarcodeScanInput.setPreferredSize(new java.awt.Dimension(200, 30));
-        txtBarcodeScanInput.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 14));
-        
-        // Xử lý khi quét barcode
-        txtBarcodeScanInput.addKeyListener(new java.awt.event.KeyAdapter() {
-            @Override
-            public void keyPressed(java.awt.event.KeyEvent evt) {
-                if (evt.getKeyCode() == java.awt.event.KeyEvent.VK_ENTER) {
-                    String scannedData = txtBarcodeScanInput.getText().trim();
-                    
-                    if (scannedData.equals(donHang.getMaDonHang())) {
-                        // Cập nhật phương thức thanh toán lên database
-                        try {
-                            donHang.setPhuongThucThanhToan(PhuongThucThanhToan.CHUYEN_KHOAN_NGAN_HANG);
-                            
-                            if (donHangBUS.capNhatDonHang(donHang)) {
-                                Notifications.getInstance().show(
-                                    Notifications.Type.SUCCESS, 
-                                    Notifications.Location.TOP_CENTER,
-                                    "Xác nhận thanh toán QR thành công! Phương thức đã được cập nhật."
-                                );
-                                dialog.dispose();
-                                hienThiHoaDonBanHang(donHang, danhSachChiTiet, khuyenMaiSanPham);
-                            } else {
-                                Notifications.getInstance().show(
-                                    Notifications.Type.ERROR, 
-                                    Notifications.Location.TOP_CENTER,
-                                    "Lỗi khi cập nhật phương thức thanh toán!"
-                                );
-                            }
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
-                            Notifications.getInstance().show(
-                                Notifications.Type.ERROR, 
-                                Notifications.Location.TOP_CENTER,
-                                "Lỗi: " + ex.getMessage()
-                            );
-                        }
-                    } else {
-                        Notifications.getInstance().show(
-                            Notifications.Type.ERROR, 
-                            Notifications.Location.TOP_CENTER,
-                            "Mã không khớp với đơn hàng"
-                        );
-                        txtBarcodeScanInput.setText("");
-                        txtBarcodeScanInput.requestFocus();
-                    }
-                }
-            }
-        });
-        
-        barcodeScanPanel.add(lblBarcodeScanner);
-        barcodeScanPanel.add(txtBarcodeScanInput);
-        
-        footerPanel.add(barcodeScanPanel);
-        footerPanel.add(Box.createVerticalStrut(15));
-        
         // Nút "In Hóa Đơn" và "Xem QR Thanh Toán"
         javax.swing.JPanel buttonPanel = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 15, 0));
         buttonPanel.setBackground(Color.WHITE);
@@ -1895,9 +1830,8 @@ public class Panel_DonHang extends javax.swing.JPanel {
                             );
                         }
                     } else {
-                        // ❌ CHƯA THANH TOÁN - Focus lại vào textfield barcode
-                        System.out.println("⚠️ [QR Banking] Chưa thanh toán. Focus lại vào textfield barcode.");
-                        txtBarcodeScanInput.requestFocus();
+                        // ❌ CHƯA THANH TOÁN
+                        System.out.println("⚠️ [QR Banking] Chưa thanh toán.");
                     }
                 });
                 
@@ -2089,8 +2023,6 @@ public class Panel_DonHang extends javax.swing.JPanel {
             @Override
             public void windowOpened(java.awt.event.WindowEvent e) {
                 System.out.println("🟢 [Debug] Dialog đã mở!");
-                // Tự động focus vào textfield barcode để nhân viên có thể quét ngay
-                javax.swing.SwingUtilities.invokeLater(() -> txtBarcodeScanInput.requestFocus());
             }
         });
         
