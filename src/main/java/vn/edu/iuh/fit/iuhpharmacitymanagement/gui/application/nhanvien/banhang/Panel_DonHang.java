@@ -1773,6 +1773,71 @@ public class Panel_DonHang extends javax.swing.JPanel {
         footerPanel.add(tongTienPanel);
         footerPanel.add(Box.createVerticalStrut(20));
         
+        // Textfield barcode scanner đơn giản
+        javax.swing.JPanel barcodeScanPanel = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 10, 0));
+        barcodeScanPanel.setBackground(Color.WHITE);
+        
+        javax.swing.JLabel lblBarcodeScanner = new javax.swing.JLabel("Quét mã:");
+        lblBarcodeScanner.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 14));
+        
+        javax.swing.JTextField txtBarcodeScanInput = new javax.swing.JTextField();
+        txtBarcodeScanInput.setPreferredSize(new java.awt.Dimension(200, 30));
+        txtBarcodeScanInput.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 14));
+        
+        // Xử lý khi quét barcode
+        txtBarcodeScanInput.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                if (evt.getKeyCode() == java.awt.event.KeyEvent.VK_ENTER) {
+                    String scannedData = txtBarcodeScanInput.getText().trim();
+                    
+                    if (scannedData.equals(donHang.getMaDonHang())) {
+                        // Cập nhật phương thức thanh toán lên database
+                        try {
+                            donHang.setPhuongThucThanhToan(PhuongThucThanhToan.CHUYEN_KHOAN_NGAN_HANG);
+                            
+                            if (donHangBUS.capNhatDonHang(donHang)) {
+                                Notifications.getInstance().show(
+                                    Notifications.Type.SUCCESS, 
+                                    Notifications.Location.TOP_CENTER,
+                                    "Xác nhận thanh toán QR thành công! Phương thức đã được cập nhật."
+                                );
+                                dialog.dispose();
+                                hienThiHoaDonBanHang(donHang, danhSachChiTiet, khuyenMaiSanPham);
+                            } else {
+                                Notifications.getInstance().show(
+                                    Notifications.Type.ERROR, 
+                                    Notifications.Location.TOP_CENTER,
+                                    "Lỗi khi cập nhật phương thức thanh toán!"
+                                );
+                            }
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                            Notifications.getInstance().show(
+                                Notifications.Type.ERROR, 
+                                Notifications.Location.TOP_CENTER,
+                                "Lỗi: " + ex.getMessage()
+                            );
+                        }
+                    } else {
+                        Notifications.getInstance().show(
+                            Notifications.Type.ERROR, 
+                            Notifications.Location.TOP_CENTER,
+                            "Mã không khớp với đơn hàng"
+                        );
+                        txtBarcodeScanInput.setText("");
+                        txtBarcodeScanInput.requestFocus();
+                    }
+                }
+            }
+        });
+        
+        barcodeScanPanel.add(lblBarcodeScanner);
+        barcodeScanPanel.add(txtBarcodeScanInput);
+        
+        footerPanel.add(barcodeScanPanel);
+        footerPanel.add(Box.createVerticalStrut(15));
+        
         // Nút "In Hóa Đơn" và "Xem QR Thanh Toán"
         javax.swing.JPanel buttonPanel = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 15, 0));
         buttonPanel.setBackground(Color.WHITE);
@@ -1794,8 +1859,50 @@ public class Panel_DonHang extends javax.swing.JPanel {
                 vn.edu.iuh.fit.iuhpharmacitymanagement.gui.dialog.Dialog_QRBanking qrDialog = 
                     new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.dialog.Dialog_QRBanking(
                         parentFrame, donHang.getMaDonHang(), donHang.getThanhTien());
-                qrDialog.setVisible(true);
+                
+                qrDialog.setVisible(true); // Chặn ở đây cho đến khi đóng dialog
+                
+                // Sau khi đóng QR dialog, kiểm tra xem đã thanh toán chưa
+                javax.swing.SwingUtilities.invokeLater(() -> {
+                    if (qrDialog.isDaThanhtoan()) {
+                        // ✅ ĐÃ THANH TOÁN THÀNH CÔNG - Cập nhật phương thức và in hóa đơn
+                        System.out.println("✅ [QR Banking] Thanh toán thành công! Cập nhật phương thức...");
+                        
+                        try {
+                            donHang.setPhuongThucThanhToan(PhuongThucThanhToan.CHUYEN_KHOAN_NGAN_HANG);
+                            
+                            if (donHangBUS.capNhatDonHang(donHang)) {
+                                System.out.println("✅ [QR Banking] Đã cập nhật phương thức thanh toán: CHUYEN_KHOAN_NGAN_HANG");
+                                
+                                // Đóng dialog xác nhận
+                                dialog.dispose();
+                                
+                                // Tự động hiển thị hóa đơn bán hàng
+                                hienThiHoaDonBanHang(donHang, danhSachChiTiet, khuyenMaiSanPham);
+                            } else {
+                                Notifications.getInstance().show(
+                                    Notifications.Type.WARNING, 
+                                    Notifications.Location.TOP_CENTER,
+                                    "⚠️ Đã thanh toán nhưng không thể cập nhật phương thức!"
+                                );
+                            }
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                            Notifications.getInstance().show(
+                                Notifications.Type.ERROR, 
+                                Notifications.Location.TOP_CENTER,
+                                "Lỗi khi cập nhật phương thức: " + ex.getMessage()
+                            );
+                        }
+                    } else {
+                        // ❌ CHƯA THANH TOÁN - Focus lại vào textfield barcode
+                        System.out.println("⚠️ [QR Banking] Chưa thanh toán. Focus lại vào textfield barcode.");
+                        txtBarcodeScanInput.requestFocus();
+                    }
+                });
+                
             } catch (Exception ex) {
+                System.out.println("❌ DEBUG - Lỗi: " + ex.getMessage());
                 Notifications.getInstance().show(Notifications.Type.ERROR, Notifications.Location.TOP_CENTER, 
                     "Lỗi khi hiển thị QR Code: " + ex.getMessage());
                 ex.printStackTrace();
@@ -1890,6 +1997,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
         buttonPanel.add(btnQRBanking);
         buttonPanel.add(btnInHoaDon);
         buttonPanel.add(btnHuyDon);
+        
         footerPanel.add(buttonPanel);
         
         mainPanel.add(footerPanel, BorderLayout.SOUTH);
@@ -1976,6 +2084,13 @@ public class Panel_DonHang extends javax.swing.JPanel {
             public void windowClosing(java.awt.event.WindowEvent e) {
                 stopPolling.set(true);
                 System.out.println("🔴 [QR Banking] Dialog đóng - dừng polling");
+            }
+            
+            @Override
+            public void windowOpened(java.awt.event.WindowEvent e) {
+                System.out.println("🟢 [Debug] Dialog đã mở!");
+                // Tự động focus vào textfield barcode để nhân viên có thể quét ngay
+                javax.swing.SwingUtilities.invokeLater(() -> txtBarcodeScanInput.requestFocus());
             }
         });
         
@@ -2422,4 +2537,5 @@ public class Panel_DonHang extends javax.swing.JPanel {
     private javax.swing.JTextField txtTongHoaDon;
     private javax.swing.JTextField txtTongTienHang;
     // End of variables declaration//GEN-END:variables
+    
 }
