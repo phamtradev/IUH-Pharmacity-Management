@@ -105,12 +105,10 @@ public class XemChiTietKhuyenMaiDialog extends javax.swing.JDialog {
                     List<ChiTietKhuyenMaiSanPham> chiTietList = chiTietKhuyenMaiSanPhamBUS.timTheoMaKhuyenMai(khuyenMai.getMaKhuyenMai());
                     danhSachSanPham.clear();
                     for (ChiTietKhuyenMaiSanPham chiTiet : chiTietList) {
-                        SanPham spPartial = chiTiet.getSanPham();
-                        if (spPartial != null && spPartial.getMaSanPham() != null) {
-                            SanPham sanPhamDayDu = sanPhamBUS.laySanPhamTheoMa(spPartial.getMaSanPham());
-                            if (sanPhamDayDu != null) {
-                                danhSachSanPham.add(sanPhamDayDu);
-                            }
+                        SanPham sp = chiTiet.getSanPham();
+                        // Sản phẩm đã được load đầy đủ từ JOIN query, không cần query lại
+                        if (sp != null && sp.getMaSanPham() != null) {
+                            danhSachSanPham.add(sp);
                         }
                     }
                     capNhatDanhSachSanPham();
@@ -147,8 +145,24 @@ public class XemChiTietKhuyenMaiDialog extends javax.swing.JDialog {
         } else {
             String danhSach = danhSachSanPham.stream()
                 .map(sp -> {
-                    String soDangKy = sp.getSoDangKy() != null ? " - " + sp.getSoDangKy() : "";
-                    return sp.getTenSanPham() + " (" + sp.getMaSanPham() + soDangKy + ")";
+                    // Xử lý tên sản phẩm - kiểm tra null, rỗng, hoặc chuỗi "null"
+                    String tenSanPhamRaw = sp.getTenSanPham();
+                    String tenSanPham = (tenSanPhamRaw != null && !tenSanPhamRaw.trim().isEmpty() && !"null".equalsIgnoreCase(tenSanPhamRaw.trim()))
+                        ? tenSanPhamRaw.trim()
+                        : "Chưa có tên";
+                    
+                    // Xử lý mã sản phẩm
+                    String maSanPham = (sp.getMaSanPham() != null && !sp.getMaSanPham().trim().isEmpty() && !"null".equalsIgnoreCase(sp.getMaSanPham().trim()))
+                        ? sp.getMaSanPham().trim()
+                        : "N/A";
+                    
+                    // Xử lý số đăng ký
+                    String soDangKyRaw = sp.getSoDangKy();
+                    String soDangKy = (soDangKyRaw != null && !soDangKyRaw.trim().isEmpty() && !"null".equalsIgnoreCase(soDangKyRaw.trim()))
+                        ? " - " + soDangKyRaw.trim()
+                        : "";
+                    
+                    return tenSanPham + " (Mã: " + maSanPham + soDangKy + ")";
                 })
                 .collect(Collectors.joining("\n"));
             txtDanhSachSanPham.setText(danhSach);

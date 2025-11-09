@@ -473,7 +473,7 @@ public class GD_QuanLyKhuyenMai extends javax.swing.JPanel {
         
         // Hiển thị thông báo bắt đầu
         Notifications.getInstance().show(Notifications.Type.INFO, 
-            "Đang gửi email đến " + khachHangCoEmail.size() + " khách hàng trong background...");
+            "Đang gửi khuyến mãi đến các khách hàng có trong hệ thống...");
         
         // Gửi email trong background thread
         new Thread(() -> {
@@ -503,7 +503,7 @@ public class GD_QuanLyKhuyenMai extends javax.swing.JPanel {
             SwingUtilities.invokeLater(() -> {
                 if (thatBai == 0) {
                     Notifications.getInstance().show(Notifications.Type.SUCCESS, 
-                        "Phát hành khuyến mãi thành công! Đã gửi email đến " + thanhCong + " khách hàng!");
+                        "Đã gửi thành công");
                 } else {
                     Notifications.getInstance().show(Notifications.Type.WARNING, 
                         "Hoàn thành! Thành công: " + thanhCong + ", Thất bại: " + thatBai);
