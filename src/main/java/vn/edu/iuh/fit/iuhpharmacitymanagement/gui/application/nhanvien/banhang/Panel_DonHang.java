@@ -62,6 +62,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
     private NhanVienBUS nhanVienBUS;
     private LoHangBUS loHangBUS;
     private GD_BanHang gdBanHang; // Reference đến form cha để lấy container panel
+    private String maDonHangHienTai; // Mã đơn hàng đang hiển thị trên màn hình
 
     /**
      * Creates new form TabHoaDon
@@ -578,6 +579,15 @@ public class Panel_DonHang extends javax.swing.JPanel {
         
         maDonHang = maDonHang.trim();
         
+        // Kiểm tra nếu đơn hàng đã được quét và đang hiển thị
+        if (maDonHangHienTai != null && maDonHangHienTai.equals(maDonHang)) {
+            Notifications.getInstance().show(Notifications.Type.ERROR, Notifications.Location.TOP_CENTER, 
+                "Đơn hàng bạn đã quét đang hiển thị trên màn hình!");
+            // Nhấp nháy đỏ các panel sản phẩm trong giỏ hàng
+            nhapNhayDoCacSanPhamTrongGio();
+            return;
+        }
+        
         // Tìm đơn hàng theo mã
         List<DonHang> ketQuaTimKiem = donHangBUS.timKiemTheoMa(maDonHang);
         Optional<DonHang> donHangOpt = ketQuaTimKiem.isEmpty() ? Optional.empty() : Optional.of(ketQuaTimKiem.get(0));
@@ -589,6 +599,16 @@ public class Panel_DonHang extends javax.swing.JPanel {
         }
         
         DonHang donHang = donHangOpt.get();
+        
+        // Nếu quét đơn hàng khác, xóa giỏ hàng cũ trước
+        if (maDonHangHienTai != null && !maDonHangHienTai.equals(maDonHang)) {
+            if (gdBanHang != null) {
+                gdBanHang.xoaToanBoGioHang();
+            }
+        }
+        
+        // Cập nhật mã đơn hàng hiện tại
+        maDonHangHienTai = maDonHang;
         
         // Load thông tin khách hàng từ đơn hàng
         khachHangHienTai = donHang.getKhachHang();
@@ -642,10 +662,68 @@ public class Panel_DonHang extends javax.swing.JPanel {
     }
     
     /**
+     * Nhấp nháy đỏ các panel sản phẩm trong giỏ hàng để báo hiệu đơn hàng đã được quét
+     */
+    private void nhapNhayDoCacSanPhamTrongGio() {
+        if (gdBanHang == null) {
+            return;
+        }
+        
+        // Lấy danh sách panel sản phẩm trong giỏ hàng
+        List<Panel_ChiTietSanPham> danhSachSanPham = gdBanHang.getDanhSachSanPhamTrongGio();
+        
+        if (danhSachSanPham == null || danhSachSanPham.isEmpty()) {
+            return;
+        }
+        
+        // Lưu màu nền gốc của các panel
+        final java.util.List<java.awt.Color> mauNenGoc = new java.util.ArrayList<>();
+        for (Panel_ChiTietSanPham panel : danhSachSanPham) {
+            mauNenGoc.add(panel.getBackground());
+        }
+        
+        // Số lần nhấp nháy
+        final int soLanNhapNhay = 3;
+        final int[] lanNhapNhay = {0};
+        
+        // Timer để nhấp nháy
+        javax.swing.Timer timer = new javax.swing.Timer(300, e -> {
+            if (lanNhapNhay[0] >= soLanNhapNhay * 2) {
+                // Kết thúc nhấp nháy, trả về màu gốc
+                for (int i = 0; i < danhSachSanPham.size(); i++) {
+                    danhSachSanPham.get(i).setBackground(mauNenGoc.get(i));
+                }
+                ((javax.swing.Timer) e.getSource()).stop();
+                return;
+            }
+            
+            // Đổi màu giữa đỏ và màu gốc
+            for (int i = 0; i < danhSachSanPham.size(); i++) {
+                java.awt.Color mauHienTai = (lanNhapNhay[0] % 2 == 0) 
+                    ? new java.awt.Color(255, 200, 200) // Màu đỏ nhạt
+                    : mauNenGoc.get(i); // Màu gốc của từng panel
+                danhSachSanPham.get(i).setBackground(mauHienTai);
+            }
+            
+            lanNhapNhay[0]++;
+        });
+        
+        timer.setRepeats(true);
+        timer.start();
+    }
+    
+    /**
      * Lấy khách hàng hiện tại
      */
     public KhachHang getKhachHangHienTai() {
         return khachHangHienTai;
+    }
+    
+    /**
+     * Reset mã đơn hàng hiện tại (khi xóa giỏ hàng)
+     */
+    public void resetMaDonHangHienTai() {
+        maDonHangHienTai = null;
     }
 
     private void createOrder() {
@@ -1640,14 +1718,10 @@ public class Panel_DonHang extends javax.swing.JPanel {
             
             double tongGiamGia = giamGiaSanPham + giamGiaHoaDonPhanBo;
             
-            // Tính giảm giá với % và tên KM
+            // Hiển thị giảm giá (chỉ giá, không hiển thị phần trăm)
             String giamGia;
             if (tongGiamGia > 0) {
-                double tongTienGoc = chiTiet.getDonGia() * chiTiet.getSoLuong();
-                double phanTramGiamGia = (tongGiamGia / tongTienGoc) * 100;
-                
-                giamGia = "-" + currencyFormat.format(tongGiamGia) + " đ" +
-                          " (" + String.format("%.1f", phanTramGiamGia) + "%)";
+                giamGia = "-" + currencyFormat.format(tongGiamGia) + " đ";
             } else {
                 giamGia = "0 đ";
             }
@@ -2239,14 +2313,11 @@ public class Panel_DonHang extends javax.swing.JPanel {
             
             // ĐƠN GIẢN - LẤY TRỰC TIẾP TỪ DB!
             double giamGiaSanPham = chiTiet.getGiamGiaSanPham();  // CHỈ giảm giá sản phẩm
-            double tongTienGoc = chiTiet.getDonGia() * chiTiet.getSoLuong();
             
-            // Hiển thị giảm giá sản phẩm với %
+            // Hiển thị giảm giá sản phẩm (chỉ giá, không hiển thị phần trăm)
             String giamGia;
             if (giamGiaSanPham > 0) {
-                double phanTramGiamGia = (giamGiaSanPham / tongTienGoc) * 100;
-                giamGia = "-" + currencyFormat.format(giamGiaSanPham) + " đ" +
-                          " (" + String.format("%.1f", phanTramGiamGia) + "%)";
+                giamGia = "-" + currencyFormat.format(giamGiaSanPham) + " đ";
             } else {
                 giamGia = "0 đ";
             }
@@ -2316,14 +2387,8 @@ public class Panel_DonHang extends javax.swing.JPanel {
                 labelText += "\n(" + khuyenMaiDonHang.getTenKhuyenMai() + ")";
             }
             
-            // Tính % giảm giá GÔC (so với tổng tiền hàng trước giảm giá)
-            double phanTramGoc = 0;
-            if (tongTienHangTruocGiamGia > 0) {
-                phanTramGoc = (giamGiaHoaDon / tongTienHangTruocGiamGia) * 100;
-            }
-            
-            String valueText = "-" + currencyFormat.format(giamGiaHoaDon) + " đ" +
-                             " (" + String.format("%.0f", phanTramGoc) + "%)";
+            // Hiển thị giảm giá hóa đơn (chỉ giá, không hiển thị phần trăm)
+            String valueText = "-" + currencyFormat.format(giamGiaHoaDon) + " đ";
             addPaymentRow.accept(labelText, valueText);
         } else {
             // Hiển thị giảm giá hóa đơn = 0 khi không có khuyến mãi

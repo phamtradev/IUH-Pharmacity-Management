@@ -30,6 +30,7 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
     private boolean daThongBaoCongDon = false; // Flag để tracking đã thông báo cộng dồn chưa
     private vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhuyenMai khuyenMaiDuocApDung; // Khuyến mãi được áp dụng cho sản phẩm này (nullable)
     private double phanTramGiamGia = 0.0; // % giảm giá (dạng thập phân: 0.1 = 10%)
+    private Double soTienGiamGiaThucTe = null; // Số tiền giảm giá thực tế (chỉ cho số lượng tối đa), null nếu áp dụng cho toàn bộ
 
     public Panel_ChiTietSanPham() {
         this.currencyFormat = new DecimalFormat("#,###");
@@ -423,6 +424,12 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
         // Lưu giá trị vào biến instance
         this.phanTramGiamGia = phanTramGiamGia;
         
+        // Reset số tiền giảm giá thực tế khi set % giảm giá mới (trừ khi đã được set riêng)
+        // Nếu phanTramGiamGia = 0, reset về null
+        if (phanTramGiamGia == 0) {
+            this.soTienGiamGiaThucTe = null;
+        }
+        
         if (phanTramGiamGia > 0) {
             // Hiển thị % giảm giá + tên khuyến mãi
             double phanTram = phanTramGiamGia * 100;
@@ -443,6 +450,8 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
      */
     public void setGiamGia(double phanTramGiamGia) {
         setGiamGia(phanTramGiamGia, null);
+        // Reset số tiền giảm giá thực tế khi set % giảm giá mới
+        this.soTienGiamGiaThucTe = null;
     }
     
     /**
@@ -454,11 +463,26 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
     }
     
     /**
-     * Lấy số tiền giảm giá (= Tổng tiền × % giảm giá)
+     * Lấy số tiền giảm giá
+     * - Nếu có soTienGiamGiaThucTe (giới hạn số lượng tối đa) → trả về số tiền thực tế
+     * - Nếu không → tính theo công thức: Tổng tiền × % giảm giá
      * @return số tiền giảm giá
      */
     public double getSoTienGiamGia() {
+        // Nếu có số tiền giảm giá thực tế (chỉ cho số lượng tối đa), dùng nó
+        if (soTienGiamGiaThucTe != null) {
+            return soTienGiamGiaThucTe;
+        }
+        // Nếu không, tính theo % giảm giá cho toàn bộ số lượng
         return getTongTien() * getGiamGia();
+    }
+    
+    /**
+     * Set số tiền giảm giá thực tế (chỉ cho số lượng tối đa)
+     * @param soTienGiamGia Số tiền giảm giá thực tế, hoặc null nếu áp dụng cho toàn bộ
+     */
+    public void setSoTienGiamGiaThucTe(Double soTienGiamGia) {
+        this.soTienGiamGiaThucTe = soTienGiamGia;
     }
     
     /**

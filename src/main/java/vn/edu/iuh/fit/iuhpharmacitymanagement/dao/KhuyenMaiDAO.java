@@ -20,10 +20,10 @@ import java.util.Optional;
 public class KhuyenMaiDAO implements DAOInterface<KhuyenMai, String> {
 
     private final String SQL_THEM
-            = "INSERT INTO KhuyenMai (maKhuyenMai, tenKhuyenMai, ngayBatDau, ngayKetThuc, giamGia, trangThai, loaiKhuyenMai, giaToiThieu, giaToiDa) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            = "INSERT INTO KhuyenMai (maKhuyenMai, tenKhuyenMai, ngayBatDau, ngayKetThuc, giamGia, trangThai, loaiKhuyenMai, giaToiThieu, giaToiDa, soLuongToiDa) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
     private final String SQL_CAP_NHAT
-            = "UPDATE KhuyenMai SET tenKhuyenMai = ?, ngayBatDau = ?, ngayKetThuc = ?, giamGia = ?, trangThai = ?, loaiKhuyenMai = ?, giaToiThieu = ?, giaToiDa = ? WHERE maKhuyenMai = ?";
+            = "UPDATE KhuyenMai SET tenKhuyenMai = ?, ngayBatDau = ?, ngayKetThuc = ?, giamGia = ?, trangThai = ?, loaiKhuyenMai = ?, giaToiThieu = ?, giaToiDa = ?, soLuongToiDa = ? WHERE maKhuyenMai = ?";
 
     private final String SQL_TIM_THEO_MA
             = "SELECT * FROM KhuyenMai WHERE maKhuyenMai = ?";
@@ -57,6 +57,7 @@ public class KhuyenMaiDAO implements DAOInterface<KhuyenMai, String> {
             stmt.setString(7, khuyenMai.getLoaiKhuyenMai().name());
             stmt.setDouble(8, khuyenMai.getGiaToiThieu());
             stmt.setDouble(9, khuyenMai.getGiaToiDa());
+            stmt.setInt(10, khuyenMai.getSoLuongToiDa());
 
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -80,7 +81,8 @@ public class KhuyenMaiDAO implements DAOInterface<KhuyenMai, String> {
             stmt.setString(6, khuyenMai.getLoaiKhuyenMai().name());
             stmt.setDouble(7, khuyenMai.getGiaToiThieu());
             stmt.setDouble(8, khuyenMai.getGiaToiDa());
-            stmt.setString(9, khuyenMai.getMaKhuyenMai());
+            stmt.setInt(9, khuyenMai.getSoLuongToiDa());
+            stmt.setString(10, khuyenMai.getMaKhuyenMai());
 
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -161,6 +163,13 @@ public class KhuyenMaiDAO implements DAOInterface<KhuyenMai, String> {
             khuyenMai.setGiaToiDa(rs.getDouble("giaToiDa"));
         } catch (SQLException e) {
             khuyenMai.setGiaToiDa(0);
+        }
+        
+        // Load soLuongToiDa - nếu column không tồn tại (DB cũ) thì mặc định = 0
+        try {
+            khuyenMai.setSoLuongToiDa(rs.getInt("soLuongToiDa"));
+        } catch (SQLException e) {
+            khuyenMai.setSoLuongToiDa(0);
         }
 
         return khuyenMai;

@@ -53,6 +53,7 @@ public class KhuyenMai {
         this.loaiKhuyenMai = loaiKhuyenMai;
         this.giaToiThieu = 0; // Mặc định 0 (không yêu cầu giá tối thiểu)
         this.giaToiDa = 0; // Mặc định 0 (không giới hạn giảm giá tối đa)
+        this.soLuongToiDa = 0; // Mặc định 0 (không giới hạn số lượng tối đa)
     }
 
     public String getMaKhuyenMai() {
@@ -168,6 +169,19 @@ public class KhuyenMai {
         }
     }
 
+    public int getSoLuongToiDa() {
+        return soLuongToiDa;
+    }
+
+    public void setSoLuongToiDa(int soLuongToiDa) {
+        // Số lượng tối đa phải >= 0 (0 = không giới hạn số lượng tối đa)
+        if (soLuongToiDa < 0) {
+            this.soLuongToiDa = 0;
+        } else {
+            this.soLuongToiDa = soLuongToiDa;
+        }
+    }
+
     @Override
     public String toString() {
         return "KhuyenMai{"
@@ -180,6 +194,7 @@ public class KhuyenMai {
                 + ", loaiKhuyenMai=" + loaiKhuyenMai
                 + ", giaToiThieu=" + giaToiThieu
                 + ", giaToiDa=" + giaToiDa
+                + ", soLuongToiDa=" + soLuongToiDa
                 + '}';
     }
 }

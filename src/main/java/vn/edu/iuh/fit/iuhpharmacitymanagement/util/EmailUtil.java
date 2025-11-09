@@ -14,10 +14,8 @@ import java.text.DecimalFormat;
 import java.util.Random;
 import javax.mail.*;
 import javax.mail.internet.*;
-import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.NhanVienDAO;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.TaiKhoanDAO;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhanVien;
-import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.TaiKhoan;
 
 /**
  * Utility class để gửi email sử dụng JavaMail API (SMTP)
@@ -461,10 +459,6 @@ public class EmailUtil {
             e.printStackTrace();
             return false;
         }
-    }
-
-    public static void main(String[] args) {
-        new EmailUtil().guiEmailCapPass(new NhanVienDAO().findById("NV00021").get());
     }
 
 }

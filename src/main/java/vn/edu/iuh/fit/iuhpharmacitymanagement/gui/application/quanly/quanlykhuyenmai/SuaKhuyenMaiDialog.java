@@ -46,6 +46,10 @@ public class SuaKhuyenMaiDialog extends javax.swing.JDialog {
     private javax.swing.JTextField txtGiaToiThieu;
     private javax.swing.JLabel lblGiaToiDa;
     private javax.swing.JTextField txtGiaToiDa;
+    
+    // Components cho số lượng tối đa (khuyến mãi sản phẩm)
+    private javax.swing.JLabel lblSoLuongToiDa;
+    private javax.swing.JTextField txtSoLuongToiDa;
 
     public SuaKhuyenMaiDialog(java.awt.Frame parent, boolean modal, KhuyenMai km) {
         super(parent, modal);
@@ -64,9 +68,10 @@ public class SuaKhuyenMaiDialog extends javax.swing.JDialog {
         // Placeholder text
         txtTenKhuyenMai.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập tên khuyến mãi");
         txtGiamGia.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "VD: 0.1 (10%)");
-        txtGiaToiThieu.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "VD: 100000 (0 = không giới hạn)");
-        txtGiaToiDa.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "VD: 50000 (0 = không giới hạn)");
+        txtGiaToiThieu.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "VD: 100000");
+        txtGiaToiDa.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "VD: 50000");
         txtSoDangKy.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập số đăng ký sản phẩm");
+        txtSoLuongToiDa.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "VD: 5");
         
         // Thiết lập date chooser
         dateNgayBatDau.setMinSelectableDate(new Date());
@@ -132,11 +137,13 @@ public class SuaKhuyenMaiDialog extends javax.swing.JDialog {
             lblGiaToiDa.setVisible(isOrderPromotion);
             txtGiaToiDa.setVisible(isOrderPromotion);
             
-            // Hiển thị số đăng ký cho khuyến mãi sản phẩm
+            // Hiển thị số đăng ký và số lượng tối đa cho khuyến mãi sản phẩm
             lblSoDangKy.setVisible(isProductPromotion);
             txtSoDangKy.setVisible(isProductPromotion);
             lblTenSanPham.setVisible(isProductPromotion);
             txtTenSanPham.setVisible(isProductPromotion);
+            lblSoLuongToiDa.setVisible(isProductPromotion);
+            txtSoLuongToiDa.setVisible(isProductPromotion);
             
             // Resize dialog
             pack();
@@ -189,6 +196,9 @@ public class SuaKhuyenMaiDialog extends javax.swing.JDialog {
             // Load giá tối thiểu và tối đa
             txtGiaToiThieu.setText(String.valueOf(khuyenMai.getGiaToiThieu()));
             txtGiaToiDa.setText(String.valueOf(khuyenMai.getGiaToiDa()));
+            
+            // Load số lượng tối đa
+            txtSoLuongToiDa.setText(String.valueOf(khuyenMai.getSoLuongToiDa()));
             
             // Kiểm tra xem khuyến mãi đã được gắn cho sản phẩm chưa
             try {
@@ -254,6 +264,8 @@ public class SuaKhuyenMaiDialog extends javax.swing.JDialog {
             txtSoDangKy.setVisible(isProductPromotion);
             lblTenSanPham.setVisible(isProductPromotion);
             txtTenSanPham.setVisible(isProductPromotion);
+            lblSoLuongToiDa.setVisible(isProductPromotion);
+            txtSoLuongToiDa.setVisible(isProductPromotion);
             
             // Nếu khuyến mãi đã được sử dụng trong đơn hàng, disable các field và hiển thị thông báo
             if (daDuocSuDungTrongDonHang) {
@@ -303,6 +315,8 @@ public class SuaKhuyenMaiDialog extends javax.swing.JDialog {
         txtSoDangKy = new javax.swing.JTextField();
         lblTenSanPham = new javax.swing.JLabel();
         txtTenSanPham = new javax.swing.JTextField();
+        lblSoLuongToiDa = new javax.swing.JLabel();
+        txtSoLuongToiDa = new javax.swing.JTextField();
         jPanel3 = new javax.swing.JPanel();
         btnCapNhat = new javax.swing.JButton();
         btnHuy = new javax.swing.JButton();
@@ -385,6 +399,11 @@ public class SuaKhuyenMaiDialog extends javax.swing.JDialog {
 
         txtTenSanPham.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
+        lblSoLuongToiDa.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        lblSoLuongToiDa.setText("Số lượng tối đa:");
+
+        txtSoLuongToiDa.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -400,7 +419,8 @@ public class SuaKhuyenMaiDialog extends javax.swing.JDialog {
                     .addComponent(lblGiaToiThieu)
                     .addComponent(lblGiaToiDa)
                     .addComponent(lblSoDangKy)
-                    .addComponent(lblTenSanPham))
+                    .addComponent(lblTenSanPham)
+                    .addComponent(lblSoLuongToiDa))
                 .addGap(30, 30, 30)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(txtMaKhuyenMai)
@@ -412,7 +432,8 @@ public class SuaKhuyenMaiDialog extends javax.swing.JDialog {
                     .addComponent(txtGiaToiThieu)
                     .addComponent(txtGiaToiDa)
                     .addComponent(txtSoDangKy)
-                    .addComponent(txtTenSanPham)))
+                    .addComponent(txtTenSanPham)
+                    .addComponent(txtSoLuongToiDa)))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -456,6 +477,10 @@ public class SuaKhuyenMaiDialog extends javax.swing.JDialog {
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblTenSanPham)
                     .addComponent(txtTenSanPham, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(20, 20, 20)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblSoLuongToiDa)
+                    .addComponent(txtSoLuongToiDa, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(0, 20, Short.MAX_VALUE))
         );
 
@@ -653,6 +678,26 @@ public class SuaKhuyenMaiDialog extends javax.swing.JDialog {
                     Notifications.getInstance().show(Notifications.Type.WARNING, "Không tìm thấy sản phẩm với số đăng ký này!");
                     txtSoDangKy.requestFocus();
                     return;
+                }
+                
+                // Lấy số lượng tối đa
+                String soLuongToiDaStr = txtSoLuongToiDa.getText().trim();
+                if (!soLuongToiDaStr.isEmpty()) {
+                    try {
+                        int soLuongToiDa = Integer.parseInt(soLuongToiDaStr);
+                        if (soLuongToiDa < 0) {
+                            Notifications.getInstance().show(Notifications.Type.WARNING, "Số lượng tối đa phải >= 0!");
+                            txtSoLuongToiDa.requestFocus();
+                            return;
+                        }
+                        khuyenMai.setSoLuongToiDa(soLuongToiDa);
+                    } catch (NumberFormatException e) {
+                        Notifications.getInstance().show(Notifications.Type.WARNING, "Số lượng tối đa phải là số nguyên!");
+                        txtSoLuongToiDa.requestFocus();
+                        return;
+                    }
+                } else {
+                    khuyenMai.setSoLuongToiDa(0); // Mặc định không giới hạn số lượng tối đa
                 }
             }
 

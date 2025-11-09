@@ -602,6 +602,7 @@ public class GD_BanHang extends javax.swing.JPanel {
                 
                 // Reset giảm giá sản phẩm về 0
                 panel.setGiamGia(0);
+                panel.setSoTienGiamGiaThucTe(null); // Reset số tiền giảm giá thực tế
             }
         }
         
@@ -637,10 +638,30 @@ public class GD_BanHang extends javax.swing.JPanel {
                     // Kiểm tra xem sản phẩm có trong chương trình khuyến mãi không
                     for (vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietKhuyenMaiSanPham ctkm : danhSachCTKM) {
                         if (ctkm.getSanPham().getMaSanPham().equals(panel.getSanPham().getMaSanPham())) {
-                            // Tính giảm giá cho sản phẩm này
-                            double giamGia = panel.getTongTien() * km.getGiamGia();
+                            // Kiểm tra số lượng tối đa
+                            int soLuongMua = panel.getSoLuong();
+                            int soLuongToiDa = km.getSoLuongToiDa();
                             
-                            System.out.println("    - KM: " + km.getTenKhuyenMai() + " (" + (km.getGiamGia() * 100) + "%) → Giảm: " + giamGia);
+                                // Tính giảm giá cho sản phẩm này
+                            // Nếu có giới hạn số lượng tối đa (soLuongToiDa > 0), chỉ tính giảm giá cho số lượng tối đa
+                            double tongTienApDung;
+                            int soLuongApDung;
+                            if (soLuongToiDa > 0) {
+                                // Chỉ áp dụng khuyến mãi cho số lượng tối đa
+                                soLuongApDung = Math.min(soLuongMua, soLuongToiDa);
+                                tongTienApDung = panel.getSanPham().getGiaBan() * soLuongApDung;
+                            } else {
+                                // Không giới hạn, áp dụng cho toàn bộ số lượng mua
+                                soLuongApDung = soLuongMua;
+                                tongTienApDung = panel.getTongTien();
+                            }
+                            
+                            double giamGia = tongTienApDung * km.getGiamGia();
+                            
+                            System.out.println("    - KM: " + km.getTenKhuyenMai() + " (" + (km.getGiamGia() * 100) + "%) → Giảm: " + giamGia + 
+                                (soLuongToiDa > 0 && soLuongMua > soLuongToiDa ? 
+                                    " (áp dụng cho " + soLuongApDung + "/" + soLuongMua + " sản phẩm, giới hạn " + soLuongToiDa + ")" : 
+                                    ""));
                             
                             // Chọn khuyến mãi tốt nhất
                             if (giamGia > giamGiaMax) {
@@ -655,11 +676,32 @@ public class GD_BanHang extends javax.swing.JPanel {
                 // Áp dụng khuyến mãi tốt nhất cho sản phẩm này
                 if (kmTotNhat != null) {
                     tongGiamGiaSanPham += giamGiaMax;
-                    panel.setGiamGia(kmTotNhat.getGiamGia(), kmTotNhat.getTenKhuyenMai());
+                    
+                    // Kiểm tra xem có giới hạn số lượng tối đa không
+                    int soLuongMua = panel.getSoLuong();
+                    int soLuongToiDa = kmTotNhat.getSoLuongToiDa();
+                    
+                    if (soLuongToiDa > 0 && soLuongMua > soLuongToiDa) {
+                        // Có giới hạn số lượng tối đa và số lượng mua vượt quá
+                        // → Chỉ áp dụng giảm giá cho số lượng tối đa
+                        // → Set số tiền giảm giá thực tế (chỉ cho số lượng tối đa)
+                        panel.setSoTienGiamGiaThucTe(giamGiaMax);
+                        // Vẫn hiển thị % giảm giá để người dùng biết
+                        panel.setGiamGia(kmTotNhat.getGiamGia(), kmTotNhat.getTenKhuyenMai());
+                        System.out.println("    ✓ ÁP DỤNG (giới hạn): " + kmTotNhat.getTenKhuyenMai() + 
+                            " → Giảm: " + giamGiaMax + " (chỉ cho " + soLuongToiDa + "/" + soLuongMua + " sản phẩm)");
+                    } else {
+                        // Không có giới hạn hoặc số lượng mua <= số lượng tối đa
+                        // → Áp dụng giảm giá cho toàn bộ số lượng
+                        panel.setSoTienGiamGiaThucTe(null); // Reset về null để dùng % giảm giá
+                        panel.setGiamGia(kmTotNhat.getGiamGia(), kmTotNhat.getTenKhuyenMai());
+                        System.out.println("    ✓ ÁP DỤNG: " + kmTotNhat.getTenKhuyenMai() + " → Giảm: " + giamGiaMax);
+                    }
+                    
                     panel.setKhuyenMaiDuocApDung(kmTotNhat); // Lưu thông tin khuyến mãi để save vào DB
-                    System.out.println("    ✓ ÁP DỤNG: " + kmTotNhat.getTenKhuyenMai() + " → Giảm: " + giamGiaMax);
                 } else {
                     panel.setKhuyenMaiDuocApDung(null); // Không có khuyến mãi (giảm giá thủ công)
+                    panel.setSoTienGiamGiaThucTe(null); // Reset số tiền giảm giá thực tế
                     System.out.println("    → KHÔNG CÓ KHUYẾN MÃI");
                 }
             }
@@ -829,6 +871,11 @@ public class GD_BanHang extends javax.swing.JPanel {
         // Cập nhật giao diện
         containerPanel.revalidate();
         containerPanel.repaint();
+        
+        // Reset mã đơn hàng hiện tại trong Panel_DonHang
+        if (panelDonHang != null) {
+            panelDonHang.resetMaDonHangHienTai();
+        }
         
         // Cập nhật tổng tiền (sẽ về 0)
         capNhatTongTien();

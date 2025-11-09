@@ -17,6 +17,8 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietKhuyenMaiSanPham;
 import raven.toast.Notifications;
 
 import javax.swing.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
@@ -33,12 +35,17 @@ public class ThemKhuyenMaiDialog extends javax.swing.JDialog {
     private final ChiTietKhuyenMaiSanPhamBUS chiTietKhuyenMaiSanPhamBUS;
     private boolean themThanhCong = false;
     private SanPham sanPhamHienTai = null; // Lưu sản phẩm được tìm thấy
+    private boolean isValidatingDate = false; // Flag để tránh vòng lặp khi validate
     
     // Components cho giá tối thiểu và tối đa (khuyến mãi đơn hàng)
     private javax.swing.JLabel lblGiaToiThieu;
     private javax.swing.JTextField txtGiaToiThieu;
     private javax.swing.JLabel lblGiaToiDa;
     private javax.swing.JTextField txtGiaToiDa;
+    
+    // Components cho số lượng tối đa (khuyến mãi sản phẩm)
+    private javax.swing.JLabel lblSoLuongToiDa;
+    private javax.swing.JTextField txtSoLuongToiDa;
 
     public ThemKhuyenMaiDialog(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
@@ -54,13 +61,67 @@ public class ThemKhuyenMaiDialog extends javax.swing.JDialog {
         // Placeholder text
         txtTenKhuyenMai.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập tên khuyến mãi");
         txtGiamGia.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "VD: 0.1 (10%)");
-        txtGiaToiThieu.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "VD: 100000 (0 = không giới hạn)");
-        txtGiaToiDa.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "VD: 50000 (0 = không giới hạn)");
+        txtGiaToiThieu.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "VD: 100000");
+        txtGiaToiDa.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "VD: 50000");
         txtSoDangKy.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập số đăng ký sản phẩm");
+        txtSoLuongToiDa.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "VD: 5");
         
-        // Thiết lập date chooser
+        // Thiết lập date chooser - chỉ ngăn chọn ngày quá khứ (cho phép chọn ngày hiện tại để báo lỗi)
         dateNgayBatDau.setMinSelectableDate(new Date());
         dateNgayKetThuc.setMinSelectableDate(new Date());
+        
+        // Thêm PropertyChangeListener cho date editor để validate ngay khi chọn ngày
+        PropertyChangeListener listenerNgayBatDau = new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                // Tránh trigger lại khi đang validate
+                if (isValidatingDate) {
+                    return;
+                }
+                // Chỉ validate khi ngày được set (không phải khi clear)
+                if (evt.getNewValue() != null) {
+                    // Sử dụng SwingUtilities.invokeLater để đảm bảo validate chạy sau khi date được set
+                    SwingUtilities.invokeLater(() -> {
+                        validateNgayBatDau();
+                        // Validate lại ngày kết thúc nếu có để đảm bảo tính nhất quán
+                        if (dateNgayKetThuc.getDate() != null) {
+                            validateNgayKetThuc();
+                        }
+                    });
+                }
+            }
+        };
+        // Thêm listener cho cả JDateChooser và DateEditor để đảm bảo validate chạy
+        dateNgayBatDau.addPropertyChangeListener("date", listenerNgayBatDau);
+        if (dateNgayBatDau.getDateEditor() != null) {
+            dateNgayBatDau.getDateEditor().addPropertyChangeListener("date", listenerNgayBatDau);
+        }
+        
+        PropertyChangeListener listenerNgayKetThuc = new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                // Tránh trigger lại khi đang validate
+                if (isValidatingDate) {
+                    return;
+                }
+                // Chỉ validate khi ngày được set (không phải khi clear)
+                if (evt.getNewValue() != null) {
+                    // Sử dụng SwingUtilities.invokeLater để đảm bảo validate chạy sau khi date được set
+                    SwingUtilities.invokeLater(() -> {
+                        validateNgayKetThuc();
+                        // Validate lại ngày bắt đầu nếu có để đảm bảo tính nhất quán
+                        if (dateNgayBatDau.getDate() != null) {
+                            validateNgayBatDau();
+                        }
+                    });
+                }
+            }
+        };
+        // Thêm listener cho cả JDateChooser và DateEditor để đảm bảo validate chạy
+        dateNgayKetThuc.addPropertyChangeListener("date", listenerNgayKetThuc);
+        if (dateNgayKetThuc.getDateEditor() != null) {
+            dateNgayKetThuc.getDateEditor().addPropertyChangeListener("date", listenerNgayKetThuc);
+        }
         
         // Thiết lập combo box loại khuyến mãi - Mặc định "Đơn hàng"
         cboLoaiKhuyenMai.setModel(new DefaultComboBoxModel<>(new String[]{"Đơn hàng", "Sản phẩm"}));
@@ -99,11 +160,13 @@ public class ThemKhuyenMaiDialog extends javax.swing.JDialog {
             lblGiaToiDa.setVisible(isOrderPromotion);
             txtGiaToiDa.setVisible(isOrderPromotion);
             
-            // Hiển thị số đăng ký cho khuyến mãi sản phẩm
+            // Hiển thị số đăng ký và số lượng tối đa cho khuyến mãi sản phẩm
             lblSoDangKy.setVisible(isProductPromotion);
             txtSoDangKy.setVisible(isProductPromotion);
             lblTenSanPham.setVisible(isProductPromotion);
             txtTenSanPham.setVisible(isProductPromotion);
+            lblSoLuongToiDa.setVisible(isProductPromotion);
+            txtSoLuongToiDa.setVisible(isProductPromotion);
             
             pack(); // Resize dialog
         });
@@ -122,6 +185,8 @@ public class ThemKhuyenMaiDialog extends javax.swing.JDialog {
         txtSoDangKy.setVisible(isProductPromotion);
         lblTenSanPham.setVisible(isProductPromotion);
         txtTenSanPham.setVisible(isProductPromotion);
+        lblSoLuongToiDa.setVisible(isProductPromotion);
+        txtSoLuongToiDa.setVisible(isProductPromotion);
     }
     
     private void timSanPhamTheoSoDangKy() {
@@ -154,6 +219,110 @@ public class ThemKhuyenMaiDialog extends javax.swing.JDialog {
             sanPhamHienTai = null;
         }
     }
+    
+    /**
+     * Validate ngày bắt đầu - phải sau ngày hiện tại và nhỏ hơn ngày kết thúc (nếu có)
+     */
+    private void validateNgayBatDau() {
+        Date selectedDate = dateNgayBatDau.getDate();
+        if (selectedDate == null) {
+            return; // Chưa chọn ngày
+        }
+        
+        LocalDate selectedLocalDate = selectedDate.toInstant()
+            .atZone(ZoneId.systemDefault())
+            .toLocalDate();
+        LocalDate today = LocalDate.now();
+        
+        // Nếu chọn ngày hiện tại hoặc trước ngày hiện tại
+        if (selectedLocalDate.isBefore(today) || selectedLocalDate.isEqual(today)) {
+            // Set flag để tránh trigger lại
+            isValidatingDate = true;
+            // Xóa ngày đã chọn
+            dateNgayBatDau.setDate(null);
+            isValidatingDate = false;
+            
+            // Hiển thị thông báo lỗi
+            Notifications.getInstance().show(Notifications.Type.ERROR, 
+                Notifications.Location.TOP_CENTER,
+                "Ngày bắt đầu phải sau ngày hiện tại!");
+            return;
+        }
+        
+        // Kiểm tra nếu đã có ngày kết thúc, ngày bắt đầu phải nhỏ hơn ngày kết thúc
+        Date ngayKetThuc = dateNgayKetThuc.getDate();
+        if (ngayKetThuc != null) {
+            LocalDate ngayKetThucLocal = ngayKetThuc.toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate();
+            
+            // Nếu ngày bắt đầu >= ngày kết thúc
+            if (selectedLocalDate.isAfter(ngayKetThucLocal) || selectedLocalDate.isEqual(ngayKetThucLocal)) {
+                // Set flag để tránh trigger lại
+                isValidatingDate = true;
+                // Xóa ngày đã chọn
+                dateNgayBatDau.setDate(null);
+                isValidatingDate = false;
+                
+                // Hiển thị thông báo lỗi
+                Notifications.getInstance().show(Notifications.Type.ERROR, 
+                    Notifications.Location.TOP_CENTER,
+                    "Ngày bắt đầu phải nhỏ hơn ngày kết thúc!");
+            }
+        }
+    }
+    
+    /**
+     * Validate ngày kết thúc - phải sau ngày hiện tại và lớn hơn ngày bắt đầu (nếu có)
+     */
+    private void validateNgayKetThuc() {
+        Date selectedDate = dateNgayKetThuc.getDate();
+        if (selectedDate == null) {
+            return; // Chưa chọn ngày
+        }
+        
+        LocalDate selectedLocalDate = selectedDate.toInstant()
+            .atZone(ZoneId.systemDefault())
+            .toLocalDate();
+        LocalDate today = LocalDate.now();
+        
+        // Nếu chọn ngày hiện tại hoặc trước ngày hiện tại
+        if (selectedLocalDate.isBefore(today) || selectedLocalDate.isEqual(today)) {
+            // Set flag để tránh trigger lại
+            isValidatingDate = true;
+            // Xóa ngày đã chọn
+            dateNgayKetThuc.setDate(null);
+            isValidatingDate = false;
+            
+            // Hiển thị thông báo lỗi
+            Notifications.getInstance().show(Notifications.Type.ERROR, 
+                Notifications.Location.TOP_CENTER,
+                "Ngày kết thúc phải sau ngày hiện tại!");
+            return;
+        }
+        
+        // Kiểm tra nếu đã có ngày bắt đầu, ngày kết thúc phải lớn hơn ngày bắt đầu
+        Date ngayBatDau = dateNgayBatDau.getDate();
+        if (ngayBatDau != null) {
+            LocalDate ngayBatDauLocal = ngayBatDau.toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate();
+            
+            // Nếu ngày kết thúc <= ngày bắt đầu
+            if (selectedLocalDate.isBefore(ngayBatDauLocal) || selectedLocalDate.isEqual(ngayBatDauLocal)) {
+                // Set flag để tránh trigger lại
+                isValidatingDate = true;
+                // Xóa ngày đã chọn
+                dateNgayKetThuc.setDate(null);
+                isValidatingDate = false;
+                
+                // Hiển thị thông báo lỗi
+                Notifications.getInstance().show(Notifications.Type.ERROR, 
+                    Notifications.Location.TOP_CENTER,
+                    "Ngày kết thúc phải lớn hơn ngày bắt đầu!");
+            }
+        }
+    }
 
     public boolean isThemThanhCong() {
         return themThanhCong;
@@ -182,6 +351,8 @@ public class ThemKhuyenMaiDialog extends javax.swing.JDialog {
         txtSoDangKy = new javax.swing.JTextField();
         lblTenSanPham = new javax.swing.JLabel();
         txtTenSanPham = new javax.swing.JTextField();
+        lblSoLuongToiDa = new javax.swing.JLabel();
+        txtSoLuongToiDa = new javax.swing.JTextField();
         jPanel3 = new javax.swing.JPanel();
         btnLuu = new javax.swing.JButton();
         btnHuy = new javax.swing.JButton();
@@ -259,6 +430,11 @@ public class ThemKhuyenMaiDialog extends javax.swing.JDialog {
 
         txtTenSanPham.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
+        lblSoLuongToiDa.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        lblSoLuongToiDa.setText("Số lượng tối đa:");
+
+        txtSoLuongToiDa.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -273,7 +449,8 @@ public class ThemKhuyenMaiDialog extends javax.swing.JDialog {
                     .addComponent(lblGiaToiThieu)
                     .addComponent(lblGiaToiDa)
                     .addComponent(lblSoDangKy)
-                    .addComponent(lblTenSanPham))
+                    .addComponent(lblTenSanPham)
+                    .addComponent(lblSoLuongToiDa))
                 .addGap(30, 30, 30)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(txtTenKhuyenMai)
@@ -284,7 +461,8 @@ public class ThemKhuyenMaiDialog extends javax.swing.JDialog {
                     .addComponent(txtGiaToiThieu)
                     .addComponent(txtGiaToiDa)
                     .addComponent(txtSoDangKy)
-                    .addComponent(txtTenSanPham)))
+                    .addComponent(txtTenSanPham)
+                    .addComponent(txtSoLuongToiDa)))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -324,6 +502,10 @@ public class ThemKhuyenMaiDialog extends javax.swing.JDialog {
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblTenSanPham)
                     .addComponent(txtTenSanPham, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(20, 20, 20)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblSoLuongToiDa)
+                    .addComponent(txtSoLuongToiDa, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(0, 20, Short.MAX_VALUE))
         );
 
@@ -514,6 +696,26 @@ public class ThemKhuyenMaiDialog extends javax.swing.JDialog {
                     txtSoDangKy.requestFocus();
                     return;
                 }
+                
+                // Lấy số lượng tối đa
+                String soLuongToiDaStr = txtSoLuongToiDa.getText().trim();
+                if (!soLuongToiDaStr.isEmpty()) {
+                    try {
+                        int soLuongToiDa = Integer.parseInt(soLuongToiDaStr);
+                        if (soLuongToiDa < 0) {
+                            Notifications.getInstance().show(Notifications.Type.WARNING, "Số lượng tối đa phải >= 0!");
+                            txtSoLuongToiDa.requestFocus();
+                            return;
+                        }
+                        km.setSoLuongToiDa(soLuongToiDa);
+                    } catch (NumberFormatException e) {
+                        Notifications.getInstance().show(Notifications.Type.WARNING, "Số lượng tối đa phải là số nguyên!");
+                        txtSoLuongToiDa.requestFocus();
+                        return;
+                    }
+                } else {
+                    km.setSoLuongToiDa(0); // Mặc định không giới hạn số lượng tối đa
+                }
             }
 
             // Thêm vào database
@@ -576,4 +778,5 @@ public class ThemKhuyenMaiDialog extends javax.swing.JDialog {
     private javax.swing.JTextField txtTenSanPham;
     // End of variables declaration
 }
+
 
