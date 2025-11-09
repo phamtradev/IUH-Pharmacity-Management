@@ -149,6 +149,12 @@ public class Dialog_QRBanking extends JDialog {
         txtBarcodeScan.setPreferredSize(new Dimension(200, 25));
         txtBarcodeScan.setFont(new Font("Consolas", Font.PLAIN, 12));
         txtBarcodeScan.setBorder(null); // Bỏ viền
+        
+        // Thiết lập màu con trỏ nhấp nháy mờ hơn một chút
+        javax.swing.text.DefaultCaret caret = (javax.swing.text.DefaultCaret) txtBarcodeScan.getCaret();
+        caret.setBlinkRate(900); // Tốc độ nhấp nháy chậm hơn (ms)
+        // Tạo custom caret với màu mờ hơn
+        txtBarcodeScan.setCaretColor(new Color(180, 180, 180)); // Màu xám nhạt, mờ hơn nữa
 
         
         
