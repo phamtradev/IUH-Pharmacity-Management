@@ -364,7 +364,7 @@ public class LoHangDAO implements DAOInterface<LoHang, String> {
         // Điều kiện: HSD <= 6 tháng kể từ hôm nay VÀ tồn kho > 0 VÀ trạng thái = true (còn hoạt động)
         // (Tự động loại bỏ các lô hết hạn đã xuất hủy: HSD < hôm nay và tồn kho = 0 hoặc trạng thái = false)
         String sql = "SELECT lh.maLoHang, lh.tenLoHang, lh.hanSuDung, lh.tonKho, lh.trangThai, "
-                + "       sp.maSanPham, sp.tenSanPham, sp.giaNhap, "
+                + "       sp.maSanPham, sp.tenSanPham, sp.giaNhap, sp.hinhAnh, "
                 + "       dvt.tenDonVi "
                 + "FROM LoHang lh "
                 + "JOIN SanPham sp ON lh.maSanPham = sp.maSanPham "
@@ -386,6 +386,7 @@ public class LoHangDAO implements DAOInterface<LoHang, String> {
                 sanPham.setMaSanPham(rs.getString("maSanPham"));
                 sanPham.setTenSanPham(rs.getString("tenSanPham"));
                 sanPham.setGiaNhap(rs.getDouble("giaNhap"));
+                sanPham.setHinhAnh(rs.getString("hinhAnh")); // Load hinhAnh từ JOIN
                 sanPham.setDonViTinh(dvt);
 
                 // Tạo đối tượng LoHang
@@ -427,7 +428,7 @@ public class LoHangDAO implements DAOInterface<LoHang, String> {
                 + "SELECT "
                 + "    rb.lyDoTra, "
                 + "    lh.maLoHang, lh.tenLoHang, lh.hanSuDung, lh.tonKho, "
-                + "    sp.maSanPham, sp.tenSanPham, sp.giaNhap, "
+                + "    sp.maSanPham, sp.tenSanPham, sp.giaNhap, sp.hinhAnh, "
                 + "    dvt.tenDonVi "
                 + "FROM RankedBatches rb "
                 + "JOIN lohang lh ON rb.maLoHang = lh.maLoHang "
@@ -447,6 +448,7 @@ public class LoHangDAO implements DAOInterface<LoHang, String> {
                 sanPham.setMaSanPham(rs.getString("maSanPham"));
                 sanPham.setTenSanPham(rs.getString("tenSanPham"));
                 sanPham.setGiaNhap(rs.getDouble("giaNhap"));
+                sanPham.setHinhAnh(rs.getString("hinhAnh")); // Load hinhAnh từ JOIN
                 sanPham.setDonViTinh(dvt);
 
                 LoHang loHang = new LoHang();
@@ -482,10 +484,15 @@ public class LoHangDAO implements DAOInterface<LoHang, String> {
      * @return Optional chứa LoHang nếu tìm thấy
      */
     public Optional<LoHang> timLoHangTheoSoDangKyVaHanSuDung(String soDangKy, LocalDate hanSuDung) {
-        String SQL = "SELECT lh.* FROM LoHang lh " +
-                     "INNER JOIN SanPham sp ON lh.maSanPham = sp.maSanPham " +
-                     "WHERE sp.soDangKy = ? " +
-                     "AND lh.hanSuDung = ?";
+        // JOIN với SanPham để lấy đầy đủ thông tin sản phẩm (bao gồm hinhAnh)
+            String SQL = "SELECT lh.maLoHang, lh.tenLoHang, lh.hanSuDung, lh.tonKho, lh.trangThai, lh.maSanPham, " +
+                        "       sp.tenSanPham, sp.soDangKy, sp.hoatChat, sp.lieuDung, sp.cachDongGoi, " +
+                        "       sp.quocGiaSanXuat, sp.nhaSanXuat, sp.giaNhap, sp.giaBan, sp.hoatDong, " +
+                        "       sp.thueVAT, sp.hinhAnh, sp.loaiSanPham, sp.maDonVi " +
+                        "FROM LoHang lh " +
+                        "INNER JOIN SanPham sp ON lh.maSanPham = sp.maSanPham " +
+                        "WHERE sp.soDangKy = ? " +
+                        "AND lh.hanSuDung = ?";
         
         System.out.println("🔍 [DAO] Tìm lô: Số ĐK = '" + soDangKy + "', HSD = " + hanSuDung);
         
@@ -527,11 +534,44 @@ public class LoHangDAO implements DAOInterface<LoHang, String> {
                         loHang.setTonKhoNoValidation(rs.getInt("tonKho")); // Dùng NoValidation vì load từ DB
                         loHang.setTrangThai(rs.getBoolean("trangThai"));
                         
-                        // Load sản phẩm liên quan
-                        String maSP = rs.getString("maSanPham");
-                        SanPham sp = new SanPham();
-                        sp.setMaSanPham(maSP);
-                        loHang.setSanPham(sp);
+                        // Tạo đối tượng SanPham từ kết quả JOIN (đã có đầy đủ thông tin bao gồm hinhAnh)
+                        SanPham sanPham = new SanPham();
+                        sanPham.setMaSanPham(rs.getString("maSanPham"));
+                        sanPham.setTenSanPham(rs.getString("tenSanPham"));
+                        sanPham.setSoDangKy(rs.getString("soDangKy"));
+                        sanPham.setHoatChat(rs.getString("hoatChat"));
+                        sanPham.setLieuDung(rs.getString("lieuDung"));
+                        sanPham.setCachDongGoi(rs.getString("cachDongGoi"));
+                        sanPham.setQuocGiaSanXuat(rs.getString("quocGiaSanXuat"));
+                        sanPham.setNhaSanXuat(rs.getString("nhaSanXuat"));
+                        sanPham.setGiaNhap(rs.getDouble("giaNhap"));
+                        sanPham.setGiaBan(rs.getDouble("giaBan"));
+                        sanPham.setHoatDong(rs.getBoolean("hoatDong"));
+                        sanPham.setThueVAT(rs.getDouble("thueVAT"));
+                        sanPham.setHinhAnh(rs.getString("hinhAnh")); // QUAN TRỌNG: Load hinhAnh từ JOIN
+                        
+                        // Set loại sản phẩm
+                        String loaiSanPhamStr = rs.getString("loaiSanPham");
+                        if (loaiSanPhamStr != null) {
+                            try {
+                                sanPham.setLoaiSanPham(vn.edu.iuh.fit.iuhpharmacitymanagement.constant.LoaiSanPham.valueOf(loaiSanPhamStr));
+                            } catch (Exception e) {
+                                System.err.println("⚠️ [DAO] Lỗi khi set loaiSanPham: " + e.getMessage());
+                            }
+                        }
+                        
+                        // Load DonViTinh nếu có maDonVi
+                        String maDonVi = rs.getString("maDonVi");
+                        if (maDonVi != null) {
+                            DonViTinhDAO donViTinhDAO = new DonViTinhDAO();
+                            Optional<DonViTinh> donViTinhOpt = donViTinhDAO.findById(maDonVi);
+                            if (donViTinhOpt.isPresent()) {
+                                sanPham.setDonViTinh(donViTinhOpt.get());
+                            }
+                        }
+                        
+                        loHang.setSanPham(sanPham);
+                        System.out.println("✅ [DAO] Đã load đầy đủ thông tin sản phẩm từ JOIN, hinhAnh = " + sanPham.getHinhAnh());
                         
                         return Optional.of(loHang);
                     } catch (Exception e) {

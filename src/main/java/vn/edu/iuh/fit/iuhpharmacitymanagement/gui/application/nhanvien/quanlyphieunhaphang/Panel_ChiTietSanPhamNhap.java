@@ -148,6 +148,15 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
             if (loTrung.isPresent()) {
                 // ✅ TÌM THẤY LÔ TRÙNG → TỰ ĐỘNG CHỌN
                 loHangDaChon = loTrung.get();
+                
+                // ⚠️ QUAN TRỌNG: Cập nhật lại sanPham từ loHangDaChon để có đầy đủ thông tin (bao gồm hinhAnh từ JOIN)
+                if (loHangDaChon.getSanPham() != null) {
+                    this.sanPham = loHangDaChon.getSanPham();
+                    System.out.println("✅ [Panel] Đã cập nhật sanPham từ loHangDaChon, hinhAnh = " + this.sanPham.getHinhAnh());
+                    // Load lại dữ liệu sản phẩm (bao gồm hình ảnh)
+                    loadSanPhamData();
+                }
+                
                 updateLoInfo(); // Hiển thị thẻ lô
             } else {
                 // ❌ KHÔNG TÌM THẤY LÔ → HIỂN thị nút "Chọn lô" (dữ liệu Excel sẽ tự động điền vào form)
@@ -256,18 +265,55 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
             // Load hình ảnh nếu có
             if (sanPham.getHinhAnh() != null && !sanPham.getHinhAnh().isEmpty()) {
                 try {
-                    // Thử load từ đường dẫn tuyệt đối (nếu file được chọn từ JFileChooser)
-                    java.io.File imageFile = new java.io.File(sanPham.getHinhAnh());
                     ImageIcon icon = null;
+                    String hinhAnh = sanPham.getHinhAnh().trim(); // Loại bỏ khoảng trắng thừa
                     
-                    if (imageFile.exists()) {
-                        // File tồn tại với đường dẫn tuyệt đối
-                        icon = new ImageIcon(sanPham.getHinhAnh());
+                    System.out.println("🔍 [Panel_ChiTietSanPhamNhap] Đang load hình ảnh: '" + hinhAnh + "'");
+                    System.out.println("🔍 [Panel_ChiTietSanPhamNhap] Working directory: " + System.getProperty("user.dir"));
+                    
+                    // 1. Thử load từ đường dẫn tuyệt đối (nếu file được chọn từ JFileChooser)
+                    java.io.File imageFile = new java.io.File(hinhAnh);
+                    if (imageFile.exists() && imageFile.isFile()) {
+                        icon = new ImageIcon(hinhAnh);
+                        System.out.println("✅ Load hình từ đường dẫn tuyệt đối: " + hinhAnh);
                     } else {
-                        // Thử load từ resources
-                        java.net.URL imgURL = getClass().getResource("/img/" + sanPham.getHinhAnh());
+                        // 2. Thử load từ resources (khi chạy từ JAR)
+                        java.net.URL imgURL = getClass().getResource("/img/" + hinhAnh);
                         if (imgURL != null) {
                             icon = new ImageIcon(imgURL);
+                            System.out.println("✅ Load hình từ resources: /img/" + hinhAnh);
+                        } else {
+                            // 3. Thử load từ file system với đường dẫn tương đối (khi chạy từ IDE)
+                            String imagePath = "src/main/resources/img/" + hinhAnh;
+                            java.io.File fileSystemImage = new java.io.File(imagePath);
+                            if (fileSystemImage.exists() && fileSystemImage.isFile()) {
+                                icon = new ImageIcon(imagePath);
+                                System.out.println("✅ Load hình từ file system (relative): " + imagePath);
+                            } else {
+                                // 4. Thử load từ file system với đường dẫn tuyệt đối từ project root
+                                String projectRoot = System.getProperty("user.dir");
+                                String absoluteImagePath = projectRoot + java.io.File.separator + "src" + java.io.File.separator + "main" + java.io.File.separator + "resources" + java.io.File.separator + "img" + java.io.File.separator + hinhAnh;
+                                java.io.File absoluteFile = new java.io.File(absoluteImagePath);
+                                if (absoluteFile.exists() && absoluteFile.isFile()) {
+                                    icon = new ImageIcon(absoluteImagePath);
+                                    System.out.println("✅ Load hình từ file system (absolute): " + absoluteImagePath);
+                                } else {
+                                    // 5. Thử load từ target/classes/img/ (khi chạy từ IDE với Maven)
+                                    String targetImagePath = projectRoot + java.io.File.separator + "target" + java.io.File.separator + "classes" + java.io.File.separator + "img" + java.io.File.separator + hinhAnh;
+                                    java.io.File targetFile = new java.io.File(targetImagePath);
+                                    if (targetFile.exists() && targetFile.isFile()) {
+                                        icon = new ImageIcon(targetImagePath);
+                                        System.out.println("✅ Load hình từ target/classes/img/: " + targetImagePath);
+                                    } else {
+                                        System.err.println("❌ Không tìm thấy hình ảnh ở bất kỳ đâu:");
+                                        System.err.println("   - Đường dẫn tuyệt đối: " + hinhAnh);
+                                        System.err.println("   - Resources: /img/" + hinhAnh);
+                                        System.err.println("   - File system (relative): " + imagePath);
+                                        System.err.println("   - File system (absolute): " + absoluteImagePath);
+                                        System.err.println("   - Target/classes: " + targetImagePath);
+                                    }
+                                }
+                            }
                         }
                     }
                     
@@ -276,15 +322,19 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
                         java.awt.Image img = icon.getImage().getScaledInstance(100, 100, java.awt.Image.SCALE_SMOOTH);
                         lblHinh.setIcon(new ImageIcon(img));
                         lblHinh.setText("");
+                        System.out.println("✅ Đã hiển thị hình ảnh thành công!");
                     } else {
                         lblHinh.setText("IMG");
+                        System.err.println("❌ Icon null hoặc không hợp lệ (width=" + (icon != null ? icon.getIconWidth() : "null") + ")");
                     }
                 } catch (Exception e) {
                     lblHinh.setText("IMG");
+                    System.err.println("❌ Lỗi khi load hình ảnh: " + sanPham.getHinhAnh() + " - " + e.getMessage());
                     e.printStackTrace();
                 }
             } else {
                 lblHinh.setText("IMG");
+                System.out.println("⚠️ Sản phẩm không có hình ảnh (hinhAnh = null hoặc empty)");
             }
         }
     }
@@ -582,6 +632,15 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
                                         loHangDaChon = (LoHang) btn.getClientProperty("loHang");
                                         tenLoMoi = null;
                                         hsdLoMoi = null;
+                                        
+                                        // ⚠️ QUAN TRỌNG: Cập nhật lại sanPham từ loHangDaChon để có đầy đủ thông tin
+                                        if (loHangDaChon.getSanPham() != null) {
+                                            this.sanPham = loHangDaChon.getSanPham();
+                                            System.out.println("✅ [Panel] Đã cập nhật sanPham từ loHangDaChon (chọn từ dialog), hinhAnh = " + this.sanPham.getHinhAnh());
+                                            // Load lại dữ liệu sản phẩm (bao gồm hình ảnh)
+                                            loadSanPhamData();
+                                        }
+                                        
                                         updateLoInfo();
                                         dialog.dispose();
                                         return;

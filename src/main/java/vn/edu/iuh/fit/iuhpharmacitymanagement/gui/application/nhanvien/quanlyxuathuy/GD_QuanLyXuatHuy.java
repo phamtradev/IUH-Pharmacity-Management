@@ -262,8 +262,8 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         javax.swing.JPanel headerProductPanel = new javax.swing.JPanel();
         headerProductPanel.setBackground(new java.awt.Color(240, 248, 255));
         headerProductPanel.setBorder(javax.swing.BorderFactory.createMatteBorder(0, 0, 2, 0, new java.awt.Color(200, 200, 200)));
-        headerProductPanel.setPreferredSize(new java.awt.Dimension(1200, 50));
-        headerProductPanel.setMinimumSize(new java.awt.Dimension(800, 50));
+        headerProductPanel.setPreferredSize(new java.awt.Dimension(1000, 50));
+        headerProductPanel.setMinimumSize(new java.awt.Dimension(700, 50));
         headerProductPanel.setMaximumSize(new java.awt.Dimension(32767, 50));
 
         // Sử dụng GridBagLayout giống Panel_ChiTietSanPhamXuatHuy
@@ -271,49 +271,44 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
         gbc.fill = java.awt.GridBagConstraints.BOTH;
         gbc.anchor = java.awt.GridBagConstraints.CENTER;
-        gbc.insets = new java.awt.Insets(10, 8, 10, 8);
+        gbc.insets = new java.awt.Insets(10, 5, 10, 5);
         gbc.gridy = 0;
         gbc.weighty = 1.0;
 
         // 1. Hình ảnh
         gbc.gridx = 0;
         gbc.weightx = 0.0;
-        headerProductPanel.add(createHeaderLabel("Hình", 80, javax.swing.SwingConstants.CENTER), gbc);
+        headerProductPanel.add(createHeaderLabel("Hình", 70, javax.swing.SwingConstants.CENTER), gbc);
 
         // 2. Tên sản phẩm + Thông tin lô
         gbc.gridx = 1;
         gbc.weightx = 0.25;
-        headerProductPanel.add(createHeaderLabel("Tên sản phẩm / Lô hàng", 250, javax.swing.SwingConstants.LEFT), gbc);
+        headerProductPanel.add(createHeaderLabel("Tên sản phẩm / Lô hàng", 200, javax.swing.SwingConstants.LEFT), gbc);
 
         // 3. Lý do
         gbc.gridx = 2;
         gbc.weightx = 0.08;
-        headerProductPanel.add(createHeaderLabel("Lý do", 50, javax.swing.SwingConstants.LEFT), gbc);
+        headerProductPanel.add(createHeaderLabel("Lý do", 80, javax.swing.SwingConstants.LEFT), gbc);
 
         // 4. Đơn vị
         gbc.gridx = 3;
         gbc.weightx = 0.0;
-        headerProductPanel.add(createHeaderLabel("Đơn vị", 60, javax.swing.SwingConstants.CENTER), gbc);
+        headerProductPanel.add(createHeaderLabel("Đơn vị", 50, javax.swing.SwingConstants.CENTER), gbc);
 
         // 5. Số lượng
         gbc.gridx = 4;
         gbc.weightx = 0.0;
-        headerProductPanel.add(createHeaderLabel("SL", 70, javax.swing.SwingConstants.CENTER), gbc);
+        headerProductPanel.add(createHeaderLabel("SL", 60, javax.swing.SwingConstants.CENTER), gbc);
 
         // 6. Đơn giá
         gbc.gridx = 5;
         gbc.weightx = 0.0;
-        headerProductPanel.add(createHeaderLabel("Đơn giá", 85, javax.swing.SwingConstants.RIGHT), gbc);
+        headerProductPanel.add(createHeaderLabel("Đơn giá", 75, javax.swing.SwingConstants.RIGHT), gbc);
 
         // 7. Tổng tiền
         gbc.gridx = 6;
         gbc.weightx = 0.0;
-        headerProductPanel.add(createHeaderLabel("Tổng tiền", 95, javax.swing.SwingConstants.RIGHT), gbc);
-
-        // 8. Thao tác
-        gbc.gridx = 7;
-        gbc.weightx = 0.0;
-        headerProductPanel.add(createHeaderLabel("Thao tác", 60, javax.swing.SwingConstants.CENTER), gbc);
+        headerProductPanel.add(createHeaderLabel("Tổng tiền", 85, javax.swing.SwingConstants.RIGHT), gbc);
 
         // Thêm header vào pnContent
         pnContent.add(headerProductPanel);
@@ -651,7 +646,9 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
                     Panel_ChiTietSanPhamXuatHuy panel = new Panel_ChiTietSanPhamXuatHuy();
                     
                     panel.setTenSanPham(sanPham.getTenSanPham());
-                    panel.setHinhAnh(sanPham.getHinhAnh()); // Load hình ảnh
+                    String hinhAnh = sanPham.getHinhAnh();
+                    System.out.println("DEBUG: Đang load hình ảnh cho sản phẩm " + sanPham.getTenSanPham() + ": " + hinhAnh);
+                    panel.setHinhAnh(hinhAnh); // Load hình ảnh
                     // Hiển thị thông tin lô hàng THẬT + thông tin đơn trả
                     panel.setLoHang(
                         loHangChon.getTenLoHang() + " (Đơn trả: " + chiTiet.getDonTraHang().getMaDonTraHang() + ")", 

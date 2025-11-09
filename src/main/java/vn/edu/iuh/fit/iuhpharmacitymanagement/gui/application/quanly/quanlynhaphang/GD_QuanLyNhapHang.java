@@ -457,7 +457,7 @@ public class GD_QuanLyNhapHang extends javax.swing.JPanel {
                     });
                 }
             }
-            
+
             javax.swing.JScrollPane scrollPane = new javax.swing.JScrollPane(tableDetail.getTable());
             scrollPane.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 0, 10, 0));
             mainPanel.add(scrollPane, java.awt.BorderLayout.CENTER);

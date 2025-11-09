@@ -118,7 +118,7 @@ public class ChiTietDonTraHangDAO implements DAOInterface<ChiTietDonTraHang, Str
      */
     public List<ChiTietDonTraHang> findByMaDonTra(String maDonTra) {
         List<ChiTietDonTraHang> dsCt = new ArrayList<>();
-        String sql = "SELECT ct.*, sp.tenSanPham, dv.tenDonVi, dv.maDonVi "
+        String sql = "SELECT ct.*, sp.tenSanPham, sp.hinhAnh, dv.tenDonVi, dv.maDonVi "
                 + "FROM chitietdontrahang ct "
                 + "LEFT JOIN SanPham sp ON ct.maSanPham = sp.maSanPham "
                 + "LEFT JOIN DonViTinh dv ON sp.maDonVi = dv.maDonVi "
@@ -139,6 +139,7 @@ public class ChiTietDonTraHangDAO implements DAOInterface<ChiTietDonTraHang, Str
                 // Tạo sản phẩm với thông tin đầy đủ
                 SanPham sp = new SanPham(masp);
                 sp.setTenSanPham(rs.getString("tenSanPham"));
+                sp.setHinhAnh(rs.getString("hinhAnh")); // Load hinhAnh từ JOIN
 
                 // Tạo đơn vị tính
                 String maDonVi = rs.getString("maDonVi");
@@ -162,7 +163,7 @@ public class ChiTietDonTraHangDAO implements DAOInterface<ChiTietDonTraHang, Str
     // Lấy tất cả sản phẩm trong đơn trả ĐÃ ĐƯỢC DUYỆT (chờ xuất hủy)
     public List<ChiTietDonTraHang> findAllWithDetails() {
         List<ChiTietDonTraHang> danhSach = new ArrayList<>();
-        String sql = "SELECT ct.*, sp.tenSanPham, sp.giaNhap, dv.tenDonVi, dth.trangThaiXuLy "
+        String sql = "SELECT ct.*, sp.tenSanPham, sp.giaNhap, sp.hinhAnh, dv.tenDonVi, dth.trangThaiXuLy "
                 + "FROM chitietdontrahang ct "
                 + "JOIN SanPham sp ON ct.maSanPham = sp.maSanPham "
                 + "JOIN DonViTinh dv ON sp.maDonVi = dv.maDonVi "
@@ -176,6 +177,7 @@ public class ChiTietDonTraHangDAO implements DAOInterface<ChiTietDonTraHang, Str
                 sanPham.setMaSanPham(rs.getString("maSanPham"));
                 sanPham.setTenSanPham(rs.getString("tenSanPham"));
                 sanPham.setGiaNhap(rs.getDouble("giaNhap"));
+                sanPham.setHinhAnh(rs.getString("hinhAnh")); // Load hinhAnh từ JOIN
 
                 DonViTinh dvt = new DonViTinh();
                 dvt.setTenDonVi(rs.getString("tenDonVi"));
