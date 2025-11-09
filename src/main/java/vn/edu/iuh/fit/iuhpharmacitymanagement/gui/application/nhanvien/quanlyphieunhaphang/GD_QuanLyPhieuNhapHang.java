@@ -1094,6 +1094,29 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
             throw new Exception("Email không đúng định dạng: " + email);
         }
         
+        // ✅ Kiểm tra email trùng (nếu có email)
+        if (email != null && !email.trim().isEmpty()) {
+            NhaCungCap nccTrungEmail = nhaCungCapBUS.layNhaCungCapTheoEmail(email.trim());
+            if (nccTrungEmail != null) {
+                // Kiểm tra xem có phải cùng một nhà cung cấp không (theo SĐT hoặc tên)
+                boolean laCungNCC = false;
+                if (sdt != null && !sdt.trim().isEmpty() && 
+                    nccTrungEmail.getSoDienThoai() != null && 
+                    nccTrungEmail.getSoDienThoai().equals(sdt.trim())) {
+                    laCungNCC = true;
+                } else if (tenNCC != null && !tenNCC.trim().isEmpty() && 
+                          nccTrungEmail.getTenNhaCungCap() != null && 
+                          nccTrungEmail.getTenNhaCungCap().equalsIgnoreCase(tenNCC.trim())) {
+                    laCungNCC = true;
+                }
+                
+                if (!laCungNCC) {
+                    throw new Exception("Email '" + email.trim() + "' đã được sử dụng bởi nhà cung cấp khác: " + 
+                                       nccTrungEmail.getTenNhaCungCap() + " (" + nccTrungEmail.getMaNhaCungCap() + ")");
+                }
+            }
+        }
+        
         // ✅ Tên NCC: Nếu không có → Dùng SĐT làm tên tạm
         String tenNCCMoi = (tenNCC != null && !tenNCC.trim().isEmpty()) 
             ? tenNCC.trim() 
@@ -1164,6 +1187,33 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
             // Nếu NCC chưa có mã (chưa lưu DB), tạo mới ngay bây giờ
             if (nhaCungCapHienTai.getMaNhaCungCap() == null) {
                 System.out.println("→ NCC chưa có trong DB, đang tạo mới...");
+                
+                // ✅ Kiểm tra email trùng trước khi tạo mới
+                if (nhaCungCapHienTai.getEmail() != null && !nhaCungCapHienTai.getEmail().trim().isEmpty()) {
+                    NhaCungCap nccTrungEmail = nhaCungCapBUS.layNhaCungCapTheoEmail(nhaCungCapHienTai.getEmail().trim());
+                    if (nccTrungEmail != null) {
+                        // Kiểm tra xem có phải cùng một nhà cung cấp không (theo SĐT hoặc tên)
+                        boolean laCungNCC = false;
+                        if (nhaCungCapHienTai.getSoDienThoai() != null && !nhaCungCapHienTai.getSoDienThoai().trim().isEmpty() && 
+                            nccTrungEmail.getSoDienThoai() != null && 
+                            nccTrungEmail.getSoDienThoai().equals(nhaCungCapHienTai.getSoDienThoai().trim())) {
+                            laCungNCC = true;
+                        } else if (nhaCungCapHienTai.getTenNhaCungCap() != null && !nhaCungCapHienTai.getTenNhaCungCap().trim().isEmpty() && 
+                                  nccTrungEmail.getTenNhaCungCap() != null && 
+                                  nccTrungEmail.getTenNhaCungCap().equalsIgnoreCase(nhaCungCapHienTai.getTenNhaCungCap().trim())) {
+                            laCungNCC = true;
+                        }
+                        
+                        if (!laCungNCC) {
+                            Notifications.getInstance().show(Notifications.Type.ERROR, 
+                                Notifications.Location.TOP_CENTER,
+                                "Email '" + nhaCungCapHienTai.getEmail().trim() + "' đã được sử dụng bởi nhà cung cấp khác: " + 
+                                nccTrungEmail.getTenNhaCungCap() + " (" + nccTrungEmail.getMaNhaCungCap() + ")");
+                            return;
+                        }
+                    }
+                }
+                
                 boolean nccCreated = nhaCungCapBUS.taoNhaCungCap(nhaCungCapHienTai);
                 if (!nccCreated) {
                     Notifications.getInstance().show(Notifications.Type.ERROR, 

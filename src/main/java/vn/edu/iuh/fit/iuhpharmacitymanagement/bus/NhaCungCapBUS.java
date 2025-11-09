@@ -46,6 +46,10 @@ public class NhaCungCapBUS {
         return nhaCungCapDAO.timTheoSoDienThoai(soDienThoai);
     }
     
+    public NhaCungCap layNhaCungCapTheoEmail(String email) {
+        return nhaCungCapDAO.timTheoEmail(email);
+    }
+    
     public List<NhaCungCap> timKiemTheoText(String text) {
         return nhaCungCapDAO.timTheoText(text);
     }

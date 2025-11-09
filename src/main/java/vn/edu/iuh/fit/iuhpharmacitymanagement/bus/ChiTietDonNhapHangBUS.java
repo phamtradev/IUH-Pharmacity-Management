@@ -94,6 +94,34 @@ public class ChiTietDonNhapHangBUS {
     }
 
     /**
+     * Lấy danh sách chi tiết đơn nhập hàng theo mã đơn nhập hàng
+     * @param maDonNhapHang Mã đơn nhập hàng
+     * @return Danh sách chi tiết đơn nhập hàng
+     */
+    public List<ChiTietDonNhapHang> layChiTietDonNhapHangTheoMaDonNhapHang(String maDonNhapHang) {
+        List<ChiTietDonNhapHang> danhSach = chiTietDonNhapHangDAO.findByMaDonNhapHang(maDonNhapHang);
+        // Load đầy đủ thông tin LoHang và SanPham
+        for (ChiTietDonNhapHang ct : danhSach) {
+            if (ct.getLoHang() != null) {
+                try {
+                    loHangDAO.findById(ct.getLoHang().getMaLoHang())
+                        .ifPresent(loHang -> {
+                            try {
+                                ct.setLoHang(loHang);
+                            } catch (Exception e) {
+                                System.out.println("Lỗi khi set lô hàng: " + e.getMessage());
+                            }
+                        });
+                } catch (Exception e) {
+                    System.out.println("Lỗi khi load thông tin lô hàng: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+        }
+        return danhSach;
+    }
+
+    /**
      * Tính tổng tiền của đơn nhập hàng
      * @param maDonNhapHang Mã đơn nhập hàng
      * @return Tổng tiền của đơn nhập hàng

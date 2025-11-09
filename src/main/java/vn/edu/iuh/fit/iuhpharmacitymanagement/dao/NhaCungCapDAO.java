@@ -28,6 +28,9 @@ public class NhaCungCapDAO implements DAOInterface<NhaCungCap, String> {
     private final String SQL_TIM_THEO_SO_DIEN_THOAI = 
             "SELECT * FROM NhaCungCap WHERE soDienThoai = ?";
     
+    private final String SQL_TIM_THEO_EMAIL = 
+            "SELECT * FROM NhaCungCap WHERE email = ?";
+    
     private final String SQL_TIM_THEO_TEXT = 
             "SELECT * FROM NhaCungCap WHERE tenNhaCungCap LIKE ? OR email LIKE ? OR soDienThoai LIKE ?";
     
@@ -139,6 +142,22 @@ public class NhaCungCapDAO implements DAOInterface<NhaCungCap, String> {
              PreparedStatement stmt = con.prepareStatement(SQL_TIM_THEO_SO_DIEN_THOAI)) {
             
             stmt.setString(1, soDienThoai);
+            ResultSet rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                return mapResultSetToNhaCungCap(rs);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public NhaCungCap timTheoEmail(String email) {
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(SQL_TIM_THEO_EMAIL)) {
+            
+            stmt.setString(1, email);
             ResultSet rs = stmt.executeQuery();
             
             if (rs.next()) {
