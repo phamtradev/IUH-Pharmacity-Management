@@ -50,6 +50,11 @@ public class KhuyenMaiBUS {
                 .collect(Collectors.toList());
     }
 
+    //Kiểm tra tên khuyến mãi có tồn tại không
+    public boolean existsByName(String tenKhuyenMai) throws Exception {
+        return khuyenMaiDAO.existsByName(tenKhuyenMai);
+    }
+
     //Thêm một chương trình khuyến mãi mới, kiểm tra các quy tắc nghiệp vụ.
     public boolean themKhuyenMai(KhuyenMai km) throws Exception {
         //Tên khuyến mãi không được trùng

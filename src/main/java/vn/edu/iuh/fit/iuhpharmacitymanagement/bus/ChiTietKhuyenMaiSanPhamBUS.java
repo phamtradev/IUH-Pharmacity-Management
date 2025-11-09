@@ -4,10 +4,12 @@
  */
 package vn.edu.iuh.fit.iuhpharmacitymanagement.bus;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.ChiTietKhuyenMaiSanPhamDAO;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietKhuyenMaiSanPham;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhuyenMai;
 
 /**
  *
@@ -69,5 +71,20 @@ public class ChiTietKhuyenMaiSanPhamBUS {
     
     public int demTongSoChiTietKhuyenMaiSanPham() {
         return chiTietKhuyenMaiSanPhamDAO.count();
+    }
+
+    /**
+     * Kiểm tra xem sản phẩm có đang trong khuyến mãi nào đang hoạt động không
+     * hoặc khuyến mãi mới sẽ overlap với khuyến mãi cũ
+     * 
+     * @param maSanPham Mã sản phẩm cần kiểm tra
+     * @param ngayBatDau Ngày bắt đầu của khuyến mãi mới
+     * @param ngayKetThuc Ngày kết thúc của khuyến mãi mới
+     * @param maKhuyenMaiLoaiTru Mã khuyến mãi cần loại trừ (null nếu không loại trừ)
+     * @return KhuyenMai đang conflict, hoặc null nếu không có conflict
+     */
+    public KhuyenMai kiemTraConflictKhuyenMai(String maSanPham, LocalDate ngayBatDau, 
+                                               LocalDate ngayKetThuc, String maKhuyenMaiLoaiTru) {
+        return chiTietKhuyenMaiSanPhamDAO.kiemTraConflictKhuyenMai(maSanPham, ngayBatDau, ngayKetThuc, maKhuyenMaiLoaiTru);
     }
 }

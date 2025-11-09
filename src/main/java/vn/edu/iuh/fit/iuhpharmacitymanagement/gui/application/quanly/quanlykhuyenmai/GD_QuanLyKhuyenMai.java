@@ -183,7 +183,7 @@ public class GD_QuanLyKhuyenMai extends javax.swing.JPanel {
 
         btnXemChiTiet.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         btnXemChiTiet.setText("XEM CHI TIẾT");
-        btnXemChiTiet.setPreferredSize(new java.awt.Dimension(120, 40));
+        btnXemChiTiet.setPreferredSize(new java.awt.Dimension(150, 40));
         btnXemChiTiet.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnXemChiTietActionPerformed(evt);

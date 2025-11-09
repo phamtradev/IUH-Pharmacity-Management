@@ -203,4 +203,63 @@ public class ChiTietKhuyenMaiSanPhamDAO implements DAOInterface<ChiTietKhuyenMai
         }
         return false;
     }
+
+    /**
+     * Kiểm tra xem sản phẩm có đang trong khuyến mãi nào đang hoạt động không
+     * hoặc khuyến mãi mới sẽ overlap với khuyến mãi cũ
+     * 
+     * @param maSanPham Mã sản phẩm cần kiểm tra
+     * @param ngayBatDau Ngày bắt đầu của khuyến mãi mới
+     * @param ngayKetThuc Ngày kết thúc của khuyến mãi mới
+     * @param maKhuyenMaiLoaiTru Mã khuyến mãi cần loại trừ (null nếu không loại trừ)
+     * @return KhuyenMai đang conflict, hoặc null nếu không có conflict
+     */
+    public KhuyenMai kiemTraConflictKhuyenMai(String maSanPham, java.time.LocalDate ngayBatDau, 
+                                               java.time.LocalDate ngayKetThuc, String maKhuyenMaiLoaiTru) {
+        // Kiểm tra: khuyến mãi cũ đang hoạt động (ngày hiện tại nằm trong khoảng)
+        // HOẶC khuyến mãi mới sẽ overlap với khuyến mãi cũ (có khoảng thời gian giao nhau)
+        // Điều kiện overlap: ngayBatDauMoi <= ngayKetThucCu AND ngayKetThucMoi >= ngayBatDauCu
+        String sql = "SELECT TOP 1 km.maKhuyenMai, km.tenKhuyenMai, km.ngayBatDau, km.ngayKetThuc " +
+                     "FROM ChiTietKhuyenMaiSanPham ct " +
+                     "INNER JOIN KhuyenMai km ON ct.maKhuyenMai = km.maKhuyenMai " +
+                     "WHERE ct.maSanPham = ? " +
+                     "AND (" +
+                     "  (km.ngayBatDau <= CAST(GETDATE() AS DATE) AND km.ngayKetThuc >= CAST(GETDATE() AS DATE)) " + // Đang hoạt động
+                     "  OR " +
+                     "  (? <= km.ngayKetThuc AND ? >= km.ngayBatDau) " + // Overlap với khuyến mãi mới
+                     ") " +
+                     (maKhuyenMaiLoaiTru != null ? "AND km.maKhuyenMai != ? " : "") +
+                     "ORDER BY km.ngayBatDau DESC";
+        
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(sql)) {
+            
+            int paramIndex = 1;
+            stmt.setString(paramIndex++, maSanPham);
+            stmt.setDate(paramIndex++, java.sql.Date.valueOf(ngayBatDau)); // ngayBatDauMoi <= ngayKetThucCu
+            stmt.setDate(paramIndex++, java.sql.Date.valueOf(ngayKetThuc)); // ngayKetThucMoi >= ngayBatDauCu
+            
+            if (maKhuyenMaiLoaiTru != null) {
+                stmt.setString(paramIndex++, maKhuyenMaiLoaiTru);
+            }
+            
+            ResultSet rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                KhuyenMai khuyenMai = new KhuyenMai();
+                khuyenMai.setMaKhuyenMai(rs.getString("maKhuyenMai"));
+                khuyenMai.setTenKhuyenMai(rs.getString("tenKhuyenMai"));
+                khuyenMai.setNgayBatDauFromDatabase(rs.getDate("ngayBatDau").toLocalDate());
+                khuyenMai.setNgayKetThucFromDatabase(rs.getDate("ngayKetThuc").toLocalDate());
+                return khuyenMai;
+            }
+            
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (Exception ex) {
+            System.getLogger(ChiTietKhuyenMaiSanPhamDAO.class.getName())
+                    .log(System.Logger.Level.ERROR, (String) null, ex);
+        }
+        return null;
+    }
 }
