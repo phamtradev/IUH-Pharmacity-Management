@@ -323,8 +323,11 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
             // Tăng chiều cao hàng
             tableChiTiet.getTable().setRowHeight(45);
             
+            // Set để theo dõi các hàng đã được xử lý
+            java.util.Set<Integer> processedRows = new java.util.HashSet<>();
+            
             // Thiết lập renderer và editor cho cột Thao tác
-            setupActionColumnForChiTiet(tableChiTiet.getTable(), chiTietList, donTraHang);
+            setupActionColumnForChiTiet(tableChiTiet.getTable(), chiTietList, donTraHang, processedRows);
             
             mainPanel.add(scrollPane, java.awt.BorderLayout.CENTER);
             
@@ -407,7 +410,7 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
     }
     
     // Thiết lập cột Thao tác cho bảng chi tiết với 2 button
-    private void setupActionColumnForChiTiet(JTable table, List<ChiTietDonTraHang> chiTietList, DonTraHang donTraHang) {
+    private void setupActionColumnForChiTiet(JTable table, List<ChiTietDonTraHang> chiTietList, DonTraHang donTraHang, java.util.Set<Integer> processedRows) {
         // Renderer cho cột Thao tác (index 7)
         table.getColumnModel().getColumn(7).setCellRenderer(new TableCellRenderer() {
             @Override
@@ -417,11 +420,12 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
                 panel.setBackground(isSelected ? table.getSelectionBackground() : java.awt.Color.WHITE);
                 panel.setOpaque(true);
                 
-                // Kiểm tra trạng thái đơn trả hàng
+                // Kiểm tra trạng thái đơn trả hàng hoặc hàng đã được xử lý
                 String trangThaiDon = donTraHang.getTrangThaiXuLy() != null ? 
                     donTraHang.getTrangThaiXuLy() : "Chờ duyệt";
                 
-                if ("Đã xử lý".equals(trangThaiDon) || "Chờ xuất hủy".equals(trangThaiDon)) {
+                // Kiểm tra nếu hàng này đã được xử lý hoặc đơn đã được xử lý/xuất hủy
+                if (processedRows.contains(row) || "Đã xử lý".equals(trangThaiDon) || "Chờ xuất hủy".equals(trangThaiDon)) {
                     // Hiển thị label thông báo đã xử lý hoặc đã duyệt
                     String labelText = "Đã xử lý".equals(trangThaiDon) ? "✓ Đã xử lý" : "✓ Đã duyệt";
                     javax.swing.JLabel lblStatus = new javax.swing.JLabel(labelText);
@@ -474,11 +478,12 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
                 panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 3));
                 panel.setBackground(java.awt.Color.WHITE);
                 
-                // Kiểm tra trạng thái đơn trả hàng
+                // Kiểm tra trạng thái đơn trả hàng hoặc hàng đã được xử lý
                 String trangThaiDon = donTraHang.getTrangThaiXuLy() != null ? 
                     donTraHang.getTrangThaiXuLy() : "Chờ duyệt";
                 
-                if ("Đã xử lý".equals(trangThaiDon) || "Chờ xuất hủy".equals(trangThaiDon)) {
+                // Kiểm tra nếu hàng này đã được xử lý hoặc đơn đã được xử lý/xuất hủy
+                if (processedRows.contains(currentRow) || "Đã xử lý".equals(trangThaiDon) || "Chờ xuất hủy".equals(trangThaiDon)) {
                     // Không cho phép edit nếu đã xử lý hoặc đã duyệt
                     String labelText = "Đã xử lý".equals(trangThaiDon) ? "✓ Đã xử lý" : "✓ Đã duyệt";
                     javax.swing.JLabel lblStatus = new javax.swing.JLabel(labelText);
@@ -514,7 +519,7 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
                     // Add action listeners
                     btnThemVaoKho.addActionListener(e -> {
                         ChiTietDonTraHang chiTiet = chiTietList.get(currentRow);
-                        xuLyThemVaoKho(chiTiet, table, currentRow, donTraHang);
+                        xuLyThemVaoKho(chiTiet, table, currentRow, donTraHang, processedRows, chiTietList.size());
                         fireEditingStopped();
                     });
                     
@@ -539,7 +544,7 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
     }
     
     // Xử lý thêm sản phẩm trả về vào kho
-    private void xuLyThemVaoKho(ChiTietDonTraHang chiTiet, JTable table, int row, DonTraHang donTraHangParam) {
+    private void xuLyThemVaoKho(ChiTietDonTraHang chiTiet, JTable table, int row, DonTraHang donTraHangParam, java.util.Set<Integer> processedRows, int totalItems) {
         try {
             // Lấy đơn trả hàng từ chi tiết để đảm bảo đúng
             DonTraHang donTraHang = chiTiet.getDonTraHang();
@@ -568,58 +573,165 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
             }
             
             // Lấy danh sách lô hàng của sản phẩm
-            List<LoHang> danhSachLoHang = loHangDAO.findByMaSanPham(maSanPham);
+            List<LoHang> danhSachLoHangGoc = loHangDAO.findByMaSanPham(maSanPham);
             
-            if (danhSachLoHang.isEmpty()) {
+            if (danhSachLoHangGoc.isEmpty()) {
                 Notifications.getInstance().show(Notifications.Type.WARNING, 
                     "Không tìm thấy lô hàng cho sản phẩm này!\nVui lòng tạo lô hàng mới trước.");
                 return;
             }
             
-            // Tìm lô hàng còn hạn và có tồn kho (ưu tiên lô có ngày hết hạn gần nhất)
-            LoHang loHangPhongHop = null;
             LocalDate today = LocalDate.now();
             
-            for (LoHang lh : danhSachLoHang) {
-                if (lh.getHanSuDung().isAfter(today) && lh.isTrangThai()) {
-                    if (loHangPhongHop == null || lh.getHanSuDung().isBefore(loHangPhongHop.getHanSuDung())) {
-                        loHangPhongHop = lh;
+            // LỌC BỎ TẤT CẢ CÁC LÔ HẾT HẠN (HSD < today) - KHÔNG PHÂN BIỆT ĐÃ XUẤT HỦY HAY CHƯA
+            // CHỈ GIỮ LẠI CÁC LÔ CÒN HẠN (HSD >= today) VÀ ĐANG HOẠT ĐỘNG
+            List<LoHang> danhSachLoHang = new ArrayList<>();
+            int soLoHetHan = 0;
+            
+            System.out.println("=== LỌC LÔ HÀNG ===");
+            System.out.println("Ngày hôm nay: " + today);
+            System.out.println("Tổng số lô hàng ban đầu: " + danhSachLoHangGoc.size());
+            
+            for (LoHang lh : danhSachLoHangGoc) {
+                LocalDate hanSuDung = lh.getHanSuDung();
+                boolean hetHan = hanSuDung.isBefore(today); // HSD < today = hết hạn
+                boolean conHan = hanSuDung.isAfter(today) || hanSuDung.isEqual(today); // HSD >= today = còn hạn
+                boolean trangThai = lh.isTrangThai();
+                
+                // NẾU LÔ HẾT HẠN VÀ ĐANG HOẠT ĐỘNG -> SET TRẠNG THÁI = FALSE VÀ CẬP NHẬT VÀO DATABASE
+                if (hetHan && trangThai) {
+                    System.out.println(String.format("  ⚠️ PHÁT HIỆN LÔ HẾT HẠN - Lô: %s | HSD: %s | Tồn kho: %d", 
+                        lh.getMaLoHang(), hanSuDung, lh.getTonKho()));
+                    
+                    // Set trạng thái = false (hết hạn)
+                    lh.setTrangThai(false);
+                    
+                    // Cập nhật vào database
+                    boolean updateSuccess = loHangDAO.update(lh);
+                    if (updateSuccess) {
+                        System.out.println(String.format("  ✓ ĐÃ CẬP NHẬT TRẠNG THÁI HẾT HẠN VÀO DATABASE - Lô: %s", 
+                            lh.getMaLoHang()));
+                    } else {
+                        System.err.println(String.format("  ✗ LỖI: Không thể cập nhật trạng thái hết hạn vào database - Lô: %s", 
+                            lh.getMaLoHang()));
                     }
+                    
+                    soLoHetHan++;
+                    System.out.println(String.format("  ✗ BỎ QUA - Lô: %s | HSD: %s | Tồn kho: %d | Lý do: Hết hạn (đã cập nhật trạng thái)", 
+                        lh.getMaLoHang(), hanSuDung, lh.getTonKho()));
+                }
+                // CHỈ GIỮ LẠI CÁC LÔ CÒN HẠN VÀ ĐANG HOẠT ĐỘNG
+                else if (conHan && trangThai) {
+                    danhSachLoHang.add(lh);
+                    System.out.println(String.format("  ✓ GIỮ LẠI - Lô: %s | HSD: %s | Tồn kho: %d (Còn hạn, đang hoạt động)", 
+                        lh.getMaLoHang(), hanSuDung, lh.getTonKho()));
+                } else {
+                    soLoHetHan++;
+                    String lyDo = !trangThai ? "Ngừng hoạt động" : "Không xác định";
+                    System.out.println(String.format("  ✗ BỎ QUA - Lô: %s | HSD: %s | Tồn kho: %d | Lý do: %s", 
+                        lh.getMaLoHang(), hanSuDung, lh.getTonKho(), lyDo));
                 }
             }
             
-            // Nếu không tìm thấy lô còn hạn, cho phép chọn lô khác
-            if (loHangPhongHop == null && !danhSachLoHang.isEmpty()) {
-                loHangPhongHop = danhSachLoHang.get(0); // Lấy lô đầu tiên
-            }
+            System.out.println("Số lô hết hạn/ngừng hoạt động (đã loại bỏ): " + soLoHetHan);
+            System.out.println("Số lô còn hạn và đang hoạt động: " + danhSachLoHang.size());
             
-            if (loHangPhongHop == null) {
+            if (danhSachLoHang.isEmpty()) {
                 Notifications.getInstance().show(Notifications.Type.ERROR, 
-                    "Không thể xác định lô hàng phù hợp!");
+                    String.format("❌ KHÔNG THỂ THÊM SẢN PHẨM '%s' VÀO KHO!\n\n" +
+                        "Không còn lô hàng nào CÒN HẠN và đang hoạt động.\n" +
+                        "Tất cả các lô hàng đều đã hết hạn hoặc ngừng hoạt động.\n\n" +
+                        "⚠️ BẮT BUỘC: Vui lòng XUẤT HỦY các lô hàng hết hạn trước, sau đó tạo lô hàng mới với hạn sử dụng hợp lệ.",
+                        tenSanPham));
                 return;
             }
+            
+            // Tìm lô hàng có ngày hết hạn gần nhất (FIFO - First In First Out)
+            // Tất cả lô trong danhSachLoHang đã được đảm bảo là còn hạn và đang hoạt động
+            LoHang loHangPhongHop = null;
+            
+            System.out.println("=== CHỌN LÔ HÀNG PHÙ HỢP (FIFO) ===");
+            
+            for (LoHang lh : danhSachLoHang) {
+                LocalDate hanSuDung = lh.getHanSuDung();
+                
+                System.out.println(String.format("  - Lô: %s | HSD: %s | Tồn kho: %d", 
+                    lh.getMaLoHang(), hanSuDung, lh.getTonKho()));
+                
+                // Ưu tiên lô có ngày hết hạn gần nhất (FIFO - First In First Out)
+                if (loHangPhongHop == null || hanSuDung.isBefore(loHangPhongHop.getHanSuDung())) {
+                    loHangPhongHop = lh;
+                    System.out.println("    -> ✓ Chọn lô này làm lô phù hợp");
+                }
+            }
+            
+            // Đảm bảo đã chọn được lô hàng (nên không bao giờ null vì đã kiểm tra isEmpty ở trên)
+            if (loHangPhongHop == null) {
+                System.err.println("❌ LỖI NGHIÊM TRỌNG: Không thể chọn lô hàng!");
+                Notifications.getInstance().show(Notifications.Type.ERROR, 
+                    "❌ LỖI HỆ THỐNG!\n\nKhông thể chọn lô hàng. Vui lòng liên hệ quản trị viên.");
+                return;
+            }
+            
+            // VALIDATION CUỐI CÙNG: Đảm bảo lô được chọn thực sự còn hạn
+            LocalDate hanSuDungCuoiCung = loHangPhongHop.getHanSuDung();
+            boolean conHanCuoiCung = hanSuDungCuoiCung.isAfter(today) || hanSuDungCuoiCung.isEqual(today);
+            
+            if (!conHanCuoiCung) {
+                System.err.println("❌ LỖI NGHIÊM TRỌNG: Lô hàng đã hết hạn nhưng vẫn được chọn!");
+                System.err.println("Mã lô: " + loHangPhongHop.getMaLoHang());
+                System.err.println("Hạn sử dụng: " + hanSuDungCuoiCung);
+                System.err.println("Ngày hôm nay: " + today);
+                Notifications.getInstance().show(Notifications.Type.ERROR, 
+                    String.format("❌ LỖI HỆ THỐNG!\n\n" +
+                        "Lô hàng '%s' đã HẾT HẠN (HSD: %s) nhưng vẫn được chọn.\n" +
+                        "Vui lòng liên hệ quản trị viên để xử lý.",
+                        loHangPhongHop.getMaLoHang(), hanSuDungCuoiCung));
+                return;
+            }
+            
+            // Log thông tin trước khi cập nhật
+            System.out.println("=== THÊM SẢN PHẨM VÀO KHO ===");
+            System.out.println("Mã lô hàng: " + loHangPhongHop.getMaLoHang());
+            System.out.println("Tên lô hàng: " + loHangPhongHop.getTenLoHang());
+            System.out.println("Hạn sử dụng: " + loHangPhongHop.getHanSuDung() + " (Còn hạn: CÓ)");
+            System.out.println("Tồn kho hiện tại: " + loHangPhongHop.getTonKho());
             
             // Cập nhật tồn kho
             boolean success = loHangBUS.updateTonKho(loHangPhongHop.getMaLoHang(), soLuong);
             
             if (success) {
-                // Cập nhật trạng thái đơn trả hàng
-                donTraHang.setTrangThaiXuLy("Đã xử lý");
-                donTraHangBUS.capNhatDonTraHang(donTraHang);
+                // Đánh dấu hàng này đã được xử lý
+                processedRows.add(row);
                 
                 // Cập nhật trạng thái CHỈ cho hàng hiện tại trong dialog
                 table.setValueAt("✓ Đã xử lý", row, 7);
                 table.repaint();
                 
+                // Kiểm tra xem tất cả các item đã được xử lý chưa
+                boolean tatCaDaXuLy = (processedRows.size() == totalItems);
+                
+                // Chỉ cập nhật trạng thái đơn trả hàng khi TẤT CẢ các item đã được xử lý
+                if (tatCaDaXuLy) {
+                    donTraHang.setTrangThaiXuLy("Đã xử lý");
+                    donTraHangBUS.capNhatDonTraHang(donTraHang);
+                }
+                
                 // Refresh bảng ngoài để cập nhật trạng thái
                 reloadTableData();
                 
+                // Lấy lại thông tin lô hàng sau khi cập nhật để hiển thị tồn kho mới
+                LoHang loHangSauCapNhat = loHangDAO.findById(loHangPhongHop.getMaLoHang()).orElse(loHangPhongHop);
+                
                 Notifications.getInstance().show(Notifications.Type.SUCCESS, 
-                    String.format("Đã thêm %d sản phẩm vào lô '%s'", 
-                        soLuong, loHangPhongHop.getTenLoHang()));
+                    String.format("Đã thêm %d sản phẩm vào lô '%s'\nTồn kho mới: %d", 
+                        soLuong, loHangPhongHop.getTenLoHang(), loHangSauCapNhat.getTonKho()));
+                
+                System.out.println("✓ Cập nhật thành công! Tồn kho mới: " + loHangSauCapNhat.getTonKho());
             } else {
+                System.err.println("✗ Lỗi: Không thể cập nhật tồn kho!");
                 Notifications.getInstance().show(Notifications.Type.ERROR, 
-                    "Lỗi khi cập nhật tồn kho!");
+                    "Lỗi khi cập nhật tồn kho! Vui lòng thử lại.");
             }
             
         } catch (Exception e) {

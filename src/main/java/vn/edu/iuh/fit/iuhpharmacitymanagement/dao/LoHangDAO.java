@@ -80,6 +80,11 @@ public class LoHangDAO implements DAOInterface<LoHang, String> {
     }
 
     public boolean delete(String maLoHang) {
+        // Xóa cascade: Xóa các chi tiết hàng hỏng liên quan trước
+        ChiTietHangHongDAO chiTietHangHongDAO = new ChiTietHangHongDAO();
+        chiTietHangHongDAO.deleteByMaLoHang(maLoHang);
+        
+        // Sau đó mới xóa lô hàng
         String sql = "DELETE FROM LoHang WHERE maLoHang = ?";
         try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(sql)) {
 
@@ -337,24 +342,37 @@ public class LoHangDAO implements DAOInterface<LoHang, String> {
             stmt.setInt(1, themSoLuong);
             stmt.setString(2, maLoHang);
 
-            return stmt.executeUpdate() > 0;
+            int rowsAffected = stmt.executeUpdate();
+            System.out.println("UPDATE tonKho - Mã lô: " + maLoHang + ", Số lượng thêm: " + themSoLuong + ", Rows affected: " + rowsAffected);
+            
+            if (rowsAffected == 0) {
+                System.err.println("Cảnh báo: Không có hàng nào được cập nhật! Có thể mã lô hàng không tồn tại: " + maLoHang);
+            }
+            
+            return rowsAffected > 0;
         } catch (SQLException e) {
+            System.err.println("Lỗi SQL khi cập nhật tồn kho: " + e.getMessage());
             e.printStackTrace();
             return false;
         }
     }
 
-    // Lọc sp hết hsd
+    // Lọc sp hết hsd (loại bỏ các lô hết hạn đã xuất hủy: HSD < hôm nay và tồn kho = 0)
     public List<LoHang> timSanPhamHetHan() {
         List<LoHang> danhSach = new ArrayList<>();
         //join cả 3 bảng LoHang, SanPham, và DonViTinh
-        String sql = "SELECT lh.maLoHang, lh.tenLoHang, lh.hanSuDung, lh.tonKho, "
+        // Điều kiện: HSD <= 6 tháng kể từ hôm nay VÀ tồn kho > 0 VÀ trạng thái = true (còn hoạt động)
+        // (Tự động loại bỏ các lô hết hạn đã xuất hủy: HSD < hôm nay và tồn kho = 0 hoặc trạng thái = false)
+        String sql = "SELECT lh.maLoHang, lh.tenLoHang, lh.hanSuDung, lh.tonKho, lh.trangThai, "
                 + "       sp.maSanPham, sp.tenSanPham, sp.giaNhap, "
                 + "       dvt.tenDonVi "
                 + "FROM LoHang lh "
                 + "JOIN SanPham sp ON lh.maSanPham = sp.maSanPham "
                 + "JOIN DonViTinh dvt ON sp.maDonVi = dvt.maDonVi "
-                + "WHERE lh.hanSuDung <= DATEADD(month, 6, GETDATE()) AND lh.tonKho > 0";
+                + "WHERE lh.hanSuDung <= DATEADD(month, 6, GETDATE()) "
+                + "  AND lh.tonKho > 0 "
+                + "  AND lh.trangThai = 1 "
+                + "  AND NOT (lh.hanSuDung < CAST(GETDATE() AS DATE) AND lh.tonKho = 0)";
 
         try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
 
@@ -376,6 +394,7 @@ public class LoHangDAO implements DAOInterface<LoHang, String> {
                 loHang.setTenLoHang(rs.getString("tenLoHang"));
                 loHang.setHanSuDung(rs.getDate("hanSuDung").toLocalDate());
                 loHang.setTonKhoNoValidation(rs.getInt("tonKho")); // Dùng NoValidation khi load từ DB
+                loHang.setTrangThai(rs.getBoolean("trangThai")); // Set trạng thái
                 loHang.setSanPham(sanPham); // Gán sản phẩm vào lô hàng
 
                 danhSach.add(loHang);

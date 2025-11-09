@@ -498,6 +498,28 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
                 }
             }
             
+            // 6.4. Set trạng thái lô hàng = false (ngừng hoạt động) sau khi xuất hủy
+            for (ChiTietHangHong chiTiet : chiTietList) {
+                try {
+                    LoHang loHang = chiTiet.getLoHang();
+                    String maLoHang = loHang.getMaLoHang();
+                    
+                    // Set trạng thái = false (ngừng hoạt động)
+                    loHang.setTrangThai(false);
+                    
+                    // Cập nhật vào database
+                    boolean updateTrangThaiSuccess = loHangBUS.capNhatLoHang(loHang);
+                    if (updateTrangThaiSuccess) {
+                        System.out.println("✓ Đã cập nhật trạng thái NGỪNG HOẠT ĐỘNG cho lô hàng: " + maLoHang);
+                    } else {
+                        System.err.println("✗ Lỗi khi cập nhật trạng thái lô hàng: " + maLoHang);
+                    }
+                } catch (Exception e) {
+                    System.err.println("✗ Lỗi khi cập nhật trạng thái lô hàng " + chiTiet.getLoHang().getMaLoHang() + ": " + e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+            
             // 6.5. Cập nhật trạng thái các đơn trả hàng đã xuất hủy
             if (!danhSachDonTraDaXuLy.isEmpty()) {
                 vn.edu.iuh.fit.iuhpharmacitymanagement.bus.DonTraHangBUS donTraBUS = 

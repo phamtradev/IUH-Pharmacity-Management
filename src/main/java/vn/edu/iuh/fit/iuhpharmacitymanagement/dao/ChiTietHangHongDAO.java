@@ -193,6 +193,45 @@ public class ChiTietHangHongDAO implements DAOInterface<ChiTietHangHong, String>
         
         return ds;
     }
+    
+    /**
+     * Xóa tất cả chi tiết hàng hỏng theo mã lô hàng
+     * Dùng để xóa cascade khi xóa lô hàng
+     */
+    public boolean deleteByMaLoHang(String maLoHang) {
+        String sql = "DELETE FROM ChiTietHangHong WHERE maLoHang = ?";
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(sql)) {
+            
+            stmt.setString(1, maLoHang);
+            return stmt.executeUpdate() >= 0; // >= 0 vì có thể không có record nào để xóa
+            
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+    /**
+     * Kiểm tra xem lô hàng có đang được sử dụng trong chi tiết hàng hỏng không
+     */
+    public boolean existsByMaLoHang(String maLoHang) {
+        String sql = "SELECT COUNT(*) AS total FROM ChiTietHangHong WHERE maLoHang = ?";
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(sql)) {
+            
+            stmt.setString(1, maLoHang);
+            ResultSet rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                return rs.getInt("total") > 0;
+            }
+            
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 }
     
     

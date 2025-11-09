@@ -44,7 +44,15 @@ public class ChiTietKhuyenMaiSanPhamDAO implements DAOInterface<ChiTietKhuyenMai
             "WHERE ct.maKhuyenMai = ?";
 
     private final String SQL_TIM_THEO_MA_SAN_PHAM =
-            "SELECT * FROM ChiTietKhuyenMaiSanPham WHERE maSanPham = ?";
+            "SELECT ct.maSanPham, ct.maKhuyenMai, " +
+            "sp.tenSanPham, sp.soDangKy, sp.hoatChat, sp.lieuDung, sp.cachDongGoi, " +
+            "sp.quocGiaSanXuat, sp.nhaSanXuat, sp.giaNhap, sp.giaBan, sp.hoatDong, " +
+            "sp.thueVAT, sp.hinhAnh, sp.loaiSanPham, sp.maDonVi, " +
+            "dv.tenDonVi AS donViTinhTen " +
+            "FROM ChiTietKhuyenMaiSanPham ct " +
+            "INNER JOIN SanPham sp ON ct.maSanPham = sp.maSanPham " +
+            "LEFT JOIN DonViTinh dv ON sp.maDonVi = dv.maDonVi " +
+            "WHERE ct.maSanPham = ?";
 
     private final String SQL_KIEM_TRA_TON_TAI_SAN_PHAM_VA_KHUYEN_MAI =
             "SELECT COUNT(*) AS total FROM ChiTietKhuyenMaiSanPham WHERE maSanPham = ? AND maKhuyenMai = ?";

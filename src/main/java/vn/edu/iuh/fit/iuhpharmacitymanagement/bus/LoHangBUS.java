@@ -66,8 +66,12 @@ public class LoHangBUS {
         }
         LoHang loHang = loHangOpt.get();
 
-        //Không được xóa lô hàng nếu vẫn còn tồn kho.
-        if (loHang.getTonKho() > 0) {
+        // Kiểm tra xem lô hàng có hết hạn không (HSD < ngày hiện tại)
+        boolean hetHan = loHang.getHanSuDung().isBefore(LocalDate.now());
+
+        // Nếu lô hàng chưa hết hạn: kiểm tra tồn kho
+        // Nếu lô hàng đã hết hạn: bỏ qua kiểm tra tồn kho, cho phép xóa luôn
+        if (!hetHan && loHang.getTonKho() > 0) {
             throw new Exception("Không thể xóa lô hàng vì vẫn còn " + loHang.getTonKho() + " sản phẩm tồn kho.");
         }
 
