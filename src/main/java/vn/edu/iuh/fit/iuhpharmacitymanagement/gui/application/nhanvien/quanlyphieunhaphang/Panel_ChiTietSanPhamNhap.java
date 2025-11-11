@@ -7,15 +7,14 @@ package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlyph
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.LoHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.LoHangBUS;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.SanPhamDAO;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
-import java.util.Calendar;
+import java.util.Optional;
 import javax.swing.ImageIcon;
-import javax.swing.JSpinner;
-import javax.swing.SpinnerDateModel;
 import javax.swing.JToggleButton;
 import javax.swing.ButtonGroup;
 import java.awt.Component;
@@ -42,19 +41,26 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
     
     private double cachedTongTien = 0; // Cache giá trị tổng tiền để detect thay đổi
     private LoHangBUS loHangBUS;
+    private SanPhamDAO sanPhamDAO;
     private List<LoHang> danhSachLoHang;
     private LoHang loHangDaChon = null;
     private String tenLoHangTuExcel = null; // Lưu tên lô từ Excel
+    private String soDienThoaiNCCTuExcel = null; // Lưu SĐT NCC từ Excel
     
     // Thông tin lô mới sẽ tạo
     private String tenLoMoi = null;
     private Date hsdLoMoi = null;
     private int soLuongLoMoi = 1;
+    
+    // Dữ liệu từ Excel để tự động điền vào form tạo lô mới
+    private Date hsdTuExcel = null;
+    private Integer soLuongTuExcel = null;
 
     public Panel_ChiTietSanPhamNhap() {
         this.currencyFormat = new DecimalFormat("#,###");
         this.dateFormat = new SimpleDateFormat("dd/MM/yyyy");
         this.loHangBUS = new LoHangBUS();
+        this.sanPhamDAO = new SanPhamDAO();
         initComponents();
     }
     
@@ -67,6 +73,7 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
         this.currencyFormat = new DecimalFormat("#,###");
         this.dateFormat = new SimpleDateFormat("dd/MM/yyyy");
         this.loHangBUS = new LoHangBUS();
+        this.sanPhamDAO = new SanPhamDAO();
         this.tenLoHangTuExcel = null; // Không có lô từ Excel
         initComponents();
         loadSanPhamData();
@@ -75,42 +82,96 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
     
     /**
      * Constructor khi CÓ thông tin lô từ Excel
-     * Tự động chọn lô nếu đã tồn tại, hoặc chuẩn bị tạo lô mới
+     * Tự động chọn lô nếu có cùng Số ĐK + HSD + SĐT NCC khớp, nếu không → báo lỗi
      */
-    public Panel_ChiTietSanPhamNhap(SanPham sanPham, int soLuong, double donGiaNhap, Date hanDung, String tenLoHang) {
+    public Panel_ChiTietSanPhamNhap(SanPham sanPham, int soLuong, double donGiaNhap, Date hanDung, String tenLoHang, String soDienThoaiNCC) throws Exception {
+        System.out.println("→→ Panel Constructor: " + sanPham.getTenSanPham() + " | SL=" + soLuong + " | TênLô=" + tenLoHang + " | SĐT NCC=" + soDienThoaiNCC);
+        
         this.sanPham = sanPham;
         this.currencyFormat = new DecimalFormat("#,###");
         this.dateFormat = new SimpleDateFormat("dd/MM/yyyy");
         this.loHangBUS = new LoHangBUS();
+        this.sanPhamDAO = new SanPhamDAO();
         this.tenLoHangTuExcel = tenLoHang; // Lưu tên lô từ Excel
-        initComponents();
-        loadSanPhamData();
-        loadLoHangData();
+        this.soDienThoaiNCCTuExcel = soDienThoaiNCC; // Lưu SĐT NCC từ Excel
         
-        // Set các giá trị từ Excel
-        spinnerSoLuong.setValue(soLuong);
-        txtDonGia.setText(currencyFormat.format(donGiaNhap) + " đ");
+        // Lưu dữ liệu từ Excel để tự động điền vào form tạo lô mới
+        this.hsdTuExcel = hanDung;
+        this.soLuongTuExcel = soLuong;
         
-        // Tìm lô hàng theo tên (nếu đã tồn tại)
-        if (tenLoHang != null && !tenLoHang.trim().isEmpty()) {
-            loHangDaChon = danhSachLoHang.stream()
-                    .filter(lo -> lo.getTenLoHang().equalsIgnoreCase(tenLoHang.trim()))
-                    .findFirst()
-                    .orElse(null);
+        try {
+            initComponents();
+            loadSanPhamData();
+            loadLoHangData();
             
-            if (loHangDaChon != null) {
-                // Lô đã tồn tại - hiển thị thông tin
-                updateLoInfo();
-            } else {
-                // Lô chưa tồn tại - chuẩn bị tạo mới
-                tenLoMoi = tenLoHang;
-                hsdLoMoi = hanDung;
-                updateLoInfo();
+            // Set các giá trị từ Excel
+            spinnerSoLuong.setValue(soLuong);
+            txtDonGia.setText(currencyFormat.format(donGiaNhap) + " đ");
+            
+            // 🔍 TÌM LÔ HÀNG THEO SỐ ĐĂNG KÝ + HẠN SỬ DỤNG + SĐT NCC
+            System.out.println("📅 [PANEL] Date từ Excel: " + hanDung);
+            System.out.println("📅 [PANEL] Date format: " + dateFormat.format(hanDung));
+            System.out.println("📞 [PANEL] SĐT NCC từ Excel: " + soDienThoaiNCC);
+            
+            LocalDate hsd = hanDung.toInstant()
+                .atZone(java.time.ZoneId.systemDefault())
+                .toLocalDate();
+            
+            System.out.println("📅 [PANEL] LocalDate sau convert: " + hsd);
+            
+            // ═══════════════════════════════════════════════════════════════════
+            // KIỂM TRA SỐ ĐIỆN THOẠI NCC
+            // ═══════════════════════════════════════════════════════════════════
+            if (soDienThoaiNCC != null && !soDienThoaiNCC.trim().isEmpty()) {
+                // Lấy danh sách SĐT của các NCC đã nhập sản phẩm này
+                List<String> danhSachSDT = sanPhamDAO.getSoDienThoaiNCCBySoDangKy(sanPham.getSoDangKy());
+                
+                if (!danhSachSDT.isEmpty() && !danhSachSDT.contains(soDienThoaiNCC.trim())) {
+                    // ❌ SĐT NCC KHÔNG KHỚP → BÁO LỖI
+                    String errorMsg = "Sản phẩm '" + sanPham.getTenSanPham() + 
+                        "' có số đăng ký " + sanPham.getSoDangKy() + 
+                        " không thể nhập từ nhiều nhà cung cấp khác nhau";
+                    
+                    System.out.println("❌ [PANEL] " + errorMsg);
+                    throw new Exception(errorMsg);
+                }
             }
+            
+            // ═══════════════════════════════════════════════════════════════════
+            // TÌM LÔ HÀNG THEO SỐ ĐĂNG KÝ + HẠN SỬ DỤNG
+            // ═══════════════════════════════════════════════════════════════════
+            Optional<LoHang> loTrung = loHangBUS.timLoHangTheoSoDangKyVaHanSuDung(
+                sanPham.getSoDangKy(),
+                hsd
+            );
+            
+            if (loTrung.isPresent()) {
+                // ✅ TÌM THẤY LÔ TRÙNG → TỰ ĐỘNG CHỌN
+                loHangDaChon = loTrung.get();
+                
+                // ⚠️ QUAN TRỌNG: Cập nhật lại sanPham từ loHangDaChon để có đầy đủ thông tin (bao gồm hinhAnh từ JOIN)
+                if (loHangDaChon.getSanPham() != null) {
+                    this.sanPham = loHangDaChon.getSanPham();
+                    System.out.println("✅ [Panel] Đã cập nhật sanPham từ loHangDaChon, hinhAnh = " + this.sanPham.getHinhAnh());
+                    // Load lại dữ liệu sản phẩm (bao gồm hình ảnh)
+                    loadSanPhamData();
+                }
+                
+                updateLoInfo(); // Hiển thị thẻ lô
+            } else {
+                // ❌ KHÔNG TÌM THẤY LÔ → HIỂN thị nút "Chọn lô" (dữ liệu Excel sẽ tự động điền vào form)
+                System.out.println("→→ Không tìm thấy lô trùng, hiển thị nút 'Chọn lô' với dữ liệu từ Excel");
+                // Không tự động tạo lô, để user bấm "Chọn lô" và chọn tab "Tạo lô mới"
+                // Dữ liệu từ Excel (tenLoHangTuExcel, hsdTuExcel, soLuongTuExcel) đã được lưu
+                // và sẽ tự động điền vào form khi mở dialog
+            }
+            
+            // Cập nhật tổng tiền
+            updateTongTien();
+        } catch (Exception e) {
+            System.out.println("✗✗ LỖI khởi tạo panel: " + e.getMessage());
+            throw e; // ⚠️ THROW LẠI để method gọi bắt được
         }
-        
-        // Cập nhật tổng tiền
-        updateTongTien();
     }
     
     /**
@@ -204,18 +265,55 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
             // Load hình ảnh nếu có
             if (sanPham.getHinhAnh() != null && !sanPham.getHinhAnh().isEmpty()) {
                 try {
-                    // Thử load từ đường dẫn tuyệt đối (nếu file được chọn từ JFileChooser)
-                    java.io.File imageFile = new java.io.File(sanPham.getHinhAnh());
                     ImageIcon icon = null;
+                    String hinhAnh = sanPham.getHinhAnh().trim(); // Loại bỏ khoảng trắng thừa
                     
-                    if (imageFile.exists()) {
-                        // File tồn tại với đường dẫn tuyệt đối
-                        icon = new ImageIcon(sanPham.getHinhAnh());
+                    System.out.println("🔍 [Panel_ChiTietSanPhamNhap] Đang load hình ảnh: '" + hinhAnh + "'");
+                    System.out.println("🔍 [Panel_ChiTietSanPhamNhap] Working directory: " + System.getProperty("user.dir"));
+                    
+                    // 1. Thử load từ đường dẫn tuyệt đối (nếu file được chọn từ JFileChooser)
+                    java.io.File imageFile = new java.io.File(hinhAnh);
+                    if (imageFile.exists() && imageFile.isFile()) {
+                        icon = new ImageIcon(hinhAnh);
+                        System.out.println("✅ Load hình từ đường dẫn tuyệt đối: " + hinhAnh);
                     } else {
-                        // Thử load từ resources
-                        java.net.URL imgURL = getClass().getResource("/img/" + sanPham.getHinhAnh());
+                        // 2. Thử load từ resources (khi chạy từ JAR)
+                        java.net.URL imgURL = getClass().getResource("/img/" + hinhAnh);
                         if (imgURL != null) {
                             icon = new ImageIcon(imgURL);
+                            System.out.println("✅ Load hình từ resources: /img/" + hinhAnh);
+                        } else {
+                            // 3. Thử load từ file system với đường dẫn tương đối (khi chạy từ IDE)
+                            String imagePath = "src/main/resources/img/" + hinhAnh;
+                            java.io.File fileSystemImage = new java.io.File(imagePath);
+                            if (fileSystemImage.exists() && fileSystemImage.isFile()) {
+                                icon = new ImageIcon(imagePath);
+                                System.out.println("✅ Load hình từ file system (relative): " + imagePath);
+                            } else {
+                                // 4. Thử load từ file system với đường dẫn tuyệt đối từ project root
+                                String projectRoot = System.getProperty("user.dir");
+                                String absoluteImagePath = projectRoot + java.io.File.separator + "src" + java.io.File.separator + "main" + java.io.File.separator + "resources" + java.io.File.separator + "img" + java.io.File.separator + hinhAnh;
+                                java.io.File absoluteFile = new java.io.File(absoluteImagePath);
+                                if (absoluteFile.exists() && absoluteFile.isFile()) {
+                                    icon = new ImageIcon(absoluteImagePath);
+                                    System.out.println("✅ Load hình từ file system (absolute): " + absoluteImagePath);
+                                } else {
+                                    // 5. Thử load từ target/classes/img/ (khi chạy từ IDE với Maven)
+                                    String targetImagePath = projectRoot + java.io.File.separator + "target" + java.io.File.separator + "classes" + java.io.File.separator + "img" + java.io.File.separator + hinhAnh;
+                                    java.io.File targetFile = new java.io.File(targetImagePath);
+                                    if (targetFile.exists() && targetFile.isFile()) {
+                                        icon = new ImageIcon(targetImagePath);
+                                        System.out.println("✅ Load hình từ target/classes/img/: " + targetImagePath);
+                                    } else {
+                                        System.err.println("❌ Không tìm thấy hình ảnh ở bất kỳ đâu:");
+                                        System.err.println("   - Đường dẫn tuyệt đối: " + hinhAnh);
+                                        System.err.println("   - Resources: /img/" + hinhAnh);
+                                        System.err.println("   - File system (relative): " + imagePath);
+                                        System.err.println("   - File system (absolute): " + absoluteImagePath);
+                                        System.err.println("   - Target/classes: " + targetImagePath);
+                                    }
+                                }
+                            }
                         }
                     }
                     
@@ -224,15 +322,19 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
                         java.awt.Image img = icon.getImage().getScaledInstance(100, 100, java.awt.Image.SCALE_SMOOTH);
                         lblHinh.setIcon(new ImageIcon(img));
                         lblHinh.setText("");
+                        System.out.println("✅ Đã hiển thị hình ảnh thành công!");
                     } else {
                         lblHinh.setText("IMG");
+                        System.err.println("❌ Icon null hoặc không hợp lệ (width=" + (icon != null ? icon.getIconWidth() : "null") + ")");
                     }
                 } catch (Exception e) {
                     lblHinh.setText("IMG");
+                    System.err.println("❌ Lỗi khi load hình ảnh: " + sanPham.getHinhAnh() + " - " + e.getMessage());
                     e.printStackTrace();
                 }
             } else {
                 lblHinh.setText("IMG");
+                System.out.println("⚠️ Sản phẩm không có hình ảnh (hinhAnh = null hoặc empty)");
             }
         }
     }
@@ -336,8 +438,8 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
         javax.swing.JDialog dialog = new javax.swing.JDialog();
         dialog.setTitle("Chọn lô hàng");
         dialog.setModal(true);
-        dialog.setSize(700, 500);
-        dialog.setLocationRelativeTo(this);
+        dialog.setSize(750, 500); // Giảm kích thước sau khi bỏ phần NCC
+        dialog.setLocationRelativeTo(null); // null = giữa màn hình
         
         // Tạo tabbed pane
         javax.swing.JTabbedPane tabbedPane = new javax.swing.JTabbedPane();
@@ -397,17 +499,41 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
         gbcTab2.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gbcTab2.anchor = java.awt.GridBagConstraints.WEST;
         
+        // Mã lô mới (TỰ ĐỘNG SINH - READONLY)
+        javax.swing.JLabel lblMaLo = new javax.swing.JLabel("Mã lô:");
+        lblMaLo.setFont(new java.awt.Font("Segoe UI", 0, 14));
+        gbcTab2.gridx = 0;
+        gbcTab2.gridy = 0;
+        gbcTab2.weightx = 0.0;
+        tabTaoLoMoi.add(lblMaLo, gbcTab2);
+        
+        String maLoMoi = loHangBUS.taoMaLoHangMoi();
+        javax.swing.JTextField txtMaLoMoi = new javax.swing.JTextField(maLoMoi);
+        txtMaLoMoi.setFont(new java.awt.Font("Segoe UI", 1, 14));
+        txtMaLoMoi.setPreferredSize(new java.awt.Dimension(300, 35));
+        txtMaLoMoi.setEditable(false); // Không cho sửa
+        txtMaLoMoi.setBackground(new java.awt.Color(240, 240, 240));
+        gbcTab2.gridx = 1;
+        gbcTab2.weightx = 1.0;
+        tabTaoLoMoi.add(txtMaLoMoi, gbcTab2);
+        
         // Tên lô mới
         javax.swing.JLabel lblTenLo = new javax.swing.JLabel("Tên lô:");
         lblTenLo.setFont(new java.awt.Font("Segoe UI", 0, 14));
         gbcTab2.gridx = 0;
-        gbcTab2.gridy = 0;
+        gbcTab2.gridy = 1;
         gbcTab2.weightx = 0.0;
         tabTaoLoMoi.add(lblTenLo, gbcTab2);
         
         javax.swing.JTextField txtTenLoMoi = new javax.swing.JTextField(20);
         txtTenLoMoi.setFont(new java.awt.Font("Segoe UI", 0, 14));
         txtTenLoMoi.setPreferredSize(new java.awt.Dimension(300, 35));
+        
+        // Tự động điền tên lô từ Excel (nếu có)
+        if (tenLoHangTuExcel != null && !tenLoHangTuExcel.trim().isEmpty()) {
+            txtTenLoMoi.setText(tenLoHangTuExcel);
+        }
+        
         gbcTab2.gridx = 1;
         gbcTab2.weightx = 1.0;
         tabTaoLoMoi.add(txtTenLoMoi, gbcTab2);
@@ -416,46 +542,58 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
         javax.swing.JLabel lblHSD = new javax.swing.JLabel("Hạn sử dụng:");
         lblHSD.setFont(new java.awt.Font("Segoe UI", 0, 14));
         gbcTab2.gridx = 0;
-        gbcTab2.gridy = 1;
+        gbcTab2.gridy = 2;
         gbcTab2.weightx = 0.0;
         tabTaoLoMoi.add(lblHSD, gbcTab2);
         
-        Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.MONTH, 6);
-        Date initDate = calendar.getTime();
-        calendar.add(Calendar.YEAR, -1);
-        Date earliestDate = calendar.getTime();
-        calendar.add(Calendar.YEAR, 10);
-        Date latestDate = calendar.getTime();
+        // Thay JSpinner thành JTextField
+        javax.swing.JTextField txtHSDMoi = new javax.swing.JTextField(20);
+        txtHSDMoi.setFont(new java.awt.Font("Segoe UI", 0, 14));
+        txtHSDMoi.setPreferredSize(new java.awt.Dimension(300, 35));
         
-        JSpinner spinnerHSDMoi = new JSpinner(new SpinnerDateModel(initDate, earliestDate, latestDate, Calendar.DAY_OF_MONTH));
-        JSpinner.DateEditor editor = new JSpinner.DateEditor(spinnerHSDMoi, "dd/MM/yyyy");
-        spinnerHSDMoi.setEditor(editor);
-        spinnerHSDMoi.setFont(new java.awt.Font("Segoe UI", 0, 14));
-        spinnerHSDMoi.setPreferredSize(new java.awt.Dimension(300, 35));
+        // Tự động điền HSD từ Excel (nếu có)
+        if (hsdTuExcel != null) {
+            txtHSDMoi.setText(dateFormat.format(hsdTuExcel));
+        } else {
+            // Placeholder
+            txtHSDMoi.putClientProperty("JTextField.placeholderText", "dd/MM/yyyy");
+        }
+        
         gbcTab2.gridx = 1;
         gbcTab2.weightx = 1.0;
-        tabTaoLoMoi.add(spinnerHSDMoi, gbcTab2);
+        tabTaoLoMoi.add(txtHSDMoi, gbcTab2);
         
         // Số lượng
         javax.swing.JLabel lblSoLuongMoi = new javax.swing.JLabel("Số lượng:");
         lblSoLuongMoi.setFont(new java.awt.Font("Segoe UI", 0, 14));
         gbcTab2.gridx = 0;
-        gbcTab2.gridy = 2;
+        gbcTab2.gridy = 3;
         gbcTab2.weightx = 0.0;
         gbcTab2.weighty = 0.0;
         tabTaoLoMoi.add(lblSoLuongMoi, gbcTab2);
         
-        javax.swing.JSpinner spinnerSoLuongMoi = new javax.swing.JSpinner(new javax.swing.SpinnerNumberModel(1, 1, 999999, 1));
-        spinnerSoLuongMoi.setFont(new java.awt.Font("Segoe UI", 0, 14));
-        spinnerSoLuongMoi.setPreferredSize(new java.awt.Dimension(300, 35));
+        javax.swing.JTextField txtSoLuongMoi = new javax.swing.JTextField(20);
+        txtSoLuongMoi.setFont(new java.awt.Font("Segoe UI", 0, 14));
+        txtSoLuongMoi.setPreferredSize(new java.awt.Dimension(300, 35));
+        
+        // Tự động điền số lượng từ Excel (nếu có)
+        if (soLuongTuExcel != null) {
+            txtSoLuongMoi.setText(String.valueOf(soLuongTuExcel));
+        } else {
+            txtSoLuongMoi.setText("1");
+        }
+        
         gbcTab2.gridx = 1;
         gbcTab2.weightx = 1.0;
-        tabTaoLoMoi.add(spinnerSoLuongMoi, gbcTab2);
+        tabTaoLoMoi.add(txtSoLuongMoi, gbcTab2);
+        
+        // ✅ ĐÃ XÓA: Phần thông tin nhà cung cấp (separator, số điện thoại, tên, địa chỉ, email)
+        // Lý do: Thông tin NCC đã được nhập trong file Excel rồi, không cần nhập lại ở đây
         
         // Spacer
         gbcTab2.gridx = 0;
-        gbcTab2.gridy = 3;
+        gbcTab2.gridy = 4;
+        gbcTab2.gridwidth = 2;
         gbcTab2.weighty = 1.0;
         tabTaoLoMoi.add(new javax.swing.JLabel(), gbcTab2);
         
@@ -494,6 +632,15 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
                                         loHangDaChon = (LoHang) btn.getClientProperty("loHang");
                                         tenLoMoi = null;
                                         hsdLoMoi = null;
+                                        
+                                        // ⚠️ QUAN TRỌNG: Cập nhật lại sanPham từ loHangDaChon để có đầy đủ thông tin
+                                        if (loHangDaChon.getSanPham() != null) {
+                                            this.sanPham = loHangDaChon.getSanPham();
+                                            System.out.println("✅ [Panel] Đã cập nhật sanPham từ loHangDaChon (chọn từ dialog), hinhAnh = " + this.sanPham.getHinhAnh());
+                                            // Load lại dữ liệu sản phẩm (bao gồm hình ảnh)
+                                            loadSanPhamData();
+                                        }
+                                        
                                         updateLoInfo();
                                         dialog.dispose();
                                         return;
@@ -519,18 +666,55 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
                     return;
                 }
                 
-                // Lấy số lượng
-                int soLuong = (Integer) spinnerSoLuongMoi.getValue();
-                if (soLuong <= 0) {
+                // Lấy và parse số lượng
+                String soLuongText = txtSoLuongMoi.getText().trim();
+                if (soLuongText.isEmpty()) {
                     javax.swing.JOptionPane.showMessageDialog(dialog,
-                        "Số lượng phải lớn hơn 0!",
+                        "Vui lòng nhập số lượng!",
                         "Thông báo",
                         javax.swing.JOptionPane.WARNING_MESSAGE);
                     return;
                 }
                 
-                // Kiểm tra hạn sử dụng phải > 6 tháng
-                Date hsdDate = (Date) spinnerHSDMoi.getValue();
+                int soLuong;
+                try {
+                    soLuong = Integer.parseInt(soLuongText);
+                    if (soLuong <= 0) {
+                        javax.swing.JOptionPane.showMessageDialog(dialog,
+                            "Số lượng phải lớn hơn 0!",
+                            "Thông báo",
+                            javax.swing.JOptionPane.WARNING_MESSAGE);
+                        return;
+                    }
+                } catch (NumberFormatException ex) {
+                    javax.swing.JOptionPane.showMessageDialog(dialog,
+                        "Số lượng không hợp lệ! Vui lòng nhập số nguyên.",
+                        "Thông báo",
+                        javax.swing.JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+                
+                // Kiểm tra và parse hạn sử dụng
+                String hsdText = txtHSDMoi.getText().trim();
+                if (hsdText.isEmpty()) {
+                    javax.swing.JOptionPane.showMessageDialog(dialog,
+                        "Vui lòng nhập hạn sử dụng!",
+                        "Thông báo",
+                        javax.swing.JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+                
+                Date hsdDate;
+                try {
+                    hsdDate = dateFormat.parse(hsdText);
+                } catch (Exception ex) {
+                    javax.swing.JOptionPane.showMessageDialog(dialog,
+                        "Định dạng ngày không hợp lệ! Vui lòng nhập theo định dạng dd/MM/yyyy",
+                        "Thông báo",
+                        javax.swing.JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+                
                 LocalDate hsd = hsdDate.toInstant()
                     .atZone(java.time.ZoneId.systemDefault())
                     .toLocalDate();
@@ -544,18 +728,56 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
                     return;
                 }
                 
-                // Lưu thông tin lô mới
-                tenLoMoi = tenLo;
-                hsdLoMoi = hsdDate;
-                soLuongLoMoi = soLuong;
-                loHangDaChon = null; // Clear lô cũ nếu có
-                
-                // Cập nhật số lượng lên panel chính (giá nhập đã có sẵn từ Excel)
-                spinnerSoLuong.setValue(soLuong);
-                updateTongTien(); // Cập nhật tổng tiền
-                
-                updateLoInfo();
-                dialog.dispose();
+                // ✅ TẠO LÔ MỚI NGAY LẬP TỨC với mã LHxxxxx
+                try {
+                    String maLoMoiStr = txtMaLoMoi.getText(); // Lấy mã đã generate
+                    
+                    LoHang loMoi = new LoHang(
+                        maLoMoiStr, // Mã lô đã tự generate
+                        tenLo,
+                        LocalDate.now(), // Ngày sản xuất = hôm nay
+                        hsd,
+                        soLuong, // Tồn kho ban đầu
+                        true, // Trạng thái: đang bán
+                        sanPham // Gắn sản phẩm
+                    );
+                    
+                    // Lưu lô mới vào DB
+                    boolean themThanhCong = loHangBUS.themLoHang(loMoi);
+                    if (!themThanhCong) {
+                        javax.swing.JOptionPane.showMessageDialog(dialog,
+                            "Lỗi khi tạo lô mới! Vui lòng thử lại.",
+                            "Lỗi",
+                            javax.swing.JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                    
+                    // Gán lô mới vừa tạo làm lô đã chọn
+                    loHangDaChon = loMoi;
+                    tenLoMoi = null; // Clear thông tin tạo mới
+                    hsdLoMoi = null;
+                    
+                    // Cập nhật số lượng lên panel chính
+                    spinnerSoLuong.setValue(soLuong);
+                    updateTongTien();
+                    
+                    // Reload danh sách lô (để hiển thị lô mới)
+                    loadLoHangData();
+                    
+                    updateLoInfo();
+                    dialog.dispose();
+                    
+                    javax.swing.JOptionPane.showMessageDialog(Panel_ChiTietSanPhamNhap.this,
+                        "Đã tạo lô mới thành công: " + loMoi.getMaLoHang() + " - " + tenLo,
+                        "Thành công",
+                        javax.swing.JOptionPane.INFORMATION_MESSAGE);
+                        
+                } catch (Exception ex) {
+                    javax.swing.JOptionPane.showMessageDialog(dialog,
+                        "Lỗi khi tạo lô mới: " + ex.getMessage(),
+                        "Lỗi",
+                        javax.swing.JOptionPane.ERROR_MESSAGE);
+                }
             }
         });
         

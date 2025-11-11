@@ -51,4 +51,12 @@ public class DonNhapHangBUS {
     public List<DonNhapHang> timKiemTheoText(String text) {
         return donNhapHangDAO.timTheoText(text);
     }
+    
+    /**
+     * Đếm số lượng đơn nhập hàng trong tuần hiện tại
+     * @return số lượng đơn nhập hàng trong tuần
+     */
+    public int demDonNhapHangTrongTuan() {
+        return donNhapHangDAO.countDonNhapHangTrongTuan();
+    }
 }

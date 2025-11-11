@@ -11,7 +11,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import org.apache.commons.collections4.list.LazyList;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.connectDB.ConnectDB;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonNhapHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonNhapHang;
@@ -88,6 +87,33 @@ public class ChiTietDonNhapHangDAO implements DAOInterface<ChiTietDonNhapHang, S
         try (Connection con = ConnectDB.getConnection();
              Statement stm = con.createStatement();
              ResultSet rs = stm.executeQuery("select * from chitietdonnhaphang")) {
+            while (rs.next()) {
+                double donGia = rs.getDouble("donGia");
+                int sl = rs.getInt("soLuong");
+                double thanhTien = rs.getDouble("thanhTien");
+                String maDonNhap = rs.getString("maDonNhapHang");
+                String maLoHang = rs.getString("maLoHang");
+                ChiTietDonNhapHang ct = new ChiTietDonNhapHang(sl, donGia, thanhTien, new DonNhapHang(maDonNhap), new LoHang(maLoHang));
+                dsCt.add(ct);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return dsCt;
+    }
+
+    /**
+     * Lấy danh sách chi tiết đơn nhập hàng theo mã đơn nhập hàng
+     * @param maDonNhapHang Mã đơn nhập hàng
+     * @return Danh sách chi tiết đơn nhập hàng
+     */
+    public List<ChiTietDonNhapHang> findByMaDonNhapHang(String maDonNhapHang) {
+        List<ChiTietDonNhapHang> dsCt = new ArrayList<>();
+        String sql = "SELECT * FROM chitietdonnhaphang WHERE maDonNhapHang = ?";
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement pre = con.prepareStatement(sql)) {
+            pre.setString(1, maDonNhapHang);
+            ResultSet rs = pre.executeQuery();
             while (rs.next()) {
                 double donGia = rs.getDouble("donGia");
                 int sl = rs.getInt("soLuong");

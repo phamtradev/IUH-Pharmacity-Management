@@ -17,8 +17,13 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietKhuyenMaiSanPham;
 import raven.toast.Notifications;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -32,13 +37,20 @@ public class ThemKhuyenMaiDialog extends javax.swing.JDialog {
     private final SanPhamBUS sanPhamBUS;
     private final ChiTietKhuyenMaiSanPhamBUS chiTietKhuyenMaiSanPhamBUS;
     private boolean themThanhCong = false;
-    private SanPham sanPhamHienTai = null; // Lưu sản phẩm được tìm thấy
+    private List<SanPham> danhSachSanPhamDaChon = new ArrayList<>(); // Lưu danh sách sản phẩm đã chọn
+    private boolean isValidatingDate = false; // Flag để tránh vòng lặp khi validate
+    private Timer timerQuetMa; // Timer để debounce khi quét mã
+    private Timer timerValidateTenKM; // Timer để debounce khi validate tên khuyến mãi
     
     // Components cho giá tối thiểu và tối đa (khuyến mãi đơn hàng)
     private javax.swing.JLabel lblGiaToiThieu;
     private javax.swing.JTextField txtGiaToiThieu;
     private javax.swing.JLabel lblGiaToiDa;
     private javax.swing.JTextField txtGiaToiDa;
+    
+    // Components cho số lượng tối đa (khuyến mãi sản phẩm)
+    private javax.swing.JLabel lblSoLuongToiDa;
+    private javax.swing.JTextField txtSoLuongToiDa;
 
     public ThemKhuyenMaiDialog(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
@@ -46,7 +58,14 @@ public class ThemKhuyenMaiDialog extends javax.swing.JDialog {
         this.sanPhamBUS = new SanPhamBUS(new SanPhamDAO());
         this.chiTietKhuyenMaiSanPhamBUS = new ChiTietKhuyenMaiSanPhamBUS(new ChiTietKhuyenMaiSanPhamDAO());
         initComponents();
-        setLocationRelativeTo(parent);
+        // Đặt vị trí dialog xuống dưới một chút để có thể đọc được thông báo lỗi
+        if (parent != null) {
+            int x = parent.getX() + (parent.getWidth() - getWidth()) / 2;
+            int y = parent.getY() + (parent.getHeight() - getHeight()) / 2 + 100; // Thêm 100px xuống dưới
+            setLocation(x, y);
+        } else {
+            setLocationRelativeTo(null);
+        }
         setupUI();
     }
 
@@ -54,38 +73,163 @@ public class ThemKhuyenMaiDialog extends javax.swing.JDialog {
         // Placeholder text
         txtTenKhuyenMai.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập tên khuyến mãi");
         txtGiamGia.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "VD: 0.1 (10%)");
-        txtGiaToiThieu.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "VD: 100000 (0 = không giới hạn)");
-        txtGiaToiDa.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "VD: 50000 (0 = không giới hạn)");
-        txtSoDangKy.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập số đăng ký sản phẩm");
+        txtGiaToiThieu.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "VD: 100000");
+        txtGiaToiDa.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "VD: 50000");
+        txtSoLuongToiDa.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "VD: 5");
         
-        // Thiết lập date chooser
+        // Thiết lập date chooser - chỉ ngăn chọn ngày quá khứ
         dateNgayBatDau.setMinSelectableDate(new Date());
         dateNgayKetThuc.setMinSelectableDate(new Date());
+        
+        // Thêm PropertyChangeListener cho date editor để validate ngay khi chọn ngày
+        PropertyChangeListener listenerNgayBatDau = new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                // Tránh trigger lại khi đang validate
+                if (isValidatingDate) {
+                    return;
+                }
+                // Chỉ validate khi ngày được set (không phải khi clear)
+                if (evt.getNewValue() != null) {
+                    // Sử dụng SwingUtilities.invokeLater để đảm bảo validate chạy sau khi date được set
+                    SwingUtilities.invokeLater(() -> {
+                        validateNgayBatDau();
+                        // Validate lại ngày kết thúc nếu có để đảm bảo tính nhất quán
+                        if (dateNgayKetThuc.getDate() != null) {
+                            validateNgayKetThuc();
+                        }
+                    });
+                }
+            }
+        };
+        // Thêm listener cho cả JDateChooser và DateEditor để đảm bảo validate chạy
+        dateNgayBatDau.addPropertyChangeListener("date", listenerNgayBatDau);
+        if (dateNgayBatDau.getDateEditor() != null) {
+            dateNgayBatDau.getDateEditor().addPropertyChangeListener("date", listenerNgayBatDau);
+        }
+        
+        PropertyChangeListener listenerNgayKetThuc = new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                // Tránh trigger lại khi đang validate
+                if (isValidatingDate) {
+                    return;
+                }
+                // Chỉ validate khi ngày được set (không phải khi clear)
+                if (evt.getNewValue() != null) {
+                    // Sử dụng SwingUtilities.invokeLater để đảm bảo validate chạy sau khi date được set
+                    SwingUtilities.invokeLater(() -> {
+                        validateNgayKetThuc();
+                        // Validate lại ngày bắt đầu nếu có để đảm bảo tính nhất quán
+                        if (dateNgayBatDau.getDate() != null) {
+                            validateNgayBatDau();
+                        }
+                    });
+                }
+            }
+        };
+        // Thêm listener cho cả JDateChooser và DateEditor để đảm bảo validate chạy
+        dateNgayKetThuc.addPropertyChangeListener("date", listenerNgayKetThuc);
+        if (dateNgayKetThuc.getDateEditor() != null) {
+            dateNgayKetThuc.getDateEditor().addPropertyChangeListener("date", listenerNgayKetThuc);
+        }
         
         // Thiết lập combo box loại khuyến mãi - Mặc định "Đơn hàng"
         cboLoaiKhuyenMai.setModel(new DefaultComboBoxModel<>(new String[]{"Đơn hàng", "Sản phẩm"}));
         
-        // Set txtTenSanPham không thể chỉnh sửa
-        txtTenSanPham.setEditable(false);
-        txtTenSanPham.setFocusable(false);
+        // Thiết lập JList cho danh sách sản phẩm
+        listDanhSachSanPham.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        listDanhSachSanPham.setFont(new java.awt.Font("Segoe UI", 0, 14));
         
-        // Thêm document listener cho txtSoDangKy để tự động tìm sản phẩm
-        txtSoDangKy.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
-            @Override
-            public void insertUpdate(javax.swing.event.DocumentEvent e) {
-                timSanPhamTheoSoDangKy();
-            }
-            
-            @Override
-            public void removeUpdate(javax.swing.event.DocumentEvent e) {
-                timSanPhamTheoSoDangKy();
-            }
-            
-            @Override
-            public void changedUpdate(javax.swing.event.DocumentEvent e) {
-                timSanPhamTheoSoDangKy();
+        // Thêm listener để cập nhật trạng thái nút Xóa khi chọn item
+        listDanhSachSanPham.addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                capNhatTrangThaiNutXoaTrang();
             }
         });
+        
+        // Thiết lập tự động quét mã khi nhập (với debounce)
+        timerQuetMa = new Timer(500, e -> xuLyQuetMa()); // 500ms delay
+        timerQuetMa.setRepeats(false); // Chỉ chạy một lần
+        
+        txtQuetMa.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                kichHoatQuetMa();
+            }
+            
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                // Dừng timer khi xóa text để tránh quét với text rỗng
+                if (timerQuetMa.isRunning()) {
+                    timerQuetMa.stop();
+                }
+            }
+            
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                kichHoatQuetMa();
+            }
+            
+            private void kichHoatQuetMa() {
+                // Dừng timer cũ nếu có
+                if (timerQuetMa.isRunning()) {
+                    timerQuetMa.stop();
+                }
+                // Bắt đầu timer mới
+                timerQuetMa.start();
+            }
+        });
+        
+        // Thiết lập validate tên khuyến mãi khi nhập (với debounce)
+        timerValidateTenKM = new Timer(500, e -> validateTenKhuyenMai()); // 500ms delay
+        timerValidateTenKM.setRepeats(false); // Chỉ chạy một lần
+        
+        txtTenKhuyenMai.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                kichHoatValidateTenKM();
+            }
+            
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                kichHoatValidateTenKM();
+            }
+            
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                kichHoatValidateTenKM();
+            }
+            
+            private void kichHoatValidateTenKM() {
+                // Dừng timer cũ nếu có
+                if (timerValidateTenKM.isRunning()) {
+                    timerValidateTenKM.stop();
+                }
+                // Bắt đầu timer mới
+                timerValidateTenKM.start();
+            }
+        });
+        
+        // Khởi tạo danh sách sản phẩm
+        capNhatDanhSachSanPham();
+        
+        // Thiết lập style cho các nút xóa
+        btnXoaSanPham.putClientProperty(FlatClientProperties.STYLE, ""
+                + "background:#DC3545;"
+                + "foreground:#FFFFFF;"
+                + "hoverBackground:#C82333;"
+                + "pressedBackground:#BD2130;"
+                + "arc:10;"
+                + "borderWidth:0");
+        
+        btnXoaTrang.putClientProperty(FlatClientProperties.STYLE, ""
+                + "background:#6C757D;"
+                + "foreground:#FFFFFF;"
+                + "hoverBackground:#5A6268;"
+                + "pressedBackground:#545B62;"
+                + "arc:10;"
+                + "borderWidth:0");
         
         // Thêm action listener cho combo box loại khuyến mãi
         cboLoaiKhuyenMai.addActionListener(e -> {
@@ -99,11 +243,18 @@ public class ThemKhuyenMaiDialog extends javax.swing.JDialog {
             lblGiaToiDa.setVisible(isOrderPromotion);
             txtGiaToiDa.setVisible(isOrderPromotion);
             
-            // Hiển thị số đăng ký cho khuyến mãi sản phẩm
-            lblSoDangKy.setVisible(isProductPromotion);
-            txtSoDangKy.setVisible(isProductPromotion);
-            lblTenSanPham.setVisible(isProductPromotion);
-            txtTenSanPham.setVisible(isProductPromotion);
+            // Hiển thị chọn sản phẩm và số lượng tối đa cho khuyến mãi sản phẩm
+            lblChonSanPham.setVisible(isProductPromotion);
+            txtQuetMa.setVisible(isProductPromotion);
+            lblDanhSachSanPham.setVisible(isProductPromotion);
+            scrollDanhSachSanPham.setVisible(isProductPromotion);
+            // Các nút xóa chỉ hiện khi quét mã xong, không phụ thuộc vào loại khuyến mãi
+            // Logic hiển thị được xử lý trong capNhatDanhSachSanPham()
+            lblSoLuongToiDa.setVisible(isProductPromotion);
+            txtSoLuongToiDa.setVisible(isProductPromotion);
+            
+            // Cập nhật trạng thái nút xóa trắng
+            capNhatTrangThaiNutXoaTrang();
             
             pack(); // Resize dialog
         });
@@ -118,40 +269,301 @@ public class ThemKhuyenMaiDialog extends javax.swing.JDialog {
         lblGiaToiDa.setVisible(isOrderPromotion);
         txtGiaToiDa.setVisible(isOrderPromotion);
         
-        lblSoDangKy.setVisible(isProductPromotion);
-        txtSoDangKy.setVisible(isProductPromotion);
-        lblTenSanPham.setVisible(isProductPromotion);
-        txtTenSanPham.setVisible(isProductPromotion);
+        lblChonSanPham.setVisible(isProductPromotion);
+        txtQuetMa.setVisible(isProductPromotion);
+        lblDanhSachSanPham.setVisible(isProductPromotion);
+        scrollDanhSachSanPham.setVisible(isProductPromotion);
+        btnXoaSanPham.setVisible(isProductPromotion);
+        btnXoaTrang.setVisible(isProductPromotion);
+        lblSoLuongToiDa.setVisible(isProductPromotion);
+        txtSoLuongToiDa.setVisible(isProductPromotion);
+        
+        // Cập nhật trạng thái nút xóa trắng
+        capNhatTrangThaiNutXoaTrang();
     }
     
-    private void timSanPhamTheoSoDangKy() {
-        String soDangKy = txtSoDangKy.getText().trim();
-        
-        if (soDangKy.isEmpty()) {
-            txtTenSanPham.setText("");
-            sanPhamHienTai = null;
+    /**
+     * Xử lý quét mã sản phẩm
+     */
+    private void xuLyQuetMa() {
+        String maQuet = txtQuetMa.getText().trim();
+        if (maQuet.isEmpty()) {
             return;
         }
         
         try {
-            // Tìm sản phẩm theo số đăng ký
-            List<SanPham> danhSachSanPham = sanPhamBUS.layTatCaSanPham();
-            SanPham sanPham = danhSachSanPham.stream()
-                .filter(sp -> sp.getSoDangKy() != null && sp.getSoDangKy().equals(soDangKy))
-                .findFirst()
-                .orElse(null);
+            // Tìm sản phẩm theo mã trước
+            SanPham sp = null;
+            if (sanPhamBUS.timSanPhamTheoMa(maQuet).isPresent()) {
+                sp = sanPhamBUS.timSanPhamTheoMa(maQuet).get();
+            } else if (sanPhamBUS.timSanPhamTheoSoDangKy(maQuet).isPresent()) {
+                // Nếu không tìm thấy theo mã, tìm theo số đăng ký
+                sp = sanPhamBUS.timSanPhamTheoSoDangKy(maQuet).get();
+            }
             
-            if (sanPham != null) {
-                txtTenSanPham.setText(sanPham.getTenSanPham());
-                sanPhamHienTai = sanPham;
-            } else {
-                txtTenSanPham.setText("Không tìm thấy sản phẩm");
-                sanPhamHienTai = null;
+            if (sp == null) {
+                Notifications.getInstance().show(Notifications.Type.WARNING, 
+                    "Không tìm thấy sản phẩm với mã/số đăng ký: " + maQuet);
+                txtQuetMa.setText("");
+                txtQuetMa.requestFocus();
+                return;
+            }
+            
+            // Lưu biến final để dùng trong lambda
+            final SanPham sanPhamTimThay = sp;
+            
+            // Kiểm tra xem sản phẩm đã được thêm chưa
+            boolean daCo = danhSachSanPhamDaChon.stream()
+                .anyMatch(spDaChon -> spDaChon.getMaSanPham().equals(sanPhamTimThay.getMaSanPham()));
+            
+            if (daCo) {
+                Notifications.getInstance().show(Notifications.Type.INFO, 
+                    "Sản phẩm " + sanPhamTimThay.getTenSanPham() + " đã có trong danh sách!");
+                txtQuetMa.setText("");
+                txtQuetMa.requestFocus();
+                return;
+            }
+            
+            // Kiểm tra sản phẩm đã có khuyến mãi còn hạn chưa
+            List<KhuyenMai> danhSachKhuyenMaiConHan = layDanhSachKhuyenMaiConHanChoSanPham(sanPhamTimThay.getMaSanPham());
+            
+            if (!danhSachKhuyenMaiConHan.isEmpty()) {
+                // Báo lỗi cho từng khuyến mãi (tránh thông báo quá dài)
+                for (KhuyenMai km : danhSachKhuyenMaiConHan) {
+                    Notifications.getInstance().show(Notifications.Type.WARNING, 
+                        Notifications.Location.TOP_CENTER,
+                        "Sản phẩm '" + sanPhamTimThay.getTenSanPham() + "' đã áp dụng khuyến mãi: " + km.getTenKhuyenMai());
+                }
+                // Xóa trắng và focus lại
+                txtQuetMa.setText("");
+                txtQuetMa.requestFocus();
+                return;
+            }
+            
+            // Nếu không có khuyến mãi, thêm sản phẩm vào danh sách
+            danhSachSanPhamDaChon.add(sanPhamTimThay);
+            capNhatDanhSachSanPham();
+            Notifications.getInstance().show(Notifications.Type.SUCCESS, 
+                "Đã thêm sản phẩm: " + sanPhamTimThay.getTenSanPham());
+            
+            // Xóa text và focus lại để quét tiếp
+            txtQuetMa.setText("");
+            txtQuetMa.requestFocus();
+        } catch (Exception e) {
+            e.printStackTrace();
+            Notifications.getInstance().show(Notifications.Type.ERROR, 
+                "Lỗi khi quét mã: " + e.getMessage());
+            txtQuetMa.setText("");
+            txtQuetMa.requestFocus();
+        }
+    }
+    
+    /**
+     * Lấy danh sách khuyến mãi còn hạn (đang hoạt động) cho một sản phẩm
+     * @param maSanPham Mã sản phẩm cần kiểm tra
+     * @return Danh sách khuyến mãi còn hạn
+     */
+    private List<KhuyenMai> layDanhSachKhuyenMaiConHanChoSanPham(String maSanPham) {
+        List<KhuyenMai> danhSachKhuyenMaiConHan = new ArrayList<>();
+        
+        try {
+            // Lấy danh sách chi tiết khuyến mãi sản phẩm theo mã sản phẩm
+            List<ChiTietKhuyenMaiSanPham> danhSachCTKM = chiTietKhuyenMaiSanPhamBUS.timTheoMaSanPham(maSanPham);
+            
+            if (danhSachCTKM == null || danhSachCTKM.isEmpty()) {
+                return danhSachKhuyenMaiConHan; // Không có khuyến mãi nào
+            }
+            
+            LocalDate homNay = LocalDate.now();
+            
+            // Lấy danh sách tất cả khuyến mãi để kiểm tra
+            List<KhuyenMai> tatCaKhuyenMai = khuyenMaiBUS.getAllKhuyenMai();
+            
+            // Lọc các khuyến mãi còn hạn (đang hoạt động) cho sản phẩm này
+            for (ChiTietKhuyenMaiSanPham ctkm : danhSachCTKM) {
+                String maKhuyenMai = ctkm.getKhuyenMai().getMaKhuyenMai();
+                
+                // Tìm khuyến mãi trong danh sách
+                for (KhuyenMai km : tatCaKhuyenMai) {
+                    if (km.getMaKhuyenMai().equals(maKhuyenMai)) {
+                        // Kiểm tra khuyến mãi còn hạn (đang hoạt động)
+                        if (km.isTrangThai() 
+                            && !homNay.isBefore(km.getNgayBatDau()) 
+                            && !homNay.isAfter(km.getNgayKetThuc())) {
+                            danhSachKhuyenMaiConHan.add(km);
+                        }
+                        break;
+                    }
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
-            txtTenSanPham.setText("Lỗi khi tìm sản phẩm");
-            sanPhamHienTai = null;
+        }
+        
+        return danhSachKhuyenMaiConHan;
+    }
+    
+    /**
+     * Cập nhật hiển thị danh sách sản phẩm đã chọn
+     */
+    private void capNhatDanhSachSanPham() {
+        DefaultListModel<String> model = new DefaultListModel<>();
+        if (danhSachSanPhamDaChon.isEmpty()) {
+            model.addElement("Chưa quét sản phẩm nào");
+            listDanhSachSanPham.setEnabled(false);
+            // Ẩn các nút xóa khi chưa có sản phẩm
+            btnXoaSanPham.setVisible(false);
+            btnXoaTrang.setVisible(false);
+        } else {
+            for (SanPham sp : danhSachSanPhamDaChon) {
+                String soDangKy = sp.getSoDangKy() != null ? " - " + sp.getSoDangKy() : "";
+                model.addElement(sp.getTenSanPham() + " (" + sp.getMaSanPham() + soDangKy + ")");
+            }
+            listDanhSachSanPham.setEnabled(true);
+            // Hiện các nút xóa khi đã quét mã xong (có sản phẩm)
+            btnXoaSanPham.setVisible(true);
+            btnXoaTrang.setVisible(true);
+        }
+        listDanhSachSanPham.setModel(model);
+        capNhatTrangThaiNutXoaTrang();
+    }
+    
+    /**
+     * Cập nhật trạng thái nút xóa trắng (hiển thị khi có sản phẩm)
+     */
+    private void capNhatTrangThaiNutXoaTrang() {
+        boolean coSanPham = !danhSachSanPhamDaChon.isEmpty();
+        btnXoaTrang.setEnabled(coSanPham);
+        btnXoaSanPham.setEnabled(coSanPham && listDanhSachSanPham.getSelectedIndex() >= 0);
+    }
+    
+    /**
+     * Validate ngày bắt đầu - phải sau ngày hiện tại và nhỏ hơn ngày kết thúc (nếu có)
+     */
+    private void validateNgayBatDau() {
+        Date selectedDate = dateNgayBatDau.getDate();
+        if (selectedDate == null) {
+            return; // Chưa chọn ngày
+        }
+        
+        LocalDate selectedLocalDate = selectedDate.toInstant()
+            .atZone(ZoneId.systemDefault())
+            .toLocalDate();
+        LocalDate today = LocalDate.now();
+        
+        // Nếu chọn ngày hiện tại hoặc trước ngày hiện tại
+        if (selectedLocalDate.isBefore(today) || selectedLocalDate.isEqual(today)) {
+            // Set flag để tránh trigger lại
+            isValidatingDate = true;
+            // Xóa ngày đã chọn
+            dateNgayBatDau.setDate(null);
+            isValidatingDate = false;
+            
+            // Hiển thị thông báo lỗi
+            Notifications.getInstance().show(Notifications.Type.ERROR, 
+                Notifications.Location.TOP_CENTER,
+                "Ngày bắt đầu phải sau ngày hiện tại!");
+            return;
+        }
+        
+        // Kiểm tra nếu đã có ngày kết thúc, ngày bắt đầu phải nhỏ hơn ngày kết thúc
+        Date ngayKetThuc = dateNgayKetThuc.getDate();
+        if (ngayKetThuc != null) {
+            LocalDate ngayKetThucLocal = ngayKetThuc.toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate();
+            
+            // Nếu ngày bắt đầu >= ngày kết thúc
+            if (selectedLocalDate.isAfter(ngayKetThucLocal) || selectedLocalDate.isEqual(ngayKetThucLocal)) {
+                // Set flag để tránh trigger lại
+                isValidatingDate = true;
+                // Xóa ngày đã chọn
+                dateNgayBatDau.setDate(null);
+                isValidatingDate = false;
+                
+                // Hiển thị thông báo lỗi
+                Notifications.getInstance().show(Notifications.Type.ERROR, 
+                    Notifications.Location.TOP_CENTER,
+                    "Ngày bắt đầu phải nhỏ hơn ngày kết thúc!");
+            }
+        }
+    }
+    
+    /**
+     * Validate ngày kết thúc - phải sau ngày hiện tại và lớn hơn ngày bắt đầu (nếu có)
+     */
+    private void validateNgayKetThuc() {
+        Date selectedDate = dateNgayKetThuc.getDate();
+        if (selectedDate == null) {
+            return; // Chưa chọn ngày
+        }
+        
+        LocalDate selectedLocalDate = selectedDate.toInstant()
+            .atZone(ZoneId.systemDefault())
+            .toLocalDate();
+        LocalDate today = LocalDate.now();
+        
+        // Nếu chọn ngày hiện tại hoặc trước ngày hiện tại
+        if (selectedLocalDate.isBefore(today) || selectedLocalDate.isEqual(today)) {
+            // Set flag để tránh trigger lại
+            isValidatingDate = true;
+            // Xóa ngày đã chọn
+            dateNgayKetThuc.setDate(null);
+            isValidatingDate = false;
+            
+            // Hiển thị thông báo lỗi
+            Notifications.getInstance().show(Notifications.Type.ERROR, 
+                Notifications.Location.TOP_CENTER,
+                "Ngày kết thúc phải sau ngày hiện tại!");
+            return;
+        }
+        
+        // Kiểm tra nếu đã có ngày bắt đầu, ngày kết thúc phải lớn hơn ngày bắt đầu
+        Date ngayBatDau = dateNgayBatDau.getDate();
+        if (ngayBatDau != null) {
+            LocalDate ngayBatDauLocal = ngayBatDau.toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate();
+            
+            // Nếu ngày kết thúc <= ngày bắt đầu
+            if (selectedLocalDate.isBefore(ngayBatDauLocal) || selectedLocalDate.isEqual(ngayBatDauLocal)) {
+                // Set flag để tránh trigger lại
+                isValidatingDate = true;
+                // Xóa ngày đã chọn
+                dateNgayKetThuc.setDate(null);
+                isValidatingDate = false;
+                
+                // Hiển thị thông báo lỗi
+                Notifications.getInstance().show(Notifications.Type.ERROR, 
+                    Notifications.Location.TOP_CENTER,
+                    "Ngày kết thúc phải lớn hơn ngày bắt đầu!");
+            }
+        }
+    }
+    
+    /**
+     * Validate tên khuyến mãi - kiểm tra trùng tên
+     */
+    private void validateTenKhuyenMai() {
+        String tenKM = txtTenKhuyenMai.getText().trim();
+        if (tenKM.isEmpty()) {
+            return; // Chưa nhập tên, không cần validate
+        }
+        
+        try {
+            // Kiểm tra tên khuyến mãi có trùng không
+            if (khuyenMaiBUS.existsByName(tenKM)) {
+                Notifications.getInstance().show(Notifications.Type.WARNING, 
+                    Notifications.Location.TOP_CENTER,
+                    "Tên khuyến mãi '" + tenKM + "' đã tồn tại!");
+                // Xóa trắng và focus lại
+                txtTenKhuyenMai.setText("");
+                txtTenKhuyenMai.requestFocus();
+            }
+        } catch (Exception e) {
+            // Không hiển thị lỗi khi có exception (có thể do lỗi kết nối DB)
+            // Chỉ log để debug
+            e.printStackTrace();
         }
     }
 
@@ -178,10 +590,15 @@ public class ThemKhuyenMaiDialog extends javax.swing.JDialog {
         txtGiaToiThieu = new javax.swing.JTextField();
         lblGiaToiDa = new javax.swing.JLabel();
         txtGiaToiDa = new javax.swing.JTextField();
-        lblSoDangKy = new javax.swing.JLabel();
-        txtSoDangKy = new javax.swing.JTextField();
-        lblTenSanPham = new javax.swing.JLabel();
-        txtTenSanPham = new javax.swing.JTextField();
+        lblChonSanPham = new javax.swing.JLabel();
+        txtQuetMa = new javax.swing.JTextField();
+        lblDanhSachSanPham = new javax.swing.JLabel();
+        scrollDanhSachSanPham = new javax.swing.JScrollPane();
+        listDanhSachSanPham = new javax.swing.JList<>();
+        btnXoaSanPham = new javax.swing.JButton();
+        btnXoaTrang = new javax.swing.JButton();
+        lblSoLuongToiDa = new javax.swing.JLabel();
+        txtSoLuongToiDa = new javax.swing.JTextField();
         jPanel3 = new javax.swing.JPanel();
         btnLuu = new javax.swing.JButton();
         btnHuy = new javax.swing.JButton();
@@ -249,15 +666,46 @@ public class ThemKhuyenMaiDialog extends javax.swing.JDialog {
 
         txtGiaToiDa.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
-        lblSoDangKy.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        lblSoDangKy.setText("Số đăng ký:");
+        lblChonSanPham.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        lblChonSanPham.setText("Quét mã sản phẩm:");
 
-        txtSoDangKy.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        txtQuetMa.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        txtQuetMa.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập mã sản phẩm hoặc số đăng ký");
 
-        lblTenSanPham.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        lblTenSanPham.setText("Tên sản phẩm:");
+        lblDanhSachSanPham.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        lblDanhSachSanPham.setText("Danh sách sản phẩm đã chọn:");
 
-        txtTenSanPham.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        listDanhSachSanPham.setModel(new javax.swing.DefaultListModel<>());
+        scrollDanhSachSanPham.setViewportView(listDanhSachSanPham);
+        
+        btnXoaSanPham.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        btnXoaSanPham.setText("Xóa");
+        btnXoaSanPham.setBackground(new java.awt.Color(255, 193, 7));
+        btnXoaSanPham.setForeground(new java.awt.Color(0, 0, 0));
+        btnXoaSanPham.setPreferredSize(new java.awt.Dimension(120, 40));
+        btnXoaSanPham.setVisible(false);
+        btnXoaSanPham.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnXoaSanPhamActionPerformed(evt);
+            }
+        });
+        
+        btnXoaTrang.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        btnXoaTrang.setText("Xóa trắng");
+        btnXoaTrang.setBackground(new java.awt.Color(255, 193, 7));
+        btnXoaTrang.setForeground(new java.awt.Color(0, 0, 0));
+        btnXoaTrang.setPreferredSize(new java.awt.Dimension(120, 40));
+        btnXoaTrang.setVisible(false);
+        btnXoaTrang.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnXoaTrangActionPerformed(evt);
+            }
+        });
+
+        lblSoLuongToiDa.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        lblSoLuongToiDa.setText("Số lượng tối đa:");
+
+        txtSoLuongToiDa.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -272,8 +720,9 @@ public class ThemKhuyenMaiDialog extends javax.swing.JDialog {
                     .addComponent(jLabel6)
                     .addComponent(lblGiaToiThieu)
                     .addComponent(lblGiaToiDa)
-                    .addComponent(lblSoDangKy)
-                    .addComponent(lblTenSanPham))
+                    .addComponent(lblChonSanPham)
+                    .addComponent(lblDanhSachSanPham)
+                    .addComponent(lblSoLuongToiDa))
                 .addGap(30, 30, 30)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(txtTenKhuyenMai)
@@ -283,8 +732,9 @@ public class ThemKhuyenMaiDialog extends javax.swing.JDialog {
                     .addComponent(cboLoaiKhuyenMai, 0, 350, Short.MAX_VALUE)
                     .addComponent(txtGiaToiThieu)
                     .addComponent(txtGiaToiDa)
-                    .addComponent(txtSoDangKy)
-                    .addComponent(txtTenSanPham)))
+                    .addComponent(txtQuetMa)
+                    .addComponent(scrollDanhSachSanPham, javax.swing.GroupLayout.DEFAULT_SIZE, 350, Short.MAX_VALUE)
+                    .addComponent(txtSoLuongToiDa)))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -318,12 +768,16 @@ public class ThemKhuyenMaiDialog extends javax.swing.JDialog {
                     .addComponent(txtGiaToiDa, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(20, 20, 20)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblSoDangKy)
-                    .addComponent(txtSoDangKy, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(lblChonSanPham)
+                    .addComponent(txtQuetMa, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(20, 20, 20)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(lblDanhSachSanPham)
+                    .addComponent(scrollDanhSachSanPham, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(20, 20, 20)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblTenSanPham)
-                    .addComponent(txtTenSanPham, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(lblSoLuongToiDa)
+                    .addComponent(txtSoLuongToiDa, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(0, 20, Short.MAX_VALUE))
         );
 
@@ -357,7 +811,11 @@ public class ThemKhuyenMaiDialog extends javax.swing.JDialog {
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap()
+                .addComponent(btnXoaSanPham, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(20, 20, 20)
+                .addComponent(btnXoaTrang, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(btnLuu, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(20, 20, 20)
                 .addComponent(btnHuy, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -368,6 +826,8 @@ public class ThemKhuyenMaiDialog extends javax.swing.JDialog {
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnXoaSanPham, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnXoaTrang, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnLuu, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnHuy, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -392,6 +852,32 @@ public class ThemKhuyenMaiDialog extends javax.swing.JDialog {
         );
 
         pack();
+    }
+
+    private void btnXoaSanPhamActionPerformed(java.awt.event.ActionEvent evt) {
+        int selectedIndex = listDanhSachSanPham.getSelectedIndex();
+        if (selectedIndex < 0 || danhSachSanPhamDaChon.isEmpty()) {
+            Notifications.getInstance().show(Notifications.Type.WARNING, "Hãy chọn sản phẩm cần xóa!");
+            return;
+        }
+        
+        // Xóa sản phẩm khỏi danh sách
+        SanPham spXoa = danhSachSanPhamDaChon.remove(selectedIndex);
+        capNhatDanhSachSanPham();
+        Notifications.getInstance().show(Notifications.Type.SUCCESS, 
+            "Đã xóa sản phẩm: " + spXoa.getTenSanPham());
+    }
+
+    private void btnXoaTrangActionPerformed(java.awt.event.ActionEvent evt) {
+        if (danhSachSanPhamDaChon.isEmpty()) {
+            return;
+        }
+        
+        int soLuong = danhSachSanPhamDaChon.size();
+        danhSachSanPhamDaChon.clear();
+        capNhatDanhSachSanPham();
+        Notifications.getInstance().show(Notifications.Type.SUCCESS, 
+            "Đã xóa " + soLuong + " sản phẩm khỏi danh sách!");
     }
 
     private void btnLuuActionPerformed(java.awt.event.ActionEvent evt) {
@@ -500,52 +986,110 @@ public class ThemKhuyenMaiDialog extends javax.swing.JDialog {
                 }
             }
 
-            // Nếu là khuyến mãi sản phẩm, kiểm tra đã nhập số đăng ký chưa
+            // Nếu là khuyến mãi sản phẩm, kiểm tra đã chọn sản phẩm chưa
             if (loaiKM.equals("Sản phẩm")) {
-                String soDangKy = txtSoDangKy.getText().trim();
-                if (soDangKy.isEmpty()) {
-                    Notifications.getInstance().show(Notifications.Type.WARNING, "Vui lòng nhập số đăng ký sản phẩm!");
-                    txtSoDangKy.requestFocus();
+                if (danhSachSanPhamDaChon.isEmpty()) {
+                    Notifications.getInstance().show(Notifications.Type.WARNING, "Vui lòng quét ít nhất 1 sản phẩm!");
+                    txtQuetMa.requestFocus();
                     return;
                 }
                 
-                if (sanPhamHienTai == null) {
-                    Notifications.getInstance().show(Notifications.Type.WARNING, "Không tìm thấy sản phẩm với số đăng ký này!");
-                    txtSoDangKy.requestFocus();
+                // Kiểm tra conflict khuyến mãi cho từng sản phẩm
+                List<String> danhSachSanPhamConflict = new ArrayList<>();
+                for (SanPham sp : danhSachSanPhamDaChon) {
+                    KhuyenMai khuyenMaiConflict = chiTietKhuyenMaiSanPhamBUS.kiemTraConflictKhuyenMai(
+                        sp.getMaSanPham(), ngayBatDau, ngayKetThuc, null);
+                    if (khuyenMaiConflict != null) {
+                        danhSachSanPhamConflict.add(sp.getTenSanPham() + " (đang có khuyến mãi: " + 
+                            khuyenMaiConflict.getTenKhuyenMai() + " từ " + 
+                            khuyenMaiConflict.getNgayBatDau() + " đến " + 
+                            khuyenMaiConflict.getNgayKetThuc() + ")");
+                    }
+                }
+                
+                if (!danhSachSanPhamConflict.isEmpty()) {
+                    StringBuilder message = new StringBuilder("Không thể thêm khuyến mãi! Các sản phẩm sau đang có khuyến mãi đang hoạt động hoặc trùng thời gian:\n");
+                    for (String spConflict : danhSachSanPhamConflict) {
+                        message.append("- ").append(spConflict).append("\n");
+                    }
+                    message.append("\nVui lòng xóa khuyến mãi cũ hoặc đợi hết hạn trước khi thêm khuyến mãi mới!");
+                    Notifications.getInstance().show(Notifications.Type.ERROR, message.toString());
                     return;
+                }
+                
+                // Lấy số lượng tối đa
+                String soLuongToiDaStr = txtSoLuongToiDa.getText().trim();
+                if (!soLuongToiDaStr.isEmpty()) {
+                    try {
+                        int soLuongToiDa = Integer.parseInt(soLuongToiDaStr);
+                        if (soLuongToiDa < 0) {
+                            Notifications.getInstance().show(Notifications.Type.WARNING, "Số lượng tối đa phải >= 0!");
+                            txtSoLuongToiDa.requestFocus();
+                            return;
+                        }
+                        km.setSoLuongToiDa(soLuongToiDa);
+                    } catch (NumberFormatException e) {
+                        Notifications.getInstance().show(Notifications.Type.WARNING, "Số lượng tối đa phải là số nguyên!");
+                        txtSoLuongToiDa.requestFocus();
+                    return;
+                    }
+                } else {
+                    km.setSoLuongToiDa(0); // Mặc định không giới hạn số lượng tối đa
                 }
             }
 
             // Thêm vào database
             boolean success = khuyenMaiBUS.themKhuyenMai(km);
             if (success) {
-                // Nếu là khuyến mãi sản phẩm, thêm vào bảng ChiTietKhuyenMaiSanPham
-                if (loaiKM.equals("Sản phẩm") && sanPhamHienTai != null) {
+                // Nếu là khuyến mãi sản phẩm, thêm vào bảng ChiTietKhuyenMaiSanPham cho tất cả sản phẩm đã chọn
+                if (loaiKM.equals("Sản phẩm") && !danhSachSanPhamDaChon.isEmpty()) {
+                    int soLuongThanhCong = 0;
+                    int soLuongThatBai = 0;
+                    
+                    for (SanPham sp : danhSachSanPhamDaChon) {
                     try {
                         ChiTietKhuyenMaiSanPham ctkmsp = new ChiTietKhuyenMaiSanPham();
-                        ctkmsp.setSanPham(sanPhamHienTai);
+                            ctkmsp.setSanPham(sp);
                         ctkmsp.setKhuyenMai(km);
                         
                         boolean successDetail = chiTietKhuyenMaiSanPhamBUS.taoChiTietKhuyenMaiSanPham(ctkmsp);
-                        if (!successDetail) {
-                            Notifications.getInstance().show(Notifications.Type.WARNING, 
-                                "Thêm khuyến mãi thành công nhưng không thể liên kết với sản phẩm!");
+                            if (successDetail) {
+                                soLuongThanhCong++;
+                            } else {
+                                soLuongThatBai++;
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
-                        Notifications.getInstance().show(Notifications.Type.WARNING, 
-                            "Thêm khuyến mãi thành công nhưng lỗi khi liên kết sản phẩm: " + e.getMessage());
+                            soLuongThatBai++;
+                        }
                     }
+                    
+                    if (soLuongThatBai > 0) {
+                        Notifications.getInstance().show(Notifications.Type.WARNING, 
+                            "Thêm khuyến mãi thành công! " + soLuongThanhCong + " sản phẩm được liên kết, " + 
+                            soLuongThatBai + " sản phẩm không thể liên kết!");
+                    } else {
+                        Notifications.getInstance().show(Notifications.Type.SUCCESS, 
+                            "Thêm khuyến mãi thành công! Đã liên kết với " + soLuongThanhCong + " sản phẩm!");
+                    }
+                } else {
+                Notifications.getInstance().show(Notifications.Type.SUCCESS, "Thêm khuyến mãi thành công!");
                 }
                 
-                Notifications.getInstance().show(Notifications.Type.SUCCESS, "Thêm khuyến mãi thành công!");
                 themThanhCong = true;
                 dispose();
             } else {
                 Notifications.getInstance().show(Notifications.Type.ERROR, "Thêm khuyến mãi thất bại!");
             }
         } catch (Exception e) {
-            Notifications.getInstance().show(Notifications.Type.ERROR, e.getMessage());
+            String errorMessage = e.getMessage();
+            Notifications.getInstance().show(Notifications.Type.ERROR, errorMessage);
+            
+            // Nếu tên đã tồn tại, xóa trắng và focus lại
+            if (errorMessage != null && errorMessage.contains("đã tồn tại")) {
+                txtTenKhuyenMai.setText("");
+                txtTenKhuyenMai.requestFocus();
+            }
         }
     }
 
@@ -565,15 +1109,19 @@ public class ThemKhuyenMaiDialog extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
-    private javax.swing.JLabel lblSoDangKy;
-    private javax.swing.JLabel lblTenSanPham;
+    private javax.swing.JTextField txtQuetMa;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
+    private javax.swing.JLabel lblChonSanPham;
+    private javax.swing.JLabel lblDanhSachSanPham;
+    private javax.swing.JScrollPane scrollDanhSachSanPham;
+    private javax.swing.JList<String> listDanhSachSanPham;
+    private javax.swing.JButton btnXoaSanPham;
+    private javax.swing.JButton btnXoaTrang;
     private javax.swing.JTextField txtGiamGia;
-    private javax.swing.JTextField txtSoDangKy;
     private javax.swing.JTextField txtTenKhuyenMai;
-    private javax.swing.JTextField txtTenSanPham;
     // End of variables declaration
 }
+
 

@@ -6,18 +6,22 @@ package vn.edu.iuh.fit.iuhpharmacitymanagement.util;
 
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhachHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhuyenMai;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietKhuyenMaiSanPham;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.ChiTietKhuyenMaiSanPhamBUS;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.ChiTietKhuyenMaiSanPhamDAO;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.constant.LoaiKhuyenMai;
 
 import java.io.InputStream;
 import java.time.format.DateTimeFormatter;
 import java.util.Properties;
-import java.text.DecimalFormat;
 import java.util.Random;
+import java.util.List;
+import java.util.ArrayList;
 import javax.mail.*;
 import javax.mail.internet.*;
-import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.NhanVienDAO;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.TaiKhoanDAO;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhanVien;
-import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.TaiKhoan;
 
 /**
  * Utility class để gửi email sử dụng JavaMail API (SMTP)
@@ -106,6 +110,23 @@ public class EmailUtil {
                 return false;
             }
 
+            // Lấy danh sách sản phẩm nếu là khuyến mãi sản phẩm
+            List<SanPham> danhSachSanPham = new ArrayList<>();
+            if (khuyenMai.getLoaiKhuyenMai() == LoaiKhuyenMai.SAN_PHAM) {
+                try {
+                    ChiTietKhuyenMaiSanPhamBUS chiTietBUS = new ChiTietKhuyenMaiSanPhamBUS(new ChiTietKhuyenMaiSanPhamDAO());
+                    List<ChiTietKhuyenMaiSanPham> danhSachCTKM = chiTietBUS.timTheoMaKhuyenMai(khuyenMai.getMaKhuyenMai());
+                    for (ChiTietKhuyenMaiSanPham ctkm : danhSachCTKM) {
+                        if (ctkm.getSanPham() != null) {
+                            danhSachSanPham.add(ctkm.getSanPham());
+                        }
+                    }
+                } catch (Exception e) {
+                    System.err.println("⚠️ Lỗi khi lấy danh sách sản phẩm: " + e.getMessage());
+                    // Tiếp tục gửi email dù không lấy được danh sách sản phẩm
+                }
+            }
+
             // Cấu hình SMTP properties
             Properties props = new Properties();
             props.put("mail.smtp.host", SMTP_HOST);
@@ -130,7 +151,7 @@ public class EmailUtil {
             message.setSubject("🎉 Chương trình khuyến mãi đặc biệt dành cho bạn!");
 
             // Tạo nội dung HTML
-            String htmlContent = taoNoiDungEmailHTML(khachHang, khuyenMai);
+            String htmlContent = taoNoiDungEmailHTML(khachHang, khuyenMai, danhSachSanPham);
             message.setContent(htmlContent, "text/html; charset=UTF-8");
 
             // Gửi email
@@ -153,7 +174,7 @@ public class EmailUtil {
     /**
      * Tạo nội dung email HTML đẹp mắt
      */
-    private static String taoNoiDungEmailHTML(KhachHang khachHang, KhuyenMai khuyenMai) {
+    private static String taoNoiDungEmailHTML(KhachHang khachHang, KhuyenMai khuyenMai, List<SanPham> danhSachSanPham) {
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
         StringBuilder html = new StringBuilder();
@@ -175,6 +196,9 @@ public class EmailUtil {
         html.append(".info-table { width: 100%; margin: 20px 0; border-collapse: collapse; }");
         html.append(".info-table td { padding: 12px; border-bottom: 1px solid #eee; }");
         html.append(".info-table td:first-child { font-weight: bold; color: #667eea; width: 40%; }");
+        html.append(".product-list { background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; }");
+        html.append(".product-list h3 { margin: 0 0 15px 0; color: #667eea; font-size: 18px; }");
+        html.append(".product-item { padding: 10px; margin: 5px 0; background-color: white; border-radius: 5px; border-left: 4px solid #667eea; }");
         html.append(".footer { background-color: #f8f9fa; padding: 20px; text-align: center; color: #666; font-size: 14px; }");
         html.append(".button { display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; font-weight: bold; }");
         html.append("</style>");
@@ -201,26 +225,41 @@ public class EmailUtil {
         html.append("Chúng tôi rất vui được gửi đến bạn chương trình khuyến mãi đặc biệt dành riêng cho khách hàng thân thiết!");
         html.append("</p>");
 
-        // Promo Box
+        // Promo Box - Hiển thị tên khuyến mãi và phần trăm giảm giá
         html.append("<div class='promo-box'>");
         html.append("<h2>").append(khuyenMai.getTenKhuyenMai()).append("</h2>");
         html.append("<p style='margin: 10px 0; font-size: 16px;'>Mã khuyến mãi của bạn:</p>");
         html.append("<div class='promo-code'>").append(khuyenMai.getMaKhuyenMai()).append("</div>");
 
-        // Hiển thị giá trị khuyến mãi (giamGia lưu dưới dạng thập phân: 0.2 = 20%)
-        DecimalFormat percentFormat = new DecimalFormat("#.##%");
-        String giamGiaText = percentFormat.format(khuyenMai.getGiamGia());
+        // Hiển thị phần trăm giảm giá (giamGia lưu dưới dạng thập phân: 0.2 = 20%)
+        double phanTramGiamGia = khuyenMai.getGiamGia() * 100;
+        String giamGiaText = String.format("%.0f%%", phanTramGiamGia);
 
         html.append("<p style='font-size: 20px; margin: 15px 0 0 0;'>🎁 Giảm <strong>")
                 .append(giamGiaText)
                 .append("</strong></p>");
         html.append("</div>");
 
+        // Hiển thị danh sách sản phẩm nếu là khuyến mãi sản phẩm
+        if (khuyenMai.getLoaiKhuyenMai() == LoaiKhuyenMai.SAN_PHAM && danhSachSanPham != null && !danhSachSanPham.isEmpty()) {
+            html.append("<div class='product-list'>");
+            html.append("<h3>📦 Danh sách sản phẩm khuyến mãi:</h3>");
+            for (SanPham sp : danhSachSanPham) {
+                html.append("<div class='product-item'>");
+                html.append("<strong>").append(sp.getTenSanPham()).append("</strong>");
+                if (sp.getMaSanPham() != null && !sp.getMaSanPham().isEmpty()) {
+                    html.append(" <span style='color: #666; font-size: 14px;'>(Mã: ").append(sp.getMaSanPham()).append(")</span>");
+                }
+                html.append("</div>");
+            }
+            html.append("</div>");
+        }
+
         // Info Table
         html.append("<table class='info-table'>");
         html.append("<tr><td>📅 Ngày bắt đầu:</td><td>").append(khuyenMai.getNgayBatDau().format(dateFormatter)).append("</td></tr>");
         html.append("<tr><td>📅 Ngày kết thúc:</td><td>").append(khuyenMai.getNgayKetThuc().format(dateFormatter)).append("</td></tr>");
-        html.append("<tr><td>📋 Loại khuyến mãi:</td><td>").append(khuyenMai.getLoaiKhuyenMai().toString()).append("</td></tr>");
+        html.append("<tr><td>📋 Loại khuyến mãi:</td><td>").append(khuyenMai.getLoaiKhuyenMai() == LoaiKhuyenMai.SAN_PHAM ? "Sản phẩm" : "Đơn hàng").append("</td></tr>");
         html.append("<tr><td>🎯 Trạng thái:</td><td>").append(khuyenMai.hienThiTrangThai()).append("</td></tr>");
         html.append("</table>");
 
@@ -236,7 +275,7 @@ public class EmailUtil {
 
         // Footer
         html.append("<div class='footer'>");
-        html.append("<p style='margin: 5px 0;'><strong>PHARMACITY MANAGEMENT SYSTEM</strong></p>");
+        html.append("<p style='margin: 5px 0;'><strong>IUH PHARMACITY MANAGEMENT SYSTEM</strong></p>");
         html.append("<p style='margin: 5px 0;'>Cảm ơn bạn đã tin tưởng và đồng hành cùng chúng tôi! 💙</p>");
         html.append("<p style='margin: 5px 0; font-size: 12px; color: #999;'>Email này được gửi tự động, vui lòng không trả lời.</p>");
         html.append("</div>");
@@ -461,10 +500,6 @@ public class EmailUtil {
             e.printStackTrace();
             return false;
         }
-    }
-
-    public static void main(String[] args) {
-        new EmailUtil().guiEmailCapPass(new NhanVienDAO().findById("NV00021").get());
     }
 
 }

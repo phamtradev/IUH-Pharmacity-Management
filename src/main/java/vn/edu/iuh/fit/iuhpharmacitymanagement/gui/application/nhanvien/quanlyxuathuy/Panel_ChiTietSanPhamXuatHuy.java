@@ -38,41 +38,41 @@ public class Panel_ChiTietSanPhamXuatHuy extends javax.swing.JPanel {
         if (lblHinh != null) {
             if (hinhAnh != null && !hinhAnh.trim().isEmpty()) {
                 try {
-                    // Thử đường dẫn gốc trước
+                    // Thử đường dẫn gốc trước (tuyệt đối)
                     java.io.File file = new java.io.File(hinhAnh);
                     if (file.exists()) {
                         javax.swing.ImageIcon icon = new javax.swing.ImageIcon(hinhAnh);
                         java.awt.Image img = icon.getImage();
-                        java.awt.Image scaledImg = img.getScaledInstance(80, 80, java.awt.Image.SCALE_SMOOTH);
+                        java.awt.Image scaledImg = img.getScaledInstance(70, 70, java.awt.Image.SCALE_SMOOTH);
                         lblHinh.setIcon(new javax.swing.ImageIcon(scaledImg));
                         lblHinh.setText("");
                         return;
                     }
                     
-                    // Nếu không tìm thấy, thử với relative path từ thư mục gốc project
-                    file = new java.io.File("src/main/resources/" + hinhAnh);
-                    if (file.exists()) {
-                        javax.swing.ImageIcon icon = new javax.swing.ImageIcon(file.getAbsolutePath());
-                        java.awt.Image img = icon.getImage();
-                        java.awt.Image scaledImg = img.getScaledInstance(80, 80, java.awt.Image.SCALE_SMOOTH);
-                        lblHinh.setIcon(new javax.swing.ImageIcon(scaledImg));
-                        lblHinh.setText("");
-                        return;
-                    }
-                    
-                    // Thử load từ resources folder trong classpath
+                    // Thử load từ resources folder trong classpath (ưu tiên)
                     try {
-                        java.net.URL imageURL = getClass().getResource("/" + hinhAnh);
+                        java.net.URL imageURL = getClass().getResource("/img/" + hinhAnh);
                         if (imageURL != null) {
                             javax.swing.ImageIcon icon = new javax.swing.ImageIcon(imageURL);
                             java.awt.Image img = icon.getImage();
-                            java.awt.Image scaledImg = img.getScaledInstance(80, 80, java.awt.Image.SCALE_SMOOTH);
+                            java.awt.Image scaledImg = img.getScaledInstance(70, 70, java.awt.Image.SCALE_SMOOTH);
                             lblHinh.setIcon(new javax.swing.ImageIcon(scaledImg));
                             lblHinh.setText("");
                             return;
                         }
                     } catch (Exception ex) {
                         System.err.println("Không thể load hình từ classpath: " + ex.getMessage());
+                    }
+                    
+                    // Nếu không tìm thấy, thử với relative path từ thư mục gốc project
+                    file = new java.io.File("src/main/resources/img/" + hinhAnh);
+                    if (file.exists()) {
+                        javax.swing.ImageIcon icon = new javax.swing.ImageIcon(file.getAbsolutePath());
+                        java.awt.Image img = icon.getImage();
+                        java.awt.Image scaledImg = img.getScaledInstance(70, 70, java.awt.Image.SCALE_SMOOTH);
+                        lblHinh.setIcon(new javax.swing.ImageIcon(scaledImg));
+                        lblHinh.setText("");
+                        return;
                     }
                     
                     // Nếu không tìm thấy ở đâu cả
@@ -146,10 +146,10 @@ public class Panel_ChiTietSanPhamXuatHuy extends javax.swing.JPanel {
         this.lyDoXuatHuy = lyDo;
         if (lblLyDo != null) {
             if (lyDo == null || lyDo.trim().isEmpty()) {
-                lblLyDo.setText("<html><div style='width:75px;word-wrap:break-word;'>(Chưa có lý do)</div></html>");
+                lblLyDo.setText("<html><div style='width:70px;word-wrap:break-word;'>(Chưa có lý do)</div></html>");
                 lblLyDo.setForeground(new java.awt.Color(108, 117, 125));
             } else {
-                lblLyDo.setText("<html><div style='width:75px;word-wrap:break-word;'>" + lyDo + "</div></html>");
+                lblLyDo.setText("<html><div style='width:70px;word-wrap:break-word;'>" + lyDo + "</div></html>");
                 lblLyDo.setForeground(new java.awt.Color(33, 37, 41));
             }
         }
@@ -196,8 +196,8 @@ public class Panel_ChiTietSanPhamXuatHuy extends javax.swing.JPanel {
         setBackground(new java.awt.Color(255, 255, 255));
         setBorder(javax.swing.BorderFactory.createMatteBorder(0, 0, 1, 0, new java.awt.Color(232, 232, 232)));
         setMaximumSize(new java.awt.Dimension(32767, 100));
-        setMinimumSize(new java.awt.Dimension(800, 100));
-        setPreferredSize(new java.awt.Dimension(1200, 100));
+        setMinimumSize(new java.awt.Dimension(700, 100));
+        setPreferredSize(new java.awt.Dimension(1000, 100));
         setRequestFocusEnabled(false);
         
         // Sử dụng GridBagLayout để các cột thẳng hàng
@@ -205,15 +205,15 @@ public class Panel_ChiTietSanPhamXuatHuy extends javax.swing.JPanel {
         java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
         gbc.fill = java.awt.GridBagConstraints.BOTH;
         gbc.anchor = java.awt.GridBagConstraints.CENTER;
-        gbc.insets = new java.awt.Insets(10, 8, 10, 8);
+        gbc.insets = new java.awt.Insets(10, 5, 10, 5);
         gbc.gridy = 0;
         gbc.weighty = 1.0;
 
         // 1. Hình ảnh sản phẩm
         lblHinh = new javax.swing.JLabel();
-        lblHinh.setPreferredSize(new java.awt.Dimension(80, 80));
-        lblHinh.setMinimumSize(new java.awt.Dimension(80, 80));
-        lblHinh.setMaximumSize(new java.awt.Dimension(80, 80));
+        lblHinh.setPreferredSize(new java.awt.Dimension(70, 70));
+        lblHinh.setMinimumSize(new java.awt.Dimension(70, 70));
+        lblHinh.setMaximumSize(new java.awt.Dimension(70, 70));
         lblHinh.setBackground(new java.awt.Color(240, 240, 240));
         lblHinh.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(200, 200, 200)));
         lblHinh.setOpaque(true);
@@ -228,8 +228,8 @@ public class Panel_ChiTietSanPhamXuatHuy extends javax.swing.JPanel {
         javax.swing.JPanel pnProductInfo = new javax.swing.JPanel();
         pnProductInfo.setBackground(java.awt.Color.WHITE);
         pnProductInfo.setLayout(new java.awt.GridBagLayout());
-        pnProductInfo.setPreferredSize(new java.awt.Dimension(250, 80));
-        pnProductInfo.setMinimumSize(new java.awt.Dimension(200, 80));
+        pnProductInfo.setPreferredSize(new java.awt.Dimension(200, 80));
+        pnProductInfo.setMinimumSize(new java.awt.Dimension(180, 80));
         
         java.awt.GridBagConstraints gbcProduct = new java.awt.GridBagConstraints();
         gbcProduct.anchor = java.awt.GridBagConstraints.WEST;
@@ -294,12 +294,12 @@ public class Panel_ChiTietSanPhamXuatHuy extends javax.swing.JPanel {
         lblLyDo = new javax.swing.JLabel();
         lblLyDo.setFont(new java.awt.Font("Segoe UI", 0, 12));
         lblLyDo.setForeground(new java.awt.Color(108, 117, 125));
-        lblLyDo.setText("<html><div style='width:75px;word-wrap:break-word;'>(Chưa có lý do)</div></html>");
+        lblLyDo.setText("<html><div style='width:70px;word-wrap:break-word;'>(Chưa có lý do)</div></html>");
         lblLyDo.setVerticalAlignment(javax.swing.SwingConstants.CENTER);
         pnLyDo.add(lblLyDo, java.awt.BorderLayout.CENTER);
         
-        pnLyDo.setPreferredSize(new java.awt.Dimension(90, 80));
-        pnLyDo.setMinimumSize(new java.awt.Dimension(80, 80));
+        pnLyDo.setPreferredSize(new java.awt.Dimension(80, 80));
+        pnLyDo.setMinimumSize(new java.awt.Dimension(70, 80));
         gbc.gridx = 2;
         gbc.weightx = 0.08;
         add(pnLyDo, gbc);
@@ -308,8 +308,8 @@ public class Panel_ChiTietSanPhamXuatHuy extends javax.swing.JPanel {
         lblDonVi = new javax.swing.JLabel();
         lblDonVi.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         lblDonVi.setText("");
-        lblDonVi.setPreferredSize(new java.awt.Dimension(60, 80));
-        lblDonVi.setMinimumSize(new java.awt.Dimension(60, 80));
+        lblDonVi.setPreferredSize(new java.awt.Dimension(50, 80));
+        lblDonVi.setMinimumSize(new java.awt.Dimension(50, 80));
         lblDonVi.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         lblDonVi.setVerticalAlignment(javax.swing.SwingConstants.CENTER);
         gbc.gridx = 3;
@@ -330,8 +330,8 @@ public class Panel_ChiTietSanPhamXuatHuy extends javax.swing.JPanel {
             }
         });
         pnSpinner.add(spinnerSoLuongHuy);
-        pnSpinner.setPreferredSize(new java.awt.Dimension(70, 100));
-        pnSpinner.setMinimumSize(new java.awt.Dimension(70, 100));
+        pnSpinner.setPreferredSize(new java.awt.Dimension(60, 100));
+        pnSpinner.setMinimumSize(new java.awt.Dimension(60, 100));
         gbc.gridx = 4;
         gbc.weightx = 0.0;
         add(pnSpinner, gbc);
@@ -340,9 +340,9 @@ public class Panel_ChiTietSanPhamXuatHuy extends javax.swing.JPanel {
         txtDonGia = new javax.swing.JLabel();
         txtDonGia.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         txtDonGia.setText("");
-        txtDonGia.setPreferredSize(new java.awt.Dimension(85, 100));
-        txtDonGia.setMinimumSize(new java.awt.Dimension(85, 100));
-        txtDonGia.setMaximumSize(new java.awt.Dimension(85, 100));
+        txtDonGia.setPreferredSize(new java.awt.Dimension(75, 100));
+        txtDonGia.setMinimumSize(new java.awt.Dimension(75, 100));
+        txtDonGia.setMaximumSize(new java.awt.Dimension(75, 100));
         txtDonGia.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
         txtDonGia.setVerticalAlignment(javax.swing.SwingConstants.CENTER);
         gbc.gridx = 5;
@@ -354,65 +354,16 @@ public class Panel_ChiTietSanPhamXuatHuy extends javax.swing.JPanel {
         txtTongTienHuy.setFont(new java.awt.Font("Segoe UI", 1, 16)); // NOI18N
         txtTongTienHuy.setForeground(new java.awt.Color(220, 53, 69)); // Màu đỏ cho xuất hủy
         txtTongTienHuy.setText("");
-        txtTongTienHuy.setPreferredSize(new java.awt.Dimension(95, 100));
-        txtTongTienHuy.setMinimumSize(new java.awt.Dimension(95, 100));
-        txtTongTienHuy.setMaximumSize(new java.awt.Dimension(95, 100));
+        txtTongTienHuy.setPreferredSize(new java.awt.Dimension(85, 100));
+        txtTongTienHuy.setMinimumSize(new java.awt.Dimension(85, 100));
+        txtTongTienHuy.setMaximumSize(new java.awt.Dimension(85, 100));
         txtTongTienHuy.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
         txtTongTienHuy.setVerticalAlignment(javax.swing.SwingConstants.CENTER);
         gbc.gridx = 6;
         gbc.weightx = 0.0;
         add(txtTongTienHuy, gbc);
-
-        // 8. Nút Xóa (CHỈ 1 NÚT)
-        javax.swing.JPanel pnButtons = new javax.swing.JPanel();
-        pnButtons.setBackground(java.awt.Color.WHITE);
-        pnButtons.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 30));
-        pnButtons.setPreferredSize(new java.awt.Dimension(60, 100));
-        pnButtons.setMinimumSize(new java.awt.Dimension(60, 100));
-        
-        javax.swing.JButton btnXoa = new javax.swing.JButton();
-        btnXoa.setText("Xóa");
-        btnXoa.setFont(new java.awt.Font("Segoe UI", 0, 11));
-        btnXoa.setBackground(new java.awt.Color(220, 53, 69));
-        btnXoa.setForeground(java.awt.Color.WHITE);
-        btnXoa.setPreferredSize(new java.awt.Dimension(55, 32));
-        btnXoa.setMinimumSize(new java.awt.Dimension(55, 32));
-        btnXoa.setMaximumSize(new java.awt.Dimension(55, 32));
-        btnXoa.setFocusPainted(false);
-        btnXoa.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        btnXoa.setBorderPainted(false);
-        btnXoa.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnXoaActionPerformed(evt);
-            }
-        });
-        
-        pnButtons.add(btnXoa);
-        
-        gbc.gridx = 7;
-        gbc.weightx = 0.0;
-        add(pnButtons, gbc);
     }// </editor-fold>//GEN-END:initComponents
 
-    private void btnXoaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnXoaActionPerformed
-        // Xóa panel này khỏi container cha
-        java.awt.Container parent = this.getParent();
-        if (parent != null) {
-            parent.remove(this);
-            parent.revalidate();
-            parent.repaint();
-            
-            // Tìm GD_QuanLyXuatHuy parent để cập nhật tổng tiền
-            java.awt.Container topParent = parent;
-            while (topParent != null && !(topParent instanceof GD_QuanLyXuatHuy)) {
-                topParent = topParent.getParent();
-            }
-            
-            if (topParent instanceof GD_QuanLyXuatHuy) {
-                ((GD_QuanLyXuatHuy) topParent).updateTongTien();
-            }
-        }
-    }//GEN-LAST:event_btnXoaActionPerformed
 
     private void spinnerSoLuongHuyStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_spinnerSoLuongHuyStateChanged
         // Tính lại tổng tiền hủy khi thay đổi số lượng

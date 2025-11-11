@@ -5,7 +5,6 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietHangHong;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.HangHong;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class ChiTietHangHongBUS {
     private ChiTietHangHongDAO chiTietHangHongDAO;
@@ -42,9 +41,7 @@ public class ChiTietHangHongBUS {
     }
 
     public List<ChiTietHangHong> layChiTietTheoMaHangHong(String maHangHong) {
-        return chiTietHangHongDAO.findAll().stream()
-                .filter(ct -> ct.getHangHong() != null && ct.getHangHong().getMaHangHong().equals(maHangHong))
-                .collect(Collectors.toList());
+        return chiTietHangHongDAO.findByMaHangHong(maHangHong);
     }
     
     public List<ChiTietHangHong> layChiTietTheoHangHong(HangHong hangHong) {

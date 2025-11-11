@@ -121,6 +121,7 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
         pnLeft.setBackground(new java.awt.Color(255, 255, 255));
         pnLeft.setPreferredSize(new java.awt.Dimension(485, 650));
 
+        btnTaoPhieu = new javax.swing.JButton();
         btnTaoPhieu.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
         btnTaoPhieu.setText("Tạo phiếu");
         btnTaoPhieu.addActionListener(new java.awt.event.ActionListener() {
@@ -352,7 +353,7 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
                 .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 103, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 86, Short.MAX_VALUE)
                 .addComponent(btnTaoPhieu, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(39, 39, 39))
         );
@@ -388,16 +389,67 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
             }
         });
 
+        btnTraTatCa = new javax.swing.JButton();
+        btnTraTatCa.setBackground(new java.awt.Color(255, 153, 51));
+        btnTraTatCa.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        btnTraTatCa.setForeground(new java.awt.Color(255, 255, 255));
+        btnTraTatCa.setText("Trả tất cả");
+        btnTraTatCa.setMaximumSize(new java.awt.Dimension(180, 40));
+        btnTraTatCa.setMinimumSize(new java.awt.Dimension(180, 40));
+        btnTraTatCa.setPreferredSize(new java.awt.Dimension(180, 40));
+        btnTraTatCa.setVisible(false);
+        btnTraTatCa.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnTraTatCaActionPerformed(evt);
+            }
+        });
+
+        btnNhapLyDoChoTatCa = new javax.swing.JButton();
+        btnNhapLyDoChoTatCa.setBackground(new java.awt.Color(51, 153, 255));
+        btnNhapLyDoChoTatCa.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        btnNhapLyDoChoTatCa.setForeground(new java.awt.Color(255, 255, 255));
+        btnNhapLyDoChoTatCa.setText("Nhập lý do cho tất cả");
+        btnNhapLyDoChoTatCa.setMaximumSize(new java.awt.Dimension(200, 40));
+        btnNhapLyDoChoTatCa.setMinimumSize(new java.awt.Dimension(200, 40));
+        btnNhapLyDoChoTatCa.setPreferredSize(new java.awt.Dimension(200, 40));
+        btnNhapLyDoChoTatCa.setVisible(false);
+        btnNhapLyDoChoTatCa.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnNhapLyDoChoTatCaActionPerformed(evt);
+            }
+        });
+
+        btnXoaTatCa = new javax.swing.JButton();
+        btnXoaTatCa.setBackground(new java.awt.Color(220, 53, 69));
+        btnXoaTatCa.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        btnXoaTatCa.setForeground(new java.awt.Color(255, 255, 255));
+        btnXoaTatCa.setText("Xóa tất cả");
+        btnXoaTatCa.setMaximumSize(new java.awt.Dimension(180, 40));
+        btnXoaTatCa.setMinimumSize(new java.awt.Dimension(180, 40));
+        btnXoaTatCa.setPreferredSize(new java.awt.Dimension(180, 40));
+        btnXoaTatCa.setVisible(false);
+        btnXoaTatCa.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnXoaTatCaActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel7Layout = new javax.swing.GroupLayout(jPanel7);
         jPanel7.setLayout(jPanel7Layout);
         jPanel7Layout.setHorizontalGroup(
             jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel7Layout.createSequentialGroup()
-                .addGap(150, 150, 150)
-                .addComponent(txtSearchOrder, javax.swing.GroupLayout.PREFERRED_SIZE, 926, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(34, 34, 34)
+                .addGap(20, 20, 20)
+                .addComponent(txtSearchOrder, javax.swing.GroupLayout.PREFERRED_SIZE, 600, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
                 .addComponent(btnOpenModalAddUnit, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .addGap(18, 18, 18)
+                .addComponent(btnTraTatCa, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(btnNhapLyDoChoTatCa, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(btnXoaTatCa, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel7Layout.setVerticalGroup(
             jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -405,7 +457,10 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
                 .addGap(24, 24, 24)
                 .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(txtSearchOrder, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnOpenModalAddUnit, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(btnOpenModalAddUnit, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnTraTatCa, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnNhapLyDoChoTatCa, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnXoaTatCa, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE)))
         );
 
         headerPanel.add(jPanel7, java.awt.BorderLayout.CENTER);
@@ -460,11 +515,146 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
             taoPhieuTraHang();
         }
     }//GEN-LAST:event_btnTaoPhieuKeyPressed
+
+    private void btnTraTatCaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTraTatCaActionPerformed
+        // Kiểm tra xem có đơn hàng không
+        if (currentDonHang == null) {
+            raven.toast.Notifications.getInstance().show(
+                raven.toast.Notifications.Type.WARNING, 
+                "Vui lòng tìm kiếm hóa đơn trước!"
+            );
+            return;
+        }
+        
+        // Đếm số sản phẩm đã mua (bỏ qua header)
+        int soLuongSanPham = 0;
+        for (java.awt.Component comp : pnHaveOrder.getComponents()) {
+            if (comp instanceof Panel_ChiTietSanPhamDaMua) {
+                soLuongSanPham++;
+            }
+        }
+        
+        if (soLuongSanPham == 0) {
+            raven.toast.Notifications.getInstance().show(
+                raven.toast.Notifications.Type.WARNING, 
+                "Không có sản phẩm nào để trả!"
+            );
+            return;
+        }
+        
+        // Chuyển tất cả sản phẩm sang danh sách trả
+        for (java.awt.Component comp : pnHaveOrder.getComponents()) {
+            if (comp instanceof Panel_ChiTietSanPhamDaMua) {
+                Panel_ChiTietSanPhamDaMua productPanel = (Panel_ChiTietSanPhamDaMua) comp;
+                onProductClicked(productPanel);
+            }
+        }
+        
+        // Hiện 2 nút sau khi bấm Trả tất cả
+        btnNhapLyDoChoTatCa.setVisible(true);
+        btnXoaTatCa.setVisible(true);
+        
+        raven.toast.Notifications.getInstance().show(
+            raven.toast.Notifications.Type.SUCCESS, 
+            "Đã thêm tất cả " + soLuongSanPham + " sản phẩm vào danh sách trả!"
+        );
+    }//GEN-LAST:event_btnTraTatCaActionPerformed
+
+    private void btnNhapLyDoChoTatCaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNhapLyDoChoTatCaActionPerformed
+        // Kiểm tra xem có sản phẩm trả không
+        int soLuongSanPhamTra = 0;
+        for (java.awt.Component comp : pnHaveReturn.getComponents()) {
+            if (comp instanceof Panel_ChiTietSanPhamTraHang) {
+                soLuongSanPhamTra++;
+            }
+        }
+        
+        if (soLuongSanPhamTra == 0) {
+            raven.toast.Notifications.getInstance().show(
+                raven.toast.Notifications.Type.WARNING, 
+                "Không có sản phẩm nào trong danh sách trả!"
+            );
+            return;
+        }
+        
+        // Hiển thị dialog để nhập lý do
+        Dialog_NhapLyDoTraHang dialog = new Dialog_NhapLyDoTraHang(null, true);
+        dialog.setVisible(true);
+        
+        // Lấy lý do từ dialog
+        String lyDo = dialog.getLyDo();
+        
+        if (lyDo != null && !lyDo.trim().isEmpty()) {
+            // Áp dụng lý do cho tất cả sản phẩm trả
+            for (java.awt.Component comp : pnHaveReturn.getComponents()) {
+                if (comp instanceof Panel_ChiTietSanPhamTraHang) {
+                    Panel_ChiTietSanPhamTraHang panel = (Panel_ChiTietSanPhamTraHang) comp;
+                    panel.setLyDoTraHang(lyDo);
+                }
+            }
+            
+            raven.toast.Notifications.getInstance().show(
+                raven.toast.Notifications.Type.SUCCESS, 
+                "Đã áp dụng lý do cho tất cả " + soLuongSanPhamTra + " sản phẩm!"
+            );
+        }
+    }//GEN-LAST:event_btnNhapLyDoChoTatCaActionPerformed
+
+    private void btnXoaTatCaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnXoaTatCaActionPerformed
+        // Kiểm tra xem có sản phẩm trả không
+        int soLuongSanPhamTra = 0;
+        for (java.awt.Component comp : pnHaveReturn.getComponents()) {
+            if (comp instanceof Panel_ChiTietSanPhamTraHang) {
+                soLuongSanPhamTra++;
+            }
+        }
+        
+        if (soLuongSanPhamTra == 0) {
+            raven.toast.Notifications.getInstance().show(
+                raven.toast.Notifications.Type.WARNING, 
+                "Không có sản phẩm nào trong danh sách trả!"
+            );
+            return;
+        }
+        
+        // Xác nhận xóa
+        int confirm = javax.swing.JOptionPane.showConfirmDialog(
+            this,
+            "Bạn có chắc muốn xóa tất cả " + soLuongSanPhamTra + " sản phẩm khỏi danh sách trả?",
+            "Xác nhận xóa tất cả",
+            javax.swing.JOptionPane.YES_NO_OPTION,
+            javax.swing.JOptionPane.WARNING_MESSAGE
+        );
+        
+        if (confirm == javax.swing.JOptionPane.YES_OPTION) {
+            // Xóa tất cả sản phẩm trả (giữ header)
+            java.awt.Component headerReturn = pnHaveReturn.getComponent(0);
+            pnHaveReturn.removeAll();
+            pnHaveReturn.add(headerReturn);
+            pnHaveReturn.revalidate();
+            pnHaveReturn.repaint();
+            
+            // Cập nhật lại thông tin
+            capNhatTongTienTra();
+            
+            // Ẩn 2 nút khi không còn sản phẩm
+            btnNhapLyDoChoTatCa.setVisible(false);
+            btnXoaTatCa.setVisible(false);
+            
+            raven.toast.Notifications.getInstance().show(
+                raven.toast.Notifications.Type.SUCCESS, 
+                "Đã xóa tất cả sản phẩm khỏi danh sách trả!"
+            );
+        }
+    }//GEN-LAST:event_btnXoaTatCaActionPerformed
     
     private vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonHang currentDonHang;
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnOpenModalAddUnit;
     private javax.swing.JButton btnTaoPhieu;
+    private javax.swing.JButton btnTraTatCa;
+    private javax.swing.JButton btnNhapLyDoChoTatCa;
+    private javax.swing.JButton btnXoaTatCa;
     private javax.swing.JPanel headerPanel;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -676,18 +866,41 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
 
 
     private void onProductClicked(Panel_ChiTietSanPhamDaMua productPanel) {
-        // Tạo panel trả hàng từ sản phẩm đã mua
-        Panel_ChiTietSanPhamTraHang returnProduct = new Panel_ChiTietSanPhamTraHang();
-        
         String tenSP = productPanel.getTenSanPham();
         String donVi = productPanel.getDonVi();
+        int soLuongDaMua = productPanel.getSoLuong();
         
-        System.out.println("DEBUG onProductClicked: Tên SP = '" + tenSP + "', Đơn vị = '" + donVi + "'");
+        System.out.println("DEBUG onProductClicked: Tên SP = '" + tenSP + "', Đơn vị = '" + donVi + "', Số lượng đã mua = " + soLuongDaMua);
+        
+        // Kiểm tra sản phẩm đã có trong danh sách trả hàng chưa
+        for (java.awt.Component comp : pnHaveReturn.getComponents()) {
+            if (comp instanceof Panel_ChiTietSanPhamTraHang) {
+                Panel_ChiTietSanPhamTraHang existingPanel = (Panel_ChiTietSanPhamTraHang) comp;
+                if (existingPanel.getTenSanPham().equals(tenSP)) {
+                    // Sản phẩm đã tồn tại trong danh sách trả hàng
+                    // Hiển thị thông báo
+                    raven.toast.Notifications.getInstance().show(
+                        raven.toast.Notifications.Type.ERROR,
+                        raven.toast.Notifications.Location.TOP_CENTER,
+                        3000,
+                        "Sản phẩm '" + tenSP + "' đã có trong danh sách trả hàng!"
+                    );
+                    
+                    // Làm panel chớp màu đỏ để người dùng dễ nhận biết
+                    highlightDuplicatePanel(existingPanel);
+                    return; // Dừng lại, không thêm sản phẩm
+                }
+            }
+        }
+        
+        // Tạo panel trả hàng từ sản phẩm đã mua
+        Panel_ChiTietSanPhamTraHang returnProduct = new Panel_ChiTietSanPhamTraHang();
         
         // Copy thông tin từ sản phẩm đã mua
         returnProduct.setTenSanPham(tenSP);
         returnProduct.setDonVi(donVi);
-        returnProduct.setSoLuongTra(productPanel.getSoLuong()); // Mặc định trả hết
+        returnProduct.setSoLuongToiDa(soLuongDaMua); // Set số lượng tối đa trước
+        returnProduct.setSoLuongTra(soLuongDaMua); // Mặc định trả hết
         returnProduct.setDonGia(productPanel.getDonGia());
         
         // Copy hình ảnh nếu có - tìm sản phẩm từ database để lấy đường dẫn hình ảnh
@@ -767,6 +980,10 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
                     raven.toast.Notifications.Type.ERROR, 
                     "Không tìm thấy hóa đơn: " + maDonHang
                 );
+                // Ẩn 3 nút
+                btnTraTatCa.setVisible(false);
+                btnNhapLyDoChoTatCa.setVisible(false);
+                btnXoaTatCa.setVisible(false);
                 return;
             }
             
@@ -809,6 +1026,11 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
                 txtReturnTotal.setText("0");
                 currentDonHang = null;
                 
+                // Ẩn 3 nút
+                btnTraTatCa.setVisible(false);
+                btnNhapLyDoChoTatCa.setVisible(false);
+                btnXoaTatCa.setVisible(false);
+                
                 // Xóa danh sách sản phẩm
                 java.awt.Component header = pnHaveOrder.getComponent(0);
                 pnHaveOrder.removeAll();
@@ -838,6 +1060,11 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
                 txtCusPhone.setText("");
                 txtReturnTotal.setText("0");
                 currentDonHang = null;
+                
+                // Ẩn 3 nút
+                btnTraTatCa.setVisible(false);
+                btnNhapLyDoChoTatCa.setVisible(false);
+                btnXoaTatCa.setVisible(false);
                 
                 // Xóa danh sách sản phẩm
                 java.awt.Component header = pnHaveOrder.getComponent(0);
@@ -939,6 +1166,11 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
             
             // Reset tổng tiền
             txtReturnTotal.setText("0 ₫");
+            
+            // Hiển thị nút Trả tất cả khi tìm kiếm thành công (2 nút còn lại sẽ hiện sau khi bấm Trả tất cả)
+            btnTraTatCa.setVisible(true);
+            btnNhapLyDoChoTatCa.setVisible(false);
+            btnXoaTatCa.setVisible(false);
             
             raven.toast.Notifications.getInstance().show(
                 raven.toast.Notifications.Type.SUCCESS, 
@@ -1150,29 +1382,17 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
                 );
             }
             
-            // Xuất PDF
-            String pdfPath = vn.edu.iuh.fit.iuhpharmacitymanagement.util.XuatHoaDonTraHangPDF
-                .xuatHoaDonTraHangTuDong(donTraHang, chiTietList);
-            
-            // Hiển thị hóa đơn trả hàng
+            // Hiển thị hóa đơn trả hàng (không xuất PDF nữa)
             hienThiHoaDonTraHang(donTraHang, chiTietList);
             
-            // Thông báo thành công với đường dẫn PDF
-            if (pdfPath != null) {
-                raven.toast.Notifications.getInstance().show(
-                    raven.toast.Notifications.Type.SUCCESS, 
-                    "Tạo phiếu trả hàng thành công! Mã: " + donTraHang.getMaDonTraHang() + 
-                    "\nPDF đã lưu tại: " + pdfPath
-                );
-                
-                // Reset form
-                resetForm();
-            } else {
-                raven.toast.Notifications.getInstance().show(
-                    raven.toast.Notifications.Type.WARNING, 
-                    "Lưu phiếu thành công nhưng không thể tạo PDF!"
-                );
-            }
+            // Thông báo thành công
+            raven.toast.Notifications.getInstance().show(
+                raven.toast.Notifications.Type.SUCCESS, 
+                "Tạo phiếu trả hàng thành công! Mã: " + donTraHang.getMaDonTraHang()
+            );
+            
+            // Reset form
+            resetForm();
             
         } catch (Exception e) {
             e.printStackTrace();
@@ -1416,6 +1636,11 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
         txtCusPhone.setText("");
         txtReturnTotal.setText("0 ₫");
         
+        // Ẩn 3 nút
+        btnTraTatCa.setVisible(false);
+        btnNhapLyDoChoTatCa.setVisible(false);
+        btnXoaTatCa.setVisible(false);
+        
         // Xóa sản phẩm đã mua (giữ header)
         java.awt.Component headerOrder = pnHaveOrder.getComponent(0);
         pnHaveOrder.removeAll();
@@ -1431,6 +1656,63 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
         pnHaveReturn.repaint();
         
         currentDonHang = null;
+    }
+    
+    /**
+     * Làm panel chớp màu đỏ và scroll đến vị trí panel để người dùng biết sản phẩm đã tồn tại trong danh sách trả hàng
+     */
+    private void highlightDuplicatePanel(Panel_ChiTietSanPhamTraHang panel) {
+        // Scroll đến vị trí panel trước khi chớp
+        javax.swing.SwingUtilities.invokeLater(() -> {
+            // Lấy vị trí của panel
+            java.awt.Rectangle bounds = panel.getBounds();
+            
+            // Scroll để panel hiển thị ở giữa viewport (nếu có thể)
+            java.awt.Rectangle visibleRect = jScrollPane3.getViewport().getViewRect();
+            int centerY = bounds.y - (visibleRect.height / 2) + (bounds.height / 2);
+            
+            // Đảm bảo không scroll quá đầu hoặc cuối
+            centerY = Math.max(0, centerY);
+            int maxY = pnHaveReturn.getHeight() - visibleRect.height;
+            centerY = Math.min(centerY, Math.max(0, maxY));
+            
+            // Scroll mượt đến vị trí
+            jScrollPane3.getViewport().setViewPosition(new java.awt.Point(0, centerY));
+        });
+        
+        // Lưu màu nền gốc
+        java.awt.Color originalColor = panel.getBackground();
+        
+        // Màu đỏ cảnh báo
+        java.awt.Color highlightColor = new java.awt.Color(255, 82, 82); // Đỏ tươi
+        
+        // Tạo Timer để chớp 2 lần (delay 100ms để scroll xong mới chớp)
+        javax.swing.Timer timer = new javax.swing.Timer(200, null);
+        final int[] blinkCount = {0};
+        
+        timer.addActionListener(e -> {
+            if (blinkCount[0] < 4) { // 4 lần = 2 lần chớp (bật-tắt-bật-tắt)
+                if (blinkCount[0] % 2 == 0) {
+                    // Lần chẵn: đổi sang màu đỏ
+                    panel.setBackground(highlightColor);
+                } else {
+                    // Lần lẻ: trở về màu gốc
+                    panel.setBackground(originalColor);
+                }
+                blinkCount[0]++;
+            } else {
+                // Kết thúc animation, đảm bảo về màu gốc
+                panel.setBackground(originalColor);
+                timer.stop();
+            }
+        });
+        
+        // Delay 100ms để scroll xong mới chớp
+        javax.swing.Timer startTimer = new javax.swing.Timer(100, e -> {
+            timer.start();
+        });
+        startTimer.setRepeats(false);
+        startTimer.start();
     }
 
 }

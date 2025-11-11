@@ -236,4 +236,26 @@ public class KhachHangDAO implements DAOInterface<KhachHang, String> {
         }
         return danhSach;
     }
+    
+    /**
+     * Lấy 10 khách hàng đăng ký gần đây nhất
+     * Dựa trên mã khách hàng (mã lớn nhất = mới nhất)
+     * @return danh sách 10 khách hàng mới nhất
+     */
+    public List<KhachHang> lay10KhachHangGanDay() {
+        List<KhachHang> danhSach = new ArrayList<>();
+        String sql = "SELECT TOP 10 * FROM KhachHang ORDER BY maKhachHang DESC";
+        
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            
+            while (rs.next()) {
+                danhSach.add(mapResultSetToKhachHang(rs));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return danhSach;
+    }
 }

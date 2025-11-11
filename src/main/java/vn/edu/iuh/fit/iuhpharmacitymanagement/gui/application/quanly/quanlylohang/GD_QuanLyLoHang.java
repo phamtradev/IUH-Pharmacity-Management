@@ -31,16 +31,20 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
     private final SanPhamBUS sanPhamBUS;
     private TableDesign tableDesign;
     private List<SanPham> danhSachSanPham;
+    private boolean isValidatingDate = false; // Flag để tránh infinite loop khi validate date
 
     public GD_QuanLyLoHang() {
         this.loHangBUS = new LoHangBUS();
         this.sanPhamBUS = new SanPhamBUS(new SanPhamDAO());
         initComponents();
         
-        styleButton(btnAdd, "THÊM");
+        // styleButton(btnAdd, "THÊM"); // ❌ Đã ẩn nút Thêm
         styleButton(btnUpdate, "SỬA");
         styleButton(btnDelete, "Xóa");
         styleButton(btnSearch, "Tìm kiếm");
+        
+        // Thêm listener để validate ngay khi người dùng chọn ngày
+        setupDateValidation();
         
         setUIManager();
         loadSanPham();
@@ -236,6 +240,69 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
      */
     public void refreshData() {
         loadBatchData();
+    }
+    
+    /**
+     * Thiết lập validation tự động cho DateChooser
+     * Kiểm tra ngay khi người dùng chọn ngày
+     */
+    private void setupDateValidation() {
+        // Listener cho DateChooser trong modal "Thêm lô hàng"
+        dateExpiryAdd.addPropertyChangeListener("date", evt -> {
+            validateExpiryDate(dateExpiryAdd, "thêm");
+        });
+        
+        // Listener cho DateChooser trong modal "Sửa lô hàng"
+        dateExpiryEdit.addPropertyChangeListener("date", evt -> {
+            validateExpiryDate(dateExpiryEdit, "sửa");
+        });
+    }
+    
+    /**
+     * Validate hạn sử dụng và tự động sửa nếu không hợp lệ
+     * @param dateChooser DateChooser cần kiểm tra
+     * @param modalType "thêm" hoặc "sửa"
+     */
+    private void validateExpiryDate(com.toedter.calendar.JDateChooser dateChooser, String modalType) {
+        // Tránh trigger lại khi đang set date
+        if (isValidatingDate) {
+            return;
+        }
+        
+        Date selectedDate = dateChooser.getDate();
+        
+        // Nếu chưa chọn ngày thì bỏ qua
+        if (selectedDate == null) {
+            return;
+        }
+        
+        // Chuyển đổi Date sang LocalDate
+        LocalDate hanSuDung = selectedDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate ngayGioiHan = LocalDate.now().plusMonths(6);
+        
+        // Kiểm tra nếu hạn sử dụng <= 6 tháng
+        if (hanSuDung.isBefore(ngayGioiHan) || hanSuDung.isEqual(ngayGioiHan)) {
+            // Tự động set lại ngày hợp lệ: 6 tháng + 1 ngày
+            LocalDate ngayHopLe = ngayGioiHan.plusDays(1);
+            Date dateHopLe = Date.from(ngayHopLe.atStartOfDay(ZoneId.systemDefault()).toInstant());
+            
+            // Set flag để tránh trigger lại
+            isValidatingDate = true;
+            dateChooser.setDate(dateHopLe);
+            isValidatingDate = false;
+            
+            // Hiển thị thông báo lỗi chi tiết
+            Notifications.getInstance().show(Notifications.Type.ERROR, 
+                String.format(
+                    "❌ HẠN SỬ DỤNG KHÔNG HỢP LỆ!\n" +
+                    "• Ngày bạn chọn: %s\n" +
+                    "• Yêu cầu: Phải lớn hơn %s (sau 6 tháng từ hôm nay)\n" +
+                    "• Đã tự động đặt lại thành: %s",
+                    hanSuDung,
+                    ngayGioiHan,
+                    ngayHopLe
+                ));
+        }
     }
 
     /**
@@ -550,6 +617,7 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
         actionPanel.setPreferredSize(new java.awt.Dimension(320, 60));
         actionPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 6, 10));
 
+        // ❌ Nút Thêm đã bị tắt - Lô hàng sẽ tự động tạo khi nhập hàng từ Excel
         btnAdd.setBackground(new java.awt.Color(115, 165, 71));
         btnAdd.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         btnAdd.setForeground(new java.awt.Color(255, 255, 255));
@@ -557,12 +625,13 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
         btnAdd.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnAdd.setFocusPainted(false);
         btnAdd.setPreferredSize(new java.awt.Dimension(95, 40));
+        btnAdd.setVisible(false); // ẨN NÚT THÊM
         btnAdd.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnAddActionPerformed(evt);
             }
         });
-        actionPanel.add(btnAdd);
+        // actionPanel.add(btnAdd); // KHÔNG THÊM VÀO PANEL
 
         btnUpdate.setBackground(new java.awt.Color(255, 193, 7));
         btnUpdate.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
@@ -787,9 +856,25 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
             // Kiểm tra hạn sử dụng phải > 6 tháng kể từ hôm nay
             LocalDate hanSuDung = hanSD.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
             LocalDate ngayGioiHan = LocalDate.now().plusMonths(6);
+            
             if (hanSuDung.isBefore(ngayGioiHan) || hanSuDung.isEqual(ngayGioiHan)) {
-                Notifications.getInstance().show(Notifications.Type.WARNING, 
-                    "Hạn sử dụng phải lớn hơn 6 tháng kể từ ngày hiện tại!");
+                // Tự động set lại ngày hợp lệ: 6 tháng + 1 ngày
+                LocalDate ngayHopLe = ngayGioiHan.plusDays(1);
+                Date dateHopLe = Date.from(ngayHopLe.atStartOfDay(ZoneId.systemDefault()).toInstant());
+                dateExpiryAdd.setDate(dateHopLe);
+                
+                // Hiển thị thông báo lỗi chi tiết
+                Notifications.getInstance().show(Notifications.Type.ERROR, 
+                    String.format(
+                        "❌ HẠN SỬ DỤNG KHÔNG HỢP LỆ!\n" +
+                        "• Ngày bạn chọn: %s\n" +
+                        "• Yêu cầu: Phải lớn hơn %s (sau 6 tháng từ hôm nay)\n" +
+                        "• Đã tự động đặt lại thành: %s",
+                        hanSuDung,
+                        ngayGioiHan,
+                        ngayHopLe
+                    ));
+                dateExpiryAdd.requestFocus();
                 return;
             }
             
@@ -933,6 +1018,33 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
                 return;
             }
             
+            // Chuyển đổi Date sang LocalDate để kiểm tra
+            LocalDate hanSuDung = hanSD.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            
+            // Kiểm tra hạn sử dụng phải > 6 tháng kể từ hôm nay
+            LocalDate ngayGioiHan = LocalDate.now().plusMonths(6);
+            
+            if (hanSuDung.isBefore(ngayGioiHan) || hanSuDung.isEqual(ngayGioiHan)) {
+                // Tự động set lại ngày hợp lệ: 6 tháng + 1 ngày
+                LocalDate ngayHopLe = ngayGioiHan.plusDays(1);
+                Date dateHopLe = Date.from(ngayHopLe.atStartOfDay(ZoneId.systemDefault()).toInstant());
+                dateExpiryEdit.setDate(dateHopLe);
+                
+                // Hiển thị thông báo lỗi chi tiết
+                Notifications.getInstance().show(Notifications.Type.ERROR, 
+                    String.format(
+                        "❌ HẠN SỬ DỤNG KHÔNG HỢP LỆ!\n" +
+                        "• Ngày bạn chọn: %s\n" +
+                        "• Yêu cầu: Phải lớn hơn %s (sau 6 tháng từ hôm nay)\n" +
+                        "• Đã tự động đặt lại thành: %s",
+                        hanSuDung,
+                        ngayGioiHan,
+                        ngayHopLe
+                    ));
+                dateExpiryEdit.requestFocus();
+                return;
+            }
+            
             if (tonKhoStr.isEmpty()) {
                 Notifications.getInstance().show(Notifications.Type.WARNING, "Vui lòng nhập số lượng tồn kho!");
                 txtStockEdit.requestFocus();
@@ -952,9 +1064,6 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
                 txtStockEdit.requestFocus();
                 return;
             }
-            
-            // Chuyển đổi Date sang LocalDate
-            LocalDate hanSuDung = hanSD.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
             
             // Tự động xác định trạng thái dựa trên hạn sử dụng
             boolean trangThai = !hanSuDung.isBefore(LocalDate.now());
@@ -1040,8 +1149,8 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
 
             // Set sản phẩm đã chọn
             if (loHangEdit.getSanPham() != null) {
-                String maSP = loHangEdit.getSanPham().getMaSanPham();
-                txtBarcodeEdit.setText(maSP);
+                String soDangKy = loHangEdit.getSanPham().getSoDangKy();
+                txtBarcodeEdit.setText(soDangKy);
                 selectedProductEdit = loHangEdit.getSanPham();
                 lblProductNameEdit.setText("✓ " + loHangEdit.getSanPham().getTenSanPham());
                 lblProductNameEdit.setForeground(new java.awt.Color(34, 139, 34));

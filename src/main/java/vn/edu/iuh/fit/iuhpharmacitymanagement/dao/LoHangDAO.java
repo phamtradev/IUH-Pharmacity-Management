@@ -80,6 +80,11 @@ public class LoHangDAO implements DAOInterface<LoHang, String> {
     }
 
     public boolean delete(String maLoHang) {
+        // Xóa cascade: Xóa các chi tiết hàng hỏng liên quan trước
+        ChiTietHangHongDAO chiTietHangHongDAO = new ChiTietHangHongDAO();
+        chiTietHangHongDAO.deleteByMaLoHang(maLoHang);
+        
+        // Sau đó mới xóa lô hàng
         String sql = "DELETE FROM LoHang WHERE maLoHang = ?";
         try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(sql)) {
 
@@ -143,7 +148,7 @@ public class LoHangDAO implements DAOInterface<LoHang, String> {
         // Không đọc ngaySanXuat vì cột này không tồn tại trong database
         // loHang.setNgaySanXuat(rs.getDate("ngaySanXuat").toLocalDate());
         loHang.setHanSuDung(rs.getDate("hanSuDung").toLocalDate());
-        loHang.setTonKho(rs.getInt("tonKho"));
+        loHang.setTonKhoNoValidation(rs.getInt("tonKho")); // Dùng NoValidation khi load từ DB
         loHang.setTrangThai(rs.getBoolean("trangThai"));
 
         //lấy mã sản phẩm từ CSDL và dùng SanPhamDAO để tìm đối tượng SanPham tương ứng
@@ -297,6 +302,34 @@ public class LoHangDAO implements DAOInterface<LoHang, String> {
         }
         return Optional.empty();
     }
+    
+    /**
+     * Tìm tất cả lô hàng theo sản phẩm và hạn sử dụng
+     * (Có thể có nhiều lô cùng HSD nhưng từ NCC khác nhau)
+     */
+    public List<LoHang> findAllByMaSanPhamAndHanSuDung(String maSanPham, java.time.LocalDate hanSuDung) {
+        List<LoHang> danhSachLoHang = new ArrayList<>();
+        String sql = "SELECT * FROM LoHang WHERE maSanPham = ? AND hanSuDung = ?";
+
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(sql)) {
+
+            stmt.setString(1, maSanPham);
+            stmt.setDate(2, java.sql.Date.valueOf(hanSuDung));
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                LoHang loHang = mapResultSetToLoHang(rs);
+                if (loHang != null) {
+                    danhSachLoHang.add(loHang);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (Exception ex) {
+            System.getLogger(LoHangDAO.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        }
+        return danhSachLoHang;
+    }
 
     /**
      * Cập nhật tồn kho của lô hàng (cộng dồn)
@@ -309,24 +342,37 @@ public class LoHangDAO implements DAOInterface<LoHang, String> {
             stmt.setInt(1, themSoLuong);
             stmt.setString(2, maLoHang);
 
-            return stmt.executeUpdate() > 0;
+            int rowsAffected = stmt.executeUpdate();
+            System.out.println("UPDATE tonKho - Mã lô: " + maLoHang + ", Số lượng thêm: " + themSoLuong + ", Rows affected: " + rowsAffected);
+            
+            if (rowsAffected == 0) {
+                System.err.println("Cảnh báo: Không có hàng nào được cập nhật! Có thể mã lô hàng không tồn tại: " + maLoHang);
+            }
+            
+            return rowsAffected > 0;
         } catch (SQLException e) {
+            System.err.println("Lỗi SQL khi cập nhật tồn kho: " + e.getMessage());
             e.printStackTrace();
             return false;
         }
     }
 
-    // Lọc sp hết hsd
+    // Lọc sp hết hsd (loại bỏ các lô hết hạn đã xuất hủy: HSD < hôm nay và tồn kho = 0)
     public List<LoHang> timSanPhamHetHan() {
         List<LoHang> danhSach = new ArrayList<>();
         //join cả 3 bảng LoHang, SanPham, và DonViTinh
-        String sql = "SELECT lh.maLoHang, lh.tenLoHang, lh.hanSuDung, lh.tonKho, "
-                + "       sp.maSanPham, sp.tenSanPham, sp.giaNhap, "
+        // Điều kiện: HSD <= 6 tháng kể từ hôm nay VÀ tồn kho > 0 VÀ trạng thái = true (còn hoạt động)
+        // (Tự động loại bỏ các lô hết hạn đã xuất hủy: HSD < hôm nay và tồn kho = 0 hoặc trạng thái = false)
+        String sql = "SELECT lh.maLoHang, lh.tenLoHang, lh.hanSuDung, lh.tonKho, lh.trangThai, "
+                + "       sp.maSanPham, sp.tenSanPham, sp.giaNhap, sp.hinhAnh, "
                 + "       dvt.tenDonVi "
                 + "FROM LoHang lh "
                 + "JOIN SanPham sp ON lh.maSanPham = sp.maSanPham "
                 + "JOIN DonViTinh dvt ON sp.maDonVi = dvt.maDonVi "
-                + "WHERE lh.hanSuDung <= DATEADD(month, 6, GETDATE()) AND lh.tonKho > 0";
+                + "WHERE lh.hanSuDung <= DATEADD(month, 6, GETDATE()) "
+                + "  AND lh.tonKho > 0 "
+                + "  AND lh.trangThai = 1 "
+                + "  AND NOT (lh.hanSuDung < CAST(GETDATE() AS DATE) AND lh.tonKho = 0)";
 
         try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
 
@@ -340,6 +386,7 @@ public class LoHangDAO implements DAOInterface<LoHang, String> {
                 sanPham.setMaSanPham(rs.getString("maSanPham"));
                 sanPham.setTenSanPham(rs.getString("tenSanPham"));
                 sanPham.setGiaNhap(rs.getDouble("giaNhap"));
+                sanPham.setHinhAnh(rs.getString("hinhAnh")); // Load hinhAnh từ JOIN
                 sanPham.setDonViTinh(dvt);
 
                 // Tạo đối tượng LoHang
@@ -347,7 +394,8 @@ public class LoHangDAO implements DAOInterface<LoHang, String> {
                 loHang.setMaLoHang(rs.getString("maLoHang"));
                 loHang.setTenLoHang(rs.getString("tenLoHang"));
                 loHang.setHanSuDung(rs.getDate("hanSuDung").toLocalDate());
-                loHang.setTonKho(rs.getInt("tonKho"));
+                loHang.setTonKhoNoValidation(rs.getInt("tonKho")); // Dùng NoValidation khi load từ DB
+                loHang.setTrangThai(rs.getBoolean("trangThai")); // Set trạng thái
                 loHang.setSanPham(sanPham); // Gán sản phẩm vào lô hàng
 
                 danhSach.add(loHang);
@@ -380,7 +428,7 @@ public class LoHangDAO implements DAOInterface<LoHang, String> {
                 + "SELECT "
                 + "    rb.lyDoTra, "
                 + "    lh.maLoHang, lh.tenLoHang, lh.hanSuDung, lh.tonKho, "
-                + "    sp.maSanPham, sp.tenSanPham, sp.giaNhap, "
+                + "    sp.maSanPham, sp.tenSanPham, sp.giaNhap, sp.hinhAnh, "
                 + "    dvt.tenDonVi "
                 + "FROM RankedBatches rb "
                 + "JOIN lohang lh ON rb.maLoHang = lh.maLoHang "
@@ -400,13 +448,14 @@ public class LoHangDAO implements DAOInterface<LoHang, String> {
                 sanPham.setMaSanPham(rs.getString("maSanPham"));
                 sanPham.setTenSanPham(rs.getString("tenSanPham"));
                 sanPham.setGiaNhap(rs.getDouble("giaNhap"));
+                sanPham.setHinhAnh(rs.getString("hinhAnh")); // Load hinhAnh từ JOIN
                 sanPham.setDonViTinh(dvt);
 
                 LoHang loHang = new LoHang();
                 loHang.setMaLoHang(rs.getString("maLoHang"));
                 loHang.setTenLoHang(rs.getString("tenLoHang"));
                 loHang.setHanSuDung(rs.getDate("hanSuDung").toLocalDate());
-                loHang.setTonKho(rs.getInt("tonKho"));
+                loHang.setTonKhoNoValidation(rs.getInt("tonKho")); // Dùng NoValidation khi load từ DB
                 loHang.setSanPham(sanPham);
 
                 String lyDoTra = rs.getString("lyDoTra");
@@ -425,5 +474,120 @@ public class LoHangDAO implements DAOInterface<LoHang, String> {
             System.getLogger(LoHangDAO.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
         }
         return danhSach;
+    }
+    
+    /**
+     * Tìm lô hàng theo số đăng ký sản phẩm và hạn sử dụng
+     * (Số đăng ký đã unique cho mỗi sản phẩm từ mỗi NCC, không cần tham số maNCC)
+     * @param soDangKy Số đăng ký sản phẩm
+     * @param hanSuDung Hạn sử dụng (LocalDate)
+     * @return Optional chứa LoHang nếu tìm thấy
+     */
+    public Optional<LoHang> timLoHangTheoSoDangKyVaHanSuDung(String soDangKy, LocalDate hanSuDung) {
+        // JOIN với SanPham để lấy đầy đủ thông tin sản phẩm (bao gồm hinhAnh)
+            String SQL = "SELECT lh.maLoHang, lh.tenLoHang, lh.hanSuDung, lh.tonKho, lh.trangThai, lh.maSanPham, " +
+                        "       sp.tenSanPham, sp.soDangKy, sp.hoatChat, sp.lieuDung, sp.cachDongGoi, " +
+                        "       sp.quocGiaSanXuat, sp.nhaSanXuat, sp.giaNhap, sp.giaBan, sp.hoatDong, " +
+                        "       sp.thueVAT, sp.hinhAnh, sp.loaiSanPham, sp.maDonVi " +
+                        "FROM LoHang lh " +
+                        "INNER JOIN SanPham sp ON lh.maSanPham = sp.maSanPham " +
+                        "WHERE sp.soDangKy = ? " +
+                        "AND lh.hanSuDung = ?";
+        
+        System.out.println("🔍 [DAO] Tìm lô: Số ĐK = '" + soDangKy + "', HSD = " + hanSuDung);
+        
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement ps = con.prepareStatement(SQL)) {
+            
+            ps.setString(1, soDangKy);
+            ps.setDate(2, Date.valueOf(hanSuDung)); // Convert LocalDate -> java.sql.Date
+            
+            // Debug log - thay thế ? bằng giá trị thực
+            String debugSQL = SQL.replaceFirst("\\?", "'" + soDangKy + "'")
+                                 .replaceFirst("\\?", "'" + Date.valueOf(hanSuDung) + "'");
+            System.out.println("🔍 [DAO] SQL: " + debugSQL);
+            
+            // Debug: Kiểm tra có lô nào với số đăng ký này không
+            try (PreparedStatement psDebug = con.prepareStatement(
+                    "SELECT lh.maLoHang, lh.tenLoHang, lh.hanSuDung, sp.soDangKy " +
+                    "FROM LoHang lh INNER JOIN SanPham sp ON lh.maSanPham = sp.maSanPham " +
+                    "WHERE sp.soDangKy = ?")) {
+                psDebug.setString(1, soDangKy);
+                try (ResultSet rsDebug = psDebug.executeQuery()) {
+                    System.out.println("📋 [DEBUG] Tất cả lô có số ĐK '" + soDangKy + "':");
+                    while (rsDebug.next()) {
+                        System.out.println("   - " + rsDebug.getString("maLoHang") + 
+                                         " | " + rsDebug.getString("tenLoHang") + 
+                                         " | HSD=" + rsDebug.getDate("hanSuDung"));
+                    }
+                }
+            }
+            
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    System.out.println("✅ [DAO] Tìm thấy lô: " + rs.getString("maLoHang") + " | " + rs.getString("tenLoHang"));
+                    LoHang loHang = new LoHang();
+                    try {
+                        loHang.setMaLoHang(rs.getString("maLoHang"));
+                        loHang.setTenLoHang(rs.getString("tenLoHang"));
+                        loHang.setHanSuDung(rs.getDate("hanSuDung").toLocalDate());
+                        loHang.setTonKhoNoValidation(rs.getInt("tonKho")); // Dùng NoValidation vì load từ DB
+                        loHang.setTrangThai(rs.getBoolean("trangThai"));
+                        
+                        // Tạo đối tượng SanPham từ kết quả JOIN (đã có đầy đủ thông tin bao gồm hinhAnh)
+                        SanPham sanPham = new SanPham();
+                        sanPham.setMaSanPham(rs.getString("maSanPham"));
+                        sanPham.setTenSanPham(rs.getString("tenSanPham"));
+                        sanPham.setSoDangKy(rs.getString("soDangKy"));
+                        sanPham.setHoatChat(rs.getString("hoatChat"));
+                        sanPham.setLieuDung(rs.getString("lieuDung"));
+                        sanPham.setCachDongGoi(rs.getString("cachDongGoi"));
+                        sanPham.setQuocGiaSanXuat(rs.getString("quocGiaSanXuat"));
+                        sanPham.setNhaSanXuat(rs.getString("nhaSanXuat"));
+                        sanPham.setGiaNhap(rs.getDouble("giaNhap"));
+                        sanPham.setGiaBan(rs.getDouble("giaBan"));
+                        sanPham.setHoatDong(rs.getBoolean("hoatDong"));
+                        sanPham.setThueVAT(rs.getDouble("thueVAT"));
+                        sanPham.setHinhAnh(rs.getString("hinhAnh")); // QUAN TRỌNG: Load hinhAnh từ JOIN
+                        
+                        // Set loại sản phẩm
+                        String loaiSanPhamStr = rs.getString("loaiSanPham");
+                        if (loaiSanPhamStr != null) {
+                            try {
+                                sanPham.setLoaiSanPham(vn.edu.iuh.fit.iuhpharmacitymanagement.constant.LoaiSanPham.valueOf(loaiSanPhamStr));
+                            } catch (Exception e) {
+                                System.err.println("⚠️ [DAO] Lỗi khi set loaiSanPham: " + e.getMessage());
+                            }
+                        }
+                        
+                        // Load DonViTinh nếu có maDonVi
+                        String maDonVi = rs.getString("maDonVi");
+                        if (maDonVi != null) {
+                            DonViTinhDAO donViTinhDAO = new DonViTinhDAO();
+                            Optional<DonViTinh> donViTinhOpt = donViTinhDAO.findById(maDonVi);
+                            if (donViTinhOpt.isPresent()) {
+                                sanPham.setDonViTinh(donViTinhOpt.get());
+                            }
+                        }
+                        
+                        loHang.setSanPham(sanPham);
+                        System.out.println("✅ [DAO] Đã load đầy đủ thông tin sản phẩm từ JOIN, hinhAnh = " + sanPham.getHinhAnh());
+                        
+                        return Optional.of(loHang);
+                    } catch (Exception e) {
+                        System.err.println("Lỗi khi set thuộc tính LoHang: " + e.getMessage());
+                        e.printStackTrace();
+                    }
+                } else {
+                    System.out.println("❌ [DAO] KHÔNG tìm thấy lô nào!");
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("❌ [DAO] Lỗi SQL: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        System.out.println("⚠ [DAO] Return empty");
+        return Optional.empty();
     }
 }

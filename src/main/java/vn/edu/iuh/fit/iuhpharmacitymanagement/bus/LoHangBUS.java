@@ -66,8 +66,12 @@ public class LoHangBUS {
         }
         LoHang loHang = loHangOpt.get();
 
-        //Không được xóa lô hàng nếu vẫn còn tồn kho.
-        if (loHang.getTonKho() > 0) {
+        // Kiểm tra xem lô hàng có hết hạn không (HSD < ngày hiện tại)
+        boolean hetHan = loHang.getHanSuDung().isBefore(LocalDate.now());
+
+        // Nếu lô hàng chưa hết hạn: kiểm tra tồn kho
+        // Nếu lô hàng đã hết hạn: bỏ qua kiểm tra tồn kho, cho phép xóa luôn
+        if (!hetHan && loHang.getTonKho() > 0) {
             throw new Exception("Không thể xóa lô hàng vì vẫn còn " + loHang.getTonKho() + " sản phẩm tồn kho.");
         }
 
@@ -120,5 +124,53 @@ public class LoHangBUS {
 
     public List<Map<String, Object>> layDanhSachCanHuyTuDonTra() {
         return loHangDAO.findForDisposalFromReturns();
+    }
+    
+    /**
+     * Lấy danh sách lô hàng theo mã sản phẩm (sắp xếp theo HSD từ cũ đến mới)
+     */
+    public List<LoHang> layDanhSachLoHangTheoSanPham(String maSanPham) {
+        List<LoHang> danhSach = loHangDAO.findByMaSanPham(maSanPham);
+        danhSach.forEach(this::capNhatTrangThaiTuDong);
+        // Sort theo HSD (cũ nhất trước) để ưu tiên xuất hủy lô cũ trước
+        danhSach.sort((lo1, lo2) -> lo1.getHanSuDung().compareTo(lo2.getHanSuDung()));
+        return danhSach;
+    }
+    
+    /**
+     * Tìm tất cả lô hàng theo Số đăng ký + Hạn sử dụng
+     * Dùng để kiểm tra khi import Excel: nếu có lô trùng → tự động chọn
+     */
+    public List<LoHang> timLoHangTheoSanPhamVaHSD(String maSanPham, LocalDate hanSuDung) {
+        return loHangDAO.findAllByMaSanPhamAndHanSuDung(maSanPham, hanSuDung);
+    }
+    
+    /**
+     * Tạo mã lô mới tự động (LHxxxxx)
+     * Sử dụng logic có sẵn trong DAO
+     */
+    public String taoMaLoHangMoi() {
+        String maCuoi = loHangDAO.getLastMaLoHang();
+        if (maCuoi != null) {
+            String phanSo = maCuoi.substring(2); // Bỏ "LH"
+            int soTiepTheo = Integer.parseInt(phanSo) + 1;
+            return String.format("LH%05d", soTiepTheo);
+        }
+        return "LH00001";
+    }
+    
+    /**
+     * Tìm lô hàng theo Số đăng ký sản phẩm + Hạn sử dụng
+     * (Số đăng ký đã unique cho mỗi sản phẩm từ mỗi NCC, không cần tham số maNCC)
+     * Dùng để tự động chọn lô khi import Excel
+     * @param soDangKy Số đăng ký sản phẩm
+     * @param hanSuDung Hạn sử dụng (LocalDate)
+     * @return Optional chứa LoHang nếu tìm thấy
+     */
+    public Optional<LoHang> timLoHangTheoSoDangKyVaHanSuDung(String soDangKy, LocalDate hanSuDung) {
+        if (soDangKy == null || hanSuDung == null) {
+            return Optional.empty();
+        }
+        return loHangDAO.timLoHangTheoSoDangKyVaHanSuDung(soDangKy, hanSuDung);
     }
 }

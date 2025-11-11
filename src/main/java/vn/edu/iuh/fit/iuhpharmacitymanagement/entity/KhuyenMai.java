@@ -23,26 +23,27 @@ public class KhuyenMai {
     private LoaiKhuyenMai loaiKhuyenMai;
     private double giaToiThieu; // Giá tối thiểu đơn hàng để áp dụng khuyến mãi (chỉ dùng cho khuyến mãi đơn hàng)
     private double giaToiDa; // Giá giảm tối đa khi áp dụng khuyến mãi (0 = không giới hạn)
-    
+    private int soLuongToiDa; //  ap dung cho khuyen mai theo san pham
+
     public static final String MA_KHUYEN_MAI_SAI = "Mã khuyến mãi phải có dạng KMXXXXX (trong đó XXXXX là dãy số từ 00001 đến 99999)";
     public static final String TEN_KHUYEN_MAI_RONG = "Tên khuyến mãi không được để trống";
     public static final String NGAY_BAT_DAU_SAI = "Ngày bắt đầu phải lớn hơn ngày hiện tại";
     public static final String NGAY_KET_THUC_SAI = "Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu";
     public static final String GIAM_GIA_SAI = "Giảm giá phải là số thực dương lớn hơn 0";
     public static final String LOAI_KHUYEN_MAI_RONG = "Loại khuyến mãi không được để trống";
-    
+
     public static final String MA_KHUYEN_MAI_REGEX = "^KM\\d{5}$";
 
     public KhuyenMai() {
     }
 
     public KhuyenMai(String maKhuyenMai,
-                     String tenKhuyenMai,
-                     LocalDate ngayBatDau,
-                     LocalDate ngayKetThuc,
-                     double giamGia,
-                     boolean trangThai,
-                     LoaiKhuyenMai loaiKhuyenMai) {
+            String tenKhuyenMai,
+            LocalDate ngayBatDau,
+            LocalDate ngayKetThuc,
+            double giamGia,
+            boolean trangThai,
+            LoaiKhuyenMai loaiKhuyenMai) {
         this.maKhuyenMai = maKhuyenMai;
         this.tenKhuyenMai = tenKhuyenMai;
         this.ngayBatDau = ngayBatDau;
@@ -52,6 +53,7 @@ public class KhuyenMai {
         this.loaiKhuyenMai = loaiKhuyenMai;
         this.giaToiThieu = 0; // Mặc định 0 (không yêu cầu giá tối thiểu)
         this.giaToiDa = 0; // Mặc định 0 (không giới hạn giảm giá tối đa)
+        this.soLuongToiDa = 0; // Mặc định 0 (không giới hạn số lượng tối đa)
     }
 
     public String getMaKhuyenMai() {
@@ -82,10 +84,10 @@ public class KhuyenMai {
 
     //tam go de test
     public void setNgayBatDau(LocalDate ngayBatDau) throws Exception {
-        
+
         this.ngayBatDau = ngayBatDau;
     }
-    
+
     // Method không validate - chỉ dùng cho DAO khi load từ database
     public void setNgayBatDauFromDatabase(LocalDate ngayBatDau) {
         this.ngayBatDau = ngayBatDau;
@@ -101,7 +103,7 @@ public class KhuyenMai {
         }
         this.ngayKetThuc = ngayKetThuc;
     }
-    
+
     // Method không validate - chỉ dùng cho DAO khi load từ database
     public void setNgayKetThucFromDatabase(LocalDate ngayKetThuc) {
         this.ngayKetThuc = ngayKetThuc;
@@ -125,7 +127,7 @@ public class KhuyenMai {
     public void setTrangThai(boolean trangThai) {
         this.trangThai = trangThai;
     }
-    
+
     public String hienThiTrangThai() {
         return trangThai ? "Còn hạn khuyến mãi" : "Hết hạn khuyến mãi";
     }
@@ -167,18 +169,32 @@ public class KhuyenMai {
         }
     }
 
+    public int getSoLuongToiDa() {
+        return soLuongToiDa;
+    }
+
+    public void setSoLuongToiDa(int soLuongToiDa) {
+        // Số lượng tối đa phải >= 0 (0 = không giới hạn số lượng tối đa)
+        if (soLuongToiDa < 0) {
+            this.soLuongToiDa = 0;
+        } else {
+            this.soLuongToiDa = soLuongToiDa;
+        }
+    }
+
     @Override
     public String toString() {
-        return "KhuyenMai{" +
-                "maKhuyenMai='" + maKhuyenMai + '\'' +
-                ", tenKhuyenMai='" + tenKhuyenMai + '\'' +
-                ", ngayBatDau=" + ngayBatDau +
-                ", ngayKetThuc=" + ngayKetThuc +
-                ", giamGia=" + giamGia +
-                ", trangThai=" + hienThiTrangThai() +
-                ", loaiKhuyenMai=" + loaiKhuyenMai +
-                ", giaToiThieu=" + giaToiThieu +
-                ", giaToiDa=" + giaToiDa +
-                '}';
+        return "KhuyenMai{"
+                + "maKhuyenMai='" + maKhuyenMai + '\''
+                + ", tenKhuyenMai='" + tenKhuyenMai + '\''
+                + ", ngayBatDau=" + ngayBatDau
+                + ", ngayKetThuc=" + ngayKetThuc
+                + ", giamGia=" + giamGia
+                + ", trangThai=" + hienThiTrangThai()
+                + ", loaiKhuyenMai=" + loaiKhuyenMai
+                + ", giaToiThieu=" + giaToiThieu
+                + ", giaToiDa=" + giaToiDa
+                + ", soLuongToiDa=" + soLuongToiDa
+                + '}';
     }
 }

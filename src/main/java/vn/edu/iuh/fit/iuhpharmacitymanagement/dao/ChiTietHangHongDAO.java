@@ -21,10 +21,10 @@ public class ChiTietHangHongDAO implements DAOInterface<ChiTietHangHong, String>
   
 
     private final String SQL_THEM =
-            "INSERT INTO ChiTietHangHong (soLuong, donGia, thanhTien, maLoHang, maHangHong) VALUES (?, ?, ?, ?, ?)";
+            "INSERT INTO ChiTietHangHong (soLuong, donGia, thanhTien, lyDoXuatHuy, maLoHang, maHangHong) VALUES (?, ?, ?, ?, ?, ?)";
 
     private final String SQL_CAP_NHAT =
-            "UPDATE ChiTietHangHong SET soLuong = ?, donGia = ?, thanhTien = ? WHERE maLoHang = ? AND maHangHong = ?";
+            "UPDATE ChiTietHangHong SET soLuong = ?, donGia = ?, thanhTien = ?, lyDoXuatHuy = ? WHERE maLoHang = ? AND maHangHong = ?";
 
     private final String SQL_TIM_THEO_MA_HANG_HONG =
             "SELECT * FROM ChiTietHangHong WHERE maHangHong = ?";
@@ -41,8 +41,9 @@ public class ChiTietHangHongDAO implements DAOInterface<ChiTietHangHong, String>
             stmt.setInt(1, chiTietHangHong.getSoLuong());
             stmt.setDouble(2, chiTietHangHong.getDonGia());
             stmt.setDouble(3, chiTietHangHong.getThanhTien());
-            stmt.setString(4, chiTietHangHong.getLoHang() != null ? chiTietHangHong.getLoHang().getMaLoHang() : null);
-            stmt.setString(5, chiTietHangHong.getHangHong() != null ? chiTietHangHong.getHangHong().getMaHangHong() : null);
+            stmt.setString(4, chiTietHangHong.getLyDoXuatHuy());
+            stmt.setString(5, chiTietHangHong.getLoHang() != null ? chiTietHangHong.getLoHang().getMaLoHang() : null);
+            stmt.setString(6, chiTietHangHong.getHangHong() != null ? chiTietHangHong.getHangHong().getMaHangHong() : null);
 
             return stmt.executeUpdate() > 0;
 
@@ -62,8 +63,9 @@ public class ChiTietHangHongDAO implements DAOInterface<ChiTietHangHong, String>
             stmt.setInt(1, chiTietHangHong.getSoLuong());
             stmt.setDouble(2, chiTietHangHong.getDonGia());
             stmt.setDouble(3, chiTietHangHong.getThanhTien());
-            stmt.setString(4, chiTietHangHong.getLoHang() != null ? chiTietHangHong.getLoHang().getMaLoHang() : null);
-            stmt.setString(5, chiTietHangHong.getHangHong() != null ? chiTietHangHong.getHangHong().getMaHangHong() : null);
+            stmt.setString(4, chiTietHangHong.getLyDoXuatHuy());
+            stmt.setString(5, chiTietHangHong.getLoHang() != null ? chiTietHangHong.getLoHang().getMaLoHang() : null);
+            stmt.setString(6, chiTietHangHong.getHangHong() != null ? chiTietHangHong.getHangHong().getMaHangHong() : null);
 
             return stmt.executeUpdate() > 0;
 
@@ -120,6 +122,10 @@ public class ChiTietHangHongDAO implements DAOInterface<ChiTietHangHong, String>
         chiTietHangHong.setSoLuong(rs.getInt("soLuong"));
         chiTietHangHong.setDonGia(rs.getDouble("donGia"));
         chiTietHangHong.setThanhTien(rs.getDouble("thanhTien"));
+        
+        // Load lý do xuất hủy từ database
+        String lyDoXuatHuy = rs.getString("lyDoXuatHuy");
+        chiTietHangHong.setLyDoXuatHuy(lyDoXuatHuy != null ? lyDoXuatHuy : "");
 
         // Load đầy đủ thông tin LoHang (bao gồm SanPham và DonViTinh)
         String maLoHang = rs.getString("maLoHang");
@@ -161,6 +167,70 @@ public class ChiTietHangHongDAO implements DAOInterface<ChiTietHangHong, String>
             e.printStackTrace();
         }
         return 0;
+    }
+    
+    /**
+     * Lấy danh sách chi tiết theo mã hàng hỏng (hiệu quả hơn findAll().filter())
+     */
+    public List<ChiTietHangHong> findByMaHangHong(String maHangHong) {
+        List<ChiTietHangHong> ds = new ArrayList<>();
+        
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(SQL_TIM_THEO_MA_HANG_HONG)) {
+            
+            stmt.setString(1, maHangHong);
+            ResultSet rs = stmt.executeQuery();
+            
+            while (rs.next()) {
+                ds.add(mapResultSetToChiTietHangHong(rs));
+            }
+            
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (Exception ex) {
+            System.getLogger(ChiTietHangHongDAO.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        }
+        
+        return ds;
+    }
+    
+    /**
+     * Xóa tất cả chi tiết hàng hỏng theo mã lô hàng
+     * Dùng để xóa cascade khi xóa lô hàng
+     */
+    public boolean deleteByMaLoHang(String maLoHang) {
+        String sql = "DELETE FROM ChiTietHangHong WHERE maLoHang = ?";
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(sql)) {
+            
+            stmt.setString(1, maLoHang);
+            return stmt.executeUpdate() >= 0; // >= 0 vì có thể không có record nào để xóa
+            
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+    /**
+     * Kiểm tra xem lô hàng có đang được sử dụng trong chi tiết hàng hỏng không
+     */
+    public boolean existsByMaLoHang(String maLoHang) {
+        String sql = "SELECT COUNT(*) AS total FROM ChiTietHangHong WHERE maLoHang = ?";
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(sql)) {
+            
+            stmt.setString(1, maLoHang);
+            ResultSet rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                return rs.getInt("total") > 0;
+            }
+            
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }
     

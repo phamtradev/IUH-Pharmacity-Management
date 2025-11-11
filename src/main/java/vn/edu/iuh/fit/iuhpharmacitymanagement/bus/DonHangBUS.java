@@ -177,5 +177,30 @@ public class DonHangBUS {
     public List<ChiTietDonHang> layChiTietDonHang(String maDonHang) {
         return chiTietDonHangDAO.findByIdList(maDonHang);
     }
+    
+    /**
+     * Xóa đơn hàng (cần xóa chi tiết đơn hàng trước)
+     * @param maDonHang Mã đơn hàng cần xóa
+     * @return true nếu xóa thành công, false nếu thất bại
+     */
+    public boolean xoaDonHang(String maDonHang) {
+        try {
+            // Xóa chi tiết đơn hàng trước
+            List<ChiTietDonHang> danhSachChiTiet = chiTietDonHangDAO.findByIdList(maDonHang);
+            for (ChiTietDonHang ct : danhSachChiTiet) {
+                if (!chiTietDonHangDAO.delete(ct.getLoHang().getMaLoHang(), maDonHang)) {
+                    System.out.println("Lỗi khi xóa chi tiết đơn hàng: " + ct.getLoHang().getMaLoHang());
+                    return false;
+                }
+            }
+            
+            // Sau đó xóa đơn hàng
+            return donHangDAO.delete(maDonHang);
+        } catch (Exception e) {
+            System.out.println("Lỗi khi xóa đơn hàng: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
 }
 

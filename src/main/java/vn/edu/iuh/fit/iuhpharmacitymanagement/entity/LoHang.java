@@ -12,30 +12,28 @@ public class LoHang {
     private boolean trangThai;
     private SanPham sanPham;
 
-    
     public static final String MA_LO_HANG_SAI = "Mã lô hàng phải có dạng LHxxxxx (xxxxx là 5 chữ số)";
     public static final String TEN_LO_HANG_RONG = "Tên lô hàng không được rỗng";
     public static final String HAN_SU_DUNG_SAI = "Hạn sử dụng phải lớn hơn ngày sản xuất";
     public static final String TON_KHO_SAI = "Tồn kho phải lớn hơn hoặc bằng 0";
     public static final String SAN_PHAM_RONG = "Sản phẩm không được rỗng";
-    
+
     public static final String MA_LO_HANG_REGEX = "^LH\\d{5}$";
-    
+
     public LoHang() {
     }
-    
-    
+
     public LoHang(String maLoHang) {
         this.maLoHang = maLoHang;
     }
-    
+
     public LoHang(String maLoHang,
-                  String tenLoHang,
-                  LocalDate ngaySanXuat,
-                  LocalDate hanSuDung,
-                  int tonKho,
-                  boolean trangThai,
-                  SanPham sanPham) throws Exception {
+            String tenLoHang,
+            LocalDate ngaySanXuat,
+            LocalDate hanSuDung,
+            int tonKho,
+            boolean trangThai,
+            SanPham sanPham) throws Exception {
         setMaLoHang(maLoHang);
         setTenLoHang(tenLoHang);
         setNgaySanXuat(ngaySanXuat);
@@ -51,7 +49,8 @@ public class LoHang {
     }
 
     public void setMaLoHang(String maLoHang) throws Exception {
-        if (!maLoHang.matches(MA_LO_HANG_REGEX)) {
+        // Cho phép null (sẽ tự sinh trong DAO)
+        if (maLoHang != null && !maLoHang.matches(MA_LO_HANG_REGEX)) {
             throw new Exception(MA_LO_HANG_SAI);
         }
         this.maLoHang = maLoHang;
@@ -98,6 +97,15 @@ public class LoHang {
         this.tonKho = tonKho;
     }
 
+    /**
+     * Set tồn kho không validation - dùng khi load từ DB
+     *
+     * @param tonKho số lượng tồn kho
+     */
+    public void setTonKhoNoValidation(int tonKho) {
+        this.tonKho = tonKho;
+    }
+
     public boolean isTrangThai() {
         return trangThai;
     }
@@ -119,14 +127,14 @@ public class LoHang {
 
     @Override
     public String toString() {
-        return "LoHang{" +
-                "maLoHang='" + maLoHang + '\'' +
-                ", tenLoHang='" + tenLoHang + '\'' +
-                ", ngaySanXuat=" + ngaySanXuat +
-                ", hanSuDung=" + hanSuDung +
-                ", tonKho=" + tonKho +
-                ", trangThai=" + (trangThai ? "Đang bán" : "Ngưng bán") +
-                ", sanPham=" + (sanPham != null ? sanPham.getMaSanPham() : "null") +
-                '}';
+        return "LoHang{"
+                + "maLoHang='" + maLoHang + '\''
+                + ", tenLoHang='" + tenLoHang + '\''
+                + ", ngaySanXuat=" + ngaySanXuat
+                + ", hanSuDung=" + hanSuDung
+                + ", tonKho=" + tonKho
+                + ", trangThai=" + (trangThai ? "Đang bán" : "Ngưng bán")
+                + ", sanPham=" + (sanPham != null ? sanPham.getMaSanPham() : "null")
+                + '}';
     }
 }

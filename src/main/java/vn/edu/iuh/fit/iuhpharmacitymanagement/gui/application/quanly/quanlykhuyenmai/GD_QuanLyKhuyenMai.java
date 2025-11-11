@@ -73,6 +73,14 @@ public class GD_QuanLyKhuyenMai extends javax.swing.JPanel {
                 + "pressedBackground:#BD2130;"
                 + "arc:10;"
                 + "borderWidth:0");
+        
+        btnXemChiTiet.putClientProperty(FlatClientProperties.STYLE, ""
+                + "background:#17A2B8;"
+                + "foreground:#FFFFFF;"
+                + "hoverBackground:#138496;"
+                + "pressedBackground:#117A8B;"
+                + "arc:10;"
+                + "borderWidth:0");
     }
 
     private void fillTable() {
@@ -127,6 +135,7 @@ public class GD_QuanLyKhuyenMai extends javax.swing.JPanel {
         btnThem = new javax.swing.JButton();
         btnSua = new javax.swing.JButton();
         btnXoa = new javax.swing.JButton();
+        btnXemChiTiet = new javax.swing.JButton();
         txtMaKhuyenMai = new javax.swing.JTextField();
         cboLoaiKhuyenMai = new javax.swing.JComboBox<>();
         btnTimKiem = new javax.swing.JButton();
@@ -172,6 +181,15 @@ public class GD_QuanLyKhuyenMai extends javax.swing.JPanel {
             }
         });
 
+        btnXemChiTiet.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        btnXemChiTiet.setText("XEM CHI TIẾT");
+        btnXemChiTiet.setPreferredSize(new java.awt.Dimension(150, 40));
+        btnXemChiTiet.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnXemChiTietActionPerformed(evt);
+            }
+        });
+
         txtMaKhuyenMai.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
         cboLoaiKhuyenMai.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
@@ -210,6 +228,8 @@ public class GD_QuanLyKhuyenMai extends javax.swing.JPanel {
                 .addComponent(btnSua, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(10, 10, 10)
                 .addComponent(btnXoa, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(10, 10, 10)
+                .addComponent(btnXemChiTiet, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(txtMaKhuyenMai, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(20, 20, 20)
@@ -228,6 +248,7 @@ public class GD_QuanLyKhuyenMai extends javax.swing.JPanel {
                     .addComponent(btnThem, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnSua, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnXoa, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnXemChiTiet, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(txtMaKhuyenMai, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(cboLoaiKhuyenMai, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnTimKiem, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -302,6 +323,32 @@ public class GD_QuanLyKhuyenMai extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_btnSuaActionPerformed
 
+    private void btnXemChiTietActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnXemChiTietActionPerformed
+        JTable table = tableDesign.getTable();
+        int selectedRow = table.getSelectedRow();
+        if (selectedRow < 0) {
+            Notifications.getInstance().show(Notifications.Type.WARNING, "Hãy chọn khuyến mãi cần xem chi tiết!");
+            return;
+        }
+        
+        // Lấy thông tin khuyến mãi được chọn
+        String maKhuyenMai = (String) tableDesign.getModelTable().getValueAt(selectedRow, 0);
+        List<KhuyenMai> danhSach = khuyenMaiBUS.getAllKhuyenMai();
+        KhuyenMai kmCanXem = danhSach.stream()
+            .filter(km -> km.getMaKhuyenMai().equals(maKhuyenMai))
+            .findFirst()
+            .orElse(null);
+        
+        if (kmCanXem == null) {
+            Notifications.getInstance().show(Notifications.Type.ERROR, "Không tìm thấy khuyến mãi!");
+            return;
+        }
+        
+        // Mở dialog xem chi tiết khuyến mãi
+        XemChiTietKhuyenMaiDialog dialog = new XemChiTietKhuyenMaiDialog((java.awt.Frame) SwingUtilities.getWindowAncestor(this), true, kmCanXem);
+        dialog.setVisible(true);
+    }//GEN-LAST:event_btnXemChiTietActionPerformed
+
     private void btnXoaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnXoaActionPerformed
         JTable table = tableDesign.getTable();
         int selectedRow = table.getSelectedRow();
@@ -365,7 +412,7 @@ public class GD_QuanLyKhuyenMai extends javax.swing.JPanel {
     }//GEN-LAST:event_btnTimKiemActionPerformed
 
     private void btnLamMoiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLamMoiActionPerformed
-        // Kiểm tra có chọn khuyến mãi không
+        // Kiểm tra có chọn khuyến mãi không        
         JTable table = tableDesign.getTable();
         int selectedRow = table.getSelectedRow();
         if (selectedRow < 0) {
@@ -426,7 +473,7 @@ public class GD_QuanLyKhuyenMai extends javax.swing.JPanel {
         
         // Hiển thị thông báo bắt đầu
         Notifications.getInstance().show(Notifications.Type.INFO, 
-            "Đang gửi email đến " + khachHangCoEmail.size() + " khách hàng trong background...");
+            "Đang gửi khuyến mãi đến các khách hàng có trong hệ thống...");
         
         // Gửi email trong background thread
         new Thread(() -> {
@@ -456,7 +503,7 @@ public class GD_QuanLyKhuyenMai extends javax.swing.JPanel {
             SwingUtilities.invokeLater(() -> {
                 if (thatBai == 0) {
                     Notifications.getInstance().show(Notifications.Type.SUCCESS, 
-                        "Phát hành khuyến mãi thành công! Đã gửi email đến " + thanhCong + " khách hàng!");
+                        "Đã gửi thành công");
                 } else {
                     Notifications.getInstance().show(Notifications.Type.WARNING, 
                         "Hoàn thành! Thành công: " + thanhCong + ", Thất bại: " + thatBai);
@@ -470,6 +517,7 @@ public class GD_QuanLyKhuyenMai extends javax.swing.JPanel {
     private javax.swing.JButton btnSua;
     private javax.swing.JButton btnThem;
     private javax.swing.JButton btnTimKiem;
+    private javax.swing.JButton btnXemChiTiet;
     private javax.swing.JButton btnXoa;
     private javax.swing.JComboBox<String> cboLoaiKhuyenMai;
     private javax.swing.JPanel headerPanel;

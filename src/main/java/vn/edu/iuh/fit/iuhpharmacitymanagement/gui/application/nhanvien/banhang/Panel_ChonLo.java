@@ -50,6 +50,18 @@ public class Panel_ChonLo extends javax.swing.JPanel {
         this.loHang = loHang;
         loadLoHangData();
     }
+    
+    /**
+     * Hiển thị số lượng lấy từ lô này (thay vì tồn kho)
+     * Dùng khi phân bổ nhiều lô
+     * @param soLuongLay số lượng lấy từ lô này
+     */
+    public void hienThiSoLuongLay(int soLuongLay) {
+        if (loHang != null) {
+            txtQuantity.setText("Lấy: " + soLuongLay + "/" + loHang.getTonKho());
+            txtQuantity.setForeground(new java.awt.Color(0, 120, 215)); // Màu xanh dương để phân biệt
+        }
+    }
 
     /**
      * This method is called from within the constructor to initialize the form.

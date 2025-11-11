@@ -22,7 +22,6 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonTraHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.HangHong;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietHangHong;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.session.SessionManager;
-import vn.edu.iuh.fit.iuhpharmacitymanagement.util.XuatPhieuXuatHuyPDF;
 import raven.toast.Notifications;
 
 /**
@@ -59,6 +58,25 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         } else { // không đăng nhập thì hiện này để test
             txtEmpName.setText("Không xác định");
             System.err.println("Er: khong co gnuoi dung trong Session!");
+        }
+    }
+    
+    /**
+     * Đếm tổng số đơn cần xuất hủy (cho Dashboard)
+     * @return Tổng số lô hàng hết hạn + số sản phẩm từ đơn trả hàng
+     */
+    public int demSoDonCanXuatHuy() {
+        try {
+            // Đếm lô hàng hết hạn
+            List<LoHang> danhSachLoHangHetHan = loHangBUS.layTatCaLoHangHetHan();
+            
+            // Đếm hàng trả cần hủy
+            List<ChiTietDonTraHang> danhSachHangTra = chiTietDonTraHangBUS.layTatCaChiTietCanHuy();
+            
+            return danhSachLoHangHetHan.size() + danhSachHangTra.size();
+        } catch (Exception e) {
+            System.err.println("Lỗi khi đếm số đơn cần xuất hủy: " + e.getMessage());
+            return 0;
         }
     }
 
@@ -244,8 +262,8 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         javax.swing.JPanel headerProductPanel = new javax.swing.JPanel();
         headerProductPanel.setBackground(new java.awt.Color(240, 248, 255));
         headerProductPanel.setBorder(javax.swing.BorderFactory.createMatteBorder(0, 0, 2, 0, new java.awt.Color(200, 200, 200)));
-        headerProductPanel.setPreferredSize(new java.awt.Dimension(1200, 50));
-        headerProductPanel.setMinimumSize(new java.awt.Dimension(800, 50));
+        headerProductPanel.setPreferredSize(new java.awt.Dimension(1000, 50));
+        headerProductPanel.setMinimumSize(new java.awt.Dimension(700, 50));
         headerProductPanel.setMaximumSize(new java.awt.Dimension(32767, 50));
 
         // Sử dụng GridBagLayout giống Panel_ChiTietSanPhamXuatHuy
@@ -253,49 +271,44 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
         gbc.fill = java.awt.GridBagConstraints.BOTH;
         gbc.anchor = java.awt.GridBagConstraints.CENTER;
-        gbc.insets = new java.awt.Insets(10, 8, 10, 8);
+        gbc.insets = new java.awt.Insets(10, 5, 10, 5);
         gbc.gridy = 0;
         gbc.weighty = 1.0;
 
         // 1. Hình ảnh
         gbc.gridx = 0;
         gbc.weightx = 0.0;
-        headerProductPanel.add(createHeaderLabel("Hình", 80, javax.swing.SwingConstants.CENTER), gbc);
+        headerProductPanel.add(createHeaderLabel("Hình", 70, javax.swing.SwingConstants.CENTER), gbc);
 
         // 2. Tên sản phẩm + Thông tin lô
         gbc.gridx = 1;
         gbc.weightx = 0.25;
-        headerProductPanel.add(createHeaderLabel("Tên sản phẩm / Lô hàng", 250, javax.swing.SwingConstants.LEFT), gbc);
+        headerProductPanel.add(createHeaderLabel("Tên sản phẩm / Lô hàng", 200, javax.swing.SwingConstants.LEFT), gbc);
 
         // 3. Lý do
         gbc.gridx = 2;
         gbc.weightx = 0.08;
-        headerProductPanel.add(createHeaderLabel("Lý do", 50, javax.swing.SwingConstants.LEFT), gbc);
+        headerProductPanel.add(createHeaderLabel("Lý do", 80, javax.swing.SwingConstants.LEFT), gbc);
 
         // 4. Đơn vị
         gbc.gridx = 3;
         gbc.weightx = 0.0;
-        headerProductPanel.add(createHeaderLabel("Đơn vị", 60, javax.swing.SwingConstants.CENTER), gbc);
+        headerProductPanel.add(createHeaderLabel("Đơn vị", 50, javax.swing.SwingConstants.CENTER), gbc);
 
         // 5. Số lượng
         gbc.gridx = 4;
         gbc.weightx = 0.0;
-        headerProductPanel.add(createHeaderLabel("SL", 70, javax.swing.SwingConstants.CENTER), gbc);
+        headerProductPanel.add(createHeaderLabel("SL", 60, javax.swing.SwingConstants.CENTER), gbc);
 
         // 6. Đơn giá
         gbc.gridx = 5;
         gbc.weightx = 0.0;
-        headerProductPanel.add(createHeaderLabel("Đơn giá", 85, javax.swing.SwingConstants.RIGHT), gbc);
+        headerProductPanel.add(createHeaderLabel("Đơn giá", 75, javax.swing.SwingConstants.RIGHT), gbc);
 
         // 7. Tổng tiền
         gbc.gridx = 6;
         gbc.weightx = 0.0;
-        headerProductPanel.add(createHeaderLabel("Tổng tiền", 95, javax.swing.SwingConstants.RIGHT), gbc);
-
-        // 8. Thao tác
-        gbc.gridx = 7;
-        gbc.weightx = 0.0;
-        headerProductPanel.add(createHeaderLabel("Thao tác", 60, javax.swing.SwingConstants.CENTER), gbc);
+        headerProductPanel.add(createHeaderLabel("Tổng tiền", 85, javax.swing.SwingConstants.RIGHT), gbc);
 
         // Thêm header vào pnContent
         pnContent.add(headerProductPanel);
@@ -377,44 +390,128 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
             }
             
             // 6. Tạo danh sách ChiTietHangHong và track các đơn trả cần cập nhật
-            List<ChiTietHangHong> chiTietList = new ArrayList<>();
+            // Sử dụng Map để GỘP các panel cùng lô hàng
+            java.util.Map<String, ChiTietHangHong> mapChiTiet = new java.util.HashMap<>();
             java.util.Set<String> danhSachDonTraDaXuLy = new java.util.HashSet<>();
             
+            System.out.println("DEBUG: Bắt đầu xử lý " + danhSachPanel.size() + " panel...");
+            
             for (Panel_ChiTietSanPhamXuatHuy panel : danhSachPanel) {
-                ChiTietHangHong chiTiet = new ChiTietHangHong();
-                chiTiet.setSoLuong(panel.getSoLuongHuy());
-                chiTiet.setDonGia(panel.getDonGia());
-                chiTiet.setThanhTien(panel.getTongTienHuy());
-                chiTiet.setHangHong(hangHong);
-                
-                // Lấy lý do xuất hủy từ panel
-                String lyDoXuatHuy = panel.getLyDoXuatHuy();
-                if (lyDoXuatHuy != null && !lyDoXuatHuy.trim().isEmpty()) {
-                    chiTiet.setLyDoXuatHuy(lyDoXuatHuy);
-                } else {
-                    chiTiet.setLyDoXuatHuy("Chưa rõ lý do");
-                }
-                
-                // Lấy LoHang từ panel
                 LoHang loHang = panel.getLoHang();
-                if (loHang != null) {
-                    chiTiet.setLoHang(loHang);
-                } else {
+                if (loHang == null) {
                     System.err.println("Warning: Panel không có thông tin lô hàng");
+                    continue;
                 }
                 
-                chiTietList.add(chiTiet);
+                String maLoHang = loHang.getMaLoHang();
+                int soLuong = panel.getSoLuongHuy();
+                double donGia = panel.getDonGia();
+                double thanhTienPanel = panel.getTongTienHuy();
+                String lyDoXuatHuy = panel.getLyDoXuatHuy();
+                if (lyDoXuatHuy == null || lyDoXuatHuy.trim().isEmpty()) {
+                    lyDoXuatHuy = "Chưa rõ lý do";
+                }
                 
-                // Lưu chi tiết vào database
-                boolean successChiTiet = chiTietHangHongBUS.taoChiTietHangHong(chiTiet);
-                if (!successChiTiet) {
-                    System.err.println("Lỗi khi lưu chi tiết hàng hỏng");
+                // Tạo key duy nhất: maLoHang + lyDoXuatHuy
+                // → Chỉ gộp khi CÙNG lô hàng VÀ CÙNG lý do
+                String keyUnique = maLoHang + "___" + lyDoXuatHuy;
+                
+                // Nếu lô hàng này (với lý do này) đã tồn tại trong map → CỘNG DỒN số lượng
+                if (mapChiTiet.containsKey(keyUnique)) {
+                    ChiTietHangHong chiTietCu = mapChiTiet.get(keyUnique);
+                    int soLuongCu = chiTietCu.getSoLuong();
+                    int soLuongMoi = soLuongCu + soLuong;
+                    chiTietCu.setSoLuong(soLuongMoi);
+                    chiTietCu.setThanhTien(chiTietCu.getThanhTien() + thanhTienPanel);
+                    System.out.println("DEBUG: Gộp lô " + maLoHang + " (lý do: " + lyDoXuatHuy + ") - Số lượng " + soLuongCu + " + " + soLuong + " = " + soLuongMoi);
+                } else {
+                    // Lô hàng mới (hoặc lý do mới) → Tạo chi tiết mới
+                    ChiTietHangHong chiTiet = new ChiTietHangHong();
+                    chiTiet.setSoLuong(soLuong);
+                    chiTiet.setDonGia(donGia);
+                    chiTiet.setThanhTien(thanhTienPanel);
+                    chiTiet.setHangHong(hangHong);
+                    chiTiet.setLoHang(loHang);
+                    chiTiet.setLyDoXuatHuy(lyDoXuatHuy);
+                    
+                    mapChiTiet.put(keyUnique, chiTiet);
+                    System.out.println("DEBUG: Thêm lô mới " + maLoHang + " (lý do: " + lyDoXuatHuy + ") - Số lượng: " + soLuong);
                 }
                 
                 // Track đơn trả cần cập nhật
                 if (panel.getChiTietDonTra() != null) {
                     String maDonTra = panel.getChiTietDonTra().getDonTraHang().getMaDonTraHang();
                     danhSachDonTraDaXuLy.add(maDonTra);
+                }
+            }
+            
+            // Chuyển map thành list và lưu vào database
+            List<ChiTietHangHong> chiTietList = new ArrayList<>(mapChiTiet.values());
+            System.out.println("DEBUG: Sau khi gộp, còn " + chiTietList.size() + " chi tiết duy nhất");
+            
+            for (ChiTietHangHong chiTiet : chiTietList) {
+                System.out.println("DEBUG: Insert lô " + chiTiet.getLoHang().getMaLoHang() + " - SL: " + chiTiet.getSoLuong());
+                boolean successChiTiet = chiTietHangHongBUS.taoChiTietHangHong(chiTiet);
+                if (!successChiTiet) {
+                    System.err.println("Lỗi khi lưu chi tiết hàng hỏng: " + chiTiet.getLoHang().getMaLoHang());
+                } else {
+                    System.out.println("DEBUG: Insert thành công!");
+                }
+            }
+            
+            // 6.3. Giảm tồn kho của các lô hàng đã xuất hủy
+            for (ChiTietHangHong chiTiet : chiTietList) {
+                LoHang loHang = chiTiet.getLoHang();
+                String maLoHang = loHang.getMaLoHang();
+                int soLuongXuatHuy = chiTiet.getSoLuong();
+                String lyDoXuatHuy = chiTiet.getLyDoXuatHuy();
+                
+                boolean updateTonKhoSuccess;
+                
+                // Phân biệt 2 trường hợp:
+                // 1. Lô hết hạn (lý do chứa "Hết hạn") → Giảm toàn bộ tồn kho về 0
+                // 2. Hàng hư từ đơn trả → Giảm theo số lượng xuất hủy
+                if (lyDoXuatHuy != null && lyDoXuatHuy.contains("Hết hạn")) {
+                    // Lô hết hạn → Giảm toàn bộ tồn kho về 0
+                    int tonKhoHienTai = loHang.getTonKho();
+                    updateTonKhoSuccess = loHangBUS.updateTonKho(maLoHang, -tonKhoHienTai);
+                    
+                    if (updateTonKhoSuccess) {
+                        System.out.println("✓ Đã giảm tồn kho lô HẾT HẠN '" + maLoHang + "' từ " + tonKhoHienTai + " → 0");
+                    } else {
+                        System.err.println("✗ Lỗi khi giảm tồn kho lô hết hạn '" + maLoHang + "'");
+                    }
+                } else {
+                    // Hàng hư từ đơn trả → Giảm theo số lượng xuất hủy
+                    updateTonKhoSuccess = loHangBUS.updateTonKho(maLoHang, -soLuongXuatHuy);
+                    
+                    if (updateTonKhoSuccess) {
+                        System.out.println("✓ Đã giảm tồn kho lô HÀNG HƯ '" + maLoHang + "' xuống " + soLuongXuatHuy + " sản phẩm");
+                    } else {
+                        System.err.println("✗ Lỗi khi giảm tồn kho lô hàng hư '" + maLoHang + "'");
+                    }
+                }
+            }
+            
+            // 6.4. Set trạng thái lô hàng = false (ngừng hoạt động) sau khi xuất hủy
+            for (ChiTietHangHong chiTiet : chiTietList) {
+                try {
+                    LoHang loHang = chiTiet.getLoHang();
+                    String maLoHang = loHang.getMaLoHang();
+                    
+                    // Set trạng thái = false (ngừng hoạt động)
+                    loHang.setTrangThai(false);
+                    
+                    // Cập nhật vào database
+                    boolean updateTrangThaiSuccess = loHangBUS.capNhatLoHang(loHang);
+                    if (updateTrangThaiSuccess) {
+                        System.out.println("✓ Đã cập nhật trạng thái NGỪNG HOẠT ĐỘNG cho lô hàng: " + maLoHang);
+                    } else {
+                        System.err.println("✗ Lỗi khi cập nhật trạng thái lô hàng: " + maLoHang);
+                    }
+                } catch (Exception e) {
+                    System.err.println("✗ Lỗi khi cập nhật trạng thái lô hàng " + chiTiet.getLoHang().getMaLoHang() + ": " + e.getMessage());
+                    e.printStackTrace();
                 }
             }
             
@@ -428,9 +525,14 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
                         vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonTraHang donTra = 
                             donTraBUS.timDonTraTheoMa(maDonTra);
                         if (donTra != null) {
+                            // Cập nhật trạng thái thành "Đã xử lý" sau khi đã tạo phiếu xuất hủy
                             donTra.setTrangThaiXuLy("Đã xử lý");
-                            donTraBUS.capNhatDonTraHang(donTra);
-                            System.out.println("Đã cập nhật trạng thái đơn trả: " + maDonTra);
+                            boolean updated = donTraBUS.capNhatDonTraHang(donTra);
+                            if (updated) {
+                                System.out.println("✓ Đã cập nhật trạng thái 'Đã xử lý' cho đơn trả: " + maDonTra);
+                            } else {
+                                System.err.println("✗ Lỗi khi cập nhật trạng thái đơn trả: " + maDonTra);
+                            }
                         }
                     } catch (Exception e) {
                         System.err.println("Lỗi khi cập nhật trạng thái đơn trả " + maDonTra + ": " + e.getMessage());
@@ -438,27 +540,17 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
                 }
             }
             
-            // 7. Hiển thị preview hóa đơn
+            // 7. Hiển thị preview hóa đơn (không xuất PDF nữa)
             hienThiPhieuXuatHuy(hangHong, chiTietList);
             
-            // 8. Xuất PDF phiếu xuất hủy
-            String pdfPath = XuatPhieuXuatHuyPDF.xuatPhieuXuatHuyTuDong(hangHong, chiTietList);
+            // 8. Thông báo thành công
+            Notifications.getInstance().show(
+                Notifications.Type.SUCCESS, 
+                "Tạo phiếu xuất hủy thành công! Mã: " + hangHong.getMaHangHong()
+            );
             
-            if (pdfPath != null) {
-                Notifications.getInstance().show(
-                    Notifications.Type.SUCCESS, 
-                    "Tạo phiếu xuất hủy thành công! Mã: " + hangHong.getMaHangHong()
-                );
-                
-                // 9. Xóa trắng tất cả các sản phẩm đã tạo phiếu
-                xoaTrangDanhSachSanPham();
-                
-            } else {
-                Notifications.getInstance().show(
-                    Notifications.Type.WARNING, 
-                    "Đã lưu phiếu vào database nhưng không thể xuất PDF!"
-                );
-            }
+            // 9. Xóa trắng tất cả các sản phẩm đã tạo phiếu
+            xoaTrangDanhSachSanPham();
             
         } catch (Exception e) {
             e.printStackTrace();
@@ -532,27 +624,40 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
                 for (ChiTietDonTraHang chiTiet : danhSachHangTra) {
                     SanPham sanPham = chiTiet.getSanPham();
                     
+                    // TÌM LÔ HÀNG THẬT của sản phẩm này (ưu tiên lô cũ nhất, có tồn kho)
+                    String maSanPham = sanPham.getMaSanPham();
+                    List<LoHang> danhSachLo = loHangBUS.layDanhSachLoHangTheoSanPham(maSanPham);
+                    
+                    LoHang loHangChon = null;
+                    for (LoHang lo : danhSachLo) {
+                        if (lo.getTonKho() > 0) {
+                            loHangChon = lo;
+                            break; // Lấy lô đầu tiên có tồn kho (đã sort theo HSD)
+                        }
+                    }
+                    
+                    // Nếu không tìm thấy lô nào có tồn kho → BỎ QUA (không hiển thị)
+                    if (loHangChon == null) {
+                        System.err.println("WARNING: Không tìm thấy lô hàng có tồn kho cho sản phẩm: " 
+                            + sanPham.getTenSanPham() + " (Đơn trả: " + chiTiet.getDonTraHang().getMaDonTraHang() + ")");
+                        continue;
+                    }
+                    
                     Panel_ChiTietSanPhamXuatHuy panel = new Panel_ChiTietSanPhamXuatHuy();
                     
                     panel.setTenSanPham(sanPham.getTenSanPham());
-                    panel.setHinhAnh(sanPham.getHinhAnh()); // Load hình ảnh
-                    // Hiển thị thông tin đơn trả (không có lô hàng và HSD vì đây là hàng đã bán)
+                    String hinhAnh = sanPham.getHinhAnh();
+                    System.out.println("DEBUG: Đang load hình ảnh cho sản phẩm " + sanPham.getTenSanPham() + ": " + hinhAnh);
+                    panel.setHinhAnh(hinhAnh); // Load hình ảnh
+                    // Hiển thị thông tin lô hàng THẬT + thông tin đơn trả
                     panel.setLoHang(
-                        "Đơn trả: " + chiTiet.getDonTraHang().getMaDonTraHang(), 
-                        "N/A", // Không có HSD vì là hàng trả
+                        loHangChon.getTenLoHang() + " (Đơn trả: " + chiTiet.getDonTraHang().getMaDonTraHang() + ")", 
+                        loHangChon.getHanSuDung() != null ? loHangChon.getHanSuDung().toString() : "N/A",
                         chiTiet.getSoLuong()
                     ); 
                     
-                    // Tạo LoHang giả cho hàng trả (để tránh NullPointerException)
-                    LoHang loHangGia = new LoHang();
-                    // Dùng mã LH00000 (mã đặc biệt cho hàng trả, không tồn tại trong DB)
-                    loHangGia.setMaLoHang("LH00000");
-                    loHangGia.setTenLoHang("Đơn trả: " + chiTiet.getDonTraHang().getMaDonTraHang());
-                    loHangGia.setTonKho(chiTiet.getSoLuong());
-                    loHangGia.setSanPham(sanPham); // QUAN TRỌNG: Set SanPham vào LoHang
-                    loHangGia.setHanSuDung(null); // Hàng trả không có HSD
-                    
-                    panel.setLoHangObject(loHangGia);
+                    // Lưu lô hàng THẬT vào panel
+                    panel.setLoHangObject(loHangChon);
                     
                     // LƯU THÔNG TIN CHI TIẾT ĐƠN TRẢ VÀO PANEL
                     panel.setChiTietDonTra(chiTiet);

@@ -89,6 +89,25 @@ public class DonHangDAO implements DAOInterface<DonHang, String> {
         return false;
     }
     
+    /**
+     * Xóa đơn hàng theo mã
+     * @param maDonHang Mã đơn hàng cần xóa
+     * @return true nếu xóa thành công, false nếu thất bại
+     */
+    public boolean delete(String maDonHang) {
+        String sql = "DELETE FROM DonHang WHERE maDonHang = ?";
+        try (Connection con = ConnectDB.getConnection(); 
+             PreparedStatement stmt = con.prepareStatement(sql)) {
+            
+            stmt.setString(1, maDonHang);
+            return stmt.executeUpdate() > 0;
+            
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
     
     //Đếm số lượng đơn hàng đã áp dụng một mã khuyến mãi cụ thể
     public long countByKhuyenMai(String maKhuyenMai) {

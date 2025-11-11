@@ -11,9 +11,10 @@ import java.util.Objects;
 
 /**
  *
- * @author User
+ * @author PhamTra
  */
 public class DonTraHang {
+
     private String maDonTraHang;
     private LocalDate ngayTraHang;
     private double thanhTien;
@@ -21,14 +22,15 @@ public class DonTraHang {
     private DonHang donHang;
     private List<ChiTietDonTraHang> chiTietDonTraHang;
     private String trangThaiXuLy;
-    public static final String MA_DON_TRA_HANG_SAI ="Mã đơn trả hàng phải bắt đầu bằng DTddMMyyyyxxxx (dd là ngày trả, mm là tháng trả, yyyy là năm trả, xxxx là 4 số dương)";
-    private static final String REGEX_MA_DON_TRA_HANG =
-    "^DT(0[1-9]|[12][0-9]|3[01])" + 
-    "(0[1-9]|1[0-2])" +                
-    "(20)\\d{2}" +             
-    "(?!0000)\\d{4}$";                 
-    public static final String NGAY_TRA_HANG_SAI ="Ngày trả hàng phải nhỏ hơn hoặc bằng ngày hiện tại";
-    public static final String NGAY_TRA_HANG_NULL ="Ngày trả hàng không được rỗng";
+    public static final String MA_DON_TRA_HANG_SAI = "Mã đơn trả hàng phải bắt đầu bằng DTddMMyyyyxxxx (dd là ngày trả, mm là tháng trả, yyyy là năm trả, xxxx là 4 số dương)";
+    private static final String REGEX_MA_DON_TRA_HANG
+            = "^DT(0[1-9]|[12][0-9]|3[01])"
+            + "(0[1-9]|1[0-2])"
+            + "(20)\\d{2}"
+            + "(?!0000)\\d{4}$";
+    public static final String NGAY_TRA_HANG_SAI = "Ngày trả hàng phải nhỏ hơn hoặc bằng ngày hiện tại";
+    public static final String NGAY_TRA_HANG_NULL = "Ngày trả hàng không được rỗng";
+
     public DonTraHang() {
         this.trangThaiXuLy = "Chưa xử lý";
     }
@@ -43,30 +45,29 @@ public class DonTraHang {
         this.maDonTraHang = maDonTraHang;
         this.trangThaiXuLy = "Chưa xử lý";
     }
-    
 
     public String getMaDonTraHang() {
         return maDonTraHang;
     }
 
- public void setMaDonTraHang(String maDonTraHang) throws Exception {
-    if (maDonTraHang == null || maDonTraHang.isBlank() || !maDonTraHang.matches(REGEX_MA_DON_TRA_HANG)) {
-        throw new Exception(MA_DON_TRA_HANG_SAI);
+    public void setMaDonTraHang(String maDonTraHang) throws Exception {
+        if (maDonTraHang == null || maDonTraHang.isBlank() || !maDonTraHang.matches(REGEX_MA_DON_TRA_HANG)) {
+            throw new Exception(MA_DON_TRA_HANG_SAI);
+        }
+        this.maDonTraHang = maDonTraHang;
     }
-    this.maDonTraHang = maDonTraHang;
-}
 
     public LocalDate getNgayTraHang() {
         return ngayTraHang;
     }
 
     public void setNgayTraHang(LocalDate ngayTraHang) throws Exception {
-        if(ngayTraHang==null){
+        if (ngayTraHang == null) {
             throw new Exception(NGAY_TRA_HANG_NULL);
         }
-        LocalDate hientai=LocalDate.now();
-        if(ngayTraHang.isAfter(hientai)){
-            throw new Exception (NGAY_TRA_HANG_SAI);
+        LocalDate hientai = LocalDate.now();
+        if (ngayTraHang.isAfter(hientai)) {
+            throw new Exception(NGAY_TRA_HANG_SAI);
         }
         this.ngayTraHang = ngayTraHang;
     }
@@ -76,7 +77,9 @@ public class DonTraHang {
     }
 
     public void setThanhTien(double thanhTien) throws Exception {
-        if(thanhTien<=0) throw new Exception("thành tiền phải lớn hơn 0, không được rỗng");
+        if (thanhTien <= 0) {
+            throw new Exception("thành tiền phải lớn hơn 0, không được rỗng");
+        }
         this.thanhTien = thanhTien;
     }
 
@@ -85,7 +88,9 @@ public class DonTraHang {
     }
 
     public void setNhanVien(NhanVien nhanVien) throws Exception {
-        if(nhanVien == null) throw new Exception("nhân viên không được để rỗng");            
+        if (nhanVien == null) {
+            throw new Exception("nhân viên không được để rỗng");
+        }
         this.nhanVien = nhanVien;
     }
 
@@ -94,8 +99,10 @@ public class DonTraHang {
     }
 
     public void setDonHang(DonHang donHang) throws Exception {
-        if(donHang == null) throw new Exception("đơn hàng không được để rỗng");   
-        
+        if (donHang == null) {
+            throw new Exception("đơn hàng không được để rỗng");
+        }
+
         this.donHang = donHang;
     }
 
@@ -122,22 +129,26 @@ public class DonTraHang {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
         DonTraHang other = (DonTraHang) obj;
-return Objects.equals(maDonTraHang, other.maDonTraHang) &&
-                Objects.equals(ngayTraHang, other.ngayTraHang);
+        return Objects.equals(maDonTraHang, other.maDonTraHang)
+                && Objects.equals(ngayTraHang, other.ngayTraHang);
     }
 
     @Override
     public String toString() {
-        return "DonTraHang{" +
-                "maDonTra='" + maDonTraHang + '\'' +
-                ", ngayTraHang=" + ngayTraHang +
-                ", thanhTien=" + thanhTien +
-                ", nhanVien=" + (nhanVien != null ? nhanVien.getMaNhanVien() : null) +
-                ", donHang=" + (donHang != null ? donHang.getMaDonHang() : null) +
-                ", chiTietDonTraHang=" + (chiTietDonTraHang != null ? chiTietDonTraHang.size() : 0) +
-                '}';
+        return "DonTraHang{"
+                + "maDonTra='" + maDonTraHang + '\''
+                + ", ngayTraHang=" + ngayTraHang
+                + ", thanhTien=" + thanhTien
+                + ", nhanVien=" + (nhanVien != null ? nhanVien.getMaNhanVien() : null)
+                + ", donHang=" + (donHang != null ? donHang.getMaDonHang() : null)
+                + ", chiTietDonTraHang=" + (chiTietDonTraHang != null ? chiTietDonTraHang.size() : 0)
+                + '}';
     }
 }
