@@ -4,6 +4,7 @@
  */
 package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlyphieutrahang;
 
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
 
 /**
  *
@@ -125,10 +126,10 @@ public class Panel_ChiTietSanPhamTraHang extends javax.swing.JPanel {
         this.lyDoTraHang = lyDo;
         if (lyDo != null && !lyDo.trim().isEmpty()) {
             btnLyDo.setText("✓ Lý do");
-            btnLyDo.setBackground(new java.awt.Color(40, 167, 69));
+            ButtonStyles.apply(btnLyDo, ButtonStyles.Type.SUCCESS);
         } else {
             btnLyDo.setText("Lý do");
-            btnLyDo.setBackground(new java.awt.Color(0, 123, 255));
+            ButtonStyles.apply(btnLyDo, ButtonStyles.Type.INFO);
         }
     }
 
@@ -260,15 +261,12 @@ public class Panel_ChiTietSanPhamTraHang extends javax.swing.JPanel {
         btnLyDo = new javax.swing.JButton();
         btnLyDo.setText("Lý do");
         btnLyDo.setFont(new java.awt.Font("Segoe UI", 0, 12));
-        btnLyDo.setBackground(new java.awt.Color(0, 123, 255));
-        btnLyDo.setForeground(java.awt.Color.WHITE);
         btnLyDo.setPreferredSize(new java.awt.Dimension(60, 30));
         btnLyDo.setMinimumSize(new java.awt.Dimension(60, 30));
         btnLyDo.setMaximumSize(new java.awt.Dimension(60, 30));
         btnLyDo.setAlignmentX(java.awt.Component.CENTER_ALIGNMENT);
-        btnLyDo.setFocusPainted(false);
         btnLyDo.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        btnLyDo.setBorderPainted(false);
+        ButtonStyles.apply(btnLyDo, ButtonStyles.Type.INFO);
         btnLyDo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnLyDoActionPerformed(evt);
@@ -279,15 +277,12 @@ public class Panel_ChiTietSanPhamTraHang extends javax.swing.JPanel {
         javax.swing.JButton btnXoa = new javax.swing.JButton();
         btnXoa.setText("Xóa");
         btnXoa.setFont(new java.awt.Font("Segoe UI", 0, 12));
-        btnXoa.setBackground(new java.awt.Color(220, 53, 69));
-        btnXoa.setForeground(java.awt.Color.WHITE);
+        ButtonStyles.apply(btnXoa, ButtonStyles.Type.DANGER);
         btnXoa.setPreferredSize(new java.awt.Dimension(60, 30));
         btnXoa.setMinimumSize(new java.awt.Dimension(60, 30));
         btnXoa.setMaximumSize(new java.awt.Dimension(60, 30));
         btnXoa.setAlignmentX(java.awt.Component.CENTER_ALIGNMENT);
-        btnXoa.setFocusPainted(false);
         btnXoa.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        btnXoa.setBorderPainted(false);
         btnXoa.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnXoaActionPerformed(evt);

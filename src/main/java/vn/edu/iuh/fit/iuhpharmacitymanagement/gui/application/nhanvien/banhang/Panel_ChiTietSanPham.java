@@ -10,6 +10,7 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.LoHangBUS;
 import java.text.DecimalFormat;
 import java.util.List;
 import javax.swing.ImageIcon;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
 
 /**
  *
@@ -522,6 +523,7 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
         jPanel1.setMinimumSize(new java.awt.Dimension(651, 285));
 
         btnXacNhan.setText("Xác nhận");
+        ButtonStyles.apply(btnXacNhan, ButtonStyles.Type.PRIMARY);
         btnXacNhan.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnXacNhanActionPerformed(evt);
@@ -646,10 +648,7 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
         javax.swing.JButton btnGiam = new javax.swing.JButton("-");
         btnGiam.setFont(new java.awt.Font("Segoe UI", 1, 16));
         btnGiam.setPreferredSize(new java.awt.Dimension(35, 35));
-        btnGiam.setFocusPainted(false);
-        btnGiam.setBackground(new java.awt.Color(220, 53, 69));
-        btnGiam.setForeground(java.awt.Color.WHITE);
-        btnGiam.setBorderPainted(false);
+        ButtonStyles.apply(btnGiam, ButtonStyles.Type.DANGER);
         btnGiam.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnGiam.addActionListener(evt -> {
             int currentValue = (int) spinnerSoLuong.getValue();
@@ -735,10 +734,7 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
         javax.swing.JButton btnTang = new javax.swing.JButton("+");
         btnTang.setFont(new java.awt.Font("Segoe UI", 1, 16));
         btnTang.setPreferredSize(new java.awt.Dimension(35, 35));
-        btnTang.setFocusPainted(false);
-        btnTang.setBackground(new java.awt.Color(40, 167, 69));
-        btnTang.setForeground(java.awt.Color.WHITE);
-        btnTang.setBorderPainted(false);
+        ButtonStyles.apply(btnTang, ButtonStyles.Type.SUCCESS);
         btnTang.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnTang.addActionListener(evt -> {
             int currentValue = (int) spinnerSoLuong.getValue();
@@ -806,14 +802,11 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
         javax.swing.JButton btnXoa = new javax.swing.JButton();
         btnXoa.setText("Xóa");
         btnXoa.setFont(new java.awt.Font("Segoe UI", 0, 13));
-        btnXoa.setBackground(new java.awt.Color(220, 53, 69));
-        btnXoa.setForeground(java.awt.Color.WHITE);
         btnXoa.setPreferredSize(new java.awt.Dimension(60, 35));
         btnXoa.setMinimumSize(new java.awt.Dimension(60, 35));
         btnXoa.setMaximumSize(new java.awt.Dimension(60, 35));
-        btnXoa.setFocusPainted(false);
         btnXoa.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        btnXoa.setBorderPainted(false);
+        ButtonStyles.apply(btnXoa, ButtonStyles.Type.DANGER);
         btnXoa.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnXoaActionPerformed(evt);

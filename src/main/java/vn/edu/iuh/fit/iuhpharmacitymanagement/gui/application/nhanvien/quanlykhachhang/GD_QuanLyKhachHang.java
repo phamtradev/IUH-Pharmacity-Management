@@ -8,7 +8,6 @@ import com.formdev.flatlaf.FlatClientProperties;
 import java.util.Arrays;
 import java.util.List;
 import javax.swing.BorderFactory;
-import javax.swing.JTextField;
 import javax.swing.UIManager;
 import raven.toast.Notifications;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.KhachHangBUS;
@@ -16,6 +15,7 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.common.TableDesign;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.DonHangDAO;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.KhachHangDAO;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhachHang;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
 
 /**
  *
@@ -30,6 +30,7 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
         this.khachHangBUS = new KhachHangBUS(new KhachHangDAO(), new DonHangDAO());
         initComponents();
         setUIManager();
+        applyButtonStyles();
         fillTable();
     }
 
@@ -56,6 +57,17 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
         txtSearchCus.putClientProperty(FlatClientProperties.STYLE, "arc:10");
         
         UIManager.put("Button.arc", 10);
+    }
+
+    private void applyButtonStyles() {
+        ButtonStyles.apply(btnAddCustomer, ButtonStyles.Type.SUCCESS);
+        ButtonStyles.apply(btnExitModalAdd, ButtonStyles.Type.SECONDARY);
+        ButtonStyles.apply(btnEditCustomer, ButtonStyles.Type.WARNING);
+        ButtonStyles.apply(btnExitModalEdit, ButtonStyles.Type.SECONDARY);
+        ButtonStyles.apply(btnSearch, ButtonStyles.Type.INFO);
+        ButtonStyles.apply(btnAdd, ButtonStyles.Type.SUCCESS);
+        ButtonStyles.apply(btnUpdate, ButtonStyles.Type.WARNING);
+        ButtonStyles.apply(btnDelete, ButtonStyles.Type.DANGER);
     }
 
     private void fillTable() {
@@ -186,9 +198,7 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
             }
         });
 
-        btnExitModalAdd.setBackground(new java.awt.Color(92, 107, 192));
         btnExitModalAdd.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        btnExitModalAdd.setForeground(new java.awt.Color(255, 255, 255));
         btnExitModalAdd.setText("Thoát");
         btnExitModalAdd.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -310,9 +320,7 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
             }
         });
 
-        btnExitModalEdit.setBackground(new java.awt.Color(92, 107, 192));
         btnExitModalEdit.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        btnExitModalEdit.setForeground(new java.awt.Color(255, 255, 255));
         btnExitModalEdit.setText("Thoát");
         btnExitModalEdit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -404,12 +412,9 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
         actionPanel.setPreferredSize(new java.awt.Dimension(320, 60));
         actionPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 6, 10));
 
-        btnAdd.setBackground(new java.awt.Color(115, 165, 71));
         btnAdd.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnAdd.setForeground(new java.awt.Color(255, 255, 255));
         btnAdd.setText("Thêm");
         btnAdd.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        btnAdd.setFocusPainted(false);
         btnAdd.setPreferredSize(new java.awt.Dimension(95, 40));
         btnAdd.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -418,12 +423,9 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
         });
         actionPanel.add(btnAdd);
 
-        btnUpdate.setBackground(new java.awt.Color(255, 193, 7));
         btnUpdate.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnUpdate.setForeground(new java.awt.Color(0, 0, 0));
         btnUpdate.setText("Sửa");
         btnUpdate.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        btnUpdate.setFocusPainted(false);
         btnUpdate.setPreferredSize(new java.awt.Dimension(95, 40));
         btnUpdate.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -432,12 +434,9 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
         });
         actionPanel.add(btnUpdate);
 
-        btnDelete.setBackground(new java.awt.Color(244, 67, 54));
         btnDelete.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnDelete.setForeground(new java.awt.Color(255, 255, 255));
         btnDelete.setText("Xóa");
         btnDelete.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        btnDelete.setFocusPainted(false);
         btnDelete.setPreferredSize(new java.awt.Dimension(95, 40));
         btnDelete.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -467,9 +466,7 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
         });
         jPanel5.add(txtSearchCus);
 
-        btnSearch.setBackground(new java.awt.Color(115, 165, 71));
         btnSearch.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
-        btnSearch.setForeground(new java.awt.Color(255, 255, 255));
         btnSearch.setText("Tìm kiếm");
         btnSearch.setPreferredSize(new java.awt.Dimension(120, 40));
         btnSearch.addActionListener(new java.awt.event.ActionListener() {
@@ -755,8 +752,8 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_btnDeleteActionPerformed
 
-    public void clearData(JTextField... fields) {
-        for (JTextField field : fields) {
+    public void clearData(javax.swing.JTextField... fields) {
+        for (javax.swing.JTextField field : fields) {
             field.setText("");
         }
     }

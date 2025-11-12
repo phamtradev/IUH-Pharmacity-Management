@@ -6,6 +6,7 @@ package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.banhang;
 
 import com.formdev.flatlaf.FlatClientProperties;
 import java.awt.event.KeyEvent;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
 
 /**
  *
@@ -19,7 +20,11 @@ public class Panel_ThanhToan extends javax.swing.JPanel {
     public Panel_ThanhToan() {
 
         initComponents();
+        applyButtonStyles();
         customizeTextFields();
+    }
+    private void applyButtonStyles() {
+        ButtonStyles.apply(btnBanHang, ButtonStyles.Type.SUCCESS);
     }
 
     private void customizeTextFields() {

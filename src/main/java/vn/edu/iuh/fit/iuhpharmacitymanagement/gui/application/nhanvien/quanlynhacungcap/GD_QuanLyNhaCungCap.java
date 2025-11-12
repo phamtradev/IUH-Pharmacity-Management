@@ -5,7 +5,6 @@
 package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlynhacungcap;
 
 import com.formdev.flatlaf.FlatClientProperties;
-import com.formdev.flatlaf.extras.FlatSVGIcon;
 import java.util.Arrays;
 import java.util.List;
 import raven.toast.Notifications;
@@ -15,6 +14,7 @@ import javax.swing.UIManager;
 import javax.swing.table.DefaultTableModel;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.common.TableDesign;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.NhaCungCapBUS;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
 
 /**
  *
@@ -48,41 +48,18 @@ public class GD_QuanLyNhaCungCap extends javax.swing.JPanel {
         button.setVerticalTextPosition(javax.swing.SwingConstants.CENTER);
         button.setPreferredSize(new java.awt.Dimension(95, 40));
 
-        String style = ""
-                + "arc:10;"
-                + "borderWidth:0;"
-                + "focusWidth:0;";
-
+        ButtonStyles.Type type = ButtonStyles.Type.SECONDARY;
         if (text.equalsIgnoreCase("THÊM")) {
-            style += ""
-                    + "background:#28A745;" // Xanh lá
-                    + "foreground:#FFFFFF;"
-                    + "hoverBackground:#218838;"
-                    + "pressedBackground:#1E7E34;";
-            button.putClientProperty(FlatClientProperties.STYLE, style);
+            type = ButtonStyles.Type.SUCCESS;
         } else if (text.equalsIgnoreCase("SỬA")) {
-            style += ""
-                    + "background:#007BFF;" // Xanh dương
-                    + "foreground:#FFFFFF;"
-                    + "hoverBackground:#0069D9;"
-                    + "pressedBackground:#0056B3;";
-            button.putClientProperty(FlatClientProperties.STYLE, style);
-        } else if (text.equalsIgnoreCase("XÓA")) {
-            style += ""
-                    + "background:#DC3545;" // Đỏ
-                    + "foreground:#FFFFFF;"
-                    + "hoverBackground:#C82333;"
-                    + "pressedBackground:#BD2130;";
-            button.putClientProperty(FlatClientProperties.STYLE, style);
+            type = ButtonStyles.Type.PRIMARY;
+        } else if (text.equalsIgnoreCase("XÓA") || text.equalsIgnoreCase("Xóa")) {
+            type = ButtonStyles.Type.DANGER;
         } else if (text.equalsIgnoreCase("Tìm kiếm")) {
             button.setPreferredSize(new java.awt.Dimension(150, 40));
-            style += ""
-                    + "background:#28A745;" // Xanh lá giống nút THÊM
-                    + "foreground:#FFFFFF;"
-                    + "hoverBackground:#218838;"
-                    + "pressedBackground:#1E7E34;";
-            button.putClientProperty(FlatClientProperties.STYLE, style);
+            type = ButtonStyles.Type.SUCCESS;
         }
+        ButtonStyles.apply(button, type);
     }
 
     private void setupModalSize() {
@@ -99,38 +76,12 @@ public class GD_QuanLyNhaCungCap extends javax.swing.JPanel {
         jPanel8.putClientProperty(FlatClientProperties.STYLE, "background:#F8F9FA;border:0,0,0,0");
 
         // Style cho buttons trong modal Add
-        btnSupplierAdd.putClientProperty(FlatClientProperties.STYLE, ""
-                + "background:#28A745;"
-                + "foreground:#FFFFFF;"
-                + "hoverBackground:#218838;"
-                + "pressedBackground:#1E7E34;"
-                + "arc:10;"
-                + "borderWidth:0");
-
-        btnSupplierExit.putClientProperty(FlatClientProperties.STYLE, ""
-                + "background:#DC3545;"
-                + "foreground:#FFFFFF;"
-                + "hoverBackground:#C82333;"
-                + "pressedBackground:#BD2130;"
-                + "arc:10;"
-                + "borderWidth:0");
+        ButtonStyles.apply(btnSupplierAdd, ButtonStyles.Type.SUCCESS);
+        ButtonStyles.apply(btnSupplierExit, ButtonStyles.Type.DANGER);
 
         // Style cho buttons trong modal Edit
-        btnSupplierEdit.putClientProperty(FlatClientProperties.STYLE, ""
-                + "background:#007BFF;"
-                + "foreground:#FFFFFF;"
-                + "hoverBackground:#0069D9;"
-                + "pressedBackground:#0056B3;"
-                + "arc:10;"
-                + "borderWidth:0");
-
-        btnSupplierExit2.putClientProperty(FlatClientProperties.STYLE, ""
-                + "background:#DC3545;"
-                + "foreground:#FFFFFF;"
-                + "hoverBackground:#C82333;"
-                + "pressedBackground:#BD2130;"
-                + "arc:10;"
-                + "borderWidth:0");
+        ButtonStyles.apply(btnSupplierEdit, ButtonStyles.Type.PRIMARY);
+        ButtonStyles.apply(btnSupplierExit2, ButtonStyles.Type.DANGER);
     }
 
     private void setUIManager() {
@@ -324,9 +275,7 @@ public class GD_QuanLyNhaCungCap extends javax.swing.JPanel {
             }
         });
 
-        btnSupplierExit.setBackground(new java.awt.Color(92, 107, 192));
         btnSupplierExit.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        btnSupplierExit.setForeground(new java.awt.Color(255, 255, 255));
         btnSupplierExit.setText("Thoát");
         btnSupplierExit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -470,9 +419,7 @@ public class GD_QuanLyNhaCungCap extends javax.swing.JPanel {
             }
         });
 
-        btnSupplierEdit.setBackground(new java.awt.Color(78, 94, 186));
         btnSupplierEdit.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        btnSupplierEdit.setForeground(new java.awt.Color(255, 255, 255));
         btnSupplierEdit.setText("Sửa");
         btnSupplierEdit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -480,9 +427,7 @@ public class GD_QuanLyNhaCungCap extends javax.swing.JPanel {
             }
         });
 
-        btnSupplierExit2.setBackground(new java.awt.Color(236, 82, 113));
         btnSupplierExit2.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        btnSupplierExit2.setForeground(new java.awt.Color(255, 255, 255));
         btnSupplierExit2.setText("Thoát");
         btnSupplierExit2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -595,9 +540,7 @@ public class GD_QuanLyNhaCungCap extends javax.swing.JPanel {
         });
         pnlKhungTimKiem.add(txtTimKiem);
 
-        btnTimKiem.setBackground(new java.awt.Color(115, 165, 71));
         btnTimKiem.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
-        btnTimKiem.setForeground(new java.awt.Color(255, 255, 255));
         btnTimKiem.setText("Tìm kiếm");
         btnTimKiem.setMaximumSize(new java.awt.Dimension(150, 40));
         btnTimKiem.setMinimumSize(new java.awt.Dimension(150, 40));

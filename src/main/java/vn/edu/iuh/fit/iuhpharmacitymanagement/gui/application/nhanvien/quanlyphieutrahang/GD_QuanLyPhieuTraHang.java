@@ -5,6 +5,7 @@
 package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlyphieutrahang;
 
 import com.formdev.flatlaf.FlatClientProperties;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
 
 /**
  *
@@ -14,9 +15,9 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
 
     public GD_QuanLyPhieuTraHang() {
         initComponents();
+        applyButtonStyles();
 
         txtSearchOrder.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Mã hóa đơn");
-
         // Ensure split pane divider is visible and panels have size
         jSplitPane1.setDividerSize(10);
         jSplitPane1.setOneTouchExpandable(true);
@@ -46,6 +47,14 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
         // Add header rows for both panels
         addHeaderRowForOrder();
         addHeaderRowForReturn();
+    }
+
+    private void applyButtonStyles() {
+        ButtonStyles.apply(btnTaoPhieu, ButtonStyles.Type.PRIMARY);
+        ButtonStyles.apply(btnOpenModalAddUnit, ButtonStyles.Type.SUCCESS);
+        ButtonStyles.apply(btnTraTatCa, ButtonStyles.Type.WARNING);
+        ButtonStyles.apply(btnNhapLyDoChoTatCa, ButtonStyles.Type.INFO);
+        ButtonStyles.apply(btnXoaTatCa, ButtonStyles.Type.DANGER);
     }
 
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -367,9 +376,7 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
         jPanel7.setBackground(new java.awt.Color(255, 255, 255));
         jPanel7.setPreferredSize(new java.awt.Dimension(590, 100));
 
-        btnOpenModalAddUnit.setBackground(new java.awt.Color(115, 165, 71));
         btnOpenModalAddUnit.setFont(new java.awt.Font("Segoe UI", 1, 16)); // NOI18N
-        btnOpenModalAddUnit.setForeground(new java.awt.Color(255, 255, 255));
         btnOpenModalAddUnit.setText("Tìm kiếm");
         btnOpenModalAddUnit.setMaximumSize(new java.awt.Dimension(150, 40));
         btnOpenModalAddUnit.setMinimumSize(new java.awt.Dimension(150, 40));
@@ -390,9 +397,7 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
         });
 
         btnTraTatCa = new javax.swing.JButton();
-        btnTraTatCa.setBackground(new java.awt.Color(255, 153, 51));
         btnTraTatCa.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnTraTatCa.setForeground(new java.awt.Color(255, 255, 255));
         btnTraTatCa.setText("Trả tất cả");
         btnTraTatCa.setMaximumSize(new java.awt.Dimension(180, 40));
         btnTraTatCa.setMinimumSize(new java.awt.Dimension(180, 40));
@@ -405,9 +410,7 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
         });
 
         btnNhapLyDoChoTatCa = new javax.swing.JButton();
-        btnNhapLyDoChoTatCa.setBackground(new java.awt.Color(51, 153, 255));
         btnNhapLyDoChoTatCa.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnNhapLyDoChoTatCa.setForeground(new java.awt.Color(255, 255, 255));
         btnNhapLyDoChoTatCa.setText("Nhập lý do cho tất cả");
         btnNhapLyDoChoTatCa.setMaximumSize(new java.awt.Dimension(200, 40));
         btnNhapLyDoChoTatCa.setMinimumSize(new java.awt.Dimension(200, 40));
@@ -420,9 +423,7 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
         });
 
         btnXoaTatCa = new javax.swing.JButton();
-        btnXoaTatCa.setBackground(new java.awt.Color(220, 53, 69));
         btnXoaTatCa.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnXoaTatCa.setForeground(new java.awt.Color(255, 255, 255));
         btnXoaTatCa.setText("Xóa tất cả");
         btnXoaTatCa.setMaximumSize(new java.awt.Dimension(180, 40));
         btnXoaTatCa.setMinimumSize(new java.awt.Dimension(180, 40));

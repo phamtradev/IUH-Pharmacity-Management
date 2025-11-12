@@ -18,6 +18,7 @@ import javax.swing.SwingConstants;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.ChiTietHangHongBUS;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietHangHong;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.HangHong;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
 
 /**
  * Panel hiển thị 1 dòng thông tin phiếu xuất hủy
@@ -96,10 +97,7 @@ public class Panel_PhieuXuatHuyRow extends JPanel {
         
         btnXemChiTiet = new JButton("Xem Chi Tiết");
         btnXemChiTiet.setPreferredSize(new Dimension(110, 32));
-        btnXemChiTiet.setBackground(new Color(23, 162, 184));
-        btnXemChiTiet.setForeground(Color.WHITE);
-        btnXemChiTiet.setFocusPainted(false);
-        btnXemChiTiet.setBorderPainted(false);
+        ButtonStyles.apply(btnXemChiTiet, ButtonStyles.Type.INFO);
         btnXemChiTiet.addActionListener(e -> xemChiTietPhieu());
         
         actionPanel.add(btnXemChiTiet);
@@ -252,9 +250,7 @@ public class Panel_PhieuXuatHuyRow extends JPanel {
         
         JButton btnDong = new JButton("Đóng");
         btnDong.setPreferredSize(new Dimension(120, 35));
-        btnDong.setBackground(new Color(108, 117, 125));
-        btnDong.setForeground(Color.WHITE);
-        btnDong.setFocusPainted(false);
+        ButtonStyles.apply(btnDong, ButtonStyles.Type.SECONDARY);
         btnDong.addActionListener(e -> dialog.dispose());
         
         btnPanel.add(btnDong);

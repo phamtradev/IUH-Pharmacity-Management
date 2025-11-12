@@ -23,6 +23,7 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.HangHong;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietHangHong;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.session.SessionManager;
 import raven.toast.Notifications;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
 
 /**
  *
@@ -44,9 +45,14 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         this.hangHongBUS = new HangHongBUS();
         this.chiTietHangHongBUS = new ChiTietHangHongBUS();
         initComponents();
+        applyButtonStyles();
         fillContent();
 
         loadUserData();
+    }
+
+    private void applyButtonStyles() {
+        ButtonStyles.apply(btnTaoPhieu, ButtonStyles.Type.PRIMARY);
     }
 
     private void loadUserData() {

@@ -5,14 +5,13 @@
 package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlykhuyenmai;
 
 import com.formdev.flatlaf.FlatClientProperties;
-import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.SanPhamBUS;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.ChiTietKhuyenMaiSanPhamBUS;
-import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.SanPhamDAO;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.ChiTietKhuyenMaiSanPhamDAO;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.constant.LoaiKhuyenMai;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhuyenMai;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietKhuyenMaiSanPham;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
 
 import javax.swing.*;
 import java.time.ZoneId;
@@ -27,7 +26,6 @@ import java.util.stream.Collectors;
  */
 public class XemChiTietKhuyenMaiDialog extends javax.swing.JDialog {
 
-    private final SanPhamBUS sanPhamBUS;
     private final ChiTietKhuyenMaiSanPhamBUS chiTietKhuyenMaiSanPhamBUS;
     private KhuyenMai khuyenMai;
     private List<SanPham> danhSachSanPham = new ArrayList<>(); // Danh sách sản phẩm của khuyến mãi
@@ -45,7 +43,6 @@ public class XemChiTietKhuyenMaiDialog extends javax.swing.JDialog {
     public XemChiTietKhuyenMaiDialog(java.awt.Frame parent, boolean modal, KhuyenMai km) {
         super(parent, modal);
         this.khuyenMai = km;
-        this.sanPhamBUS = new SanPhamBUS(new SanPhamDAO());
         this.chiTietKhuyenMaiSanPhamBUS = new ChiTietKhuyenMaiSanPhamBUS(new ChiTietKhuyenMaiSanPhamDAO());
         initComponents();
         setLocationRelativeTo(parent);
@@ -73,6 +70,8 @@ public class XemChiTietKhuyenMaiDialog extends javax.swing.JDialog {
         
         // Thiết lập combo box loại khuyến mãi
         cboLoaiKhuyenMai.setModel(new DefaultComboBoxModel<>(new String[]{"Đơn hàng", "Sản phẩm"}));
+
+        ButtonStyles.apply(btnHuy, ButtonStyles.Type.SECONDARY);
     }
     
     private void loadData() {
@@ -358,9 +357,7 @@ public class XemChiTietKhuyenMaiDialog extends javax.swing.JDialog {
         jPanel3.setBackground(new java.awt.Color(255, 255, 255));
         jPanel3.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 30, 20, 30));
 
-        btnHuy.setBackground(new java.awt.Color(108, 117, 125));
         btnHuy.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnHuy.setForeground(new java.awt.Color(255, 255, 255));
         btnHuy.setText("Đóng");
         btnHuy.setPreferredSize(new java.awt.Dimension(120, 40));
         btnHuy.addActionListener(new java.awt.event.ActionListener() {

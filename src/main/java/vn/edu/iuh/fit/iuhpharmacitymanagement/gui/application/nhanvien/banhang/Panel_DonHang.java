@@ -43,6 +43,7 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhanVien;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.util.UserSession;
 import java.util.Map;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
 
 /**
  *
@@ -79,9 +80,14 @@ public class Panel_DonHang extends javax.swing.JPanel {
         danhSachKhuyenMaiDaChon = new java.util.HashMap<>(); // Khởi tạo Map
         
         initComponents();
+        applyButtonStyles();
         customizeTextFields();
         addPromotionLabels();
         addPriceSuggestButtons();
+    }
+    private void applyButtonStyles() {
+        ButtonStyles.apply(btnBanHang, ButtonStyles.Type.SUCCESS);
+        ButtonStyles.apply(btnThanhToanQR, ButtonStyles.Type.INFO);
     }
     
     /**
@@ -1855,10 +1861,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
         javax.swing.JButton btnQRBanking = new javax.swing.JButton("🏦 QR Thanh Toán");
         btnQRBanking.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 16));
         btnQRBanking.setPreferredSize(new java.awt.Dimension(220, 45));
-        btnQRBanking.setBackground(new Color(33, 150, 243)); // Xanh dương
-        btnQRBanking.setForeground(Color.WHITE);
-        btnQRBanking.setFocusPainted(false);
-        btnQRBanking.setBorderPainted(false);
+        ButtonStyles.apply(btnQRBanking, ButtonStyles.Type.INFO);
         btnQRBanking.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         
         btnQRBanking.addActionListener(e -> {
@@ -1921,10 +1924,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
         javax.swing.JButton btnInHoaDon = new javax.swing.JButton("📄 In Hóa Đơn");
         btnInHoaDon.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 16));
         btnInHoaDon.setPreferredSize(new java.awt.Dimension(200, 45));
-        btnInHoaDon.setBackground(new Color(40, 167, 69));
-        btnInHoaDon.setForeground(Color.WHITE);
-        btnInHoaDon.setFocusPainted(false);
-        btnInHoaDon.setBorderPainted(false);
+        ButtonStyles.apply(btnInHoaDon, ButtonStyles.Type.SUCCESS);
         btnInHoaDon.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         
         btnInHoaDon.addActionListener(e -> {
@@ -1939,10 +1939,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
         javax.swing.JButton btnHuyDon = new javax.swing.JButton("❌ Hủy Đơn");
         btnHuyDon.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 16));
         btnHuyDon.setPreferredSize(new java.awt.Dimension(180, 45));
-        btnHuyDon.setBackground(new Color(220, 53, 69)); // Đỏ
-        btnHuyDon.setForeground(Color.WHITE);
-        btnHuyDon.setFocusPainted(false);
-        btnHuyDon.setBorderPainted(false);
+        ButtonStyles.apply(btnHuyDon, ButtonStyles.Type.DANGER);
         btnHuyDon.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         
         btnHuyDon.addActionListener(e -> {
@@ -2041,7 +2038,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
                                     );
                                     
                                     // Đổi màu nút QR Banking thành xanh lá (đã thanh toán)
-                                    btnQRBanking.setBackground(new Color(40, 167, 69));
+                                    ButtonStyles.apply(btnQRBanking, ButtonStyles.Type.SUCCESS);
                                     btnQRBanking.setText("✅ Đã Thanh Toán QR");
                                     btnQRBanking.setEnabled(false);
                                     

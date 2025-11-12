@@ -37,6 +37,7 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonNhapHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonNhapHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhanVien;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
 
 /**
  *
@@ -79,12 +80,19 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
         }
         
         initComponents();
+        applyButtonStyles();
         lookAndFeelSet();
         setupPanelSanPham();
         setupSupplierSearchListener();
-
+        
         txtSearchProduct.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập số đăng kí hoặc quét mã vạch");
         txtSearchSupplier.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Số điện thoại nhà cung cấp");
+    }
+    
+    private void applyButtonStyles() {
+        ButtonStyles.apply(btnMa, ButtonStyles.Type.SUCCESS);
+        ButtonStyles.apply(btnImportExcel, ButtonStyles.Type.INFO);
+        ButtonStyles.apply(btnConfirmPurchase, ButtonStyles.Type.PRIMARY);
     }
     
     private void setupPanelSanPham() {
@@ -524,9 +532,7 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
             }
         });
 
-        btnMa.setBackground(new java.awt.Color(115, 165, 71));
         btnMa.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnMa.setForeground(new java.awt.Color(255, 255, 255));
         btnMa.setText("Nhập");
         btnMa.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -534,9 +540,7 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
             }
         });
 
-        btnImportExcel.setBackground(new java.awt.Color(0, 123, 255));
         btnImportExcel.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnImportExcel.setForeground(new java.awt.Color(255, 255, 255));
         btnImportExcel.setText("Import Excel");
         btnImportExcel.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

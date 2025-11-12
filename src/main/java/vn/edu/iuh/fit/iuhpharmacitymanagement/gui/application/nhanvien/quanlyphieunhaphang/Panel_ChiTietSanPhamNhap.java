@@ -18,6 +18,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JToggleButton;
 import javax.swing.ButtonGroup;
 import java.awt.Component;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
 
 /**
  *
@@ -237,10 +238,7 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
             btnChonLo = new javax.swing.JButton("Chọn lô");
             btnChonLo.setFont(new java.awt.Font("Segoe UI", 0, 13));
             btnChonLo.setPreferredSize(new java.awt.Dimension(120, 40));
-            btnChonLo.setFocusPainted(false);
-            btnChonLo.setBackground(new java.awt.Color(0, 120, 215));
-            btnChonLo.setForeground(java.awt.Color.WHITE);
-            btnChonLo.setBorderPainted(false);
+            ButtonStyles.apply(btnChonLo, ButtonStyles.Type.PRIMARY);
             btnChonLo.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
             btnChonLo.addActionListener(evt -> showDialogChonLo());
             
@@ -608,10 +606,7 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
         javax.swing.JButton btnXacNhan = new javax.swing.JButton("Xác nhận");
         btnXacNhan.setFont(new java.awt.Font("Segoe UI", 0, 14));
         btnXacNhan.setPreferredSize(new java.awt.Dimension(120, 40));
-        btnXacNhan.setBackground(new java.awt.Color(40, 167, 69));
-        btnXacNhan.setForeground(java.awt.Color.WHITE);
-        btnXacNhan.setFocusPainted(false);
-        btnXacNhan.setBorderPainted(false);
+        ButtonStyles.apply(btnXacNhan, ButtonStyles.Type.SUCCESS);
         btnXacNhan.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         
         btnXacNhan.addActionListener(evt -> {
@@ -851,10 +846,7 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
         btnChonLo = new javax.swing.JButton("Chọn lô");
         btnChonLo.setFont(new java.awt.Font("Segoe UI", 0, 13));
         btnChonLo.setPreferredSize(new java.awt.Dimension(120, 40));
-        btnChonLo.setFocusPainted(false);
-        btnChonLo.setBackground(new java.awt.Color(0, 120, 215));
-        btnChonLo.setForeground(java.awt.Color.WHITE);
-        btnChonLo.setBorderPainted(false);
+        ButtonStyles.apply(btnChonLo, ButtonStyles.Type.PRIMARY);
         btnChonLo.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnChonLo.addActionListener(evt -> showDialogChonLo());
         
@@ -873,10 +865,7 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
         javax.swing.JButton btnGiam = new javax.swing.JButton("-");
         btnGiam.setFont(new java.awt.Font("Segoe UI", 1, 18));
         btnGiam.setPreferredSize(new java.awt.Dimension(45, 45));
-        btnGiam.setFocusPainted(false);
-        btnGiam.setBackground(new java.awt.Color(220, 53, 69));
-        btnGiam.setForeground(java.awt.Color.WHITE);
-        btnGiam.setBorderPainted(false);
+        ButtonStyles.apply(btnGiam, ButtonStyles.Type.DANGER);
         btnGiam.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnGiam.addActionListener(evt -> {
             int currentValue = (int) spinnerSoLuong.getValue();
@@ -906,10 +895,7 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
         javax.swing.JButton btnTang = new javax.swing.JButton("+");
         btnTang.setFont(new java.awt.Font("Segoe UI", 1, 18));
         btnTang.setPreferredSize(new java.awt.Dimension(45, 45));
-        btnTang.setFocusPainted(false);
-        btnTang.setBackground(new java.awt.Color(40, 167, 69));
-        btnTang.setForeground(java.awt.Color.WHITE);
-        btnTang.setBorderPainted(false);
+        ButtonStyles.apply(btnTang, ButtonStyles.Type.SUCCESS);
         btnTang.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnTang.addActionListener(evt -> {
             int currentValue = (int) spinnerSoLuong.getValue();
@@ -969,14 +955,11 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
         javax.swing.JButton btnXoa = new javax.swing.JButton();
         btnXoa.setText("Xóa");
         btnXoa.setFont(new java.awt.Font("Segoe UI", 0, 14));
-        btnXoa.setBackground(new java.awt.Color(220, 53, 69));
-        btnXoa.setForeground(java.awt.Color.WHITE);
+        ButtonStyles.apply(btnXoa, ButtonStyles.Type.DANGER);
         btnXoa.setPreferredSize(new java.awt.Dimension(70, 45));
         btnXoa.setMinimumSize(new java.awt.Dimension(70, 45));
         btnXoa.setMaximumSize(new java.awt.Dimension(70, 45));
-        btnXoa.setFocusPainted(false);
         btnXoa.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        btnXoa.setBorderPainted(false);
         btnXoa.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnXoaActionPerformed(evt);

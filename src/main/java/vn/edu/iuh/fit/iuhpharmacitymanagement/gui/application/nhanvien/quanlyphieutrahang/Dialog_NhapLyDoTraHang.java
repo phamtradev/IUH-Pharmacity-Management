@@ -6,6 +6,7 @@ package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlyph
 
 import javax.swing.*;
 import raven.toast.Notifications;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
 
 /**
  * Dialog để nhập lý do trả hàng
@@ -90,11 +91,8 @@ public class Dialog_NhapLyDoTraHang extends javax.swing.JDialog {
         btnHuy.setText("Hủy");
         btnHuy.setFont(new java.awt.Font("Segoe UI", 0, 14));
         btnHuy.setPreferredSize(new java.awt.Dimension(100, 35));
-        btnHuy.setBackground(new java.awt.Color(128, 128, 128));
-        btnHuy.setForeground(java.awt.Color.WHITE);
-        btnHuy.setFocusPainted(false);
+        ButtonStyles.apply(btnHuy, ButtonStyles.Type.SECONDARY);
         btnHuy.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        btnHuy.setBorderPainted(false);
         btnHuy.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnHuyActionPerformed(evt);
@@ -105,11 +103,8 @@ public class Dialog_NhapLyDoTraHang extends javax.swing.JDialog {
         btnXacNhan.setText("Xác nhận");
         btnXacNhan.setFont(new java.awt.Font("Segoe UI", 0, 14));
         btnXacNhan.setPreferredSize(new java.awt.Dimension(100, 35));
-        btnXacNhan.setBackground(new java.awt.Color(0, 123, 255));
-        btnXacNhan.setForeground(java.awt.Color.WHITE);
-        btnXacNhan.setFocusPainted(false);
+        ButtonStyles.apply(btnXacNhan, ButtonStyles.Type.PRIMARY);
         btnXacNhan.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        btnXacNhan.setBorderPainted(false);
         btnXacNhan.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnXacNhanActionPerformed(evt);

@@ -24,6 +24,7 @@ import raven.toast.Notifications;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.SanPhamBUS;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.SanPhamDAO;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
 
 /**
  *
@@ -184,11 +185,7 @@ public class GD_BanHang extends javax.swing.JPanel {
         txtTimDonHang.setToolTipText("Quét barcode hoặc nhập mã đơn hàng rồi nhấn Enter");
         
         // Button tìm đơn hàng
-        btnTimDonHang.putClientProperty(FlatClientProperties.STYLE,
-                "arc:8;"
-                + "borderWidth:0;"
-                + "focusWidth:0"
-        );
+        ButtonStyles.apply(btnTimDonHang, ButtonStyles.Type.PRIMARY);
         
         // TextField tìm sản phẩm
         txtTimSanPham.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Vui lòng quét mã vạch hoặc nhập số đăng ký");
@@ -201,18 +198,10 @@ public class GD_BanHang extends javax.swing.JPanel {
         );
 
         // Style cho button Thêm
-        btnMa.putClientProperty(FlatClientProperties.STYLE,
-                "arc:8;"
-                + "borderWidth:0;"
-                + "focusWidth:0"
-        );
+        ButtonStyles.apply(btnMa, ButtonStyles.Type.SUCCESS);
 
         // Style cho button Xóa trắng
-        btnXoa.putClientProperty(FlatClientProperties.STYLE,
-                "arc:8;"
-                + "borderWidth:0;"
-                + "focusWidth:0"
-        );
+        ButtonStyles.apply(btnXoa, ButtonStyles.Type.DANGER);
         
         // Tự động focus vào ô tìm kiếm khi load form (QUAN TRỌNG cho máy quét barcode)
         javax.swing.SwingUtilities.invokeLater(() -> {
@@ -281,9 +270,7 @@ public class GD_BanHang extends javax.swing.JPanel {
             }
         });
 
-        btnTimDonHang.setBackground(new java.awt.Color(81, 154, 244));
         btnTimDonHang.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnTimDonHang.setForeground(new java.awt.Color(255, 255, 255));
         btnTimDonHang.setText("Tìm");
         btnTimDonHang.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnTimDonHang.addActionListener(new java.awt.event.ActionListener() {
@@ -299,9 +286,7 @@ public class GD_BanHang extends javax.swing.JPanel {
             }
         });
 
-        btnMa.setBackground(new java.awt.Color(115, 165, 71));
         btnMa.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnMa.setForeground(new java.awt.Color(255, 255, 255));
         btnMa.setText("Thêm");
         btnMa.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -309,9 +294,7 @@ public class GD_BanHang extends javax.swing.JPanel {
             }
         });
 
-        btnXoa.setBackground(new java.awt.Color(220, 53, 69));
         btnXoa.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnXoa.setForeground(new java.awt.Color(255, 255, 255));
         btnXoa.setText("Xóa trắng");
         btnXoa.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

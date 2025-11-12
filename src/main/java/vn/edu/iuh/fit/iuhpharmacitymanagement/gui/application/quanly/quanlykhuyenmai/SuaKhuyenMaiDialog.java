@@ -16,6 +16,7 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhuyenMai;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietKhuyenMaiSanPham;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonHang;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
 import raven.toast.Notifications;
 
 import javax.swing.*;
@@ -26,7 +27,6 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Dialog để sửa khuyến mãi
@@ -180,6 +180,11 @@ public class SuaKhuyenMaiDialog extends javax.swing.JDialog {
             // Resize dialog
             pack();
         });
+
+        ButtonStyles.apply(btnCapNhat, ButtonStyles.Type.WARNING);
+        ButtonStyles.apply(btnHuy, ButtonStyles.Type.SECONDARY);
+        ButtonStyles.apply(btnXoaSanPham, ButtonStyles.Type.DANGER);
+        ButtonStyles.apply(btnXoaTrang, ButtonStyles.Type.WARNING);
     }
     
     /**
@@ -493,8 +498,6 @@ public class SuaKhuyenMaiDialog extends javax.swing.JDialog {
         
         btnXoaSanPham.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         btnXoaSanPham.setText("Xóa");
-        btnXoaSanPham.setBackground(new java.awt.Color(255, 193, 7));
-        btnXoaSanPham.setForeground(new java.awt.Color(0, 0, 0));
         btnXoaSanPham.setPreferredSize(new java.awt.Dimension(120, 40));
         btnXoaSanPham.setVisible(false);
         btnXoaSanPham.addActionListener(new java.awt.event.ActionListener() {
@@ -505,8 +508,6 @@ public class SuaKhuyenMaiDialog extends javax.swing.JDialog {
         
         btnXoaTrang.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         btnXoaTrang.setText("Xóa trắng");
-        btnXoaTrang.setBackground(new java.awt.Color(255, 193, 7));
-        btnXoaTrang.setForeground(new java.awt.Color(0, 0, 0));
         btnXoaTrang.setPreferredSize(new java.awt.Dimension(120, 40));
         btnXoaTrang.setVisible(false);
         btnXoaTrang.addActionListener(new java.awt.event.ActionListener() {
@@ -603,9 +604,7 @@ public class SuaKhuyenMaiDialog extends javax.swing.JDialog {
         jPanel3.setBackground(new java.awt.Color(255, 255, 255));
         jPanel3.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 30, 20, 30));
 
-        btnCapNhat.setBackground(new java.awt.Color(255, 193, 7));
         btnCapNhat.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnCapNhat.setForeground(new java.awt.Color(0, 0, 0));
         btnCapNhat.setText("Cập nhật");
         btnCapNhat.setPreferredSize(new java.awt.Dimension(120, 40));
         btnCapNhat.addActionListener(new java.awt.event.ActionListener() {
@@ -614,9 +613,7 @@ public class SuaKhuyenMaiDialog extends javax.swing.JDialog {
             }
         });
 
-        btnHuy.setBackground(new java.awt.Color(220, 53, 69));
         btnHuy.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnHuy.setForeground(new java.awt.Color(255, 255, 255));
         btnHuy.setText("Hủy");
         btnHuy.setPreferredSize(new java.awt.Dimension(120, 40));
         btnHuy.addActionListener(new java.awt.event.ActionListener() {
