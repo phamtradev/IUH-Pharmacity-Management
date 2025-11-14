@@ -5,13 +5,11 @@
 package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.loading;
 
 import java.awt.Image;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.sql.Connection;
 import java.sql.SQLException;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
-import javax.swing.Timer;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.connectDB.ConnectDB;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.form.WelcomeFormNhanVien;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.form.WelcomeFormQuanLy;
@@ -40,46 +38,66 @@ public class SplashScreen extends javax.swing.JFrame {
         setLocationRelativeTo(null);
         setResizable(false);
 
-        // Load hình ảnh trong thread riêng
-        new Thread(() -> {
-            setImageToLabel(BackgroundImg, "/img/LoadingImage.png");
-            setImageToLabel(IUHLogo, "/img/IUH.png");
-        }).start();
-
-        // Thread thực tế để load các bước
+        // Thread thực tế để load các bước theo tiến trình thật
         new Thread(() -> {
             try {
                 // Bước 1: Khởi tạo hệ thống
                 updateProgress("Đang khởi tạo hệ thống...", 0);
-//                for (int i = 1; i < 9; i++) {
-//                    updateProgress("Đang kết nối cơ sở dữ liệu...", i*10);
-//                   openLogin();
-//                    Thread.sleep(500);
-//                }                
-                updateProgress("Đang kết nối cơ sở dữ liệu...", 10);
-                connectDatabase();
-                Thread.sleep(500);
-
-                updateProgress("Chuẩn bị giao diện...", 30);
-                Thread.sleep(500);
-
-                updateProgress("Đang tải tài nguyên...", 50);
-                Thread.sleep(500);
-
-                updateProgress("Chuẩn bị hoàn tất...", 70);
-                Thread.sleep(500);
-
-                updateProgress("Hoàn tất...", 90);
-                Thread.sleep(500);
+                
+                // Bước 2: Load hình ảnh (thực tế)
+                updateProgress("Đang tải hình ảnh...", 5);
+                setImageToLabel(BackgroundImg, "/img/LoadingImage.png");
+                updateProgress("Đang tải hình ảnh...", 10);
+                setImageToLabel(IUHLogo, "/img/IUH.png");
+                updateProgress("Đã tải hình ảnh", 15);
+                
+                // Bước 3: Kết nối database (thực tế)
+                updateProgress("Đang kết nối cơ sở dữ liệu...", 20);
+                boolean dbConnected = connectDatabase();
+                if (dbConnected) {
+                    updateProgress("Đã kết nối cơ sở dữ liệu", 40);
+                } else {
+                    updateProgress("Lỗi kết nối cơ sở dữ liệu", 40);
+                    SwingUtilities.invokeLater(() -> {
+                        JOptionPane.showMessageDialog(this,
+                            "Không thể kết nối đến cơ sở dữ liệu!\nVui lòng kiểm tra lại cấu hình.",
+                            "Lỗi Kết Nối",
+                            JOptionPane.ERROR_MESSAGE);
+                        System.exit(1);
+                    });
+                    return;
+                }
+                
+                // Bước 4: Chuẩn bị giao diện (preload LoginFrame)
+                updateProgress("Chuẩn bị giao diện...", 50);
+                LoginFrame loginFrame = new LoginFrame();
+                updateProgress("Đã chuẩn bị giao diện", 70);
+                
+                // Bước 5: Tải tài nguyên (thực tế - có thể thêm các tác vụ khác ở đây)
+                updateProgress("Đang tải tài nguyên...", 75);
+                // Có thể thêm các tác vụ load resources khác ở đây
+                updateProgress("Đã tải tài nguyên", 85);
+                
+                // Bước 6: Hoàn tất
+                updateProgress("Hoàn tất! Đang vào hệ thống...", 95);
+                Thread.sleep(300); // Delay nhỏ để người dùng thấy thông báo
                 updateProgress("Hoàn tất! Đang vào hệ thống...", 100);
-                Thread.sleep(500);
+                
+                // Mở LoginFrame
                 SwingUtilities.invokeLater(() -> {
                     dispose();
-                    new LoginFrame().setVisible(true);
+                    loginFrame.setVisible(true);
                 });
 
             } catch (Exception e) {
                 e.printStackTrace();
+                SwingUtilities.invokeLater(() -> {
+                    JOptionPane.showMessageDialog(this,
+                        "Đã xảy ra lỗi khi khởi động ứng dụng: " + e.getMessage(),
+                        "Lỗi Khởi Động",
+                        JOptionPane.ERROR_MESSAGE);
+                    System.exit(1);
+                });
             }
         }).start();
     }
@@ -199,11 +217,18 @@ public class SplashScreen extends javax.swing.JFrame {
     }
 
     //các task thực tế
-    private void connectDatabase() {
+    private boolean connectDatabase() {
         try {
-            ConnectDB.getConnection();
+            // Test kết nối thực sự
+            Connection conn = ConnectDB.getConnection();
+            if (conn != null && !conn.isClosed()) {
+                conn.close(); // Đóng connection test
+                return true;
+            }
+            return false;
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.log(java.util.logging.Level.SEVERE, "Lỗi kết nối database", e);
+            return false;
         }
     }
 
