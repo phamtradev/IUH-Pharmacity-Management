@@ -21,7 +21,7 @@ import java.awt.Color;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.TemporalAdjusters;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -34,7 +34,7 @@ public class Panel_TongQuan extends javax.swing.JPanel {
     private final DonNhapHangBUS donNhapHangBUS;
     private final DonTraHangBUS donTraHangBUS;
     private final ChiTietDonHangBUS chiTietDonHangBUS;
-
+    
     private String currentChartType = "Doanh thu"; // "Doanh thu" hoặc "Sản phẩm"
 
     public Panel_TongQuan() {
@@ -47,26 +47,23 @@ public class Panel_TongQuan extends javax.swing.JPanel {
         initHeader();
         chart.start();
     }
-
+    
     private void initHeader() {
         try {
-            lblIconReturn
-                    .setIcon(ResizeImage.resizeImage(new FlatSVGIcon(getClass().getResource("/img/8.svg")), 55, 55));
-            lblIconOrder
-                    .setIcon(ResizeImage.resizeImage(new FlatSVGIcon(getClass().getResource("/img/10.svg")), 55, 55));
-            lblIconCompare
-                    .setIcon(ResizeImage.resizeImage(new FlatSVGIcon(getClass().getResource("/img/7.svg")), 55, 55));
+            lblIconReturn.setIcon(ResizeImage.resizeImage(new FlatSVGIcon(getClass().getResource("/img/8.svg")), 55, 55));
+            lblIconOrder.setIcon(ResizeImage.resizeImage(new FlatSVGIcon(getClass().getResource("/img/10.svg")), 55, 55));
+            lblIconCompare.setIcon(ResizeImage.resizeImage(new FlatSVGIcon(getClass().getResource("/img/7.svg")), 55, 55));
         } catch (Exception e) {
             System.out.println("Không thể tải icon: " + e.getMessage());
         }
-
+        
         LocalDate today = LocalDate.now();
-
+        
         // Lấy dữ liệu đơn hàng
         List<DonHang> danhSachDonHang = donHangBUS.layTatCaDonHang().stream()
                 .filter(dh -> dh.getNgayDatHang() != null && dh.getNgayDatHang().equals(today))
                 .collect(Collectors.toList());
-
+        
         int soLuongDonHang = danhSachDonHang.size();
         double tongTienDonHang = danhSachDonHang.stream()
                 .mapToDouble(DonHang::getThanhTien)
@@ -76,7 +73,7 @@ public class Panel_TongQuan extends javax.swing.JPanel {
         List<DonTraHang> danhSachTraHang = donTraHangBUS.layTatCaDonTraHang().stream()
                 .filter(dth -> dth.getNgayTraHang() != null && dth.getNgayTraHang().equals(today))
                 .collect(Collectors.toList());
-
+        
         int soLuongTraHang = danhSachTraHang.size();
         double tongTienTraHang = danhSachTraHang.stream()
                 .mapToDouble(DonTraHang::getThanhTien)
@@ -86,7 +83,7 @@ public class Panel_TongQuan extends javax.swing.JPanel {
         List<DonNhapHang> danhSachNhapHang = donNhapHangBUS.layTatCaDonNhapHang().stream()
                 .filter(dnh -> dnh.getNgayNhap() != null && dnh.getNgayNhap().equals(today))
                 .collect(Collectors.toList());
-
+        
         int soLuongNhapHang = danhSachNhapHang.size();
         double tongTienNhapHang = danhSachNhapHang.stream()
                 .mapToDouble(DonNhapHang::getThanhTien)
@@ -107,7 +104,7 @@ public class Panel_TongQuan extends javax.swing.JPanel {
         updateChartLegend();
         loadDataChart7Days();
     }
-
+    
     private void updateChartLegend() {
         chart.clearLegends();
         if (currentChartType.equals("Doanh thu")) {
@@ -121,17 +118,17 @@ public class Panel_TongQuan extends javax.swing.JPanel {
         chart.clear();
         LocalDate today = LocalDate.now();
         List<DonHang> allOrders = donHangBUS.layTatCaDonHang();
-
+        
         for (int i = 6; i >= 0; i--) {
             LocalDate date = today.minusDays(i);
-
+            
             double sumPrice = allOrders.stream()
                     .filter(dh -> dh.getNgayDatHang() != null && dh.getNgayDatHang().equals(date))
                     .mapToDouble(DonHang::getThanhTien)
                     .sum();
-
+            
             chart.addData(new ModelChart(date.getDayOfMonth() + "/" + date.getMonthValue(),
-                    new double[] { sumPrice }));
+                    new double[]{sumPrice}));
         }
         chart.start();
     }
@@ -142,13 +139,13 @@ public class Panel_TongQuan extends javax.swing.JPanel {
         List<DonHang> todayOrders = donHangBUS.layTatCaDonHang().stream()
                 .filter(dh -> dh.getNgayDatHang() != null && dh.getNgayDatHang().equals(today))
                 .collect(Collectors.toList());
-
+        
         // Nhóm theo giờ (giả sử dữ liệu chỉ có ngày, hiển thị tổng cho mỗi giờ)
         for (int hour = 0; hour < 24; hour++) {
             // Vì không có giờ trong entity, hiển thị 0 hoặc phân bổ đều
-            double avgPrice = todayOrders.isEmpty() ? 0
-                    : todayOrders.stream().mapToDouble(DonHang::getThanhTien).sum() / 24.0;
-            chart.addData(new ModelChart(hour + "h", new double[] { avgPrice }));
+            double avgPrice = todayOrders.isEmpty() ? 0 : 
+                todayOrders.stream().mapToDouble(DonHang::getThanhTien).sum() / 24.0;
+            chart.addData(new ModelChart(hour + "h", new double[]{avgPrice}));
         }
         chart.start();
     }
@@ -159,12 +156,12 @@ public class Panel_TongQuan extends javax.swing.JPanel {
         List<DonHang> yesterdayOrders = donHangBUS.layTatCaDonHang().stream()
                 .filter(dh -> dh.getNgayDatHang() != null && dh.getNgayDatHang().equals(yesterday))
                 .collect(Collectors.toList());
-
+        
         // Nhóm theo giờ (giả sử dữ liệu chỉ có ngày, hiển thị tổng cho mỗi giờ)
         for (int hour = 0; hour < 24; hour++) {
-            double avgPrice = yesterdayOrders.isEmpty() ? 0
-                    : yesterdayOrders.stream().mapToDouble(DonHang::getThanhTien).sum() / 24.0;
-            chart.addData(new ModelChart(hour + "h", new double[] { avgPrice }));
+            double avgPrice = yesterdayOrders.isEmpty() ? 0 : 
+                yesterdayOrders.stream().mapToDouble(DonHang::getThanhTien).sum() / 24.0;
+            chart.addData(new ModelChart(hour + "h", new double[]{avgPrice}));
         }
         chart.start();
     }
@@ -174,16 +171,16 @@ public class Panel_TongQuan extends javax.swing.JPanel {
         LocalDate today = LocalDate.now();
         LocalDate lastDay = today.with(TemporalAdjusters.lastDayOfMonth());
         List<DonHang> allOrders = donHangBUS.layTatCaDonHang();
-
+        
         for (int day = 1; day <= lastDay.getDayOfMonth(); day++) {
             LocalDate date = LocalDate.of(today.getYear(), today.getMonth(), day);
-
+            
             double sumPrice = allOrders.stream()
                     .filter(dh -> dh.getNgayDatHang() != null && dh.getNgayDatHang().equals(date))
                     .mapToDouble(DonHang::getThanhTien)
                     .sum();
-
-            chart.addData(new ModelChart(day + "", new double[] { sumPrice }));
+            
+            chart.addData(new ModelChart(day + "", new double[]{sumPrice}));
         }
         chart.start();
     }
@@ -194,25 +191,25 @@ public class Panel_TongQuan extends javax.swing.JPanel {
         LocalDate firstDayLastMonth = today.minusMonths(1).with(TemporalAdjusters.firstDayOfMonth());
         LocalDate lastDayLastMonth = today.minusMonths(1).with(TemporalAdjusters.lastDayOfMonth());
         List<DonHang> allOrders = donHangBUS.layTatCaDonHang();
-
+        
         for (int day = 1; day <= lastDayLastMonth.getDayOfMonth(); day++) {
             LocalDate date = LocalDate.of(firstDayLastMonth.getYear(), firstDayLastMonth.getMonth(), day);
-
+            
             double sumPrice = allOrders.stream()
                     .filter(dh -> dh.getNgayDatHang() != null && dh.getNgayDatHang().equals(date))
                     .mapToDouble(DonHang::getThanhTien)
                     .sum();
-
-            chart.addData(new ModelChart(day + "", new double[] { sumPrice }));
+            
+            chart.addData(new ModelChart(day + "", new double[]{sumPrice}));
         }
         chart.start();
     }
-
+    
     private void changeDateSelect() {
         LocalDateTime now = LocalDateTime.now();
         String typeLabel = currentChartType.equals("Doanh thu") ? "DOANH THU" : "SẢN PHẨM BÁN CHẠY";
         updateChartLegend(); // Cập nhật legend khi thay đổi
-
+        
         switch (comboDate.getSelectedIndex()) {
             case 0 -> {
                 lblChart.setText("THỐNG KÊ " + typeLabel + " 7 NGÀY GẦN NHẤT ( THEO NGÀY )");
@@ -249,8 +246,7 @@ public class Panel_TongQuan extends javax.swing.JPanel {
                 }
             }
             case 4 -> {
-                lblChart.setText(
-                        "THỐNG KÊ " + typeLabel + " THÁNG " + now.minusMonths(1).getMonthValue() + " ( THEO NGÀY )");
+                lblChart.setText("THỐNG KÊ " + typeLabel + " THÁNG " + now.minusMonths(1).getMonthValue() + " ( THEO NGÀY )");
                 if (currentChartType.equals("Doanh thu")) {
                     loadDataChartLastMonth();
                 } else {
@@ -273,8 +269,7 @@ public class Panel_TongQuan extends javax.swing.JPanel {
      * WARNING: DO NOT modify this code. The content of this method is always
      * regenerated by the Form Editor.
      */
-    // <editor-fold defaultstate="collapsed" desc="Generated
-    // Code">//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
         jPanel1 = new javax.swing.JPanel();
@@ -363,30 +358,26 @@ public class Panel_TongQuan extends javax.swing.JPanel {
         javax.swing.GroupLayout jPanel6Layout = new javax.swing.GroupLayout(jPanel6);
         jPanel6.setLayout(jPanel6Layout);
         jPanel6Layout.setHorizontalGroup(
-                jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(jPanel6Layout.createSequentialGroup()
-                                .addGap(0, 0, 0)
-                                .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE,
-                                                javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(txtSumPriceOrder, javax.swing.GroupLayout.DEFAULT_SIZE,
-                                                javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(txtQuantityOrder, javax.swing.GroupLayout.DEFAULT_SIZE,
-                                                javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                .addContainerGap()));
+            jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel6Layout.createSequentialGroup()
+                .addGap(0, 0, 0)
+                .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(txtSumPriceOrder, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(txtQuantityOrder, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
+        );
         jPanel6Layout.setVerticalGroup(
-                jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(jPanel6Layout.createSequentialGroup()
-                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(txtQuantityOrder, javax.swing.GroupLayout.PREFERRED_SIZE, 26,
-                                        javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(txtSumPriceOrder, javax.swing.GroupLayout.PREFERRED_SIZE, 36,
-                                        javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 26,
-                                        javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addContainerGap(20, Short.MAX_VALUE)));
+            jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel6Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(txtQuantityOrder, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(txtSumPriceOrder, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(20, Short.MAX_VALUE))
+        );
 
         jPanel3.add(jPanel6, java.awt.BorderLayout.CENTER);
 
@@ -429,30 +420,26 @@ public class Panel_TongQuan extends javax.swing.JPanel {
         javax.swing.GroupLayout jPanel10Layout = new javax.swing.GroupLayout(jPanel10);
         jPanel10.setLayout(jPanel10Layout);
         jPanel10Layout.setHorizontalGroup(
-                jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(jPanel10Layout.createSequentialGroup()
-                                .addGap(0, 0, 0)
-                                .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addComponent(jLabel9, javax.swing.GroupLayout.DEFAULT_SIZE,
-                                                javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(txtSumPriceReturn, javax.swing.GroupLayout.DEFAULT_SIZE,
-                                                javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(txtQuantityReturn, javax.swing.GroupLayout.DEFAULT_SIZE,
-                                                javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                .addContainerGap()));
+            jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel10Layout.createSequentialGroup()
+                .addGap(0, 0, 0)
+                .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel9, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(txtSumPriceReturn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(txtQuantityReturn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
+        );
         jPanel10Layout.setVerticalGroup(
-                jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(jPanel10Layout.createSequentialGroup()
-                                .addContainerGap(13, Short.MAX_VALUE)
-                                .addComponent(txtQuantityReturn, javax.swing.GroupLayout.PREFERRED_SIZE, 26,
-                                        javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(txtSumPriceReturn, javax.swing.GroupLayout.PREFERRED_SIZE, 36,
-                                        javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jLabel9, javax.swing.GroupLayout.PREFERRED_SIZE, 26,
-                                        javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addContainerGap(13, Short.MAX_VALUE)));
+            jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel10Layout.createSequentialGroup()
+                .addContainerGap(13, Short.MAX_VALUE)
+                .addComponent(txtQuantityReturn, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(txtSumPriceReturn, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel9, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(13, Short.MAX_VALUE))
+        );
 
         jPanel8.add(jPanel10, java.awt.BorderLayout.CENTER);
 
@@ -495,30 +482,26 @@ public class Panel_TongQuan extends javax.swing.JPanel {
         javax.swing.GroupLayout jPanel13Layout = new javax.swing.GroupLayout(jPanel13);
         jPanel13.setLayout(jPanel13Layout);
         jPanel13Layout.setHorizontalGroup(
-                jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(jPanel13Layout.createSequentialGroup()
-                                .addGap(0, 0, 0)
-                                .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addComponent(jLabel10, javax.swing.GroupLayout.DEFAULT_SIZE,
-                                                javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(txtSumPricePurchase, javax.swing.GroupLayout.DEFAULT_SIZE,
-                                                javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(txtQuantityPurchase, javax.swing.GroupLayout.DEFAULT_SIZE,
-                                                javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                .addContainerGap()));
+            jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel13Layout.createSequentialGroup()
+                .addGap(0, 0, 0)
+                .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel10, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(txtSumPricePurchase, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(txtQuantityPurchase, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
+        );
         jPanel13Layout.setVerticalGroup(
-                jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(jPanel13Layout.createSequentialGroup()
-                                .addContainerGap(13, Short.MAX_VALUE)
-                                .addComponent(txtQuantityPurchase, javax.swing.GroupLayout.PREFERRED_SIZE, 26,
-                                        javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(txtSumPricePurchase, javax.swing.GroupLayout.PREFERRED_SIZE, 36,
-                                        javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jLabel10, javax.swing.GroupLayout.PREFERRED_SIZE, 26,
-                                        javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addContainerGap(13, Short.MAX_VALUE)));
+            jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel13Layout.createSequentialGroup()
+                .addContainerGap(13, Short.MAX_VALUE)
+                .addComponent(txtQuantityPurchase, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(txtSumPricePurchase, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel10, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(13, Short.MAX_VALUE))
+        );
 
         jPanel11.add(jPanel13, java.awt.BorderLayout.CENTER);
 
@@ -568,8 +551,7 @@ public class Panel_TongQuan extends javax.swing.JPanel {
 
         comboDate = new javax.swing.JComboBox<>();
         comboDate.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        comboDate.setModel(new javax.swing.DefaultComboBoxModel<>(
-                new String[] { "7 ngày qua", "Hôm nay", "Hôm qua", "Tháng này", "Tháng trước" }));
+        comboDate.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "7 ngày qua", "Hôm nay", "Hôm qua", "Tháng này", "Tháng trước" }));
         comboDate.setMinimumSize(new java.awt.Dimension(140, 26));
         comboDate.setPreferredSize(new java.awt.Dimension(140, 22));
         comboDate.addItemListener(new java.awt.event.ItemListener() {
@@ -582,7 +564,7 @@ public class Panel_TongQuan extends javax.swing.JPanel {
         jPanel15.add(comboPanel, java.awt.BorderLayout.EAST);
 
         jPanel5.add(jPanel15, java.awt.BorderLayout.PAGE_START);
-
+        
         chart = new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.barchart.Chart();
         jPanel5.add(chart, java.awt.BorderLayout.CENTER);
 
@@ -593,9 +575,9 @@ public class Panel_TongQuan extends javax.swing.JPanel {
         add(jPanel1, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 
-    private void comboDateItemStateChanged(java.awt.event.ItemEvent evt) {// GEN-FIRST:event_comboDateItemStateChanged
+    private void comboDateItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_comboDateItemStateChanged
         changeDateSelect();
-    }// GEN-LAST:event_comboDateItemStateChanged
+    }//GEN-LAST:event_comboDateItemStateChanged
 
     private void comboChartTypeItemStateChanged(java.awt.event.ItemEvent evt) {
         if (evt.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
@@ -605,97 +587,97 @@ public class Panel_TongQuan extends javax.swing.JPanel {
     }
 
     // ==================== THỐNG KÊ SẢN PHẨM ====================
-
+    
     private void loadProductChart7Days() {
         chart.clear();
         LocalDate today = LocalDate.now();
         List<ChiTietDonHang> allDetails = chiTietDonHangBUS.layTatCaChiTietDonHang();
-
+        
         for (int i = 6; i >= 0; i--) {
             LocalDate date = today.minusDays(i);
-
+            
             int totalQuantity = allDetails.stream()
-                    .filter(ct -> ct.getDonHang() != null && ct.getDonHang().getNgayDatHang() != null
+                    .filter(ct -> ct.getDonHang() != null && ct.getDonHang().getNgayDatHang() != null 
                             && ct.getDonHang().getNgayDatHang().equals(date))
                     .mapToInt(ChiTietDonHang::getSoLuong)
                     .sum();
-
+            
             String label = date.getDayOfMonth() + "/" + date.getMonthValue();
-            chart.addData(new ModelChart(label, new double[] { totalQuantity }));
+            chart.addData(new ModelChart(label, new double[]{totalQuantity}));
         }
         chart.start();
     }
-
+    
     private void loadProductChartToday() {
         chart.clear();
         LocalDate today = LocalDate.now();
         List<ChiTietDonHang> allDetails = chiTietDonHangBUS.layTatCaChiTietDonHang();
-
+        
         // Lấy tổng số lượng sản phẩm trong ngày hôm nay
         int totalQuantity = allDetails.stream()
-                .filter(ct -> ct.getDonHang() != null && ct.getDonHang().getNgayDatHang() != null
+                .filter(ct -> ct.getDonHang() != null && ct.getDonHang().getNgayDatHang() != null 
                         && ct.getDonHang().getNgayDatHang().equals(today))
                 .mapToInt(ChiTietDonHang::getSoLuong)
                 .sum();
-
+        
         // Hiển thị tổng số lượng trong 1 cột duy nhất
-        chart.addData(new ModelChart("Hôm nay", new double[] { totalQuantity }));
+        chart.addData(new ModelChart("Hôm nay", new double[]{totalQuantity}));
         chart.start();
     }
-
+    
     private void loadProductChartYesterday() {
         chart.clear();
         LocalDate yesterday = LocalDate.now().minusDays(1);
         List<ChiTietDonHang> allDetails = chiTietDonHangBUS.layTatCaChiTietDonHang();
-
+        
         // Lấy tổng số lượng sản phẩm trong ngày hôm qua
         int totalQuantity = allDetails.stream()
-                .filter(ct -> ct.getDonHang() != null && ct.getDonHang().getNgayDatHang() != null
+                .filter(ct -> ct.getDonHang() != null && ct.getDonHang().getNgayDatHang() != null 
                         && ct.getDonHang().getNgayDatHang().equals(yesterday))
                 .mapToInt(ChiTietDonHang::getSoLuong)
                 .sum();
-
+        
         // Hiển thị tổng số lượng trong 1 cột duy nhất
-        chart.addData(new ModelChart("Hôm qua", new double[] { totalQuantity }));
+        chart.addData(new ModelChart("Hôm qua", new double[]{totalQuantity}));
         chart.start();
     }
-
+    
     private void loadProductChartThisMonth() {
         chart.clear();
         LocalDate today = LocalDate.now();
         LocalDate lastDay = today.with(TemporalAdjusters.lastDayOfMonth());
         List<ChiTietDonHang> allDetails = chiTietDonHangBUS.layTatCaChiTietDonHang();
-
+        
         for (int day = 1; day <= lastDay.getDayOfMonth(); day++) {
             LocalDate date = LocalDate.of(today.getYear(), today.getMonth(), day);
-
+            
             int totalQuantity = allDetails.stream()
-                    .filter(ct -> ct.getDonHang() != null && ct.getDonHang().getNgayDatHang() != null
+                    .filter(ct -> ct.getDonHang() != null && ct.getDonHang().getNgayDatHang() != null 
                             && ct.getDonHang().getNgayDatHang().equals(date))
                     .mapToInt(ChiTietDonHang::getSoLuong)
                     .sum();
-
-            chart.addData(new ModelChart(day + "", new double[] { totalQuantity }));
+            
+            chart.addData(new ModelChart(day + "", new double[]{totalQuantity}));
         }
         chart.start();
     }
-
+    
     private void loadProductChartLastMonth() {
         chart.clear();
         LocalDate lastMonth = LocalDate.now().minusMonths(1);
         LocalDate lastDay = lastMonth.with(TemporalAdjusters.lastDayOfMonth());
         List<ChiTietDonHang> allDetails = chiTietDonHangBUS.layTatCaChiTietDonHang();
-
+        
         for (int day = 1; day <= lastDay.getDayOfMonth(); day++) {
             LocalDate date = LocalDate.of(lastMonth.getYear(), lastMonth.getMonth(), day);
-
+            
             int totalQuantity = allDetails.stream()
-                    .filter(ct -> ct.getDonHang() != null && ct.getDonHang().getNgayDatHang() != null
+                    .filter(ct -> ct.getDonHang() != null && ct.getDonHang().getNgayDatHang() != null 
                             && ct.getDonHang().getNgayDatHang().equals(date))
                     .mapToInt(ChiTietDonHang::getSoLuong)
                     .sum();
-
-            chart.addData(new ModelChart(day + "", new double[] { totalQuantity }));
+            
+            chart.addData(new ModelChart(day + "", new double[]{totalQuantity}));
         }
         chart.start();
     }
