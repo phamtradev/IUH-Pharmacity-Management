@@ -26,6 +26,7 @@ import javax.swing.UIManager;
 import javax.swing.ImageIcon;
 import raven.toast.Notifications;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.FontStyles;
 
 /**
  *
@@ -43,6 +44,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         initComponents();
         setUIManager();
         applyButtonStyles();
+        applyFontStyles();
         fillTable();
     }
 
@@ -59,6 +61,16 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         ButtonStyles.apply(btnSearch, ButtonStyles.Type.SUCCESS);
         ButtonStyles.apply(btnView, ButtonStyles.Type.INFO);
         ButtonStyles.apply(txtOrder, ButtonStyles.Type.WARNING);
+    }
+
+    private void applyFontStyles() {
+        // Font cho các button
+        FontStyles.apply(btnSearch, FontStyles.Type.BUTTON_MEDIUM);
+        FontStyles.apply(btnView, FontStyles.Type.BUTTON_MEDIUM);
+        FontStyles.apply(txtOrder, FontStyles.Type.BUTTON_MEDIUM);
+
+        // Font cho text field
+        FontStyles.apply(txtEmp, FontStyles.Type.INPUT_FIELD);
     }
 
     private void fillTable() {

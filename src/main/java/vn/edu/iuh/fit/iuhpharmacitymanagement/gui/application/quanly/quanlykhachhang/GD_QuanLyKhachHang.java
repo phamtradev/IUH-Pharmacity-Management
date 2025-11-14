@@ -16,6 +16,8 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.common.TableDesign;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.DonHangDAO;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.KhachHangDAO;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhachHang;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.FontStyles;
 
 /**
  *
@@ -29,62 +31,37 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
     public GD_QuanLyKhachHang() {
         this.khachHangBUS = new KhachHangBUS(new KhachHangDAO(), new DonHangDAO());
         initComponents();
-        
-        //sì tai cho các nút
-        styleButton(btnThem, "THÊM");
-        styleButton(btnSua, "SỬA");
-        styleButton(btnXoa, "XÓA");
-        styleButton(btnTimKiem, "Tìm kiếm");
-        
+
+        applyButtonStyles();
+        applyFontStyles();
         setUIManager();
         fillTable();
     }
 
-        private void styleButton(javax.swing.JButton button, String text) {
-        button.setText(text);
-        button.setFont(new java.awt.Font("Segoe UI", 1, 14));
-        button.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        button.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        button.setVerticalTextPosition(javax.swing.SwingConstants.CENTER);
-        button.setPreferredSize(new java.awt.Dimension(95, 40));
-
-        String style = ""
-                + "arc:10;"
-                + "borderWidth:0;"
-                + "focusWidth:0;";
-
-        if (text.equalsIgnoreCase("THÊM")) {
-            style += ""
-                    + "background:#28A745;" // Xanh lá
-                    + "foreground:#FFFFFF;"
-                    + "hoverBackground:#218838;"
-                    + "pressedBackground:#1E7E34;";
-            button.putClientProperty(FlatClientProperties.STYLE, style);
-        } else if (text.equalsIgnoreCase("SỬA")) {
-            style += ""
-                    + "background:#007BFF;" // Xanh dương
-                    + "foreground:#FFFFFF;"
-                    + "hoverBackground:#0069D9;"
-                    + "pressedBackground:#0056B3;";
-            button.putClientProperty(FlatClientProperties.STYLE, style);
-        } else if (text.equalsIgnoreCase("XÓA")) {
-            style += ""
-                    + "background:#DC3545;" // Đỏ
-                    + "foreground:#FFFFFF;"
-                    + "hoverBackground:#C82333;"
-                    + "pressedBackground:#BD2130;";
-            button.putClientProperty(FlatClientProperties.STYLE, style);
-        } else if (text.equalsIgnoreCase("Tìm kiếm")) {
-            button.setPreferredSize(new java.awt.Dimension(150, 40));
-            style += ""
-                    + "background:#28A745;" // Xanh lá giống nút THÊM
-                    + "foreground:#FFFFFF;"
-                    + "hoverBackground:#218838;"
-                    + "pressedBackground:#1E7E34;";
-            button.putClientProperty(FlatClientProperties.STYLE, style);
-        }
+    /**
+     * Áp dụng ButtonStyles cho tất cả button
+     */
+    private void applyButtonStyles() {
+        ButtonStyles.apply(btnThem, ButtonStyles.Type.SUCCESS);
+        ButtonStyles.apply(btnSua, ButtonStyles.Type.PRIMARY);
+        ButtonStyles.apply(btnXoa, ButtonStyles.Type.DANGER);
+        ButtonStyles.apply(btnTimKiem, ButtonStyles.Type.INFO);
     }
-    
+
+    /**
+     * Áp dụng FontStyles cho tất cả component
+     */
+    private void applyFontStyles() {
+        // Font cho các button
+        FontStyles.apply(btnThem, FontStyles.Type.BUTTON_MEDIUM);
+        FontStyles.apply(btnSua, FontStyles.Type.BUTTON_MEDIUM);
+        FontStyles.apply(btnXoa, FontStyles.Type.BUTTON_MEDIUM);
+        FontStyles.apply(btnTimKiem, FontStyles.Type.BUTTON_MEDIUM);
+
+        // Font cho text field tìm kiếm
+        FontStyles.apply(txtTimKiem, FontStyles.Type.INPUT_FIELD);
+    }
+
     private void setUIManager() {
         txtCusAddressAdd.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Địa chỉ");
         txtCusAddressEdit.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Địa chỉ");
@@ -95,7 +72,7 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
         txtCusPhoneAdd.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Số điện thoại");
         txtCusPhoneEdit.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Số điện thoại");
         txtTimKiem.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Tìm kiếm theo tên, số điện thoại, email");
-        
+
         // Thêm viền cho các TextField
         txtCusAddressAdd.putClientProperty(FlatClientProperties.STYLE, "arc:10");
         txtCusAddressEdit.putClientProperty(FlatClientProperties.STYLE, "arc:10");
@@ -106,42 +83,43 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
         txtCusPhoneAdd.putClientProperty(FlatClientProperties.STYLE, "arc:10");
         txtCusPhoneEdit.putClientProperty(FlatClientProperties.STYLE, "arc:10");
         txtTimKiem.putClientProperty(FlatClientProperties.STYLE, "arc:10");
-        
+
         UIManager.put("Button.arc", 10);
     }
 
     private void fillTable() {
-        String[] headers = {"Mã khách hàng", "Tên khách hàng", "Số điện thoại", "Địa chỉ", "Email", "Giới tính"};
+        String[] headers = { "Mã khách hàng", "Tên khách hàng", "Số điện thoại", "Địa chỉ", "Email", "Giới tính" };
         List<Integer> tableWidths = Arrays.asList(150, 250, 150, 250, 200, 100);
         tableDesign = new TableDesign(headers, tableWidths);
         scrollTable.setViewportView(tableDesign.getTable());
         scrollTable.setBorder(BorderFactory.createEmptyBorder(15, 20, 20, 20));
-        
+
         // Load dữ liệu khách hàng từ database
         loadCustomerData();
     }
-    
+
     private void loadCustomerData() {
         try {
             // Xóa dữ liệu cũ trong bảng
             tableDesign.getModelTable().setRowCount(0);
-            
+
             // Lấy danh sách khách hàng từ BUS
             List<KhachHang> danhSachKH = khachHangBUS.getAllKhachHang();
-            
+
             // Thêm từng khách hàng vào bảng
             for (KhachHang kh : danhSachKH) {
-                tableDesign.getModelTable().addRow(new Object[]{
-                    kh.getMaKhachHang(),
-                    kh.getTenKhachHang(),
-                    kh.getSoDienThoai(),
-                    kh.getDiaChi(),
-                    kh.getEmail(),
-                    kh.getGioiTinh()
+                tableDesign.getModelTable().addRow(new Object[] {
+                        kh.getMaKhachHang(),
+                        kh.getTenKhachHang(),
+                        kh.getSoDienThoai(),
+                        kh.getDiaChi(),
+                        kh.getEmail(),
+                        kh.getGioiTinh()
                 });
             }
         } catch (Exception e) {
-            Notifications.getInstance().show(Notifications.Type.ERROR, "Lỗi khi tải dữ liệu khách hàng: " + e.getMessage());
+            Notifications.getInstance().show(Notifications.Type.ERROR,
+                    "Lỗi khi tải dữ liệu khách hàng: " + e.getMessage());
         }
     }
 
@@ -151,7 +129,8 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
      * regenerated by the Form Editor.
      */
     @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated
+    // Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
         modalAddCustomer = new javax.swing.JDialog();
@@ -251,87 +230,116 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addContainerGap(33, Short.MAX_VALUE)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(btnAddCustomer, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(btnExitModalAdd, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addGroup(jPanel2Layout.createSequentialGroup()
-                            .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(jLabel18)
-                                .addComponent(txtCusNameAdd, javax.swing.GroupLayout.PREFERRED_SIZE, 361, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGap(18, 18, 18)
-                            .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(jLabel22)
-                                .addComponent(txtCusPhoneAdd, javax.swing.GroupLayout.PREFERRED_SIZE, 361, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGap(18, 18, 18)
-                            .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(jLabel23)
-                                .addComponent(comboSexAdd, javax.swing.GroupLayout.PREFERRED_SIZE, 247, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGroup(jPanel2Layout.createSequentialGroup()
-                            .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(jLabel24)
-                                .addComponent(txtCusAddressAdd, javax.swing.GroupLayout.PREFERRED_SIZE, 484, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGap(18, 18, 18)
-                            .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(jLabel25)
-                                .addComponent(txtCusEmailAdd)))))
-                .addContainerGap(33, Short.MAX_VALUE))
-        );
+                                .addContainerGap(33, Short.MAX_VALUE)
+                                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                        .addGroup(jPanel2Layout.createSequentialGroup()
+                                                .addComponent(btnAddCustomer, javax.swing.GroupLayout.PREFERRED_SIZE,
+                                                        106, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                                .addComponent(btnExitModalAdd, javax.swing.GroupLayout.PREFERRED_SIZE,
+                                                        106, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addGroup(jPanel2Layout
+                                                .createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                                .addGroup(jPanel2Layout.createSequentialGroup()
+                                                        .addGroup(jPanel2Layout
+                                                                .createParallelGroup(
+                                                                        javax.swing.GroupLayout.Alignment.LEADING)
+                                                                .addComponent(jLabel18)
+                                                                .addComponent(txtCusNameAdd,
+                                                                        javax.swing.GroupLayout.PREFERRED_SIZE, 361,
+                                                                        javax.swing.GroupLayout.PREFERRED_SIZE))
+                                                        .addGap(18, 18, 18)
+                                                        .addGroup(jPanel2Layout
+                                                                .createParallelGroup(
+                                                                        javax.swing.GroupLayout.Alignment.LEADING)
+                                                                .addComponent(jLabel22)
+                                                                .addComponent(txtCusPhoneAdd,
+                                                                        javax.swing.GroupLayout.PREFERRED_SIZE, 361,
+                                                                        javax.swing.GroupLayout.PREFERRED_SIZE))
+                                                        .addGap(18, 18, 18)
+                                                        .addGroup(jPanel2Layout
+                                                                .createParallelGroup(
+                                                                        javax.swing.GroupLayout.Alignment.LEADING)
+                                                                .addComponent(jLabel23)
+                                                                .addComponent(comboSexAdd,
+                                                                        javax.swing.GroupLayout.PREFERRED_SIZE, 247,
+                                                                        javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                                .addGroup(jPanel2Layout.createSequentialGroup()
+                                                        .addGroup(jPanel2Layout
+                                                                .createParallelGroup(
+                                                                        javax.swing.GroupLayout.Alignment.LEADING)
+                                                                .addComponent(jLabel24)
+                                                                .addComponent(txtCusAddressAdd,
+                                                                        javax.swing.GroupLayout.PREFERRED_SIZE, 484,
+                                                                        javax.swing.GroupLayout.PREFERRED_SIZE))
+                                                        .addGap(18, 18, 18)
+                                                        .addGroup(jPanel2Layout
+                                                                .createParallelGroup(
+                                                                        javax.swing.GroupLayout.Alignment.LEADING)
+                                                                .addComponent(jLabel25)
+                                                                .addComponent(txtCusEmailAdd)))))
+                                .addContainerGap(33, Short.MAX_VALUE)));
         jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addContainerGap(48, Short.MAX_VALUE)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(jLabel18)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(txtCusNameAdd, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel22)
-                            .addComponent(jLabel23))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(comboSexAdd)
-                            .addComponent(txtCusPhoneAdd, javax.swing.GroupLayout.DEFAULT_SIZE, 46, Short.MAX_VALUE))))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(jLabel24)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(txtCusAddressAdd, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(jLabel25)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(txtCusEmailAdd, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(37, 37, 37)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnAddCustomer, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnExitModalAdd, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(79, Short.MAX_VALUE))
-        );
+                jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addContainerGap(48, Short.MAX_VALUE)
+                                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                        .addGroup(jPanel2Layout.createSequentialGroup()
+                                                .addComponent(jLabel18)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(txtCusNameAdd, javax.swing.GroupLayout.PREFERRED_SIZE, 46,
+                                                        javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addGroup(jPanel2Layout.createSequentialGroup()
+                                                .addGroup(jPanel2Layout
+                                                        .createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                                        .addComponent(jLabel22)
+                                                        .addComponent(jLabel23))
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addGroup(jPanel2Layout
+                                                        .createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING,
+                                                                false)
+                                                        .addComponent(comboSexAdd)
+                                                        .addComponent(txtCusPhoneAdd,
+                                                                javax.swing.GroupLayout.DEFAULT_SIZE, 46,
+                                                                Short.MAX_VALUE))))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                        .addGroup(jPanel2Layout.createSequentialGroup()
+                                                .addComponent(jLabel24)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(txtCusAddressAdd, javax.swing.GroupLayout.PREFERRED_SIZE,
+                                                        46, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addGroup(jPanel2Layout.createSequentialGroup()
+                                                .addComponent(jLabel25)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(txtCusEmailAdd, javax.swing.GroupLayout.PREFERRED_SIZE,
+                                                        46, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addGap(37, 37, 37)
+                                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                        .addComponent(btnAddCustomer, javax.swing.GroupLayout.PREFERRED_SIZE, 43,
+                                                javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(btnExitModalAdd, javax.swing.GroupLayout.PREFERRED_SIZE, 43,
+                                                javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addContainerGap(79, Short.MAX_VALUE)));
 
         javax.swing.GroupLayout modalAddCustomerLayout = new javax.swing.GroupLayout(modalAddCustomer.getContentPane());
         modalAddCustomer.getContentPane().setLayout(modalAddCustomerLayout);
         modalAddCustomerLayout.setHorizontalGroup(
-            modalAddCustomerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(modalAddCustomerLayout.createSequentialGroup()
-                .addGap(0, 0, 0)
-                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, 0))
-        );
+                modalAddCustomerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(modalAddCustomerLayout.createSequentialGroup()
+                                .addGap(0, 0, 0)
+                                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE,
+                                        javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 0, 0)));
         modalAddCustomerLayout.setVerticalGroup(
-            modalAddCustomerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(modalAddCustomerLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
+                modalAddCustomerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(modalAddCustomerLayout.createSequentialGroup()
+                                .addContainerGap()
+                                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE,
+                                        javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)));
 
         modalEditCustomer.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         modalEditCustomer.setTitle("Sửa khách hàng");
@@ -390,87 +398,117 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
         jPanel4Layout.setHorizontalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel4Layout.createSequentialGroup()
-                .addContainerGap(33, Short.MAX_VALUE)
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(jPanel4Layout.createSequentialGroup()
-                        .addComponent(btnEditCustomer, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(btnExitModalEdit, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addGroup(jPanel4Layout.createSequentialGroup()
-                            .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(jLabel19)
-                                .addComponent(txtCusNameEdit, javax.swing.GroupLayout.PREFERRED_SIZE, 361, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGap(18, 18, 18)
-                            .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(jLabel26)
-                                .addComponent(txtCusPhoneEdit, javax.swing.GroupLayout.PREFERRED_SIZE, 361, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGap(18, 18, 18)
-                            .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(jLabel27)
-                                .addComponent(comboSexEdit, javax.swing.GroupLayout.PREFERRED_SIZE, 247, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGroup(jPanel4Layout.createSequentialGroup()
-                            .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(jLabel28)
-                                .addComponent(txtCusAddressEdit, javax.swing.GroupLayout.PREFERRED_SIZE, 484, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGap(18, 18, 18)
-                            .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(jLabel29)
-                                .addComponent(txtCusEmailEdit)))))
-                .addContainerGap(33, Short.MAX_VALUE))
-        );
+                                .addContainerGap(33, Short.MAX_VALUE)
+                                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                        .addGroup(jPanel4Layout.createSequentialGroup()
+                                                .addComponent(btnEditCustomer, javax.swing.GroupLayout.PREFERRED_SIZE,
+                                                        106, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                                .addComponent(btnExitModalEdit, javax.swing.GroupLayout.PREFERRED_SIZE,
+                                                        106, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addGroup(jPanel4Layout
+                                                .createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                                .addGroup(jPanel4Layout.createSequentialGroup()
+                                                        .addGroup(jPanel4Layout
+                                                                .createParallelGroup(
+                                                                        javax.swing.GroupLayout.Alignment.LEADING)
+                                                                .addComponent(jLabel19)
+                                                                .addComponent(txtCusNameEdit,
+                                                                        javax.swing.GroupLayout.PREFERRED_SIZE, 361,
+                                                                        javax.swing.GroupLayout.PREFERRED_SIZE))
+                                                        .addGap(18, 18, 18)
+                                                        .addGroup(jPanel4Layout
+                                                                .createParallelGroup(
+                                                                        javax.swing.GroupLayout.Alignment.LEADING)
+                                                                .addComponent(jLabel26)
+                                                                .addComponent(txtCusPhoneEdit,
+                                                                        javax.swing.GroupLayout.PREFERRED_SIZE, 361,
+                                                                        javax.swing.GroupLayout.PREFERRED_SIZE))
+                                                        .addGap(18, 18, 18)
+                                                        .addGroup(jPanel4Layout
+                                                                .createParallelGroup(
+                                                                        javax.swing.GroupLayout.Alignment.LEADING)
+                                                                .addComponent(jLabel27)
+                                                                .addComponent(comboSexEdit,
+                                                                        javax.swing.GroupLayout.PREFERRED_SIZE, 247,
+                                                                        javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                                .addGroup(jPanel4Layout.createSequentialGroup()
+                                                        .addGroup(jPanel4Layout
+                                                                .createParallelGroup(
+                                                                        javax.swing.GroupLayout.Alignment.LEADING)
+                                                                .addComponent(jLabel28)
+                                                                .addComponent(txtCusAddressEdit,
+                                                                        javax.swing.GroupLayout.PREFERRED_SIZE, 484,
+                                                                        javax.swing.GroupLayout.PREFERRED_SIZE))
+                                                        .addGap(18, 18, 18)
+                                                        .addGroup(jPanel4Layout
+                                                                .createParallelGroup(
+                                                                        javax.swing.GroupLayout.Alignment.LEADING)
+                                                                .addComponent(jLabel29)
+                                                                .addComponent(txtCusEmailEdit)))))
+                                .addContainerGap(33, Short.MAX_VALUE)));
         jPanel4Layout.setVerticalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel4Layout.createSequentialGroup()
-                .addContainerGap(48, Short.MAX_VALUE)
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(jPanel4Layout.createSequentialGroup()
-                        .addComponent(jLabel19)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(txtCusNameEdit, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel4Layout.createSequentialGroup()
-                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel26)
-                            .addComponent(jLabel27))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(comboSexEdit)
-                            .addComponent(txtCusPhoneEdit, javax.swing.GroupLayout.DEFAULT_SIZE, 46, Short.MAX_VALUE))))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(jPanel4Layout.createSequentialGroup()
-                        .addComponent(jLabel28)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(txtCusAddressEdit, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel4Layout.createSequentialGroup()
-                        .addComponent(jLabel29)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(txtCusEmailEdit, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(37, 37, 37)
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnEditCustomer, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnExitModalEdit, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(79, Short.MAX_VALUE))
-        );
+                jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(jPanel4Layout.createSequentialGroup()
+                                .addContainerGap(48, Short.MAX_VALUE)
+                                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                        .addGroup(jPanel4Layout.createSequentialGroup()
+                                                .addComponent(jLabel19)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(txtCusNameEdit, javax.swing.GroupLayout.PREFERRED_SIZE,
+                                                        46, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addGroup(jPanel4Layout.createSequentialGroup()
+                                                .addGroup(jPanel4Layout
+                                                        .createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                                        .addComponent(jLabel26)
+                                                        .addComponent(jLabel27))
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addGroup(jPanel4Layout
+                                                        .createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING,
+                                                                false)
+                                                        .addComponent(comboSexEdit)
+                                                        .addComponent(txtCusPhoneEdit,
+                                                                javax.swing.GroupLayout.DEFAULT_SIZE, 46,
+                                                                Short.MAX_VALUE))))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                        .addGroup(jPanel4Layout.createSequentialGroup()
+                                                .addComponent(jLabel28)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(txtCusAddressEdit, javax.swing.GroupLayout.PREFERRED_SIZE,
+                                                        46, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addGroup(jPanel4Layout.createSequentialGroup()
+                                                .addComponent(jLabel29)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(txtCusEmailEdit, javax.swing.GroupLayout.PREFERRED_SIZE,
+                                                        46, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addGap(37, 37, 37)
+                                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                        .addComponent(btnEditCustomer, javax.swing.GroupLayout.PREFERRED_SIZE, 43,
+                                                javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(btnExitModalEdit, javax.swing.GroupLayout.PREFERRED_SIZE, 43,
+                                                javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addContainerGap(79, Short.MAX_VALUE)));
 
-        javax.swing.GroupLayout modalEditCustomerLayout = new javax.swing.GroupLayout(modalEditCustomer.getContentPane());
+        javax.swing.GroupLayout modalEditCustomerLayout = new javax.swing.GroupLayout(
+                modalEditCustomer.getContentPane());
         modalEditCustomer.getContentPane().setLayout(modalEditCustomerLayout);
         modalEditCustomerLayout.setHorizontalGroup(
-            modalEditCustomerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(modalEditCustomerLayout.createSequentialGroup()
-                .addGap(0, 0, 0)
-                .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, 0))
-        );
+                modalEditCustomerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(modalEditCustomerLayout.createSequentialGroup()
+                                .addGap(0, 0, 0)
+                                .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE,
+                                        javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 0, 0)));
         modalEditCustomerLayout.setVerticalGroup(
-            modalEditCustomerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(modalEditCustomerLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
+                modalEditCustomerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(modalEditCustomerLayout.createSequentialGroup()
+                                .addContainerGap()
+                                .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE,
+                                        javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)));
 
         setBackground(new java.awt.Color(204, 204, 0));
 
@@ -586,51 +624,51 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
         javax.swing.GroupLayout pnlThongTinLayout = new javax.swing.GroupLayout(pnlThongTin);
         pnlThongTin.setLayout(pnlThongTinLayout);
         pnlThongTinLayout.setHorizontalGroup(
-            pnlThongTinLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 1226, Short.MAX_VALUE)
-            .addGroup(pnlThongTinLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addComponent(scrollTable, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 1226, Short.MAX_VALUE))
-        );
+                pnlThongTinLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGap(0, 1226, Short.MAX_VALUE)
+                        .addGroup(pnlThongTinLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(scrollTable, javax.swing.GroupLayout.Alignment.TRAILING,
+                                        javax.swing.GroupLayout.DEFAULT_SIZE, 1226, Short.MAX_VALUE)));
         pnlThongTinLayout.setVerticalGroup(
-            pnlThongTinLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 369, Short.MAX_VALUE)
-            .addGroup(pnlThongTinLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addComponent(scrollTable, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 369, Short.MAX_VALUE))
-        );
+                pnlThongTinLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGap(0, 369, Short.MAX_VALUE)
+                        .addGroup(pnlThongTinLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(scrollTable, javax.swing.GroupLayout.Alignment.TRAILING,
+                                        javax.swing.GroupLayout.DEFAULT_SIZE, 369, Short.MAX_VALUE)));
 
         pnAll.add(pnlThongTin, java.awt.BorderLayout.CENTER);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(pnAll, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(pnAll, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE,
+                                Short.MAX_VALUE));
         layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(pnAll, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(pnAll, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE,
+                                Short.MAX_VALUE));
     }// </editor-fold>//GEN-END:initComponents
 
-    private void btnTimKiemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTimKiemActionPerformed
+    private void btnTimKiemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_btnTimKiemActionPerformed
 
-    }//GEN-LAST:event_btnTimKiemActionPerformed
+    }// GEN-LAST:event_btnTimKiemActionPerformed
 
-    private void txtTimKiemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtTimKiemActionPerformed
+    private void txtTimKiemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_txtTimKiemActionPerformed
 
-    }//GEN-LAST:event_txtTimKiemActionPerformed
+    }// GEN-LAST:event_txtTimKiemActionPerformed
 
-    private void txtTimKiemKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtTimKiemKeyReleased
+    private void txtTimKiemKeyReleased(java.awt.event.KeyEvent evt) {// GEN-FIRST:event_txtTimKiemKeyReleased
 
-    }//GEN-LAST:event_txtTimKiemKeyReleased
+    }// GEN-LAST:event_txtTimKiemKeyReleased
 
-    private void btnExitModalAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExitModalAddActionPerformed
+    private void btnExitModalAddActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_btnExitModalAddActionPerformed
         // TODO add your handling code here:
         clearData(txtCusNameAdd, txtCusPhoneAdd, txtCusEmailAdd, txtCusAddressAdd);
         modalAddCustomer.dispose();
-    }//GEN-LAST:event_btnExitModalAddActionPerformed
+    }// GEN-LAST:event_btnExitModalAddActionPerformed
 
-    private void btnAddCustomerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddCustomerActionPerformed
+    private void btnAddCustomerActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_btnAddCustomerActionPerformed
         try {
             // Lấy dữ liệu từ form
             String tenKH = txtCusNameAdd.getText().trim();
@@ -638,32 +676,32 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
             String diaChi = txtCusAddressAdd.getText().trim();
             String email = txtCusEmailAdd.getText().trim();
             String gioiTinh = (String) comboSexAdd.getSelectedItem();
-            
+
             // Validate dữ liệu
             if (tenKH.isEmpty()) {
                 Notifications.getInstance().show(Notifications.Type.WARNING, "Vui lòng nhập tên khách hàng!");
                 txtCusNameAdd.requestFocus();
                 return;
             }
-            
+
             if (sdt.isEmpty()) {
                 Notifications.getInstance().show(Notifications.Type.WARNING, "Vui lòng nhập số điện thoại!");
                 txtCusPhoneAdd.requestFocus();
                 return;
             }
-            
+
             if (diaChi.isEmpty()) {
                 Notifications.getInstance().show(Notifications.Type.WARNING, "Vui lòng nhập địa chỉ!");
                 txtCusAddressAdd.requestFocus();
                 return;
             }
-            
+
             if (email.isEmpty()) {
                 Notifications.getInstance().show(Notifications.Type.WARNING, "Vui lòng nhập email!");
                 txtCusEmailAdd.requestFocus();
                 return;
             }
-            
+
             // Tạo đối tượng KhachHang
             KhachHang kh = new KhachHang();
             kh.setTenKhachHang(tenKH);
@@ -671,26 +709,26 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
             kh.setDiaChi(diaChi);
             kh.setEmail(email);
             kh.setGioiTinh(gioiTinh);
-            
+
             // Gọi BUS để thêm khách hàng
             boolean isAdded = khachHangBUS.themKhachHang(kh);
-            
+
             if (isAdded) {
                 // Thêm vào bảng
-                tableDesign.getModelTable().addRow(new Object[]{
-                    kh.getMaKhachHang(),
-                    kh.getTenKhachHang(),
-                    kh.getSoDienThoai(),
-                    kh.getDiaChi(),
-                    kh.getEmail(),
-                    kh.getGioiTinh()
+                tableDesign.getModelTable().addRow(new Object[] {
+                        kh.getMaKhachHang(),
+                        kh.getTenKhachHang(),
+                        kh.getSoDienThoai(),
+                        kh.getDiaChi(),
+                        kh.getEmail(),
+                        kh.getGioiTinh()
                 });
-                
+
                 // Xóa dữ liệu form và đóng modal
                 clearData(txtCusNameAdd, txtCusPhoneAdd, txtCusAddressAdd, txtCusEmailAdd);
                 comboSexAdd.setSelectedIndex(0);
                 modalAddCustomer.dispose();
-                
+
                 Notifications.getInstance().show(Notifications.Type.SUCCESS, "Thêm khách hàng thành công!");
             } else {
                 Notifications.getInstance().show(Notifications.Type.ERROR, "Thêm khách hàng thất bại!");
@@ -699,48 +737,48 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
             // Hiển thị lỗi từ BUS hoặc entity validation
             Notifications.getInstance().show(Notifications.Type.ERROR, e.getMessage());
         }
-    }//GEN-LAST:event_btnAddCustomerActionPerformed
+    }// GEN-LAST:event_btnAddCustomerActionPerformed
 
-    private void btnEditCustomerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEditCustomerActionPerformed
+    private void btnEditCustomerActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_btnEditCustomerActionPerformed
         try {
             // Kiểm tra xem có khách hàng nào được chọn không
             if (customerIdEdit == null || customerIdEdit.isEmpty()) {
                 Notifications.getInstance().show(Notifications.Type.WARNING, "Vui lòng chọn khách hàng cần sửa!");
                 return;
             }
-            
+
             // Lấy dữ liệu từ form
             String tenKH = txtCusNameEdit.getText().trim();
             String sdt = txtCusPhoneEdit.getText().trim();
             String diaChi = txtCusAddressEdit.getText().trim();
             String email = txtCusEmailEdit.getText().trim();
             String gioiTinh = (String) comboSexEdit.getSelectedItem();
-            
+
             // Validate dữ liệu
             if (tenKH.isEmpty()) {
                 Notifications.getInstance().show(Notifications.Type.WARNING, "Vui lòng nhập tên khách hàng!");
                 txtCusNameEdit.requestFocus();
                 return;
             }
-            
+
             if (sdt.isEmpty()) {
                 Notifications.getInstance().show(Notifications.Type.WARNING, "Vui lòng nhập số điện thoại!");
                 txtCusPhoneEdit.requestFocus();
                 return;
             }
-            
+
             if (diaChi.isEmpty()) {
                 Notifications.getInstance().show(Notifications.Type.WARNING, "Vui lòng nhập địa chỉ!");
                 txtCusAddressEdit.requestFocus();
                 return;
             }
-            
+
             if (email.isEmpty()) {
                 Notifications.getInstance().show(Notifications.Type.WARNING, "Vui lòng nhập email!");
                 txtCusEmailEdit.requestFocus();
                 return;
             }
-            
+
             // Tạo đối tượng KhachHang với dữ liệu mới
             KhachHang kh = new KhachHang();
             kh.setMaKhachHang(customerIdEdit);
@@ -749,10 +787,10 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
             kh.setDiaChi(diaChi);
             kh.setEmail(email);
             kh.setGioiTinh(gioiTinh);
-            
+
             // Gọi BUS để cập nhật khách hàng
             boolean isUpdated = khachHangBUS.capNhatKhachHang(kh);
-            
+
             if (isUpdated) {
                 // Cập nhật lại dữ liệu trong bảng
                 int selectedRow = tableDesign.getTable().getSelectedRow();
@@ -763,13 +801,13 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
                     tableDesign.getModelTable().setValueAt(email, selectedRow, 4);
                     tableDesign.getModelTable().setValueAt(gioiTinh, selectedRow, 5);
                 }
-                
+
                 // Xóa dữ liệu form và đóng modal
                 clearData(txtCusNameEdit, txtCusPhoneEdit, txtCusAddressEdit, txtCusEmailEdit);
                 comboSexEdit.setSelectedIndex(0);
                 customerIdEdit = null;
                 modalEditCustomer.dispose();
-                
+
                 Notifications.getInstance().show(Notifications.Type.SUCCESS, "Cập nhật khách hàng thành công!");
             } else {
                 Notifications.getInstance().show(Notifications.Type.ERROR, "Cập nhật khách hàng thất bại!");
@@ -778,14 +816,14 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
             // Hiển thị lỗi từ BUS hoặc entity validation
             Notifications.getInstance().show(Notifications.Type.ERROR, e.getMessage());
         }
-    }//GEN-LAST:event_btnEditCustomerActionPerformed
+    }// GEN-LAST:event_btnEditCustomerActionPerformed
 
-    private void btnExitModalEditActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExitModalEditActionPerformed
+    private void btnExitModalEditActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_btnExitModalEditActionPerformed
         clearData(txtCusNameEdit, txtCusPhoneEdit, txtCusEmailEdit, txtCusAddressEdit);
         modalEditCustomer.dispose();
-    }//GEN-LAST:event_btnExitModalEditActionPerformed
+    }// GEN-LAST:event_btnExitModalEditActionPerformed
 
-    private void btnSuaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSuaActionPerformed
+    private void btnSuaActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_btnSuaActionPerformed
         int selectedRow = tableDesign.getTable().getSelectedRow();
         if (selectedRow == -1) {
             Notifications.getInstance().show(Notifications.Type.WARNING, "Vui lòng chọn khách hàng cần sửa!");
@@ -810,14 +848,14 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
 
         modalEditCustomer.setLocationRelativeTo(this);
         modalEditCustomer.setVisible(true);
-    }//GEN-LAST:event_btnSuaActionPerformed
+    }// GEN-LAST:event_btnSuaActionPerformed
 
-    private void btnThemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnThemActionPerformed
+    private void btnThemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_btnThemActionPerformed
         modalAddCustomer.setLocationRelativeTo(this);
         modalAddCustomer.setVisible(true);
-    }//GEN-LAST:event_btnThemActionPerformed
+    }// GEN-LAST:event_btnThemActionPerformed
 
-    private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteActionPerformed
+    private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_btnDeleteActionPerformed
         int selectedRow = tableDesign.getTable().getSelectedRow();
         if (selectedRow == -1) {
             Notifications.getInstance().show(Notifications.Type.WARNING, "Vui lòng chọn khách hàng cần xóa!");
@@ -830,18 +868,17 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
 
         // Hiển thị hộp thoại xác nhận
         int confirm = javax.swing.JOptionPane.showConfirmDialog(
-            this,
-            "Bạn có chắc chắn muốn xóa khách hàng \"" + tenKH + "\" (Mã: " + maKH + ")?",
-            "Xác nhận xóa",
-            javax.swing.JOptionPane.YES_NO_OPTION,
-            javax.swing.JOptionPane.WARNING_MESSAGE
-        );
+                this,
+                "Bạn có chắc chắn muốn xóa khách hàng \"" + tenKH + "\" (Mã: " + maKH + ")?",
+                "Xác nhận xóa",
+                javax.swing.JOptionPane.YES_NO_OPTION,
+                javax.swing.JOptionPane.WARNING_MESSAGE);
 
         if (confirm == javax.swing.JOptionPane.YES_OPTION) {
             try {
                 // Gọi BUS để xóa khách hàng
                 boolean isDeleted = khachHangBUS.xoaKhachHang(maKH);
-                
+
                 if (isDeleted) {
                     // Xóa khỏi bảng
                     tableDesign.getModelTable().removeRow(selectedRow);
@@ -854,9 +891,9 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
                 Notifications.getInstance().show(Notifications.Type.ERROR, e.getMessage());
             }
         }
-    }//GEN-LAST:event_btnDeleteActionPerformed
+    }// GEN-LAST:event_btnDeleteActionPerformed
 
-    private void btnXoaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnXoaActionPerformed
+    private void btnXoaActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_btnXoaActionPerformed
         // TODO add your handling code here:
         int selectedRow = tableDesign.getTable().getSelectedRow();
         if (selectedRow == -1) {
@@ -870,18 +907,17 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
 
         // Hiển thị hộp thoại xác nhận
         int confirm = javax.swing.JOptionPane.showConfirmDialog(
-            this,
-            "Bạn có chắc chắn muốn xóa khách hàng \"" + tenKH + "\" (Mã: " + maKH + ")?",
-            "Xác nhận xóa",
-            javax.swing.JOptionPane.YES_NO_OPTION,
-            javax.swing.JOptionPane.WARNING_MESSAGE
-        );
+                this,
+                "Bạn có chắc chắn muốn xóa khách hàng \"" + tenKH + "\" (Mã: " + maKH + ")?",
+                "Xác nhận xóa",
+                javax.swing.JOptionPane.YES_NO_OPTION,
+                javax.swing.JOptionPane.WARNING_MESSAGE);
 
         if (confirm == javax.swing.JOptionPane.YES_OPTION) {
             try {
                 // Gọi BUS để xóa khách hàng
                 boolean isDeleted = khachHangBUS.xoaKhachHang(maKH);
-                
+
                 if (isDeleted) {
                     // Xóa khỏi bảng
                     tableDesign.getModelTable().removeRow(selectedRow);
@@ -894,7 +930,7 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
                 Notifications.getInstance().show(Notifications.Type.ERROR, e.getMessage());
             }
         }
-    }//GEN-LAST:event_btnXoaActionPerformed
+    }// GEN-LAST:event_btnXoaActionPerformed
 
     public void clearData(JTextField... fields) {
         for (JTextField field : fields) {

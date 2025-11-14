@@ -30,6 +30,7 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham;
 import raven.toast.Notifications;
 import javax.swing.UIManager;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.FontStyles;
 
 /**
  *
@@ -79,6 +80,7 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         initGlobalTextFieldStyle();
         setUIManager();
         loadComboBoxData();
+        applyFontStyles();
         fillTable();
         addIconFeature();
 
@@ -112,6 +114,20 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         // Focus - Khi click vào TextField
         UIManager.put("Component.focusColor", UIManager.getColor("Component.accentColor"));
         UIManager.put("Component.focusWidth", 2);
+    }
+
+    /**
+     * Áp dụng FontStyles cho tất cả component
+     */
+    private void applyFontStyles() {
+        // Font cho các button chính
+        FontStyles.apply(btnAdd, FontStyles.Type.BUTTON_MEDIUM);
+        FontStyles.apply(btnUpdate, FontStyles.Type.BUTTON_MEDIUM);
+        FontStyles.apply(btnDelete, FontStyles.Type.BUTTON_MEDIUM);
+        FontStyles.apply(btnOpenModalAddSup, FontStyles.Type.BUTTON_MEDIUM);
+
+        // Font cho text field tìm kiếm
+        FontStyles.apply(txtSearchNamePD, FontStyles.Type.INPUT_FIELD);
     }
 
     private void setUIManager() {

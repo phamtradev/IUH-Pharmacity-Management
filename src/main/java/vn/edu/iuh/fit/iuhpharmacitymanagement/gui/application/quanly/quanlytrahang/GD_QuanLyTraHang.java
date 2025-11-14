@@ -29,6 +29,7 @@ import javax.swing.JPanel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.FontStyles;
 import java.awt.Component;
 import java.awt.FlowLayout;
 
@@ -52,6 +53,7 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
         initComponents();
         setUIManager();
         applyButtonStyles();
+        applyFontStyles();
         fillTable();
     }
 
@@ -68,6 +70,16 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
         ButtonStyles.apply(btnSearch, ButtonStyles.Type.SUCCESS);
         ButtonStyles.apply(btnView, ButtonStyles.Type.INFO);
         ButtonStyles.apply(txtExport, ButtonStyles.Type.WARNING);
+    }
+
+    private void applyFontStyles() {
+        // Font cho các button chính
+        FontStyles.apply(btnSearch, FontStyles.Type.BUTTON_MEDIUM);
+        FontStyles.apply(btnView, FontStyles.Type.BUTTON_MEDIUM);
+        FontStyles.apply(txtExport, FontStyles.Type.BUTTON_MEDIUM);
+
+        // Font cho text field
+        FontStyles.apply(txtOrder, FontStyles.Type.INPUT_FIELD);
     }
 
     private void fillTable() {

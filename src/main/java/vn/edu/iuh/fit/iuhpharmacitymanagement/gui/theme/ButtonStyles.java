@@ -28,20 +28,60 @@ public final class ButtonStyles {
     private ButtonStyles() {
     }
 
-    public static void apply(AbstractButton button, Type type) {
-        Style style = STYLE_MAP.get(type);
-        if (style == null) {
-            throw new IllegalArgumentException("Chưa định nghĩa style cho type: " + type);
+    /**
+     * Tự động điều chỉnh kích thước button theo nội dung text
+     */
+    private static void adjustButtonSize(JButton button) {
+        String text = button.getText();
+        if (text == null || text.trim().isEmpty()) {
+            // Button không có text - kích thước nhỏ
+            button.setPreferredSize(new java.awt.Dimension(40, 40));
+            return;
         }
 
-        button.putClientProperty(FlatClientProperties.STYLE, style.asFlatLafStyle(DEFAULT_ARC));
-        button.setBackground(style.backgroundColor());
-        button.setForeground(style.foreground());
-        button.setFocusPainted(false);
-        button.setBorderPainted(false);
-        button.setOpaque(true);
-        if (button instanceof JButton) {
-            ((JButton) button).setContentAreaFilled(true);
+        // Tính toán kích thước dựa trên độ dài text
+        int textLength = text.length();
+        int width;
+
+        if (textLength <= 4) {
+            // Text ngắn: THÊM, SỬA, XÓA
+            width = 95;
+        } else if (textLength <= 8) {
+            // Text trung bình: Tìm kiếm, Đăng nhập
+            width = 120;
+        } else if (textLength <= 12) {
+            // Text dài: Xem chi tiết
+            width = 150;
+        } else {
+            // Text rất dài
+            width = Math.max(150, textLength * 12);
+        }
+
+        button.setPreferredSize(new java.awt.Dimension(width, 40));
+        button.setMinimumSize(new java.awt.Dimension(width, 40));
+    }
+
+    public static void apply(JButton button, Type type) {
+        Style style = STYLE_MAP.get(type);
+        if (style != null) {
+            // Xóa các style cũ trước khi áp dụng mới
+            button.setBackground(null);
+            button.setForeground(null);
+
+            // Áp dụng FlatLaf style
+            button.putClientProperty(FlatClientProperties.STYLE, style.asFlatLafStyle(DEFAULT_ARC));
+
+            // Override trực tiếp để đảm bảo hiệu quả
+            button.setOpaque(true);
+            button.setBorderPainted(false);
+            button.setFocusPainted(false);
+
+            // Đặt lại kích thước chuẩn cho button - tự động điều chỉnh theo nội dung
+            adjustButtonSize(button);
+
+            // Đặt lại text position về CENTER
+            button.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+            button.setVerticalTextPosition(javax.swing.SwingConstants.CENTER);
         }
     }
 
@@ -90,4 +130,3 @@ public final class ButtonStyles {
         }
     }
 }
-

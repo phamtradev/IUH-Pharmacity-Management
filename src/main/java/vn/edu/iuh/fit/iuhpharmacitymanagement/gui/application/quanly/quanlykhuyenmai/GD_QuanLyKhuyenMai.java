@@ -26,6 +26,7 @@ import raven.toast.Notifications;
 import javax.swing.JOptionPane;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.constant.LoaiKhuyenMai;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.FontStyles;
 
 /**
  *
@@ -43,6 +44,7 @@ public class GD_QuanLyKhuyenMai extends javax.swing.JPanel {
         khachHangBUS = new KhachHangBUS(new KhachHangDAO(), new DonHangDAO());
         initComponents();
         setUIManager();
+        applyFontStyles();
         fillTable();
     }
 
@@ -56,6 +58,20 @@ public class GD_QuanLyKhuyenMai extends javax.swing.JPanel {
         ButtonStyles.apply(btnXemChiTiet, ButtonStyles.Type.INFO);
         ButtonStyles.apply(btnTimKiem, ButtonStyles.Type.INFO);
         ButtonStyles.apply(btnLamMoi, ButtonStyles.Type.PRIMARY);
+    }
+
+    /**
+     * Áp dụng FontStyles cho tất cả component
+     */
+    private void applyFontStyles() {
+        // Font cho các button chính
+        FontStyles.apply(btnThem, FontStyles.Type.BUTTON_MEDIUM);
+        FontStyles.apply(btnSua, FontStyles.Type.BUTTON_MEDIUM);
+        FontStyles.apply(btnXoa, FontStyles.Type.BUTTON_MEDIUM);
+        FontStyles.apply(btnLamMoi, FontStyles.Type.BUTTON_MEDIUM);
+
+        // Font cho text field tìm kiếm
+        FontStyles.apply(txtMaKhuyenMai, FontStyles.Type.INPUT_FIELD);
     }
 
     private void fillTable() {

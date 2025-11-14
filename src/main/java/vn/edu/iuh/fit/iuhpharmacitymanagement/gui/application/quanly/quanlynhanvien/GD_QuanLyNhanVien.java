@@ -17,6 +17,7 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhanVien;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.TaiKhoan;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.util.PasswordUtil;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.FontStyles;
 import raven.toast.Notifications;
 
 /**
@@ -44,8 +45,41 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
         ButtonStyles.apply(btnDatLaiMatKhau, ButtonStyles.Type.WARNING);
 
         setUIManager();
+        applyFontStyles();
         fillTable();
         addIconFeature();
+    }
+
+    /**
+     * Áp dụng FontStyles cho tất cả component
+     */
+    private void applyFontStyles() {
+        // Font cho các button chính
+        FontStyles.apply(btnThem, FontStyles.Type.BUTTON_MEDIUM);
+        FontStyles.apply(btnSua, FontStyles.Type.BUTTON_MEDIUM);
+        FontStyles.apply(btnXoa, FontStyles.Type.BUTTON_MEDIUM);
+        FontStyles.apply(btnTimKiem, FontStyles.Type.BUTTON_MEDIUM);
+        FontStyles.apply(btnDatLaiMatKhau, FontStyles.Type.BUTTON_MEDIUM);
+
+        // Font cho text field tìm kiếm
+        FontStyles.apply(txtTimKiem, FontStyles.Type.INPUT_FIELD);
+
+        // Font cho các text field trong modal thêm
+        FontStyles.apply(txtAddEmployeeName, FontStyles.Type.INPUT_FIELD);
+        FontStyles.apply(txtAddEmployeeAddress, FontStyles.Type.INPUT_FIELD);
+        FontStyles.apply(txtAddEmployeeEmail, FontStyles.Type.INPUT_FIELD);
+        FontStyles.apply(txtAddEmployeePhone, FontStyles.Type.INPUT_FIELD);
+        FontStyles.apply(txtAddPassword, FontStyles.Type.INPUT_FIELD);
+
+        // Font cho các text field trong modal cập nhật
+        FontStyles.apply(txtEmployeeName, FontStyles.Type.INPUT_FIELD);
+        FontStyles.apply(txtEmployeeAddress, FontStyles.Type.INPUT_FIELD);
+        FontStyles.apply(txtEmployeeEmail, FontStyles.Type.INPUT_FIELD);
+        FontStyles.apply(txtEmployeePhone, FontStyles.Type.INPUT_FIELD);
+
+        // Font cho text field reset password
+        FontStyles.apply(txtResetPassword, FontStyles.Type.INPUT_FIELD);
+        FontStyles.apply(txtEmployeeIDRsPass, FontStyles.Type.INPUT_FIELD);
     }
 
     /**

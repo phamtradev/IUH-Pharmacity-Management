@@ -14,6 +14,7 @@ import javax.swing.BorderFactory;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.common.TableDesign;
 import raven.toast.Notifications;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.FontStyles;
 
 /**
  *
@@ -28,15 +29,48 @@ public class GD_QuanLyDonViTinh extends javax.swing.JPanel {
         this.donViTinhBUS = new DonViTinhBUS(new DonViTinhDAO());
         initComponents();
 
-        // Apply ButtonStyles
+        setUIManager();
+        applyButtonStyles();
+        applyFontStyles();
+        setupModalStyle();
+        fillTable();
+    }
+
+    private void applyButtonStyles() {
+        // Apply ButtonStyles cho các button chính
         ButtonStyles.apply(btnThem, ButtonStyles.Type.SUCCESS);
         ButtonStyles.apply(btnSua, ButtonStyles.Type.PRIMARY);
         ButtonStyles.apply(btnXoa, ButtonStyles.Type.DANGER);
         ButtonStyles.apply(btnTimKiem, ButtonStyles.Type.INFO);
 
-        setUIManager();
-        setupModalStyle();
-        fillTable();
+        // Apply ButtonStyles cho các button trong modal
+        ButtonStyles.apply(btnAddUnit, ButtonStyles.Type.SUCCESS);
+        ButtonStyles.apply(btnExitModalAdd, ButtonStyles.Type.SECONDARY);
+        ButtonStyles.apply(btnEditUnit, ButtonStyles.Type.PRIMARY);
+        ButtonStyles.apply(btnExitModalEdit, ButtonStyles.Type.SECONDARY);
+    }
+
+    private void applyFontStyles() {
+        // Font cho các button chính
+        FontStyles.apply(btnThem, FontStyles.Type.BUTTON_MEDIUM);
+        FontStyles.apply(btnSua, FontStyles.Type.BUTTON_MEDIUM);
+        FontStyles.apply(btnXoa, FontStyles.Type.BUTTON_MEDIUM);
+        FontStyles.apply(btnTimKiem, FontStyles.Type.BUTTON_MEDIUM);
+
+        // Font cho các text field
+        FontStyles.apply(txtTimKiem, FontStyles.Type.INPUT_FIELD);
+        FontStyles.apply(txtNameUnitAdd, FontStyles.Type.INPUT_FIELD);
+        FontStyles.apply(txtNameUnitEdit, FontStyles.Type.INPUT_FIELD);
+
+        // Font cho các label trong modal
+        FontStyles.apply(jLabel1, FontStyles.Type.LABEL_MEDIUM);
+        FontStyles.apply(jLabel2, FontStyles.Type.LABEL_MEDIUM);
+
+        // Font cho các button trong modal
+        FontStyles.apply(btnAddUnit, FontStyles.Type.BUTTON_MEDIUM);
+        FontStyles.apply(btnExitModalAdd, FontStyles.Type.BUTTON_MEDIUM);
+        FontStyles.apply(btnEditUnit, FontStyles.Type.BUTTON_MEDIUM);
+        FontStyles.apply(btnExitModalEdit, FontStyles.Type.BUTTON_MEDIUM);
     }
 
     private void setupModalStyle() {
