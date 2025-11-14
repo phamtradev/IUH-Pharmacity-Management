@@ -16,6 +16,8 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.common.TableDesign;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.DonHangDAO;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.KhachHangDAO;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhachHang;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.FontStyles;
 
 /**
  *
@@ -30,59 +32,70 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
         this.khachHangBUS = new KhachHangBUS(new KhachHangDAO(), new DonHangDAO());
         initComponents();
         
-        //sì tai cho các nút
-        styleButton(btnThem, "THÊM");
-        styleButton(btnSua, "SỬA");
-        styleButton(btnXoa, "XÓA");
-        styleButton(btnTimKiem, "Tìm kiếm");
+        // Áp dụng ButtonStyles và FontStyles
+        applyStyles();
         
         setUIManager();
         fillTable();
     }
 
-        private void styleButton(javax.swing.JButton button, String text) {
-        button.setText(text);
-        button.setFont(new java.awt.Font("Segoe UI", 1, 14));
-        button.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        button.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        button.setVerticalTextPosition(javax.swing.SwingConstants.CENTER);
-        button.setPreferredSize(new java.awt.Dimension(95, 40));
-
-        String style = ""
-                + "arc:10;"
-                + "borderWidth:0;"
-                + "focusWidth:0;";
-
-        if (text.equalsIgnoreCase("THÊM")) {
-            style += ""
-                    + "background:#28A745;" // Xanh lá
-                    + "foreground:#FFFFFF;"
-                    + "hoverBackground:#218838;"
-                    + "pressedBackground:#1E7E34;";
-            button.putClientProperty(FlatClientProperties.STYLE, style);
-        } else if (text.equalsIgnoreCase("SỬA")) {
-            style += ""
-                    + "background:#007BFF;" // Xanh dương
-                    + "foreground:#FFFFFF;"
-                    + "hoverBackground:#0069D9;"
-                    + "pressedBackground:#0056B3;";
-            button.putClientProperty(FlatClientProperties.STYLE, style);
-        } else if (text.equalsIgnoreCase("XÓA")) {
-            style += ""
-                    + "background:#DC3545;" // Đỏ
-                    + "foreground:#FFFFFF;"
-                    + "hoverBackground:#C82333;"
-                    + "pressedBackground:#BD2130;";
-            button.putClientProperty(FlatClientProperties.STYLE, style);
-        } else if (text.equalsIgnoreCase("Tìm kiếm")) {
-            button.setPreferredSize(new java.awt.Dimension(150, 40));
-            style += ""
-                    + "background:#28A745;" // Xanh lá giống nút THÊM
-                    + "foreground:#FFFFFF;"
-                    + "hoverBackground:#218838;"
-                    + "pressedBackground:#1E7E34;";
-            button.putClientProperty(FlatClientProperties.STYLE, style);
-        }
+    private void applyStyles() {
+        // Buttons chính
+        ButtonStyles.apply(btnThem, ButtonStyles.Type.SUCCESS);
+        FontStyles.apply(btnThem, FontStyles.Type.BUTTON_MEDIUM);
+        btnThem.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnThem.setPreferredSize(new java.awt.Dimension(95, 40));
+        
+        ButtonStyles.apply(btnSua, ButtonStyles.Type.PRIMARY);
+        FontStyles.apply(btnSua, FontStyles.Type.BUTTON_MEDIUM);
+        btnSua.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnSua.setPreferredSize(new java.awt.Dimension(95, 40));
+        
+        ButtonStyles.apply(btnXoa, ButtonStyles.Type.DANGER);
+        FontStyles.apply(btnXoa, FontStyles.Type.BUTTON_MEDIUM);
+        btnXoa.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnXoa.setPreferredSize(new java.awt.Dimension(95, 40));
+        
+        ButtonStyles.apply(btnTimKiem, ButtonStyles.Type.SUCCESS);
+        FontStyles.apply(btnTimKiem, FontStyles.Type.BUTTON_MEDIUM);
+        btnTimKiem.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnTimKiem.setPreferredSize(new java.awt.Dimension(150, 40));
+        
+        // Buttons trong modal
+        ButtonStyles.apply(btnAddCustomer, ButtonStyles.Type.SUCCESS);
+        FontStyles.apply(btnAddCustomer, FontStyles.Type.BUTTON_MEDIUM);
+        
+        ButtonStyles.apply(btnEditCustomer, ButtonStyles.Type.PRIMARY);
+        FontStyles.apply(btnEditCustomer, FontStyles.Type.BUTTON_MEDIUM);
+        
+        ButtonStyles.apply(btnExitModalAdd, ButtonStyles.Type.SECONDARY);
+        FontStyles.apply(btnExitModalAdd, FontStyles.Type.BUTTON_MEDIUM);
+        
+        ButtonStyles.apply(btnExitModalEdit, ButtonStyles.Type.SECONDARY);
+        FontStyles.apply(btnExitModalEdit, FontStyles.Type.BUTTON_MEDIUM);
+        
+        // Font cho labels
+        FontStyles.apply(jLabel18, FontStyles.Type.LABEL_MEDIUM);
+        FontStyles.apply(jLabel19, FontStyles.Type.LABEL_MEDIUM);
+        FontStyles.apply(jLabel22, FontStyles.Type.LABEL_MEDIUM);
+        FontStyles.apply(jLabel23, FontStyles.Type.LABEL_MEDIUM);
+        FontStyles.apply(jLabel24, FontStyles.Type.LABEL_MEDIUM);
+        FontStyles.apply(jLabel25, FontStyles.Type.LABEL_MEDIUM);
+        FontStyles.apply(jLabel26, FontStyles.Type.LABEL_MEDIUM);
+        FontStyles.apply(jLabel27, FontStyles.Type.LABEL_MEDIUM);
+        FontStyles.apply(jLabel28, FontStyles.Type.LABEL_MEDIUM);
+        FontStyles.apply(jLabel29, FontStyles.Type.LABEL_MEDIUM);
+        
+        // Font cho text fields
+        FontStyles.apply(txtCusNameAdd, FontStyles.Type.INPUT_FIELD);
+        FontStyles.apply(txtCusPhoneAdd, FontStyles.Type.INPUT_FIELD);
+        FontStyles.apply(txtCusEmailAdd, FontStyles.Type.INPUT_FIELD);
+        FontStyles.apply(txtCusAddressAdd, FontStyles.Type.INPUT_FIELD);
+        FontStyles.apply(txtCusNameEdit, FontStyles.Type.INPUT_FIELD);
+        FontStyles.apply(txtCusPhoneEdit, FontStyles.Type.INPUT_FIELD);
+        FontStyles.apply(txtCusEmailEdit, FontStyles.Type.INPUT_FIELD);
+        FontStyles.apply(txtCusAddressEdit, FontStyles.Type.INPUT_FIELD);
+        FontStyles.apply(txtTimKiem, FontStyles.Type.INPUT_FIELD);
     }
     
     private void setUIManager() {
@@ -205,24 +218,17 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
 
         jPanel2.setBackground(new java.awt.Color(255, 255, 255));
 
-        txtCusNameAdd.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-
         jLabel18.setFont(new java.awt.Font("Segoe UI", 1, 16)); // NOI18N
         jLabel18.setText("Tên khách hàng");
 
         jLabel22.setFont(new java.awt.Font("Segoe UI", 1, 16)); // NOI18N
         jLabel22.setText("Số điện thoại");
 
-        txtCusPhoneAdd.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-
         jLabel23.setFont(new java.awt.Font("Segoe UI", 1, 16)); // NOI18N
         jLabel23.setText("Giới tính");
 
         comboSexAdd.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Nam", "Nữ" }));
 
-        txtCusEmailAdd.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-
-        txtCusAddressAdd.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
         jLabel24.setFont(new java.awt.Font("Segoe UI", 1, 16)); // NOI18N
         jLabel24.setText("Địa chỉ");
@@ -230,7 +236,6 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
         jLabel25.setFont(new java.awt.Font("Segoe UI", 1, 16)); // NOI18N
         jLabel25.setText("Email");
 
-        btnAddCustomer.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         btnAddCustomer.setText("Xác nhận");
         btnAddCustomer.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -238,9 +243,6 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
             }
         });
 
-        btnExitModalAdd.setBackground(new java.awt.Color(92, 107, 192));
-        btnExitModalAdd.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        btnExitModalAdd.setForeground(new java.awt.Color(255, 255, 255));
         btnExitModalAdd.setText("Hủy bỏ");
         btnExitModalAdd.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -343,8 +345,6 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
 
         jPanel4.setBackground(new java.awt.Color(255, 255, 255));
 
-        txtCusNameEdit.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-
         jLabel19.setFont(new java.awt.Font("Segoe UI", 1, 16)); // NOI18N
         jLabel19.setText("Tên khách hàng");
 
@@ -352,16 +352,12 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
         jLabel26.setText("Số điện thoại");
 
         txtCusPhoneEdit.setEditable(false);
-        txtCusPhoneEdit.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
         jLabel27.setFont(new java.awt.Font("Segoe UI", 1, 16)); // NOI18N
         jLabel27.setText("Giới tính");
 
         comboSexEdit.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Nam", "Nữ" }));
 
-        txtCusEmailEdit.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-
-        txtCusAddressEdit.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
         jLabel28.setFont(new java.awt.Font("Segoe UI", 1, 16)); // NOI18N
         jLabel28.setText("Địa chỉ");
@@ -369,7 +365,6 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
         jLabel29.setFont(new java.awt.Font("Segoe UI", 1, 16)); // NOI18N
         jLabel29.setText("Email");
 
-        btnEditCustomer.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         btnEditCustomer.setText("Xác nhận");
         btnEditCustomer.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -377,9 +372,6 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
             }
         });
 
-        btnExitModalEdit.setBackground(new java.awt.Color(92, 107, 192));
-        btnExitModalEdit.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        btnExitModalEdit.setForeground(new java.awt.Color(255, 255, 255));
         btnExitModalEdit.setText("Hủy bỏ");
         btnExitModalEdit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -489,7 +481,6 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
         pnlKhungTimKiem.setPreferredSize(new java.awt.Dimension(584, 50));
         pnlKhungTimKiem.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.TRAILING));
 
-        txtTimKiem.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         txtTimKiem.setPreferredSize(new java.awt.Dimension(300, 40));
         txtTimKiem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -503,9 +494,6 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
         });
         pnlKhungTimKiem.add(txtTimKiem);
 
-        btnTimKiem.setBackground(new java.awt.Color(115, 165, 71));
-        btnTimKiem.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
-        btnTimKiem.setForeground(new java.awt.Color(255, 255, 255));
         btnTimKiem.setText("Tìm kiếm");
         btnTimKiem.setPreferredSize(new java.awt.Dimension(150, 40));
         btnTimKiem.addActionListener(new java.awt.event.ActionListener() {
@@ -523,14 +511,8 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
         pnlChinhSua.setPreferredSize(new java.awt.Dimension(600, 100));
         pnlChinhSua.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 6, 30));
 
-        btnThem.setBackground(new java.awt.Color(76, 201, 102));
-        btnThem.setFont(new java.awt.Font("Roboto", 1, 14)); // NOI18N
-        btnThem.setForeground(new java.awt.Color(255, 255, 255));
         btnThem.setText("THÊM");
-        btnThem.setBorder(null);
-        btnThem.setBorderPainted(false);
         btnThem.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        btnThem.setFocusPainted(false);
         btnThem.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         btnThem.setPreferredSize(new java.awt.Dimension(100, 90));
         btnThem.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -541,14 +523,8 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
         });
         pnlChinhSua.add(btnThem);
 
-        btnSua.setBackground(new java.awt.Color(30, 140, 217));
-        btnSua.setFont(new java.awt.Font("Roboto", 1, 14)); // NOI18N
-        btnSua.setForeground(new java.awt.Color(255, 255, 255));
         btnSua.setText("SỬA");
-        btnSua.setBorder(null);
-        btnSua.setBorderPainted(false);
         btnSua.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        btnSua.setFocusPainted(false);
         btnSua.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         btnSua.setPreferredSize(new java.awt.Dimension(100, 90));
         btnSua.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -559,14 +535,8 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
         });
         pnlChinhSua.add(btnSua);
 
-        btnXoa.setBackground(new java.awt.Color(30, 140, 217));
-        btnXoa.setFont(new java.awt.Font("Roboto", 1, 14)); // NOI18N
-        btnXoa.setForeground(new java.awt.Color(255, 255, 255));
         btnXoa.setText("XÓA");
-        btnXoa.setBorder(null);
-        btnXoa.setBorderPainted(false);
         btnXoa.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        btnXoa.setFocusPainted(false);
         btnXoa.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         btnXoa.setPreferredSize(new java.awt.Dimension(100, 90));
         btnXoa.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -588,7 +558,6 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
         javax.swing.JPanel titlePanel = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 12));
         titlePanel.setBackground(new java.awt.Color(23, 162, 184)); // Màu xanh cyan
         javax.swing.JLabel lblTitle = new javax.swing.JLabel("DANH SÁCH THÔNG TIN KHÁCH HÀNG");
-        lblTitle.setFont(new java.awt.Font("Segoe UI", 1, 16));
         lblTitle.setForeground(new java.awt.Color(255, 255, 255)); // Chữ màu trắng
         titlePanel.add(lblTitle);
         pnlThongTin.add(titlePanel, java.awt.BorderLayout.NORTH);

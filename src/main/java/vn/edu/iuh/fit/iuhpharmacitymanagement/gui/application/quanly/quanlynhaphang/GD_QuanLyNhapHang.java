@@ -24,6 +24,7 @@ import javax.swing.UIManager;
 import raven.toast.Notifications;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.util.DinhDangSo;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.util.DinhDangNgay;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
 
 /**
  *
@@ -50,13 +51,7 @@ public class GD_QuanLyNhapHang extends javax.swing.JPanel {
         jDateTo.setDate(Date.valueOf(LocalDate.now()));
         
         // Style cho button Xem chi tiết - màu xanh nước biển, kích thước nhỏ
-        btnView.putClientProperty(FlatClientProperties.STYLE, ""
-                + "background:#17A2B8;"
-                + "foreground:#FFFFFF;"
-                + "hoverBackground:#138496;"
-                + "pressedBackground:#0F6674;"
-                + "arc:10;"
-                + "borderWidth:0");
+        ButtonStyles.apply(btnView, ButtonStyles.Type.INFO);
     }
     
     private void fillTable() {

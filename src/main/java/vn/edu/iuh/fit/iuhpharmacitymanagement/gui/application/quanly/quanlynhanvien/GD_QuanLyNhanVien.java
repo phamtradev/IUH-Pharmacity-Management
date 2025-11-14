@@ -43,6 +43,14 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
         ButtonStyles.apply(btnXoa, ButtonStyles.Type.DANGER);
         ButtonStyles.apply(btnTimKiem, ButtonStyles.Type.SUCCESS);
         ButtonStyles.apply(btnDatLaiMatKhau, ButtonStyles.Type.WARNING);
+        
+        // Style cho các button trong dialog
+        ButtonStyles.apply(btnAddNewEmployee, ButtonStyles.Type.SUCCESS);
+        ButtonStyles.apply(btnCancelAddEmployee, ButtonStyles.Type.SECONDARY);
+        ButtonStyles.apply(btnUpdateEmployee, ButtonStyles.Type.PRIMARY);
+        ButtonStyles.apply(btnCancelUpdateEmployee, ButtonStyles.Type.DANGER);
+        ButtonStyles.apply(btnCofirmResetPassword, ButtonStyles.Type.PRIMARY);
+        ButtonStyles.apply(btnCancelResetPassword, ButtonStyles.Type.DANGER);
 
         setUIManager();
         fillTable();
@@ -308,9 +316,7 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
             }
         });
 
-        btnCancelAddEmployee.setBackground(new java.awt.Color(92, 107, 192));
         btnCancelAddEmployee.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        btnCancelAddEmployee.setForeground(new java.awt.Color(255, 255, 255));
         btnCancelAddEmployee.setText("Thoát");
         btnCancelAddEmployee.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -465,9 +471,7 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
             }
         });
 
-        btnUpdateEmployee.setBackground(new java.awt.Color(78, 94, 186));
         btnUpdateEmployee.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        btnUpdateEmployee.setForeground(new java.awt.Color(255, 255, 255));
         btnUpdateEmployee.setText("Sửa");
         btnUpdateEmployee.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -475,9 +479,7 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
             }
         });
 
-        btnCancelUpdateEmployee.setBackground(new java.awt.Color(236, 82, 113));
         btnCancelUpdateEmployee.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        btnCancelUpdateEmployee.setForeground(new java.awt.Color(255, 255, 255));
         btnCancelUpdateEmployee.setText("Thoát");
         btnCancelUpdateEmployee.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -580,9 +582,7 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
         lblResetPassword.setFont(new java.awt.Font("Segoe UI", 1, 16)); // NOI18N
         lblResetPassword.setText("Nhập mật khẩu mới:");
 
-        btnCofirmResetPassword.setBackground(new java.awt.Color(78, 94, 186));
         btnCofirmResetPassword.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        btnCofirmResetPassword.setForeground(new java.awt.Color(255, 255, 255));
         btnCofirmResetPassword.setText("Xác nhận");
         btnCofirmResetPassword.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -590,9 +590,7 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
             }
         });
 
-        btnCancelResetPassword.setBackground(new java.awt.Color(236, 82, 113));
         btnCancelResetPassword.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        btnCancelResetPassword.setForeground(new java.awt.Color(255, 255, 255));
         btnCancelResetPassword.setText("Thoát");
         btnCancelResetPassword.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -713,9 +711,7 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
         txtTimKiem.setPreferredSize(new java.awt.Dimension(300, 40));
         pnlTimKiem.add(txtTimKiem);
 
-        btnTimKiem.setBackground(new java.awt.Color(115, 165, 71));
         btnTimKiem.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
-        btnTimKiem.setForeground(new java.awt.Color(255, 255, 255));
         btnTimKiem.setText("Tìm kiếm");
         btnTimKiem.setMaximumSize(new java.awt.Dimension(150, 40));
         btnTimKiem.setMinimumSize(new java.awt.Dimension(150, 40));
@@ -731,9 +727,7 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
         // pnlKhungTimKiem.add(space);
         // }
 
-        btnDatLaiMatKhau.setBackground(new java.awt.Color(115, 165, 71));
         btnDatLaiMatKhau.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
-        btnDatLaiMatKhau.setForeground(new java.awt.Color(255, 255, 255));
         btnDatLaiMatKhau.setText("Đặt lại mật khẩu");
         btnDatLaiMatKhau.setMaximumSize(new java.awt.Dimension(200, 40));
         btnDatLaiMatKhau.setMinimumSize(new java.awt.Dimension(200, 40));
@@ -751,9 +745,7 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
         pnlChinhSua.setPreferredSize(new java.awt.Dimension(320, 60));
         pnlChinhSua.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 10, 25));
 
-        btnThem.setBackground(new java.awt.Color(115, 165, 71));
         btnThem.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnThem.setForeground(new java.awt.Color(255, 255, 255));
         btnThem.setText("Thêm");
         btnThem.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnThem.setFocusPainted(false);
@@ -765,7 +757,6 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
         });
         pnlChinhSua.add(btnThem);
 
-        btnSua.setBackground(new java.awt.Color(255, 193, 7));
         btnSua.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         btnSua.setText("Sửa");
         btnSua.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
@@ -778,9 +769,7 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
         });
         pnlChinhSua.add(btnSua);
 
-        btnXoa.setBackground(new java.awt.Color(220, 60, 60));
         btnXoa.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnXoa.setForeground(new java.awt.Color(255, 255, 255));
         btnXoa.setText("Xóa");
         btnXoa.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnXoa.setFocusPainted(false);

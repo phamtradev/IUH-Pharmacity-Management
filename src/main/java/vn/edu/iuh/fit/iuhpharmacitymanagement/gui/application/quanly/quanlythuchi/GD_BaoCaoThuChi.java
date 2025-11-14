@@ -32,6 +32,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import raven.toast.Notifications;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.util.*;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
 
 /**
  *
@@ -70,13 +71,7 @@ public class GD_BaoCaoThuChi extends javax.swing.JPanel {
         jDateTo.setDate(Date.valueOf(LocalDate.now()));
 
         // Style cho button Xem chi tiết - màu xanh nước biển
-        btnView.putClientProperty(com.formdev.flatlaf.FlatClientProperties.STYLE, ""
-                + "background:#17A2B8;"
-                + "foreground:#FFFFFF;"
-                + "hoverBackground:#138496;"
-                + "pressedBackground:#0F6674;"
-                + "arc:10;"
-                + "borderWidth:0");
+        ButtonStyles.apply(btnView, ButtonStyles.Type.INFO);
     }
 
     private void fillTable() {

@@ -13,6 +13,8 @@ import java.util.List;
 import javax.swing.BorderFactory;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.common.TableDesign;
 import raven.toast.Notifications;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.FontStyles;
 
 /**
  *
@@ -27,60 +29,35 @@ public class GD_QuanLyDonViTinh extends javax.swing.JPanel {
         this.donViTinhBUS = new DonViTinhBUS(new DonViTinhDAO());
         initComponents();
         
-        //sì tai cho các nút
-        styleButton(btnThem, "THÊM");
-        styleButton(btnSua, "SỬA");
-        styleButton(btnXoa, "Xóa");
-        styleButton(btnTimKiem, "Tìm kiếm");
+        // Áp dụng ButtonStyles và FontStyles
+        applyStyles();
         
         setUIManager();
         setupModalStyle();
         fillTable();
     }
     
-        private void styleButton(javax.swing.JButton button, String text) {
-        button.setText(text);
-        button.setFont(new java.awt.Font("Segoe UI", 1, 14));
-        button.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        button.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        button.setVerticalTextPosition(javax.swing.SwingConstants.CENTER);
-        button.setPreferredSize(new java.awt.Dimension(95, 40));
-
-        String style = ""
-                + "arc:10;"
-                + "borderWidth:0;"
-                + "focusWidth:0;";
-
-        if (text.equalsIgnoreCase("THÊM")) {
-            style += ""
-                    + "background:#28A745;" // Xanh lá
-                    + "foreground:#FFFFFF;"
-                    + "hoverBackground:#218838;"
-                    + "pressedBackground:#1E7E34;";
-            button.putClientProperty(FlatClientProperties.STYLE, style);
-        } else if (text.equalsIgnoreCase("SỬA")) {
-            style += ""
-                    + "background:#007BFF;" // Xanh dương
-                    + "foreground:#FFFFFF;"
-                    + "hoverBackground:#0069D9;"
-                    + "pressedBackground:#0056B3;";
-            button.putClientProperty(FlatClientProperties.STYLE, style);
-        } else if (text.equalsIgnoreCase("XÓA")) {
-            style += ""
-                    + "background:#DC3545;" // Đỏ
-                    + "foreground:#FFFFFF;"
-                    + "hoverBackground:#C82333;"
-                    + "pressedBackground:#BD2130;";
-            button.putClientProperty(FlatClientProperties.STYLE, style);
-        } else if (text.equalsIgnoreCase("Tìm kiếm")) {
-            button.setPreferredSize(new java.awt.Dimension(150, 40));
-            style += ""
-                    + "background:#28A745;" // Xanh lá giống nút THÊM
-                    + "foreground:#FFFFFF;"
-                    + "hoverBackground:#218838;"
-                    + "pressedBackground:#1E7E34;";
-            button.putClientProperty(FlatClientProperties.STYLE, style);
-        }
+    private void applyStyles() {
+        // Buttons chính
+        ButtonStyles.apply(btnThem, ButtonStyles.Type.SUCCESS);
+        FontStyles.apply(btnThem, FontStyles.Type.BUTTON_MEDIUM);
+        btnThem.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnThem.setPreferredSize(new java.awt.Dimension(95, 40));
+        
+        ButtonStyles.apply(btnSua, ButtonStyles.Type.PRIMARY);
+        FontStyles.apply(btnSua, FontStyles.Type.BUTTON_MEDIUM);
+        btnSua.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnSua.setPreferredSize(new java.awt.Dimension(95, 40));
+        
+        ButtonStyles.apply(btnXoa, ButtonStyles.Type.DANGER);
+        FontStyles.apply(btnXoa, FontStyles.Type.BUTTON_MEDIUM);
+        btnXoa.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnXoa.setPreferredSize(new java.awt.Dimension(95, 40));
+        
+        ButtonStyles.apply(btnTimKiem, ButtonStyles.Type.SUCCESS);
+        FontStyles.apply(btnTimKiem, FontStyles.Type.BUTTON_MEDIUM);
+        btnTimKiem.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnTimKiem.setPreferredSize(new java.awt.Dimension(150, 40));
     }
     
     private void setupModalStyle() {

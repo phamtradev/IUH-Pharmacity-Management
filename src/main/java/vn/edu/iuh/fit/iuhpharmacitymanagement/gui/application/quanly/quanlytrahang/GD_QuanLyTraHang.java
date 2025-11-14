@@ -30,6 +30,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import java.awt.Component;
 import java.awt.FlowLayout;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
 
 /**
  *
@@ -60,13 +61,7 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
         jDateTo.setDate(Date.valueOf(LocalDate.now()));
         
         // Style cho button Xem chi tiết - màu xanh nước biển, kích thước nhỏ
-        btnView.putClientProperty(FlatClientProperties.STYLE, ""
-                + "background:#17A2B8;"
-                + "foreground:#FFFFFF;"
-                + "hoverBackground:#138496;"
-                + "pressedBackground:#0F6674;"
-                + "arc:10;"
-                + "borderWidth:0");
+        ButtonStyles.apply(btnView, ButtonStyles.Type.INFO);
     }
 
     private void fillTable() {
@@ -192,14 +187,7 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
             public Component getTableCellRendererComponent(JTable table, Object value,
                     boolean isSelected, boolean hasFocus, int row, int column) {
                 JButton btnAction = new JButton("Xem chi tiết");
-                btnAction.putClientProperty(FlatClientProperties.STYLE, ""
-                        + "background:#17A2B8;"
-                        + "foreground:#000000;"
-                        + "hoverBackground:#138496;"
-                        + "pressedBackground:#0F6674;"
-                        + "arc:8;"
-                        + "borderWidth:0");
-                btnAction.setFocusPainted(false);
+                ButtonStyles.apply(btnAction, ButtonStyles.Type.INFO);
                 btnAction.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
                 return btnAction;
             }
@@ -338,12 +326,7 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
             
             javax.swing.JButton btnDong = new javax.swing.JButton("Đóng");
             btnDong.setPreferredSize(new java.awt.Dimension(120, 40));
-            btnDong.putClientProperty(FlatClientProperties.STYLE, ""
-                    + "background:#6C757D;"
-                    + "foreground:#FFFFFF;"
-                    + "hoverBackground:#5A6268;"
-                    + "arc:10;"
-                    + "borderWidth:0");
+            ButtonStyles.apply(btnDong, ButtonStyles.Type.SECONDARY);
             btnDong.addActionListener(e -> {
                 dialog.dispose();
                 // Refresh lại bảng ngoài để cập nhật trạng thái mới nhất (không hiện notification)
@@ -437,23 +420,13 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
                     JButton btnThemVaoKho = new JButton("Thêm vào kho");
                     btnThemVaoKho.setPreferredSize(new java.awt.Dimension(110, 32));
                     btnThemVaoKho.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 11));
-                    btnThemVaoKho.putClientProperty(FlatClientProperties.STYLE, ""
-                            + "background:#28A745;"
-                            + "foreground:#FFFFFF;"
-                            + "hoverBackground:#218838;"
-                            + "arc:6;"
-                            + "borderWidth:0");
+                    ButtonStyles.apply(btnThemVaoKho, ButtonStyles.Type.SUCCESS);
                     btnThemVaoKho.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
                     
                     JButton btnXuatHuy = new JButton("Xuất hủy");
                     btnXuatHuy.setPreferredSize(new java.awt.Dimension(90, 32));
                     btnXuatHuy.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 11));
-                    btnXuatHuy.putClientProperty(FlatClientProperties.STYLE, ""
-                            + "background:#DC3545;"
-                            + "foreground:#FFFFFF;"
-                            + "hoverBackground:#C82333;"
-                            + "arc:6;"
-                            + "borderWidth:0");
+                    ButtonStyles.apply(btnXuatHuy, ButtonStyles.Type.DANGER);
                     btnXuatHuy.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
                     
                     panel.add(btnThemVaoKho);
@@ -495,24 +468,14 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
                     btnThemVaoKho = new JButton("Thêm vào kho");
                     btnThemVaoKho.setPreferredSize(new java.awt.Dimension(110, 32));
                     btnThemVaoKho.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 11));
-                    btnThemVaoKho.putClientProperty(FlatClientProperties.STYLE, ""
-                            + "background:#28A745;"
-                            + "foreground:#FFFFFF;"
-                            + "hoverBackground:#218838;"
-                            + "arc:6;"
-                            + "borderWidth:0");
+                    ButtonStyles.apply(btnThemVaoKho, ButtonStyles.Type.SUCCESS);
                     btnThemVaoKho.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
                     btnThemVaoKho.setFocusable(false);
                     
                     btnXuatHuy = new JButton("Xuất hủy");
                     btnXuatHuy.setPreferredSize(new java.awt.Dimension(90, 32));
                     btnXuatHuy.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 11));
-                    btnXuatHuy.putClientProperty(FlatClientProperties.STYLE, ""
-                            + "background:#DC3545;"
-                            + "foreground:#FFFFFF;"
-                            + "hoverBackground:#C82333;"
-                            + "arc:6;"
-                            + "borderWidth:0");
+                    ButtonStyles.apply(btnXuatHuy, ButtonStyles.Type.DANGER);
                     btnXuatHuy.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
                     btnXuatHuy.setFocusable(false);
                     

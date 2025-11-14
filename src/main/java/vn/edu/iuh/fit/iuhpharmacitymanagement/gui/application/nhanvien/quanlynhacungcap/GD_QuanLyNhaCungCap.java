@@ -15,6 +15,7 @@ import javax.swing.table.DefaultTableModel;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.common.TableDesign;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.NhaCungCapBUS;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.FontStyles;
 
 /**
  *
@@ -29,37 +30,35 @@ public class GD_QuanLyNhaCungCap extends javax.swing.JPanel {
         this.nhaCungCapBUS = new NhaCungCapBUS();
         initComponents();
 
-        //sì tai cho các nút
-        styleButton(btnThem, "THÊM");
-        styleButton(btnSua, "SỬA");
-        styleButton(btnXoa, "Xóa");
-        styleButton(btnTimKiem, "Tìm kiếm");
+        // Áp dụng ButtonStyles và FontStyles
+        applyStyles();
         
         setUIManager();
         fillTable();
         setupModalSize();
     }
 
-    private void styleButton(javax.swing.JButton button, String text) {
-        button.setText(text);
-        button.setFont(new java.awt.Font("Segoe UI", 1, 14));
-        button.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        button.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        button.setVerticalTextPosition(javax.swing.SwingConstants.CENTER);
-        button.setPreferredSize(new java.awt.Dimension(95, 40));
-
-        ButtonStyles.Type type = ButtonStyles.Type.SECONDARY;
-        if (text.equalsIgnoreCase("THÊM")) {
-            type = ButtonStyles.Type.SUCCESS;
-        } else if (text.equalsIgnoreCase("SỬA")) {
-            type = ButtonStyles.Type.PRIMARY;
-        } else if (text.equalsIgnoreCase("XÓA") || text.equalsIgnoreCase("Xóa")) {
-            type = ButtonStyles.Type.DANGER;
-        } else if (text.equalsIgnoreCase("Tìm kiếm")) {
-            button.setPreferredSize(new java.awt.Dimension(150, 40));
-            type = ButtonStyles.Type.SUCCESS;
-        }
-        ButtonStyles.apply(button, type);
+    private void applyStyles() {
+        // Buttons chính
+        ButtonStyles.apply(btnThem, ButtonStyles.Type.SUCCESS);
+        FontStyles.apply(btnThem, FontStyles.Type.BUTTON_MEDIUM);
+        btnThem.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnThem.setPreferredSize(new java.awt.Dimension(95, 40));
+        
+        ButtonStyles.apply(btnSua, ButtonStyles.Type.PRIMARY);
+        FontStyles.apply(btnSua, FontStyles.Type.BUTTON_MEDIUM);
+        btnSua.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnSua.setPreferredSize(new java.awt.Dimension(95, 40));
+        
+        ButtonStyles.apply(btnXoa, ButtonStyles.Type.DANGER);
+        FontStyles.apply(btnXoa, FontStyles.Type.BUTTON_MEDIUM);
+        btnXoa.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnXoa.setPreferredSize(new java.awt.Dimension(95, 40));
+        
+        ButtonStyles.apply(btnTimKiem, ButtonStyles.Type.SUCCESS);
+        FontStyles.apply(btnTimKiem, FontStyles.Type.BUTTON_MEDIUM);
+        btnTimKiem.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnTimKiem.setPreferredSize(new java.awt.Dimension(150, 40));
     }
 
     private void setupModalSize() {

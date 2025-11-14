@@ -29,6 +29,8 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.LoHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham;
 import raven.toast.Notifications;
 import javax.swing.UIManager;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.FontStyles;
 
 /**
  *
@@ -67,10 +69,8 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
 
         initComponents();
 
-        styleButton(btnAdd, "THÊM");
-        styleButton(btnUpdate, "SỬA");
-        styleButton(btnDelete, "Xóa");
-        styleButton(btnOpenModalAddSup, "Tìm kiếm");
+        // Áp dụng ButtonStyles và FontStyles
+        applyStyles();
 
         styleTextField(txtSearchNamePD, "Nhập tên sản phẩm hoặc số đăng ký");
 
@@ -86,8 +86,31 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         }
     }
 
+    private void applyStyles() {
+        // Buttons chính
+        ButtonStyles.apply(btnAdd, ButtonStyles.Type.SUCCESS);
+        FontStyles.apply(btnAdd, FontStyles.Type.BUTTON_MEDIUM);
+        btnAdd.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnAdd.setPreferredSize(new java.awt.Dimension(95, 40));
+        
+        ButtonStyles.apply(btnUpdate, ButtonStyles.Type.PRIMARY);
+        FontStyles.apply(btnUpdate, FontStyles.Type.BUTTON_MEDIUM);
+        btnUpdate.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnUpdate.setPreferredSize(new java.awt.Dimension(95, 40));
+        
+        ButtonStyles.apply(btnDelete, ButtonStyles.Type.DANGER);
+        FontStyles.apply(btnDelete, FontStyles.Type.BUTTON_MEDIUM);
+        btnDelete.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnDelete.setPreferredSize(new java.awt.Dimension(95, 40));
+        
+        ButtonStyles.apply(btnOpenModalAddSup, ButtonStyles.Type.SUCCESS);
+        FontStyles.apply(btnOpenModalAddSup, FontStyles.Type.BUTTON_MEDIUM);
+        btnOpenModalAddSup.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnOpenModalAddSup.setPreferredSize(new java.awt.Dimension(150, 40));
+    }
+
     private void styleTextField(javax.swing.JTextField textField, String hintText) {
-        textField.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 14));
+        FontStyles.apply(textField, FontStyles.Type.INPUT_FIELD);
         textField.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, hintText);
         textField.putClientProperty(FlatClientProperties.TEXT_FIELD_SHOW_CLEAR_BUTTON, true); // nút clear (x)
 
@@ -100,51 +123,6 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
                 + "borderColor:rgb(150,180,255);"
                 + "focusColor:rgb(51,153,255);"
         );
-    }
-
-    private void styleButton(javax.swing.JButton button, String text) {
-        button.setText(text);
-        button.setFont(new java.awt.Font("Segoe UI", 1, 14));
-        button.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        button.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        button.setVerticalTextPosition(javax.swing.SwingConstants.CENTER);
-        button.setPreferredSize(new java.awt.Dimension(95, 40));
-
-        String style = ""
-                + "arc:10;"
-                + "borderWidth:0;"
-                + "focusWidth:0;";
-
-        if (text.equalsIgnoreCase("THÊM")) {
-            style += ""
-                    + "background:#28A745;" // Xanh lá
-                    + "foreground:#FFFFFF;"
-                    + "hoverBackground:#218838;"
-                    + "pressedBackground:#1E7E34;";
-            button.putClientProperty(FlatClientProperties.STYLE, style);
-        } else if (text.equalsIgnoreCase("SỬA")) {
-            style += ""
-                    + "background:#007BFF;" // Xanh dương
-                    + "foreground:#FFFFFF;"
-                    + "hoverBackground:#0069D9;"
-                    + "pressedBackground:#0056B3;";
-            button.putClientProperty(FlatClientProperties.STYLE, style);
-        } else if (text.equalsIgnoreCase("XÓA")) {
-            style += ""
-                    + "background:#DC3545;" // Đỏ
-                    + "foreground:#FFFFFF;"
-                    + "hoverBackground:#C82333;"
-                    + "pressedBackground:#BD2130;";
-            button.putClientProperty(FlatClientProperties.STYLE, style);
-        } else if (text.equalsIgnoreCase("Tìm kiếm")) {
-            button.setPreferredSize(new java.awt.Dimension(150, 40));
-            style += ""
-                    + "background:#28A745;" // Xanh lá giống nút THÊM
-                    + "foreground:#FFFFFF;"
-                    + "hoverBackground:#218838;"
-                    + "pressedBackground:#1E7E34;";
-            button.putClientProperty(FlatClientProperties.STYLE, style);
-        }
     }
 
     private void initGlobalTextFieldStyle() {

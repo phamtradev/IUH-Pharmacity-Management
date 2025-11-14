@@ -56,6 +56,16 @@ public class GD_QuanLyKhuyenMai extends javax.swing.JPanel {
         ButtonStyles.apply(btnXemChiTiet, ButtonStyles.Type.INFO);
         ButtonStyles.apply(btnTimKiem, ButtonStyles.Type.INFO);
         ButtonStyles.apply(btnLamMoi, ButtonStyles.Type.PRIMARY);
+        
+        // Đảm bảo style được áp dụng
+        SwingUtilities.invokeLater(() -> {
+            btnThem.repaint();
+            btnSua.repaint();
+            btnXoa.repaint();
+            btnXemChiTiet.repaint();
+            btnTimKiem.repaint();
+            btnLamMoi.repaint();
+        });
     }
 
     private void fillTable() {
