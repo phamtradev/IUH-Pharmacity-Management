@@ -43,6 +43,7 @@ public class SanPham {
     public static final String GIA_NHAP_SAI = "Giá nhập phải là số nguyên dương lớn hơn 0";
     public static final String GIA_BAN_SAI = "Giá bán phải là số nguyên dương lớn hơn 0 và phải lớn hơn giá nhập";
     public static final String LOAI_SAN_PHAM_RONG = "Loại sản phẩm không được để trống";
+    public static final String HINH_ANH_RONG = "Hình ảnh không được để trống";
     public static final String MA_SAN_PHAM_REGEX = "^SP\\d{5}$";
     
     public SanPham() {
@@ -205,7 +206,10 @@ public class SanPham {
         return hinhAnh;
     }
 
-    public void setHinhAnh(String hinhAnh) {
+    public void setHinhAnh(String hinhAnh) throws Exception {
+        if (hinhAnh.isBlank()) {
+            throw new Exception(HINH_ANH_RONG);
+        }
         this.hinhAnh = hinhAnh;
     }
 
