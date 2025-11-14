@@ -620,21 +620,19 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
         pnAll.add(pnlTieuDe, java.awt.BorderLayout.PAGE_START);
 
         pnlThongTin.setBackground(new java.awt.Color(255, 255, 255));
+        pnlThongTin.setLayout(new java.awt.BorderLayout());
 
-        javax.swing.GroupLayout pnlThongTinLayout = new javax.swing.GroupLayout(pnlThongTin);
-        pnlThongTin.setLayout(pnlThongTinLayout);
-        pnlThongTinLayout.setHorizontalGroup(
-                pnlThongTinLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGap(0, 1226, Short.MAX_VALUE)
-                        .addGroup(pnlThongTinLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(scrollTable, javax.swing.GroupLayout.Alignment.TRAILING,
-                                        javax.swing.GroupLayout.DEFAULT_SIZE, 1226, Short.MAX_VALUE)));
-        pnlThongTinLayout.setVerticalGroup(
-                pnlThongTinLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGap(0, 369, Short.MAX_VALUE)
-                        .addGroup(pnlThongTinLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(scrollTable, javax.swing.GroupLayout.Alignment.TRAILING,
-                                        javax.swing.GroupLayout.DEFAULT_SIZE, 369, Short.MAX_VALUE)));
+        // Thêm tiêu đề "DANH SÁCH THÔNG TIN KHÁCH HÀNG"
+        javax.swing.JPanel titlePanel = new javax.swing.JPanel(
+                new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 12));
+        titlePanel.setBackground(new java.awt.Color(23, 162, 184)); // Màu xanh cyan
+        javax.swing.JLabel lblTitle = new javax.swing.JLabel("DANH SÁCH THÔNG TIN KHÁCH HÀNG");
+        lblTitle.setFont(new java.awt.Font("Segoe UI", 1, 16));
+        lblTitle.setForeground(new java.awt.Color(255, 255, 255)); // Chữ màu trắng
+        titlePanel.add(lblTitle);
+        pnlThongTin.add(titlePanel, java.awt.BorderLayout.NORTH);
+
+        pnlThongTin.add(scrollTable, java.awt.BorderLayout.CENTER);
 
         pnAll.add(pnlThongTin, java.awt.BorderLayout.CENTER);
 
