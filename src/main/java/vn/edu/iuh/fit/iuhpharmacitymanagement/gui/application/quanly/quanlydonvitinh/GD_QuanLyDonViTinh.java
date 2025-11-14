@@ -13,6 +13,7 @@ import java.util.List;
 import javax.swing.BorderFactory;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.common.TableDesign;
 import raven.toast.Notifications;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
 
 /**
  *
@@ -26,104 +27,41 @@ public class GD_QuanLyDonViTinh extends javax.swing.JPanel {
     public GD_QuanLyDonViTinh() {
         this.donViTinhBUS = new DonViTinhBUS(new DonViTinhDAO());
         initComponents();
-        
-        //sì tai cho các nút
-        styleButton(btnThem, "THÊM");
-        styleButton(btnSua, "SỬA");
-        styleButton(btnXoa, "Xóa");
-        styleButton(btnTimKiem, "Tìm kiếm");
-        
+
+        // Apply ButtonStyles
+        ButtonStyles.apply(btnThem, ButtonStyles.Type.SUCCESS);
+        ButtonStyles.apply(btnSua, ButtonStyles.Type.PRIMARY);
+        ButtonStyles.apply(btnXoa, ButtonStyles.Type.DANGER);
+        ButtonStyles.apply(btnTimKiem, ButtonStyles.Type.INFO);
+
         setUIManager();
         setupModalStyle();
         fillTable();
     }
-    
-        private void styleButton(javax.swing.JButton button, String text) {
-        button.setText(text);
-        button.setFont(new java.awt.Font("Segoe UI", 1, 14));
-        button.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        button.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        button.setVerticalTextPosition(javax.swing.SwingConstants.CENTER);
-        button.setPreferredSize(new java.awt.Dimension(95, 40));
 
-        String style = ""
-                + "arc:10;"
-                + "borderWidth:0;"
-                + "focusWidth:0;";
-
-        if (text.equalsIgnoreCase("THÊM")) {
-            style += ""
-                    + "background:#28A745;" // Xanh lá
-                    + "foreground:#FFFFFF;"
-                    + "hoverBackground:#218838;"
-                    + "pressedBackground:#1E7E34;";
-            button.putClientProperty(FlatClientProperties.STYLE, style);
-        } else if (text.equalsIgnoreCase("SỬA")) {
-            style += ""
-                    + "background:#007BFF;" // Xanh dương
-                    + "foreground:#FFFFFF;"
-                    + "hoverBackground:#0069D9;"
-                    + "pressedBackground:#0056B3;";
-            button.putClientProperty(FlatClientProperties.STYLE, style);
-        } else if (text.equalsIgnoreCase("XÓA")) {
-            style += ""
-                    + "background:#DC3545;" // Đỏ
-                    + "foreground:#FFFFFF;"
-                    + "hoverBackground:#C82333;"
-                    + "pressedBackground:#BD2130;";
-            button.putClientProperty(FlatClientProperties.STYLE, style);
-        } else if (text.equalsIgnoreCase("Tìm kiếm")) {
-            button.setPreferredSize(new java.awt.Dimension(150, 40));
-            style += ""
-                    + "background:#28A745;" // Xanh lá giống nút THÊM
-                    + "foreground:#FFFFFF;"
-                    + "hoverBackground:#218838;"
-                    + "pressedBackground:#1E7E34;";
-            button.putClientProperty(FlatClientProperties.STYLE, style);
-        }
-    }
-    
     private void setupModalStyle() {
         // Cấu hình Modal Add
         modalAddUnit.setTitle("THÊM ĐƠN VỊ TÍNH MỚI");
         modalAddUnit.setSize(750, 300);
-        
+
         // Cấu hình Modal Edit
         modalEditUnit.setTitle("CẬP NHẬT ĐƠN VỊ TÍNH");
         modalEditUnit.setSize(750, 300);
-        
+
         // Loại bỏ viền thừa của panel trong modal
         jPanel2.putClientProperty(FlatClientProperties.STYLE, "background:#F8F9FA;border:0,0,0,0");
         jPanel3.putClientProperty(FlatClientProperties.STYLE, "background:#F8F9FA;border:0,0,0,0");
-        
+
         // Style cho text fields
         txtNameUnitAdd.putClientProperty(FlatClientProperties.STYLE, "arc:10");
         txtNameUnitEdit.putClientProperty(FlatClientProperties.STYLE, "arc:10");
         txtTimKiem.putClientProperty(FlatClientProperties.STYLE, "arc:10");
-        
-        // Style cho buttons trong modal Add - giống modal Quản lý Sản phẩm
-        btnAddUnit.putClientProperty(FlatClientProperties.STYLE, ""
-                + "background:#5C6BC0;"
-                + "foreground:#FFFFFF;"
-                + "hoverBackground:#4A5AB3;"
-                + "pressedBackground:#3949AB;"
-                + "arc:10;"
-                + "borderWidth:0");
-        
-        btnExitModalAdd.putClientProperty(FlatClientProperties.STYLE, ""
-                + "arc:10");
-        
-        // Style cho buttons trong modal Edit - giống modal Quản lý Sản phẩm
-        btnEditUnit.putClientProperty(FlatClientProperties.STYLE, ""
-                + "background:#5C6BC0;"
-                + "foreground:#FFFFFF;"
-                + "hoverBackground:#4A5AB3;"
-                + "pressedBackground:#3949AB;"
-                + "arc:10;"
-                + "borderWidth:0");
-        
-        btnExitModalEdit.putClientProperty(FlatClientProperties.STYLE, ""
-                + "arc:10");
+
+        // Apply ButtonStyles cho các button trong modal
+        ButtonStyles.apply(btnAddUnit, ButtonStyles.Type.SUCCESS);
+        ButtonStyles.apply(btnExitModalAdd, ButtonStyles.Type.SECONDARY);
+        ButtonStyles.apply(btnEditUnit, ButtonStyles.Type.PRIMARY);
+        ButtonStyles.apply(btnExitModalEdit, ButtonStyles.Type.SECONDARY);
     }
 
     private void setUIManager() {
@@ -133,7 +71,7 @@ public class GD_QuanLyDonViTinh extends javax.swing.JPanel {
     }
 
     private void fillTable() {
-        String[] headers = {"Mã đơn vị tính", "Tên"};
+        String[] headers = { "Mã đơn vị tính", "Tên" };
         List<Integer> tableWidths = Arrays.asList(200, 800);
         tableDesign = new TableDesign(headers, tableWidths);
         scrollTable.setViewportView(tableDesign.getTable());
@@ -145,8 +83,8 @@ public class GD_QuanLyDonViTinh extends javax.swing.JPanel {
     private void fillContent(List<DonViTinh> donViTinhs) {
         tableDesign.getModelTable().setRowCount(0);
         for (DonViTinh dvt : donViTinhs) {
-            tableDesign.getModelTable().addRow(new Object[]{dvt.getMaDonVi(),
-                dvt.getTenDonVi(), null});
+            tableDesign.getModelTable().addRow(new Object[] { dvt.getMaDonVi(),
+                    dvt.getTenDonVi(), null });
         }
     }
 
@@ -156,7 +94,8 @@ public class GD_QuanLyDonViTinh extends javax.swing.JPanel {
      * regenerated by the Form Editor.
      */
     @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated
+    // Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
         modalAddUnit = new javax.swing.JDialog();
@@ -224,50 +163,56 @@ public class GD_QuanLyDonViTinh extends javax.swing.JPanel {
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel2Layout.createSequentialGroup()
-                        .addGap(49, 49, 49)
-                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(txtNameUnitAdd)))
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addContainerGap(509, Short.MAX_VALUE)
-                        .addComponent(btnAddUnit, javax.swing.GroupLayout.PREFERRED_SIZE, 87, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnExitModalAdd, javax.swing.GroupLayout.PREFERRED_SIZE, 87, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(49, 49, 49))
-        );
+                jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel2Layout
+                                                .createSequentialGroup()
+                                                .addGap(49, 49, 49)
+                                                .addGroup(jPanel2Layout
+                                                        .createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                        .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE,
+                                                                132, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                        .addComponent(txtNameUnitAdd)))
+                                        .addGroup(jPanel2Layout.createSequentialGroup()
+                                                .addContainerGap(509, Short.MAX_VALUE)
+                                                .addComponent(btnAddUnit, javax.swing.GroupLayout.PREFERRED_SIZE, 87,
+                                                        javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(btnExitModalAdd, javax.swing.GroupLayout.PREFERRED_SIZE,
+                                                        87, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addGap(49, 49, 49)));
         jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addGap(41, 41, 41)
-                .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(txtNameUnitAdd, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(33, 33, 33)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnExitModalAdd, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnAddUnit, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(56, Short.MAX_VALUE))
-        );
+                jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addGap(41, 41, 41)
+                                .addComponent(jLabel1)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(txtNameUnitAdd, javax.swing.GroupLayout.PREFERRED_SIZE, 46,
+                                        javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(33, 33, 33)
+                                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                        .addComponent(btnExitModalAdd, javax.swing.GroupLayout.PREFERRED_SIZE, 38,
+                                                javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(btnAddUnit, javax.swing.GroupLayout.PREFERRED_SIZE, 38,
+                                                javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addContainerGap(56, Short.MAX_VALUE)));
 
         javax.swing.GroupLayout modalAddUnitLayout = new javax.swing.GroupLayout(modalAddUnit.getContentPane());
         modalAddUnit.getContentPane().setLayout(modalAddUnitLayout);
         modalAddUnitLayout.setHorizontalGroup(
-            modalAddUnitLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(modalAddUnitLayout.createSequentialGroup()
-                .addGap(0, 0, Short.MAX_VALUE)
-                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
-        );
+                modalAddUnitLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(modalAddUnitLayout.createSequentialGroup()
+                                .addGap(0, 0, Short.MAX_VALUE)
+                                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE,
+                                        javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 0, Short.MAX_VALUE)));
         modalAddUnitLayout.setVerticalGroup(
-            modalAddUnitLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(modalAddUnitLayout.createSequentialGroup()
-                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
-        );
+                modalAddUnitLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(modalAddUnitLayout.createSequentialGroup()
+                                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE,
+                                        javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 0, Short.MAX_VALUE)));
 
         modalEditUnit.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         modalEditUnit.setTitle("Thêm đơn vị tính");
@@ -303,50 +248,56 @@ public class GD_QuanLyDonViTinh extends javax.swing.JPanel {
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel3Layout.createSequentialGroup()
-                        .addGap(49, 49, 49)
-                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(txtNameUnitEdit)))
-                    .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addContainerGap(509, Short.MAX_VALUE)
-                        .addComponent(btnEditUnit, javax.swing.GroupLayout.PREFERRED_SIZE, 87, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnExitModalEdit, javax.swing.GroupLayout.PREFERRED_SIZE, 87, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(49, 49, 49))
-        );
+                jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
+                                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel3Layout
+                                                .createSequentialGroup()
+                                                .addGap(49, 49, 49)
+                                                .addGroup(jPanel3Layout
+                                                        .createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                        .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE,
+                                                                132, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                        .addComponent(txtNameUnitEdit)))
+                                        .addGroup(jPanel3Layout.createSequentialGroup()
+                                                .addContainerGap(509, Short.MAX_VALUE)
+                                                .addComponent(btnEditUnit, javax.swing.GroupLayout.PREFERRED_SIZE, 87,
+                                                        javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(btnExitModalEdit, javax.swing.GroupLayout.PREFERRED_SIZE,
+                                                        87, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addGap(49, 49, 49)));
         jPanel3Layout.setVerticalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel3Layout.createSequentialGroup()
-                .addGap(41, 41, 41)
-                .addComponent(jLabel2)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(txtNameUnitEdit, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(33, 33, 33)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnExitModalEdit, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnEditUnit, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(56, Short.MAX_VALUE))
-        );
+                jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(jPanel3Layout.createSequentialGroup()
+                                .addGap(41, 41, 41)
+                                .addComponent(jLabel2)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(txtNameUnitEdit, javax.swing.GroupLayout.PREFERRED_SIZE, 46,
+                                        javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(33, 33, 33)
+                                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                        .addComponent(btnExitModalEdit, javax.swing.GroupLayout.PREFERRED_SIZE, 38,
+                                                javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(btnEditUnit, javax.swing.GroupLayout.PREFERRED_SIZE, 38,
+                                                javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addContainerGap(56, Short.MAX_VALUE)));
 
         javax.swing.GroupLayout modalEditUnitLayout = new javax.swing.GroupLayout(modalEditUnit.getContentPane());
         modalEditUnit.getContentPane().setLayout(modalEditUnitLayout);
         modalEditUnitLayout.setHorizontalGroup(
-            modalEditUnitLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(modalEditUnitLayout.createSequentialGroup()
-                .addGap(0, 0, Short.MAX_VALUE)
-                .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
-        );
+                modalEditUnitLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(modalEditUnitLayout.createSequentialGroup()
+                                .addGap(0, 0, Short.MAX_VALUE)
+                                .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE,
+                                        javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 0, Short.MAX_VALUE)));
         modalEditUnitLayout.setVerticalGroup(
-            modalEditUnitLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(modalEditUnitLayout.createSequentialGroup()
-                .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
-        );
+                modalEditUnitLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(modalEditUnitLayout.createSequentialGroup()
+                                .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE,
+                                        javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 0, Short.MAX_VALUE)));
 
         setBackground(new java.awt.Color(204, 204, 0));
 
@@ -451,26 +402,27 @@ public class GD_QuanLyDonViTinh extends javax.swing.JPanel {
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(pnAll, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(pnAll, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE,
+                                Short.MAX_VALUE));
         layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(pnAll, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(pnAll, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE,
+                                Short.MAX_VALUE));
     }// </editor-fold>//GEN-END:initComponents
 
-    private void btnExitModalAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExitModalAddActionPerformed
+    private void btnExitModalAddActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_btnExitModalAddActionPerformed
         txtNameUnitAdd.setText("");
         modalAddUnit.dispose();
-    }//GEN-LAST:event_btnExitModalAddActionPerformed
+    }// GEN-LAST:event_btnExitModalAddActionPerformed
 
-    private void btnAddUnitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddUnitActionPerformed
+    private void btnAddUnitActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_btnAddUnitActionPerformed
         String name = txtNameUnitAdd.getText().trim();
         if (!name.equals("")) {
             try {
                 if (donViTinhBUS.kiemTraTonTaiTheoTen(name)) {
-                    Notifications.getInstance().show(Notifications.Type.WARNING, "Tên đơn vị tính đã tồn tại trong hệ thống.");
+                    Notifications.getInstance().show(Notifications.Type.WARNING,
+                            "Tên đơn vị tính đã tồn tại trong hệ thống.");
                     return;
                 }
                 donViTinhBUS.taoDonViTinh(new DonViTinh(null, name));
@@ -479,15 +431,16 @@ public class GD_QuanLyDonViTinh extends javax.swing.JPanel {
                 modalAddUnit.dispose();
                 fillContent(donViTinhBUS.layTatCaDonViTinh());
             } catch (Exception e) {
-                Notifications.getInstance().show(Notifications.Type.ERROR, "Lỗi khi thêm đơn vị tính: " + e.getMessage());
+                Notifications.getInstance().show(Notifications.Type.ERROR,
+                        "Lỗi khi thêm đơn vị tính: " + e.getMessage());
             }
         } else {
             Notifications.getInstance().show(Notifications.Type.WARNING, "Dữ liệu nhập không được rỗng.");
         }
 
-    }//GEN-LAST:event_btnAddUnitActionPerformed
+    }// GEN-LAST:event_btnAddUnitActionPerformed
 
-    private void btnEditUnitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEditUnitActionPerformed
+    private void btnEditUnitActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_btnEditUnitActionPerformed
         String name = txtNameUnitEdit.getText().trim();
         if (!name.equals("")) {
             try {
@@ -495,7 +448,8 @@ public class GD_QuanLyDonViTinh extends javax.swing.JPanel {
 
                 // Kiểm tra tên đơn vị tính đã tồn tại chưa (trừ chính nó)
                 if (donViTinhBUS.kiemTraTonTaiTheoTen(name) && !donViTinh.getTenDonVi().equals(name)) {
-                    Notifications.getInstance().show(Notifications.Type.WARNING, "Tên đơn vị tính đã tồn tại trong hệ thống.");
+                    Notifications.getInstance().show(Notifications.Type.WARNING,
+                            "Tên đơn vị tính đã tồn tại trong hệ thống.");
                     return;
                 }
 
@@ -507,19 +461,20 @@ public class GD_QuanLyDonViTinh extends javax.swing.JPanel {
                 modalEditUnit.dispose();
                 fillContent(donViTinhBUS.layTatCaDonViTinh());
             } catch (Exception e) {
-                Notifications.getInstance().show(Notifications.Type.ERROR, "Lỗi khi sửa đơn vị tính: " + e.getMessage());
+                Notifications.getInstance().show(Notifications.Type.ERROR,
+                        "Lỗi khi sửa đơn vị tính: " + e.getMessage());
             }
         } else {
             Notifications.getInstance().show(Notifications.Type.WARNING, "Tên đơn vị tính không được rỗng.");
         }
-    }//GEN-LAST:event_btnEditUnitActionPerformed
+    }// GEN-LAST:event_btnEditUnitActionPerformed
 
-    private void btnExitModalEditActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExitModalEditActionPerformed
+    private void btnExitModalEditActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_btnExitModalEditActionPerformed
         txtNameUnitEdit.setText("");
         modalEditUnit.dispose();
-    }//GEN-LAST:event_btnExitModalEditActionPerformed
+    }// GEN-LAST:event_btnExitModalEditActionPerformed
 
-    private void btnTimKiemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTimKiemActionPerformed
+    private void btnTimKiemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_btnTimKiemActionPerformed
         try {
             String name = txtTimKiem.getText().trim();
             List<DonViTinh> donViTinhs = donViTinhBUS.timDonViTinhTheoTenGanDung(name);
@@ -527,9 +482,9 @@ public class GD_QuanLyDonViTinh extends javax.swing.JPanel {
         } catch (Exception e) {
             Notifications.getInstance().show(Notifications.Type.ERROR, "Lỗi khi tìm kiếm: " + e.getMessage());
         }
-    }//GEN-LAST:event_btnTimKiemActionPerformed
+    }// GEN-LAST:event_btnTimKiemActionPerformed
 
-    private void btnSuaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSuaActionPerformed
+    private void btnSuaActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_btnSuaActionPerformed
         // TODO add your handling code here:
         int selectedRow = tableDesign.getTable().getSelectedRow();
         if (selectedRow != -1) {
@@ -541,32 +496,31 @@ public class GD_QuanLyDonViTinh extends javax.swing.JPanel {
                 tableDesign.getTable().getCellEditor().stopCellEditing();
             }
         }
-    }//GEN-LAST:event_btnSuaActionPerformed
+    }// GEN-LAST:event_btnSuaActionPerformed
 
-    private void btnThemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnThemActionPerformed
+    private void btnThemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_btnThemActionPerformed
         // TODO add your handling code here:
         modalAddUnit.setLocationRelativeTo(null);
         modalAddUnit.setVisible(true);
-    }//GEN-LAST:event_btnThemActionPerformed
+    }// GEN-LAST:event_btnThemActionPerformed
 
-    private void btnXoaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnXoaActionPerformed
+    private void btnXoaActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_btnXoaActionPerformed
         int selectedRow = tableDesign.getTable().getSelectedRow();
         if (selectedRow == -1) {
             Notifications.getInstance().show(Notifications.Type.WARNING, "Vui lòng chọn đơn vị tính cần xóa!");
             return;
         }
-        
+
         String maDonViTinh = (String) tableDesign.getTable().getValueAt(selectedRow, 0);
         String tenDonViTinh = (String) tableDesign.getTable().getValueAt(selectedRow, 1);
-        
+
         int confirm = javax.swing.JOptionPane.showConfirmDialog(
-            this,
-            "Bạn có chắc chắn muốn xóa đơn vị tính \"" + tenDonViTinh + "\" không?",
-            "Xác nhận xóa",
-            javax.swing.JOptionPane.YES_NO_OPTION,
-            javax.swing.JOptionPane.WARNING_MESSAGE
-        );
-        
+                this,
+                "Bạn có chắc chắn muốn xóa đơn vị tính \"" + tenDonViTinh + "\" không?",
+                "Xác nhận xóa",
+                javax.swing.JOptionPane.YES_NO_OPTION,
+                javax.swing.JOptionPane.WARNING_MESSAGE);
+
         if (confirm == javax.swing.JOptionPane.YES_OPTION) {
             try {
                 boolean result = donViTinhBUS.xoaDonViTinh(maDonViTinh);
@@ -580,13 +534,13 @@ public class GD_QuanLyDonViTinh extends javax.swing.JPanel {
                 Notifications.getInstance().show(Notifications.Type.ERROR, "Lỗi: " + e.getMessage());
             }
         }
-    }//GEN-LAST:event_btnXoaActionPerformed
+    }// GEN-LAST:event_btnXoaActionPerformed
 
-    private void modalAddUnitMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_modalAddUnitMouseClicked
+    private void modalAddUnitMouseClicked(java.awt.event.MouseEvent evt) {// GEN-FIRST:event_modalAddUnitMouseClicked
         // TODO add your handling code here:
-    }//GEN-LAST:event_modalAddUnitMouseClicked
+    }// GEN-LAST:event_modalAddUnitMouseClicked
 
-    private void txtTimKiemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtTimKiemActionPerformed
+    private void txtTimKiemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_txtTimKiemActionPerformed
         try {
             String name = txtTimKiem.getText().trim();
             List<DonViTinh> donViTinhs = donViTinhBUS.timDonViTinhTheoTenGanDung(name);
@@ -594,7 +548,7 @@ public class GD_QuanLyDonViTinh extends javax.swing.JPanel {
         } catch (Exception e) {
             Notifications.getInstance().show(Notifications.Type.ERROR, "Lỗi khi tìm kiếm: " + e.getMessage());
         }
-    }//GEN-LAST:event_txtTimKiemActionPerformed
+    }// GEN-LAST:event_txtTimKiemActionPerformed
 
     private String unitIdEdit;
     // Variables declaration - do not modify//GEN-BEGIN:variables

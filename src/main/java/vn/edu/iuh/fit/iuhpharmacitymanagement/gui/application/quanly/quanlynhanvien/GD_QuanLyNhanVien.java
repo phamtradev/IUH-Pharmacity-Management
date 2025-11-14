@@ -8,7 +8,6 @@ import com.formdev.flatlaf.FlatClientProperties;
 import java.util.Arrays;
 import java.util.List;
 import javax.swing.BorderFactory;
-import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.UIManager;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.NhanVienBUS;
