@@ -444,6 +444,16 @@ public class GD_QuanLyDonViTinh extends javax.swing.JPanel {
 
         pnlThongTin.setBackground(new java.awt.Color(255, 255, 255));
         pnlThongTin.setLayout(new java.awt.BorderLayout());
+        
+        // Thêm tiêu đề "DANH SÁCH THÔNG TIN ĐƠN VỊ TÍNH"
+        javax.swing.JPanel titlePanel = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 12));
+        titlePanel.setBackground(new java.awt.Color(23, 162, 184)); // Màu xanh cyan
+        javax.swing.JLabel lblTitle = new javax.swing.JLabel("DANH SÁCH THÔNG TIN ĐƠN VỊ TÍNH");
+        lblTitle.setFont(new java.awt.Font("Segoe UI", 1, 16));
+        lblTitle.setForeground(new java.awt.Color(255, 255, 255)); // Chữ màu trắng
+        titlePanel.add(lblTitle);
+        pnlThongTin.add(titlePanel, java.awt.BorderLayout.NORTH);
+        
         pnlThongTin.add(scrollTable, java.awt.BorderLayout.CENTER);
 
         pnAll.add(pnlThongTin, java.awt.BorderLayout.CENTER);
