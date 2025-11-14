@@ -15,7 +15,6 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhuyenMai;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietKhuyenMaiSanPham;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
-import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.FontStyles;
 import raven.toast.Notifications;
 
 import javax.swing.*;

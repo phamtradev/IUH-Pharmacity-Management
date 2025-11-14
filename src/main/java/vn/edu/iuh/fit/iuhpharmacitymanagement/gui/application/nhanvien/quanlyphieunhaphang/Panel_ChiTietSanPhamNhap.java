@@ -19,7 +19,6 @@ import javax.swing.JToggleButton;
 import javax.swing.ButtonGroup;
 import java.awt.Component;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
-import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.FontStyles;
 
 /**
  *

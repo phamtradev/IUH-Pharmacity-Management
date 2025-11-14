@@ -6,17 +6,9 @@ package vn.edu.iuh.fit.iuhpharmacitymanagement.common;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.Point;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.List;
-import javax.swing.BorderFactory;
-import javax.swing.DefaultCellEditor;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -72,15 +64,15 @@ public class TableDesign {
             @Override
             public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
                 Component c = super.prepareRenderer(renderer, row, column);
-                // Đổi màu cho dòng được chọn               
+                // Đổi màu cho dòng được chọn
                 if (isRowSelected(row)) {
                     c.setBackground(new Color(0xF5F5F5));
                 } else {
                     c.setBackground(getBackground());
                 }
                 setFont(c.getFont().deriveFont(Font.PLAIN, 15));
-//                JLabel label = (JLabel) c;
-//                label.setBorder(BorderFactory.createEmptyBorder(0, 12, 0, 10));
+                // JLabel label = (JLabel) c;
+                // label.setBorder(BorderFactory.createEmptyBorder(0, 12, 0, 10));
                 return c;
             }
         };
@@ -96,7 +88,7 @@ public class TableDesign {
 
         setupTableHeader(headers, tableWidth);
         setupTableAppearance();
-//        setupMouseListener();
+        // setupMouseListener();
     }
 
     private void setupTableHeader(String[] headers, List<Integer> tableWidth) {
