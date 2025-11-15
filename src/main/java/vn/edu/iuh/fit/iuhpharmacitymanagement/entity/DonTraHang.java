@@ -80,6 +80,7 @@ public class DonTraHang {
         if (thanhTien <= 0) {
             throw new Exception("thành tiền phải lớn hơn 0, không được rỗng");
         }
+        //this.thanhTien = thanhTien;
         this.thanhTien = thanhTien;
     }
 
