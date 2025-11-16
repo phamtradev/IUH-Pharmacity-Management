@@ -57,7 +57,8 @@ public class ChiTietDonTraHangBUS {
      */
     public ChiTietDonTraHang layChiTietDonTraHangTheoMa(String maDonTraHang) {
         return chiTietDonTraHangDAO.findById(maDonTraHang)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy chi tiết đơn trả hàng với mã = " + maDonTraHang));
+                .orElseThrow(
+                        () -> new RuntimeException("Không tìm thấy chi tiết đơn trả hàng với mã = " + maDonTraHang));
     }
 
     /**
@@ -146,5 +147,26 @@ public class ChiTietDonTraHangBUS {
      */
     public List<ChiTietDonTraHang> layTatCaChiTietCanHuy() {
         return chiTietDonTraHangDAO.findAllWithDetails();
+    }
+
+    /**
+     * Xóa một chi tiết đơn trả hàng sau khi đã xử lý xong
+     * 
+     * @param maDonTra  Mã đơn trả hàng
+     * @param maSanPham Mã sản phẩm
+     * @return true nếu xóa thành công
+     */
+    public boolean xoaChiTiet(String maDonTra, String maSanPham) {
+        return chiTietDonTraHangDAO.delete(maDonTra, maSanPham);
+    }
+
+    /**
+     * Cập nhật trạng thái xử lý của một chi tiết đơn trả hàng
+     * 
+     * @param chiTiet Chi tiết đơn trả hàng cần cập nhật
+     * @return true nếu cập nhật thành công
+     */
+    public boolean capNhatTrangThaiChiTiet(ChiTietDonTraHang chiTiet) {
+        return chiTietDonTraHangDAO.update(chiTiet);
     }
 }
