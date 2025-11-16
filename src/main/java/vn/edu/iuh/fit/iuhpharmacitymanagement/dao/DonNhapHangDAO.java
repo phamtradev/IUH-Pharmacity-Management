@@ -8,6 +8,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.util.SortTheoMa;
 
 public class DonNhapHangDAO implements DAOInterface<DonNhapHang, String> {
 
@@ -106,7 +107,7 @@ public class DonNhapHangDAO implements DAOInterface<DonNhapHang, String> {
         } catch (Exception ex) {
             System.getLogger(DonNhapHangDAO.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
         }
-
+        danhSach.sort(new SortTheoMa().sortTheoMaTienTo3(DonNhapHang::getMaDonNhapHang));
         return danhSach;
     }
 

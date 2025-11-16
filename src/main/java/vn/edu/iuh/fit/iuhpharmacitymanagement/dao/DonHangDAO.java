@@ -13,6 +13,7 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhachHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhuyenMai;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhanVien;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.util.SortTheoMa;
 
 /**
  * n
@@ -162,6 +163,7 @@ public class DonHangDAO implements DAOInterface<DonHang, String> {
         } catch (Exception ex) {
             System.getLogger(DonHangDAO.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
         }
+        danhSachDonHang.sort(new SortTheoMa().sortTheoMa(DonHang::getMaDonHang));
         return danhSachDonHang;
     }
 

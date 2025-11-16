@@ -8,34 +8,37 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.util.SortTheoMa;
 
 public class DonTraHangDAO implements DAOInterface<DonTraHang, String> {
 
-    private final String SQL_THEM = "INSERT INTO DonTraHang (maDonTra, ngayTraHang, thanhTien, maNhanVien, maDonHang, trangThaiXuLy) VALUES (?, ?, ?, ?, ?, ?)";
+    private final String SQL_THEM
+            = "INSERT INTO DonTraHang (maDonTra, ngayTraHang, thanhTien, maNhanVien, maDonHang, trangThaiXuLy) VALUES (?, ?, ?, ?, ?, ?)";
 
-    private final String SQL_CAP_NHAT = "UPDATE DonTraHang SET ngayTraHang = ?, thanhTien = ?, maNhanVien = ?, maDonHang = ?, trangThaiXuLy = ? WHERE maDonTra = ?";
+    private final String SQL_CAP_NHAT
+            = "UPDATE DonTraHang SET ngayTraHang = ?, thanhTien = ?, maNhanVien = ?, maDonHang = ?, trangThaiXuLy = ? WHERE maDonTra = ?";
 
-    private final String SQL_TIM_THEO_MA = "SELECT dth.*, nv.tenNhanVien, dh.maKhachHang, kh.tenKhachHang, kh.soDienThoai "
-            +
-            "FROM DonTraHang dth " +
-            "LEFT JOIN NhanVien nv ON dth.maNhanVien = nv.maNhanVien " +
-            "LEFT JOIN DonHang dh ON dth.maDonHang = dh.maDonHang " +
-            "LEFT JOIN KhachHang kh ON dh.maKhachHang = kh.maKhachHang " +
-            "WHERE dth.maDonTra = ?";
+    private final String SQL_TIM_THEO_MA
+            = "SELECT dth.*, nv.tenNhanVien, dh.maKhachHang, kh.tenKhachHang, kh.soDienThoai "
+            + "FROM DonTraHang dth "
+            + "LEFT JOIN NhanVien nv ON dth.maNhanVien = nv.maNhanVien "
+            + "LEFT JOIN DonHang dh ON dth.maDonHang = dh.maDonHang "
+            + "LEFT JOIN KhachHang kh ON dh.maKhachHang = kh.maKhachHang "
+            + "WHERE dth.maDonTra = ?";
 
-    private final String SQL_TIM_TAT_CA = "SELECT dth.*, nv.tenNhanVien, dh.maKhachHang, kh.tenKhachHang, kh.soDienThoai "
-            +
-            "FROM DonTraHang dth " +
-            "LEFT JOIN NhanVien nv ON dth.maNhanVien = nv.maNhanVien " +
-            "LEFT JOIN DonHang dh ON dth.maDonHang = dh.maDonHang " +
-            "LEFT JOIN KhachHang kh ON dh.maKhachHang = kh.maKhachHang";
+    private final String SQL_TIM_TAT_CA
+            = "SELECT dth.*, nv.tenNhanVien, dh.maKhachHang, kh.tenKhachHang, kh.soDienThoai "
+            + "FROM DonTraHang dth "
+            + "LEFT JOIN NhanVien nv ON dth.maNhanVien = nv.maNhanVien "
+            + "LEFT JOIN DonHang dh ON dth.maDonHang = dh.maDonHang "
+            + "LEFT JOIN KhachHang kh ON dh.maKhachHang = kh.maKhachHang";
 
-    private final String SQL_LAY_MA_CUOI = "SELECT TOP 1 maDonTra FROM DonTraHang ORDER BY maDonTra DESC";
+    private final String SQL_LAY_MA_CUOI
+            = "SELECT TOP 1 maDonTra FROM DonTraHang ORDER BY maDonTra DESC";
 
     @Override
     public boolean insert(DonTraHang donTraHang) {
-        try (Connection con = ConnectDB.getConnection();
-                PreparedStatement stmt = con.prepareStatement(SQL_THEM)) {
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(SQL_THEM)) {
 
             if (donTraHang.getMaDonTraHang() == null || donTraHang.getMaDonTraHang().trim().isEmpty()) {
                 donTraHang.setMaDonTraHang(taoMaDonTraHangMoi());
@@ -75,8 +78,7 @@ public class DonTraHangDAO implements DAOInterface<DonTraHang, String> {
             }
         }
 
-        try (Connection con = ConnectDB.getConnection();
-                PreparedStatement stmt = con.prepareStatement(SQL_CAP_NHAT)) {
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(SQL_CAP_NHAT)) {
 
             stmt.setDate(1, Date.valueOf(donTraHang.getNgayTraHang()));
             stmt.setDouble(2, donTraHang.getThanhTien());
@@ -95,8 +97,7 @@ public class DonTraHangDAO implements DAOInterface<DonTraHang, String> {
 
     @Override
     public Optional<DonTraHang> findById(String maDonTraHang) {
-        try (Connection con = ConnectDB.getConnection();
-                PreparedStatement stmt = con.prepareStatement(SQL_TIM_THEO_MA)) {
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(SQL_TIM_THEO_MA)) {
 
             stmt.setString(1, maDonTraHang);
             ResultSet rs = stmt.executeQuery();
@@ -116,10 +117,7 @@ public class DonTraHangDAO implements DAOInterface<DonTraHang, String> {
     @Override
     public List<DonTraHang> findAll() {
         List<DonTraHang> danhSach = new ArrayList<>();
-
-        try (Connection con = ConnectDB.getConnection();
-                PreparedStatement stmt = con.prepareStatement(SQL_TIM_TAT_CA);
-                ResultSet rs = stmt.executeQuery()) {
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(SQL_TIM_TAT_CA); ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
                 danhSach.add(mapResultSetToDonTraHang(rs));
@@ -130,7 +128,7 @@ public class DonTraHangDAO implements DAOInterface<DonTraHang, String> {
         } catch (Exception ex) {
             System.getLogger(DonTraHangDAO.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
         }
-
+        danhSach.sort(new SortTheoMa().sortTheoMa(DonTraHang::getMaDonTraHang));
         return danhSach;
     }
 
@@ -185,9 +183,8 @@ public class DonTraHangDAO implements DAOInterface<DonTraHang, String> {
 
         String prefixHienTai = "DT" + ngayThangNam;
 
-        try (Connection con = ConnectDB.getConnection();
-                PreparedStatement stmt = con.prepareStatement(
-                        "SELECT TOP 1 maDonTra FROM DonTraHang WHERE maDonTra LIKE ? ORDER BY maDonTra DESC")) {
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(
+                "SELECT TOP 1 maDonTra FROM DonTraHang WHERE maDonTra LIKE ? ORDER BY maDonTra DESC")) {
 
             stmt.setString(1, prefixHienTai + "%");
             ResultSet rs = stmt.executeQuery();
@@ -217,12 +214,11 @@ public class DonTraHangDAO implements DAOInterface<DonTraHang, String> {
 
     public int count() {
         String sql = "SELECT COUNT(*) AS total FROM DonTraHang";
-        try (Connection con = ConnectDB.getConnection();
-                PreparedStatement stmt = con.prepareStatement(sql);
-                ResultSet rs = stmt.executeQuery()) {
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
 
-            if (rs.next())
+            if (rs.next()) {
                 return rs.getInt("total");
+            }
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -232,8 +228,7 @@ public class DonTraHangDAO implements DAOInterface<DonTraHang, String> {
 
     public boolean delete(String maDonTraHang) {
         String sql = "DELETE FROM DonTraHang WHERE maDonTra = ?";
-        try (Connection con = ConnectDB.getConnection();
-                PreparedStatement stmt = con.prepareStatement(sql)) {
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(sql)) {
             stmt.setString(1, maDonTraHang);
             int rowsAffected = stmt.executeUpdate();
             System.out.println("[DAO] Đã xóa đơn trả hàng: " + maDonTraHang + " (rows: " + rowsAffected + ")");
@@ -245,28 +240,20 @@ public class DonTraHangDAO implements DAOInterface<DonTraHang, String> {
     }
 
     public List<DonTraHang> timTheoText(String text) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from
-                                                                       // nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        throw new UnsupportedOperationException("Not supported yet."); 
     }
 
-    /**
-     * Tìm tất cả đơn trả hàng theo mã đơn hàng
-     * 
-     * @param maDonHang Mã đơn hàng
-     * @return Danh sách đơn trả hàng
-     */
+    
     public List<DonTraHang> findByDonHang(String maDonHang) {
         List<DonTraHang> danhSach = new ArrayList<>();
+        String sql = "SELECT dth.*, nv.tenNhanVien, dh.maKhachHang, kh.tenKhachHang, kh.soDienThoai "
+                + "FROM DonTraHang dth "
+                + "LEFT JOIN NhanVien nv ON dth.maNhanVien = nv.maNhanVien "
+                + "LEFT JOIN DonHang dh ON dth.maDonHang = dh.maDonHang "
+                + "LEFT JOIN KhachHang kh ON dh.maKhachHang = kh.maKhachHang "
+                + "WHERE dth.maDonHang = ?";
 
-        String sql = "SELECT dth.*, nv.tenNhanVien, dh.maKhachHang, kh.tenKhachHang, kh.soDienThoai " +
-                "FROM DonTraHang dth " +
-                "LEFT JOIN NhanVien nv ON dth.maNhanVien = nv.maNhanVien " +
-                "LEFT JOIN DonHang dh ON dth.maDonHang = dh.maDonHang " +
-                "LEFT JOIN KhachHang kh ON dh.maKhachHang = kh.maKhachHang " +
-                "WHERE dth.maDonHang = ?";
-
-        try (Connection con = ConnectDB.getConnection();
-                PreparedStatement stmt = con.prepareStatement(sql)) {
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(sql)) {
 
             stmt.setString(1, maDonHang);
             ResultSet rs = stmt.executeQuery();

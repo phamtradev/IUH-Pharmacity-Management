@@ -25,6 +25,7 @@ import javax.swing.JTable;
 import javax.swing.UIManager;
 import javax.swing.ImageIcon;
 import raven.toast.Notifications;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.HangHongDAO;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
 
 /**
@@ -68,9 +69,41 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         fillContent(hangHongs);
     }
 
+    private List<HangHong> sortNewToOld(List<HangHong> hangHongs) {
+        List<HangHong> hh = new HangHongDAO().findAll();
+        hh.sort((a, b) -> {
+            String maA = a.getMaHangHong().substring(2); // DDMMYYYYNNNN
+            String maB = b.getMaHangHong().substring(2);
+
+            int ngayA = Integer.parseInt(maA.substring(0, 2));
+            int thangA = Integer.parseInt(maA.substring(2, 4));
+            int namA = Integer.parseInt(maA.substring(4, 8));
+            int soCuoiA = Integer.parseInt(maA.substring(8));
+
+            int ngayB = Integer.parseInt(maB.substring(0, 2));
+            int thangB = Integer.parseInt(maB.substring(2, 4));
+            int namB = Integer.parseInt(maB.substring(4, 8));
+            int soCuoiB = Integer.parseInt(maB.substring(8));
+
+            if (namA != namB) {
+                return Integer.compare(namA, namB);
+            }
+            if (thangA != thangB) {
+                return Integer.compare(thangA, thangB);
+            }
+            if (ngayA != ngayB) {
+                return Integer.compare(ngayA, ngayB);
+            }
+
+            return Integer.compare(soCuoiB, soCuoiA);
+        });
+        return hh;
+    }
+
     private void fillContent(List<HangHong> hangHongs) {
         tableDesign.getModelTable().setRowCount(0);
-        for (HangHong hangHong : hangHongs) {
+        List<HangHong> hh = sortNewToOld(hangHongs);
+        for (HangHong hangHong : hh) {
             String tenNV = hangHong.getNhanVien() != null ? hangHong.getNhanVien().getMaNhanVien() : "N/A";
 
             tableDesign.getModelTable().addRow(new Object[]{
@@ -539,34 +572,34 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
             Notifications.getInstance().show(Notifications.Type.WARNING, "Hãy chọn phiếu xuất hủy cần xem chi tiết!");
             return;
         }
-        
+
         String maHH = (String) table.getValueAt(selectedRow, 0);
 
         HangHong hangHong = hangHongBUS.layHangHongTheoMa(maHH);
-        
+
         if (hangHong == null) {
             Notifications.getInstance().show(Notifications.Type.ERROR, "Không tìm thấy phiếu xuất hủy với mã: " + maHH);
             return;
         }
-        
+
         List<ChiTietHangHong> chiTietHangHongs = chiTietHangHongBUS.layChiTietTheoHangHong(hangHong);
-        
+
         if (chiTietHangHongs == null || chiTietHangHongs.isEmpty()) {
             Notifications.getInstance().show(Notifications.Type.WARNING, "Phiếu xuất hủy không có chi tiết sản phẩm!");
             return;
         }
-        
+
         // Tạo header panel thông tin phiếu
         javax.swing.JPanel headerInfoPanel = createHeaderInfoPanel(hangHong);
-        
+
         // Sử dụng Map để cộng dồn các chi tiết CÙNG lô hàng VÀ CÙNG lý do
         // (KHÔNG gộp nếu khác lý do xuất hủy)
         Map<String, ChiTietHangHong> productMap = new HashMap<>();
 
         for (ChiTietHangHong chiTiet : chiTietHangHongs) {
             String maLoHang = chiTiet.getLoHang() != null ? chiTiet.getLoHang().getMaLoHang() : "N/A";
-            String lyDoXuatHuy = chiTiet.getLyDoXuatHuy() != null && !chiTiet.getLyDoXuatHuy().trim().isEmpty() 
-                                 ? chiTiet.getLyDoXuatHuy() : "N/A";
+            String lyDoXuatHuy = chiTiet.getLyDoXuatHuy() != null && !chiTiet.getLyDoXuatHuy().trim().isEmpty()
+                    ? chiTiet.getLyDoXuatHuy() : "N/A";
 
             // Key duy nhất: maLoHang + lyDoXuatHuy
             // → Chỉ gộp khi CÙNG lô hàng VÀ CÙNG lý do
@@ -594,7 +627,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
             public boolean isCellEditable(int row, int column) {
                 return false;
             }
-            
+
             @Override
             public Class<?> getColumnClass(int columnIndex) {
                 if (columnIndex == 1) { // Cột hình ảnh
@@ -603,14 +636,14 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
                 return Object.class;
             }
         };
-        
+
         // Thêm dữ liệu vào bảng
         int stt = 1;
         for (ChiTietHangHong chiTiet : productMap.values()) {
             if (chiTiet.getLoHang() != null && chiTiet.getLoHang().getSanPham() != null) {
                 LoHang loHang = chiTiet.getLoHang();
                 SanPham sp = loHang.getSanPham();
-                
+
                 // Load hình ảnh
                 ImageIcon imageIcon = null;
                 String hinhAnh = sp.getHinhAnh();
@@ -631,7 +664,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
                         System.err.println("Lỗi khi load hình ảnh: " + hinhAnh + " - " + e.getMessage());
                     }
                 }
-                
+
                 String tenSP = sp.getTenSanPham();
                 String maLoHang = loHang.getMaLoHang();
                 String hsd = loHang.getHanSuDung() != null ? loHang.getHanSuDung().toString() : "N/A";
@@ -639,13 +672,13 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
                 int soLuong = chiTiet.getSoLuong();
                 String donGia = formatToVND(chiTiet.getDonGia());
                 String thanhTien = formatToVND(chiTiet.getThanhTien());
-                String lyDo = chiTiet.getLyDoXuatHuy() != null && !chiTiet.getLyDoXuatHuy().trim().isEmpty() 
-                              ? chiTiet.getLyDoXuatHuy() : "N/A";
-                
+                String lyDo = chiTiet.getLyDoXuatHuy() != null && !chiTiet.getLyDoXuatHuy().trim().isEmpty()
+                        ? chiTiet.getLyDoXuatHuy() : "N/A";
+
                 tableModel.addRow(new Object[]{stt++, imageIcon, tenSP, maLoHang, hsd, donVi, soLuong, donGia, thanhTien, lyDo});
             }
         }
-        
+
         // Tạo JTable
         javax.swing.JTable tableDetail = new javax.swing.JTable(tableModel);
         tableDetail.setRowHeight(70);
@@ -655,10 +688,10 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         tableDetail.setGridColor(new java.awt.Color(220, 220, 220));
         tableDetail.setSelectionBackground(new java.awt.Color(173, 216, 230)); // Light Blue
         tableDetail.setSelectionForeground(new java.awt.Color(0, 0, 0)); // Black text
-        
+
         // Thiết lập renderer cho cột hình ảnh
         tableDetail.getColumnModel().getColumn(1).setCellRenderer(new vn.edu.iuh.fit.iuhpharmacitymanagement.common.ImageTableCellRenderer());
-        
+
         // Thiết lập độ rộng cột
         tableDetail.getColumnModel().getColumn(0).setPreferredWidth(50);   // STT
         tableDetail.getColumnModel().getColumn(1).setPreferredWidth(80);   // Hình ảnh
@@ -670,23 +703,23 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         tableDetail.getColumnModel().getColumn(7).setPreferredWidth(100);  // Đơn giá
         tableDetail.getColumnModel().getColumn(8).setPreferredWidth(120);  // Thành tiền
         tableDetail.getColumnModel().getColumn(9).setPreferredWidth(150);  // Lý do
-        
+
         // Center align cho các cột số
         javax.swing.table.DefaultTableCellRenderer centerRenderer = new javax.swing.table.DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(javax.swing.JLabel.CENTER);
         tableDetail.getColumnModel().getColumn(0).setCellRenderer(centerRenderer);
         tableDetail.getColumnModel().getColumn(5).setCellRenderer(centerRenderer);
         tableDetail.getColumnModel().getColumn(6).setCellRenderer(centerRenderer);
-        
+
         // Right align cho các cột tiền
         javax.swing.table.DefaultTableCellRenderer rightRenderer = new javax.swing.table.DefaultTableCellRenderer();
         rightRenderer.setHorizontalAlignment(javax.swing.JLabel.RIGHT);
         tableDetail.getColumnModel().getColumn(7).setCellRenderer(rightRenderer);
         tableDetail.getColumnModel().getColumn(8).setCellRenderer(rightRenderer);
-        
+
         scrollTableDetail.setViewportView(tableDetail);
         scrollTableDetail.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        
+
         // Cập nhật jPanel1 với header và table
         jPanel1.removeAll();
         jPanel1.setLayout(new java.awt.BorderLayout());
@@ -695,10 +728,10 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         jPanel1.revalidate();
         jPanel1.repaint();
 
-            modalPurchaseOrderDetail.setLocationRelativeTo(null);
-            modalPurchaseOrderDetail.setVisible(true);
+        modalPurchaseOrderDetail.setLocationRelativeTo(null);
+        modalPurchaseOrderDetail.setVisible(true);
     }//GEN-LAST:event_btnViewActionPerformed
-    
+
     /**
      * Tạo panel thông tin phiếu xuất hủy cho dialog chi tiết
      */
@@ -706,43 +739,43 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         javax.swing.JPanel headerInfoPanel = new javax.swing.JPanel();
         headerInfoPanel.setBackground(new java.awt.Color(240, 248, 255)); // Alice Blue
         headerInfoPanel.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createMatteBorder(0, 0, 2, 0, new java.awt.Color(23, 162, 184)),
-            BorderFactory.createEmptyBorder(15, 20, 15, 20)
+                BorderFactory.createMatteBorder(0, 0, 2, 0, new java.awt.Color(23, 162, 184)),
+                BorderFactory.createEmptyBorder(15, 20, 15, 20)
         ));
         headerInfoPanel.setLayout(new java.awt.GridLayout(2, 2, 20, 10));
-        
+
         // Thông tin phiếu
         String maNV = hangHong.getNhanVien() != null ? hangHong.getNhanVien().getMaNhanVien() : "N/A";
         String tenNV = hangHong.getNhanVien() != null ? hangHong.getNhanVien().getTenNhanVien() : "N/A";
-        
+
         // Tạo các label thông tin
         headerInfoPanel.add(createInfoLabel("Mã phiếu xuất hủy:", hangHong.getMaHangHong()));
         headerInfoPanel.add(createInfoLabel("Ngày xuất hủy:", formatDate(hangHong.getNgayNhap())));
         headerInfoPanel.add(createInfoLabel("Nhân viên:", maNV + " - " + tenNV));
         headerInfoPanel.add(createInfoLabel("Tổng tiền:", formatToVND(hangHong.getThanhTien())));
-        
+
         return headerInfoPanel;
     }
-    
+
     /**
      * Tạo label thông tin với title và value
      */
     private javax.swing.JPanel createInfoLabel(String title, String value) {
         javax.swing.JPanel panel = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 5, 0));
         panel.setBackground(new java.awt.Color(240, 248, 255));
-        
+
         javax.swing.JLabel lblTitle = new javax.swing.JLabel(title);
         lblTitle.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 14));
-        
+
         javax.swing.JLabel lblValue = new javax.swing.JLabel(value);
         lblValue.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 14));
-        
+
         panel.add(lblTitle);
         panel.add(lblValue);
-        
+
         return panel;
     }
-    
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnSearch;
     private javax.swing.JButton btnView;
