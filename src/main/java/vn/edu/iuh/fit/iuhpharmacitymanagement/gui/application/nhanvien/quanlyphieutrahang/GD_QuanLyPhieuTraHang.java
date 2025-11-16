@@ -1706,6 +1706,7 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
                 panel.setBackground(originalColor);
                 //timer.stop();
                 //timer.stop();
+                //timer.stop();
                 timer.stop();
             }
         });
