@@ -8,6 +8,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.util.SortTheoMa;
 
 public class HangHongDAO implements DAOInterface<HangHong, String> {
     
@@ -112,7 +113,7 @@ public class HangHongDAO implements DAOInterface<HangHong, String> {
         } catch (Exception ex) {
             System.getLogger(HangHongDAO.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
         }
-
+        danhSach.sort(new SortTheoMa().sortTheoMa(HangHong::getMaHangHong));
         return danhSach;
     }
 
