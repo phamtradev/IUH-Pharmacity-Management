@@ -55,13 +55,177 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
     }
 
     private void setUIManager() {
-        txtOrder.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Mã phiếu trả");
+        txtOrder.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập hoặc quét mã phiếu trả hàng");
         UIManager.put("Button.arc", 10);
         jDateFrom.setDate(Date.valueOf(LocalDate.now()));
         jDateTo.setDate(Date.valueOf(LocalDate.now()));
 
         // Style cho button Xem chi tiết - màu xanh nước biển, kích thước nhỏ
         ButtonStyles.apply(btnView, ButtonStyles.Type.INFO);
+        
+        // Thiết lập barcode scanner cho textfield tìm kiếm
+        setupBarcodeScanner();
+    }
+
+    /**
+     * Thiết lập barcode scanner listener cho textfield tìm kiếm phiếu trả hàng
+     * Hỗ trợ cả quét barcode (tự động xử lý) và nhập thủ công (xử lý khi nhấn Enter)
+     */
+    private void setupBarcodeScanner() {
+        // Biến để theo dõi trạng thái xử lý (tránh xử lý nhiều lần)
+        final java.util.concurrent.atomic.AtomicBoolean isProcessing = new java.util.concurrent.atomic.AtomicBoolean(false);
+        final java.util.concurrent.atomic.AtomicBoolean isClearing = new java.util.concurrent.atomic.AtomicBoolean(false);
+        final javax.swing.Timer[] barcodeTimer = new javax.swing.Timer[1]; // Mảng để có thể thay đổi trong lambda
+        
+        // Theo dõi thời gian giữa các lần gõ để phân biệt quét vs nhập thủ công
+        final long[] lastKeyTime = new long[1];
+        lastKeyTime[0] = System.currentTimeMillis();
+        final int[] keyCount = new int[1];
+        keyCount[0] = 0;
+        final long[] firstKeyTime = new long[1];
+        firstKeyTime[0] = 0;
+
+        // KeyListener để theo dõi tốc độ gõ phím
+        txtOrder.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                long currentTime = System.currentTimeMillis();
+                long timeSinceLastKey = currentTime - lastKeyTime[0];
+                
+                // Ghi nhận thời gian ký tự đầu tiên
+                if (firstKeyTime[0] == 0) {
+                    firstKeyTime[0] = currentTime;
+                }
+                
+                // Nếu khoảng cách giữa các lần gõ < 50ms → có thể là quét barcode
+                if (timeSinceLastKey < 50) {
+                    keyCount[0]++;
+                } else if (timeSinceLastKey > 200) {
+                    // Nếu khoảng cách > 200ms → rõ ràng là nhập thủ công, reset counter
+                    keyCount[0] = 1;
+                    firstKeyTime[0] = currentTime;
+                } else {
+                    // Khoảng cách 50-200ms → có thể là gõ nhanh, tăng counter
+                    keyCount[0]++;
+                }
+                
+                lastKeyTime[0] = currentTime;
+            }
+        });
+
+        // DocumentListener để bắt mọi thay đổi text
+        txtOrder.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            private void handleTextChange() {
+                // Bỏ qua nếu đang clear textfield
+                if (isClearing.get()) {
+                    return;
+                }
+                
+                // Hủy timer cũ nếu có
+                if (barcodeTimer[0] != null && barcodeTimer[0].isRunning()) {
+                    barcodeTimer[0].stop();
+                }
+
+                // Tạo timer mới: đợi 200ms không có thay đổi → kiểm tra xem có phải quét không
+                barcodeTimer[0] = new javax.swing.Timer(200, evt -> {
+                    String scannedText = txtOrder.getText().trim();
+                    
+                    // Loại bỏ ký tự đặc biệt từ barcode scanner (\r, \n, \t)
+                    scannedText = scannedText.replaceAll("[\\r\\n\\t]", "");
+                    
+                    // Cập nhật lại textfield với giá trị đã làm sạch (nếu cần)
+                    if (!scannedText.equals(txtOrder.getText().trim()) && !isClearing.get()) {
+                        isClearing.set(true);
+                        txtOrder.setText(scannedText);
+                        isClearing.set(false);
+                    }
+
+                    // Phân biệt quét barcode vs nhập thủ công:
+                    // - Quét barcode: nhiều ký tự (>= 5) được nhập rất nhanh (keyCount >= 5 và thời gian tổng < 500ms)
+                    // - Nhập thủ công: ít ký tự hoặc gõ chậm → không tự động xử lý, chờ Enter
+                    long totalTime = firstKeyTime[0] > 0 ? (System.currentTimeMillis() - firstKeyTime[0]) : 0;
+                    boolean isBarcodeScan = scannedText.length() >= 5 && keyCount[0] >= 5 && totalTime < 500;
+                    
+                    if (!scannedText.isEmpty() && !isProcessing.get() && !isClearing.get() && isBarcodeScan) {
+                        isProcessing.set(true);
+                        // Tự động tìm kiếm phiếu trả hàng khi quét barcode
+                        timKiemVaHienThiPhieuTra(scannedText);
+                        isProcessing.set(false);
+
+                        // Clear textfield sau khi xử lý để sẵn sàng quét tiếp
+                        javax.swing.SwingUtilities.invokeLater(() -> {
+                            javax.swing.Timer clearTimer = new javax.swing.Timer(500, e -> {
+                                isClearing.set(true);
+                                txtOrder.setText("");
+                                isClearing.set(false);
+                                keyCount[0] = 0; // Reset counter
+                                firstKeyTime[0] = 0; // Reset first key time
+                            });
+                            clearTimer.setRepeats(false);
+                            clearTimer.start();
+                        });
+                    }
+                    
+                    // Reset counter sau một khoảng thời gian (nếu không phải quét)
+                    if (!isBarcodeScan) {
+                        keyCount[0] = 0;
+                        firstKeyTime[0] = 0;
+                    }
+                });
+                barcodeTimer[0].setRepeats(false);
+                barcodeTimer[0].start();
+            }
+
+            @Override
+            public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                handleTextChange();
+            }
+
+            @Override
+            public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                // Khi xóa text, reset counter (người dùng đang chỉnh sửa)
+                keyCount[0] = 0;
+                firstKeyTime[0] = 0;
+                lastKeyTime[0] = System.currentTimeMillis();
+            }
+
+            @Override
+            public void changedUpdate(javax.swing.event.DocumentEvent e) {
+                handleTextChange();
+            }
+        });
+    }
+
+    /**
+     * Tìm kiếm và hiển thị phiếu trả hàng theo mã
+     */
+    private void timKiemVaHienThiPhieuTra(String maPhieuTra) {
+        if (maPhieuTra == null || maPhieuTra.trim().isEmpty()) {
+            return;
+        }
+        
+        // Lấy ngày từ form
+        java.util.Date date1 = jDateFrom.getDate();
+        java.util.Date date2 = jDateTo.getDate();
+        
+        if (date1 == null || date2 == null) {
+            Notifications.getInstance().show(Notifications.Type.WARNING, "Vui lòng chọn khoảng thời gian!");
+            return;
+        }
+        
+        LocalDate dateFrom = date1.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate dateTo = date2.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        
+        // Tìm kiếm theo mã phiếu trả
+        List<DonTraHang> result = searchDonTraHang(dateFrom, dateTo, "", maPhieuTra);
+        fillContent(result);
+        
+        if (result.isEmpty()) {
+            Notifications.getInstance().show(Notifications.Type.INFO, "Không tìm thấy phiếu trả hàng với mã: " + maPhieuTra);
+        } else {
+            Notifications.getInstance().show(Notifications.Type.SUCCESS,
+                    "Tìm thấy phiếu trả hàng: " + maPhieuTra);
+        }
     }
 
     private void fillTable() {
@@ -916,8 +1080,13 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
         jPanel5.setPreferredSize(new java.awt.Dimension(590, 100));
 
         txtOrder.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        txtOrder.setMinimumSize(new java.awt.Dimension(300, 40));
-        txtOrder.setPreferredSize(new java.awt.Dimension(300, 40));
+        txtOrder.setMinimumSize(new java.awt.Dimension(350, 40));
+        txtOrder.setPreferredSize(new java.awt.Dimension(350, 40));
+        txtOrder.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtOrderActionPerformed(evt);
+            }
+        });
 
         btnSearch.setBackground(new java.awt.Color(115, 165, 71));
         btnSearch.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
@@ -993,7 +1162,7 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
                                 .addComponent(jDateTo, javax.swing.GroupLayout.PREFERRED_SIZE, 210,
                                         javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(18, 18, 18)
-                                .addComponent(txtOrder, javax.swing.GroupLayout.PREFERRED_SIZE, 200,
+                                .addComponent(txtOrder, javax.swing.GroupLayout.PREFERRED_SIZE, 350,
                                         javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(18, 18, 18)
                                 .addComponent(btnSearch, javax.swing.GroupLayout.PREFERRED_SIZE,
@@ -1123,6 +1292,25 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
             xemChiTietDonTraHang(maDTH);
         }
     }// GEN-LAST:event_btnViewActionPerformed
+
+    private void txtOrderActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_txtOrderActionPerformed
+        // Xử lý tìm kiếm phiếu trả hàng khi nhấn Enter (nhập thủ công)
+        String maPhieuTra = txtOrder.getText().trim();
+        
+        // Loại bỏ ký tự đặc biệt
+        maPhieuTra = maPhieuTra.replaceAll("[\\r\\n\\t]", "");
+        
+        if (!maPhieuTra.isEmpty()) {
+            timKiemVaHienThiPhieuTra(maPhieuTra);
+            // Clear textfield sau khi xử lý để sẵn sàng tìm kiếm tiếp
+            javax.swing.SwingUtilities.invokeLater(() -> {
+                txtOrder.setText("");
+            });
+        } else {
+            Notifications.getInstance().show(Notifications.Type.WARNING,
+                    "Vui lòng nhập mã phiếu trả hàng!");
+        }
+    }// GEN-LAST:event_txtOrderActionPerformed
 
     /**
      * Hiển thị preview hóa đơn trả hàng (UI giống hóa đơn bán hàng)

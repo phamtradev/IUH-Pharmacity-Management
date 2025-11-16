@@ -62,16 +62,51 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
 
     /**
      * Thiết lập barcode scanner listener cho textfield tìm kiếm đơn hàng
-     * Khi máy quét barcode quét mã đơn hàng, nó sẽ tự động tìm kiếm
-     * Sử dụng DocumentListener để tự động xử lý khi có input (không cần Enter)
+     * Hỗ trợ cả quét barcode (tự động xử lý) và nhập thủ công (xử lý khi nhấn Enter)
      */
     private void setupBarcodeScanner() {
         // Biến để theo dõi trạng thái xử lý (tránh xử lý nhiều lần)
         final java.util.concurrent.atomic.AtomicBoolean isProcessing = new java.util.concurrent.atomic.AtomicBoolean(false);
         final java.util.concurrent.atomic.AtomicBoolean isClearing = new java.util.concurrent.atomic.AtomicBoolean(false);
         final javax.swing.Timer[] barcodeTimer = new javax.swing.Timer[1]; // Mảng để có thể thay đổi trong lambda
+        
+        // Theo dõi thời gian giữa các lần gõ để phân biệt quét vs nhập thủ công
+        final long[] lastKeyTime = new long[1];
+        lastKeyTime[0] = System.currentTimeMillis();
+        final int[] keyCount = new int[1];
+        keyCount[0] = 0;
+        final long[] firstKeyTime = new long[1];
+        firstKeyTime[0] = 0;
 
-        // DocumentListener để bắt mọi thay đổi text (KHÔNG CẦN Enter)
+        // KeyListener để theo dõi tốc độ gõ phím
+        txtSearchOrder.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                long currentTime = System.currentTimeMillis();
+                long timeSinceLastKey = currentTime - lastKeyTime[0];
+                
+                // Ghi nhận thời gian ký tự đầu tiên
+                if (firstKeyTime[0] == 0) {
+                    firstKeyTime[0] = currentTime;
+                }
+                
+                // Nếu khoảng cách giữa các lần gõ < 50ms → có thể là quét barcode
+                if (timeSinceLastKey < 50) {
+                    keyCount[0]++;
+                } else if (timeSinceLastKey > 200) {
+                    // Nếu khoảng cách > 200ms → rõ ràng là nhập thủ công, reset counter
+                    keyCount[0] = 1;
+                    firstKeyTime[0] = currentTime;
+                } else {
+                    // Khoảng cách 50-200ms → có thể là gõ nhanh, tăng counter
+                    keyCount[0]++;
+                }
+                
+                lastKeyTime[0] = currentTime;
+            }
+        });
+
+        // DocumentListener để bắt mọi thay đổi text
         txtSearchOrder.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
             private void handleTextChange() {
                 // Bỏ qua nếu đang clear textfield
@@ -84,8 +119,8 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
                     barcodeTimer[0].stop();
                 }
 
-                // Tạo timer mới: đợi 300ms không có thay đổi → xử lý
-                barcodeTimer[0] = new javax.swing.Timer(300, evt -> {
+                // Tạo timer mới: đợi 200ms không có thay đổi → kiểm tra xem có phải quét không
+                barcodeTimer[0] = new javax.swing.Timer(200, evt -> {
                     String scannedText = txtSearchOrder.getText().trim();
                     
                     // Loại bỏ ký tự đặc biệt từ barcode scanner (\r, \n, \t)
@@ -98,23 +133,36 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
                         isClearing.set(false);
                     }
 
-                    if (!scannedText.isEmpty() && !isProcessing.get() && !isClearing.get()) {
+                    // Phân biệt quét barcode vs nhập thủ công:
+                    // - Quét barcode: nhiều ký tự (>= 5) được nhập rất nhanh (keyCount >= 5 và thời gian tổng < 500ms)
+                    // - Nhập thủ công: ít ký tự hoặc gõ chậm → không tự động xử lý, chờ Enter
+                    long totalTime = firstKeyTime[0] > 0 ? (System.currentTimeMillis() - firstKeyTime[0]) : 0;
+                    boolean isBarcodeScan = scannedText.length() >= 5 && keyCount[0] >= 5 && totalTime < 500;
+                    
+                    if (!scannedText.isEmpty() && !isProcessing.get() && !isClearing.get() && isBarcodeScan) {
                         isProcessing.set(true);
-                        // Tự động tìm kiếm đơn hàng
+                        // Tự động tìm kiếm đơn hàng khi quét barcode
                         timKiemVaHienThiDonHang(scannedText);
                         isProcessing.set(false);
 
                         // Clear textfield sau khi xử lý để sẵn sàng quét tiếp
-                        // Delay một chút để đảm bảo thông báo đã hiển thị
                         javax.swing.SwingUtilities.invokeLater(() -> {
                             javax.swing.Timer clearTimer = new javax.swing.Timer(500, e -> {
                                 isClearing.set(true);
                                 txtSearchOrder.setText("");
                                 isClearing.set(false);
+                                keyCount[0] = 0; // Reset counter
+                                firstKeyTime[0] = 0; // Reset first key time
                             });
                             clearTimer.setRepeats(false);
                             clearTimer.start();
                         });
+                    }
+                    
+                    // Reset counter sau một khoảng thời gian (nếu không phải quét)
+                    if (!isBarcodeScan) {
+                        keyCount[0] = 0;
+                        firstKeyTime[0] = 0;
                     }
                 });
                 barcodeTimer[0].setRepeats(false);
@@ -128,7 +176,10 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
 
             @Override
             public void removeUpdate(javax.swing.event.DocumentEvent e) {
-                // Không xử lý khi xóa text
+                // Khi xóa text, reset counter (người dùng đang chỉnh sửa)
+                keyCount[0] = 0;
+                firstKeyTime[0] = 0;
+                lastKeyTime[0] = System.currentTimeMillis();
             }
 
             @Override
@@ -136,10 +187,6 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
                 handleTextChange();
             }
         });
-
-        // ActionListener (trigger khi nhấn Enter) - backup cho barcode scanner có Enter hoặc người dùng nhập tay
-        // Lưu ý: ActionListener đã được thêm trong initComponents, nhưng chúng ta có thể cải thiện nó
-        // để xử lý tốt hơn với barcode scanner
     }
 
     // <editor-fold defaultstate="collapsed" desc="Generated
@@ -600,10 +647,18 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
     }// GEN-LAST:event_jLabel2AncestorAdded
 
     private void txtSearchOrderActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_txtSearchOrderActionPerformed
-        // Xử lý tìm kiếm hóa đơn khi nhấn Enter
+        // Xử lý tìm kiếm hóa đơn khi nhấn Enter (nhập thủ công)
         String maDonHang = txtSearchOrder.getText().trim();
+        
+        // Loại bỏ ký tự đặc biệt
+        maDonHang = maDonHang.replaceAll("[\\r\\n\\t]", "");
+        
         if (!maDonHang.isEmpty()) {
             timKiemVaHienThiDonHang(maDonHang);
+            // Clear textfield sau khi xử lý để sẵn sàng tìm kiếm tiếp
+            javax.swing.SwingUtilities.invokeLater(() -> {
+                txtSearchOrder.setText("");
+            });
         } else {
             raven.toast.Notifications.getInstance().show(
                     raven.toast.Notifications.Type.WARNING,
