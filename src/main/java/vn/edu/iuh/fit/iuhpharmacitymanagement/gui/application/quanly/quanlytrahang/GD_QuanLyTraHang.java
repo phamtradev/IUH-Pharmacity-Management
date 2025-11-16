@@ -323,6 +323,15 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
             bottomPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 10, 10));
             bottomPanel.setBackground(java.awt.Color.WHITE);
 
+            // Nút In Phiếu
+            javax.swing.JButton btnInPhieu = new javax.swing.JButton("In Phiếu");
+            btnInPhieu.setPreferredSize(new java.awt.Dimension(120, 40));
+            ButtonStyles.apply(btnInPhieu, ButtonStyles.Type.INFO);
+            btnInPhieu.addActionListener(e -> {
+                // Hiển thị preview hóa đơn trả hàng
+                hienThiHoaDonTraHang(donTraHang, chiTietList);
+            });
+
             javax.swing.JButton btnDong = new javax.swing.JButton("Đóng");
             btnDong.setPreferredSize(new java.awt.Dimension(120, 40));
             ButtonStyles.apply(btnDong, ButtonStyles.Type.SECONDARY);
@@ -333,6 +342,7 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
                 reloadTableData();
             });
 
+            bottomPanel.add(btnInPhieu);
             bottomPanel.add(btnDong);
             mainPanel.add(bottomPanel, java.awt.BorderLayout.SOUTH);
 
@@ -1113,6 +1123,274 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
             xemChiTietDonTraHang(maDTH);
         }
     }// GEN-LAST:event_btnViewActionPerformed
+
+    /**
+     * Hiển thị preview hóa đơn trả hàng (UI giống hóa đơn bán hàng)
+     */
+    private void hienThiHoaDonTraHang(DonTraHang donTraHang, List<ChiTietDonTraHang> chiTietList) {
+        javax.swing.JDialog dialog = new javax.swing.JDialog();
+        dialog.setTitle("Hóa Đơn Trả Hàng");
+        dialog.setModal(true);
+        dialog.setSize(650, 900);
+        dialog.setLocationRelativeTo(null);
+
+        // Scroll pane cho toàn bộ hóa đơn
+        javax.swing.JScrollPane mainScrollPane = new javax.swing.JScrollPane();
+        mainScrollPane.setBorder(null);
+        mainScrollPane.getVerticalScrollBar().setUnitIncrement(16);
+
+        // Panel chính
+        javax.swing.JPanel mainPanel = new javax.swing.JPanel();
+        mainPanel.setLayout(new javax.swing.BoxLayout(mainPanel, javax.swing.BoxLayout.Y_AXIS));
+        mainPanel.setBackground(java.awt.Color.WHITE);
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 25, 20, 25));
+
+        // Format cho số tiền và ngày tháng
+        java.text.DecimalFormat currencyFormat = new java.text.DecimalFormat("#,###");
+        java.time.format.DateTimeFormatter dateFormatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+        // ========== HEADER - THÔNG TIN CỬA HÀNG ==========
+        javax.swing.JLabel lblStoreName = new javax.swing.JLabel("IUH PHARMACITY");
+        lblStoreName.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 18));
+        lblStoreName.setForeground(new java.awt.Color(0, 120, 215));
+        lblStoreName.setAlignmentX(java.awt.Component.CENTER_ALIGNMENT);
+        mainPanel.add(lblStoreName);
+        mainPanel.add(javax.swing.Box.createVerticalStrut(3));
+
+        javax.swing.JLabel lblAddress = new javax.swing.JLabel("12 Nguyen Van Bao, Ward 4, Go Vap District, HCMC");
+        lblAddress.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 9));
+        lblAddress.setAlignmentX(java.awt.Component.CENTER_ALIGNMENT);
+        mainPanel.add(lblAddress);
+        mainPanel.add(javax.swing.Box.createVerticalStrut(2));
+
+        javax.swing.JLabel lblContact = new javax.swing.JLabel("Hotline: 1800 6928 | Email: cskh@pharmacity.vn");
+        lblContact.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 9));
+        lblContact.setAlignmentX(java.awt.Component.CENTER_ALIGNMENT);
+        mainPanel.add(lblContact);
+        mainPanel.add(javax.swing.Box.createVerticalStrut(12));
+
+        // ========== TIÊU ĐỀ HÓA ĐƠN ==========
+        javax.swing.JLabel lblTitle = new javax.swing.JLabel("PHIEU TRA HANG");
+        lblTitle.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 16));
+        lblTitle.setForeground(new java.awt.Color(220, 53, 69)); // Màu đỏ cho trả hàng
+        lblTitle.setAlignmentX(java.awt.Component.CENTER_ALIGNMENT);
+        mainPanel.add(lblTitle);
+        mainPanel.add(javax.swing.Box.createVerticalStrut(8));
+
+        // ========== BARCODE MÃ ĐƠN TRẢ HÀNG ==========
+        try {
+            java.awt.image.BufferedImage barcodeImage = vn.edu.iuh.fit.iuhpharmacitymanagement.util.BarcodeUtil
+                    .taoBarcode(donTraHang.getMaDonTraHang());
+            java.awt.image.BufferedImage barcodeWithText = vn.edu.iuh.fit.iuhpharmacitymanagement.util.BarcodeUtil
+                    .addTextBelow(barcodeImage, donTraHang.getMaDonTraHang());
+
+            javax.swing.JLabel lblBarcode = new javax.swing.JLabel(new javax.swing.ImageIcon(barcodeWithText));
+            lblBarcode.setAlignmentX(java.awt.Component.CENTER_ALIGNMENT);
+            mainPanel.add(lblBarcode);
+        } catch (Exception ex) {
+            System.err.println("Lỗi tạo barcode: " + ex.getMessage());
+        }
+        mainPanel.add(javax.swing.Box.createVerticalStrut(2));
+
+        String ngayTra = donTraHang.getNgayTraHang().format(dateFormatter);
+        javax.swing.JLabel lblDate = new javax.swing.JLabel("Ngay tra: " + ngayTra);
+        lblDate.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 10));
+        lblDate.setAlignmentX(java.awt.Component.CENTER_ALIGNMENT);
+        mainPanel.add(lblDate);
+        mainPanel.add(javax.swing.Box.createVerticalStrut(12));
+
+        // ========== THÔNG TIN KHÁCH HÀNG VÀ NHÂN VIÊN (2 CỘT) ==========
+        javax.swing.JPanel infoTablePanel = new javax.swing.JPanel(new java.awt.GridLayout(1, 2, 10, 0));
+        infoTablePanel.setBackground(java.awt.Color.WHITE);
+        infoTablePanel.setMaximumSize(new java.awt.Dimension(600, 80));
+
+        // THÔNG TIN KHÁCH HÀNG (Cột trái)
+        KhachHang khachHang = donTraHang.getDonHang() != null ? donTraHang.getDonHang().getKhachHang() : null;
+        javax.swing.JPanel customerPanel = new javax.swing.JPanel();
+        customerPanel.setLayout(new javax.swing.BoxLayout(customerPanel, javax.swing.BoxLayout.Y_AXIS));
+        customerPanel.setBackground(java.awt.Color.WHITE);
+        customerPanel.setBorder(BorderFactory.createEmptyBorder(3, 3, 3, 3));
+
+        javax.swing.JLabel lblCustomerTitle = new javax.swing.JLabel("THONG TIN KHACH HANG");
+        lblCustomerTitle.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 9));
+        lblCustomerTitle.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
+        customerPanel.add(lblCustomerTitle);
+        customerPanel.add(javax.swing.Box.createVerticalStrut(3));
+
+        String tenKH = khachHang != null ? khachHang.getTenKhachHang() : "Vang lai";
+        javax.swing.JLabel lblCustomerName = new javax.swing.JLabel("Ho ten: " + tenKH);
+        lblCustomerName.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 9));
+        lblCustomerName.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
+        customerPanel.add(lblCustomerName);
+
+        if (khachHang != null && khachHang.getSoDienThoai() != null) {
+            javax.swing.JLabel lblCustomerPhone = new javax.swing.JLabel("SDT: " + khachHang.getSoDienThoai());
+            lblCustomerPhone.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 9));
+            lblCustomerPhone.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
+            customerPanel.add(lblCustomerPhone);
+        }
+
+        // Mã hóa đơn gốc
+        String maHoaDonGoc = donTraHang.getDonHang() != null ? donTraHang.getDonHang().getMaDonHang() : "N/A";
+        javax.swing.JLabel lblOrderCode = new javax.swing.JLabel("Ma HD goc: " + maHoaDonGoc);
+        lblOrderCode.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 9));
+        lblOrderCode.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
+        customerPanel.add(lblOrderCode);
+
+        // THÔNG TIN NHÂN VIÊN (Cột phải)
+        NhanVien nhanVien = donTraHang.getNhanVien();
+        javax.swing.JPanel employeePanel = new javax.swing.JPanel();
+        employeePanel.setLayout(new javax.swing.BoxLayout(employeePanel, javax.swing.BoxLayout.Y_AXIS));
+        employeePanel.setBackground(java.awt.Color.WHITE);
+        employeePanel.setBorder(BorderFactory.createEmptyBorder(3, 3, 3, 3));
+
+        javax.swing.JLabel lblEmployeeTitle = new javax.swing.JLabel("NHAN VIEN XU LY");
+        lblEmployeeTitle.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 9));
+        lblEmployeeTitle.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
+        employeePanel.add(lblEmployeeTitle);
+        employeePanel.add(javax.swing.Box.createVerticalStrut(3));
+
+        if (nhanVien != null) {
+            javax.swing.JLabel lblEmployeeName = new javax.swing.JLabel("Ho ten: " + nhanVien.getTenNhanVien());
+            lblEmployeeName.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 9));
+            lblEmployeeName.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
+            employeePanel.add(lblEmployeeName);
+
+            if (nhanVien.getSoDienThoai() != null) {
+                javax.swing.JLabel lblEmployeePhone = new javax.swing.JLabel("SDT: " + nhanVien.getSoDienThoai());
+                lblEmployeePhone.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 9));
+                lblEmployeePhone.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
+                employeePanel.add(lblEmployeePhone);
+            }
+        }
+
+        infoTablePanel.add(customerPanel);
+        infoTablePanel.add(employeePanel);
+        mainPanel.add(infoTablePanel);
+        mainPanel.add(javax.swing.Box.createVerticalStrut(10));
+
+        // ========== BẢNG SẢN PHẨM TRẢ ==========
+        String[] columnNames = { "STT", "Ten san pham", "SL", "Don gia", "Thanh tien", "Ly do" };
+        javax.swing.table.DefaultTableModel tableModel = new javax.swing.table.DefaultTableModel(columnNames, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+
+        javax.swing.JTable table = new javax.swing.JTable(tableModel);
+        table.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 9));
+        table.setRowHeight(28);
+        table.getTableHeader().setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 9));
+        table.getTableHeader().setBackground(new java.awt.Color(240, 240, 240));
+        table.setGridColor(new java.awt.Color(220, 220, 220));
+
+        // Set column widths
+        table.getColumnModel().getColumn(0).setPreferredWidth(30); // STT
+        table.getColumnModel().getColumn(1).setPreferredWidth(150); // Tên sản phẩm
+        table.getColumnModel().getColumn(2).setPreferredWidth(35); // SL
+        table.getColumnModel().getColumn(3).setPreferredWidth(80); // Đơn giá
+        table.getColumnModel().getColumn(4).setPreferredWidth(85); // Thành tiền
+        table.getColumnModel().getColumn(5).setPreferredWidth(120); // Lý do
+
+        // Center align cho các cột số
+        javax.swing.table.DefaultTableCellRenderer centerRenderer = new javax.swing.table.DefaultTableCellRenderer();
+        centerRenderer.setHorizontalAlignment(javax.swing.JLabel.CENTER);
+        table.getColumnModel().getColumn(0).setCellRenderer(centerRenderer);
+        table.getColumnModel().getColumn(2).setCellRenderer(centerRenderer);
+
+        // Right align cho các cột tiền
+        javax.swing.table.DefaultTableCellRenderer rightRenderer = new javax.swing.table.DefaultTableCellRenderer();
+        rightRenderer.setHorizontalAlignment(javax.swing.JLabel.RIGHT);
+        table.getColumnModel().getColumn(3).setCellRenderer(rightRenderer);
+        table.getColumnModel().getColumn(4).setCellRenderer(rightRenderer);
+
+        // Thêm dữ liệu vào bảng
+        int stt = 1;
+        for (ChiTietDonTraHang chiTiet : chiTietList) {
+            SanPham sanPham = chiTiet.getSanPham();
+            String tenSP = sanPham != null ? sanPham.getTenSanPham() : "";
+            String lyDo = chiTiet.getLyDoTra() != null ? chiTiet.getLyDoTra() : "";
+
+            tableModel.addRow(new Object[] {
+                    stt++,
+                    tenSP,
+                    chiTiet.getSoLuong(),
+                    currencyFormat.format(chiTiet.getDonGia()) + " đ",
+                    currencyFormat.format(chiTiet.getThanhTien()) + " đ",
+                    lyDo
+            });
+        }
+
+        javax.swing.JScrollPane tableScrollPane = new javax.swing.JScrollPane(table);
+        tableScrollPane.setBorder(BorderFactory.createLineBorder(new java.awt.Color(200, 200, 200)));
+        tableScrollPane.setPreferredSize(new java.awt.Dimension(580, 250));
+        tableScrollPane.setMaximumSize(new java.awt.Dimension(600, 250));
+        mainPanel.add(tableScrollPane);
+        mainPanel.add(javax.swing.Box.createVerticalStrut(12));
+
+        // ========== BẢNG THANH TOÁN ==========
+        javax.swing.JPanel paymentPanel = new javax.swing.JPanel();
+        paymentPanel.setLayout(new javax.swing.BoxLayout(paymentPanel, javax.swing.BoxLayout.Y_AXIS));
+        paymentPanel.setBackground(java.awt.Color.WHITE);
+        paymentPanel.setAlignmentX(java.awt.Component.CENTER_ALIGNMENT);
+        paymentPanel.setMaximumSize(new java.awt.Dimension(450, 150));
+
+        // Đường kẻ trước TỔNG TIỀN TRẢ
+        javax.swing.JPanel separatorPanel = new javax.swing.JPanel();
+        separatorPanel.setBackground(new java.awt.Color(200, 200, 200));
+        separatorPanel.setMaximumSize(new java.awt.Dimension(450, 1));
+        paymentPanel.add(separatorPanel);
+        paymentPanel.add(javax.swing.Box.createVerticalStrut(10));
+
+        // TỔNG TIỀN TRẢ (in đậm, màu đỏ)
+        javax.swing.JPanel tongTienPanel = new javax.swing.JPanel(new java.awt.BorderLayout());
+        tongTienPanel.setBackground(java.awt.Color.WHITE);
+        tongTienPanel.setMaximumSize(new java.awt.Dimension(450, 30));
+
+        javax.swing.JLabel lblTongTienLeft = new javax.swing.JLabel("TONG TIEN TRA:");
+        lblTongTienLeft.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 14));
+
+        javax.swing.JLabel lblTongTienRight = new javax.swing.JLabel(
+                currencyFormat.format(donTraHang.getThanhTien()) + " đ");
+        lblTongTienRight.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 14));
+        lblTongTienRight.setForeground(new java.awt.Color(220, 53, 69)); // Màu đỏ
+        lblTongTienRight.setHorizontalAlignment(javax.swing.JLabel.RIGHT);
+
+        tongTienPanel.add(lblTongTienLeft, java.awt.BorderLayout.WEST);
+        tongTienPanel.add(lblTongTienRight, java.awt.BorderLayout.EAST);
+
+        paymentPanel.add(tongTienPanel);
+        paymentPanel.add(javax.swing.Box.createVerticalStrut(10));
+
+        // Đường kẻ sau TỔNG TIỀN TRẢ
+        javax.swing.JPanel separator2Panel = new javax.swing.JPanel();
+        separator2Panel.setBackground(new java.awt.Color(200, 200, 200));
+        separator2Panel.setMaximumSize(new java.awt.Dimension(450, 1));
+        paymentPanel.add(separator2Panel);
+
+        mainPanel.add(paymentPanel);
+        mainPanel.add(javax.swing.Box.createVerticalStrut(15));
+
+        // ========== FOOTER ==========
+        javax.swing.JLabel lblFooter1 = new javax.swing.JLabel("Cam on quy khach!");
+        lblFooter1.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 10));
+        lblFooter1.setForeground(new java.awt.Color(0, 120, 215));
+        lblFooter1.setAlignmentX(java.awt.Component.CENTER_ALIGNMENT);
+        mainPanel.add(lblFooter1);
+        mainPanel.add(javax.swing.Box.createVerticalStrut(3));
+
+        javax.swing.JLabel lblFooter2 = new javax.swing.JLabel("Phieu tra hang chi co gia tri trong ngay lap");
+        lblFooter2.setFont(new java.awt.Font("Segoe UI", java.awt.Font.ITALIC, 8));
+        lblFooter2.setAlignmentX(java.awt.Component.CENTER_ALIGNMENT);
+        mainPanel.add(lblFooter2);
+
+        // Thêm mainPanel vào scrollPane
+        mainScrollPane.setViewportView(mainPanel);
+
+        dialog.add(mainScrollPane);
+        dialog.setVisible(true);
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnSearch;
