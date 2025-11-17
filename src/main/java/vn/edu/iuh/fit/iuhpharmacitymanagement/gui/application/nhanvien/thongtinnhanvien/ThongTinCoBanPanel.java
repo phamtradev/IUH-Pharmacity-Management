@@ -5,19 +5,12 @@
 package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.thongtinnhanvien;
 
 import com.formdev.flatlaf.FlatClientProperties;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import javax.swing.JFrame;
-import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import raven.toast.Notifications;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.TaiKhoanDAO;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhanVien;
-import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.TaiKhoan;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.session.SessionManager;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.util.PasswordUtil;
-import vn.edu.iuh.fit.iuhpharmacitymanagement.util.UserSession;
 
 /**
  *
@@ -39,175 +32,6 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
 
     }
 
-    public void loadAndConfigure(boolean isManager, NhanVien nv) {
-        styleComponents();
-
-        if (nv != null) {
-            populateData(nv);
-            //configureForRole(isManager, nv);
-        } else {
-            // Xử lý khi không có dữ liệu nhân viên
-            lblTenNV.setText("Không có dữ liệu người dùng");
-            lblMa.setText("");
-        }
-    }
-
-    private void populateData(NhanVien nv) {
-        // Cập nhật Avatar tạm thời
-        String ten = nv.getTenNhanVien();
-        if (ten != null && !ten.isEmpty()) {
-            String[] parts = ten.split(" ");
-            String lastName = parts[parts.length - 1];
-            lblAvatar.setText(String.valueOf(lastName.charAt(0)).toUpperCase());
-        } else {
-            lblAvatar.setText("?");
-        }
-
-        lblTenNV.setText(ten);
-        lblMa.setText(nv.getMaNhanVien());
-        // txtVaiTro.setText(nv.getVaiTro());
-        txtPhone.setText(nv.getSoDienThoai());
-        txtEmail.setText(nv.getEmail());
-        txtAddress.setText(nv.getDiaChi());
-    }
-
-    private void configureForRole(boolean isManager, NhanVien nv) {
-//        // Hiển thị hoặc ẩn nút đổi mật khẩu
-//        btnDoiMatKhau.setVisible(isManager);
-    }
-
-//    private void configureForRole(boolean isManager, NhanVien nv) {
-//        // Hiển thị hoặc ẩn nút đổi mật khẩu
-//        btnDoiMatKhau.setVisible(isManager);
-//    }
-    public void setTenNhanVien(String ten) {
-        lblTenNV.setText(ten);
-        //lấy từ đầu của tên làm avt
-        if (ten != null && !ten.isEmpty()) {
-            String[] parts = ten.split(" ");
-            String lastPart = "?";
-            for (int i = parts.length - 1; i >= 0; i--) {
-                if (parts[i].matches(".*[a-zA-Z]+.*")) {
-                    lastPart = parts[i];
-                    break;
-                }
-            }
-            lblAvatar.setText(String.valueOf(lastPart.charAt(0)).toUpperCase());
-        } else {
-            lblAvatar.setText("?");
-        }
-    }
-
-    public void setMa(String maNV) {
-        txtPhone.setText(maNV);
-    }
-
-    public void setSoDienThoai(String sdt) {
-        txtPhone.setText(sdt);
-    }
-
-    public void setEmail(String email) {
-        txtEmail.setText(email);
-    }
-
-    public void setDiaChi(String diaChi) {
-        txtAddress.setText(diaChi);
-    }
-
-    private void styleComponents() {
-        //Avatar - Ẩn đi
-        lblAvatar.setVisible(false);
-
-        //tên nhân viên - Tăng kích thước
-        lblTenNV.setFont(new java.awt.Font("Segoe UI", 1, 32));
-        lblTenNV.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-
-        //Mã - Tăng kích thước
-        lblMa.setFont(new java.awt.Font("Segoe UI", 0, 18));
-        lblMa.setForeground(java.awt.Color.GRAY);
-        lblMa.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-
-        //Các ô thông tin - Tăng kích thước font
-        //styleReadOnlyTextField(txtVaiTro);
-        styleReadOnlyTextField(txtPhone);
-        styleReadOnlyTextField(txtEmail);
-        txtAddress.setBackground(this.getBackground());
-        txtAddress.setFont(new java.awt.Font("Segoe UI", 0, 18));
-        txtAddress.setForeground(new java.awt.Color(51, 51, 51));
-        scrAddress.setOpaque(false);
-        scrAddress.getViewport().setOpaque(false);
-        scrAddress.setBorder(null);
-
-        //Các Icon
-        // setIcon(lblIconVaiTro, "/img/icons/phone.svg", "👤");
-        setIcon(lblIconPhone, "/img/icons/phone.svg", "📞");
-        setIcon(lblIconEmail, "/img/icons/email.svg", "📧");
-        setIcon(lblIconAddress, "/img/icons/address.svg", "🏠");
-
-        //label tiêu đề - Tăng kích thước
-        //lblVaiTroTitle.setText("Chức vụ:");
-        //lblVaiTroTitle.setFont(new java.awt.Font("Segoe UI", 1, 18));
-        lblPhoneTitle.setText("Điện thoại:");
-        lblPhoneTitle.setFont(new java.awt.Font("Segoe UI", 1, 18));
-        lblEmailTitle.setText("Email:");
-        lblEmailTitle.setFont(new java.awt.Font("Segoe UI", 1, 18));
-        lblAddressTitle.setText("Địa chỉ:");
-        lblAddressTitle.setFont(new java.awt.Font("Segoe UI", 1, 18));
-
-        //Style nút đổi mật khẩu - Tăng kích thước
-        btnDoiMatKhau.setFont(new java.awt.Font("Segoe UI", 1, 16));
-        btnDoiMatKhau.setPreferredSize(new java.awt.Dimension(200, 45));
-        btnDoiMatKhau.putClientProperty(com.formdev.flatlaf.FlatClientProperties.STYLE, ""
-                + "arc: 10;"
-                + "background: $Component.accentColor;"
-                + "foreground: #FFFFFF;");
-    }
-
-    private void styleReadOnlyTextField(javax.swing.JTextField textField) {
-        textField.setEditable(false);
-        textField.setBorder(null);
-        textField.setBackground(this.getBackground());
-        textField.setFont(new java.awt.Font("Segoe UI", 0, 18));
-        textField.setForeground(new java.awt.Color(51, 51, 51));
-    }
-
-    private void styleChangePasswordDialog() {
-        txtMkCu.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập mật khẩu cũ của bạn");
-        txtMkMoi.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập mật khẩu mới");
-        txtXacNhanMkMoi.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Xác nhận mật khẩu mới");
-
-        //Con mắt trong flatlaf vip pro
-        txtMkCu.putClientProperty(FlatClientProperties.STYLE, "showRevealButton: true");
-        txtMkMoi.putClientProperty(FlatClientProperties.STYLE, "showRevealButton: true");
-        txtXacNhanMkMoi.putClientProperty(FlatClientProperties.STYLE, "showRevealButton: true");
-        txtMkCu.setEchoChar('*');
-        txtMkMoi.setEchoChar('*');
-        txtXacNhanMkMoi.setEchoChar('*');
-        //Style cho nút
-        btnXNDoiMatKhau.putClientProperty(FlatClientProperties.STYLE, "background: $Component.accentColor; foreground: #FFFFFF;");
-
-        //styel cho Jlabel quay lại
-        lblQuayLai.setText("<html><u>&lt; Quay lại</u></html>");
-        lblQuayLai.setForeground(new java.awt.Color(0, 102, 204));
-        lblQuayLai.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-    }
-
-    private void setIcon(javax.swing.JLabel label, String path, String fallbackText) {
-        try {
-            java.net.URL iconUrl = getClass().getResource(path);
-            if (iconUrl != null) {
-                label.setText("");
-                label.setIcon(new com.formdev.flatlaf.extras.FlatSVGIcon(iconUrl).derive(24, 24));
-            } else {
-                System.err.println("Không tìm thấy icon: " + path);
-                label.setText(fallbackText);
-            }
-        } catch (Exception e) {
-            System.err.println("Lỗi khi load icon: " + path);
-            label.setText(fallbackText);
-        }
-    }
-
 //    private void styleReadOnlyTextField(javax.swing.JTextField textField) {
 //    textField.setEditable(false);
 //    textField.setBorder(null);
@@ -220,7 +44,6 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
      * WARNING: Do NOT modify this code. The content of this method is always
      * regenerated by the Form Editor.
      */
-    @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
@@ -512,6 +335,148 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
         add(btnDoiMatKhau, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
+    public void loadAndConfigure(boolean isManager, NhanVien nv) {
+        styleComponents();
+
+        if (nv != null) {
+            populateData(nv);
+        } else {
+            lblTenNV.setText("Không có dữ liệu người dùng");
+            lblMa.setText("");
+        }
+    }
+
+    private void populateData(NhanVien nv) {
+        String ten = nv.getTenNhanVien();
+        if (ten != null && !ten.isEmpty()) {
+            String[] parts = ten.split(" ");
+            String lastName = parts[parts.length - 1];
+            lblAvatar.setText(String.valueOf(lastName.charAt(0)).toUpperCase());
+        } else {
+            lblAvatar.setText("?");
+        }
+
+        lblTenNV.setText(ten);
+        lblMa.setText(nv.getMaNhanVien());
+        txtPhone.setText(nv.getSoDienThoai());
+        txtEmail.setText(nv.getEmail());
+        txtAddress.setText(nv.getDiaChi());
+    }
+
+    public void setTenNhanVien(String ten) {
+        lblTenNV.setText(ten);
+        if (ten != null && !ten.isEmpty()) {
+            String[] parts = ten.split(" ");
+            String lastPart = "?";
+            for (int i = parts.length - 1; i >= 0; i--) {
+                if (parts[i].matches(".*[a-zA-Z]+.*")) {
+                    lastPart = parts[i];
+                    break;
+                }
+            }
+            lblAvatar.setText(String.valueOf(lastPart.charAt(0)).toUpperCase());
+        } else {
+            lblAvatar.setText("?");
+        }
+    }
+
+    public void setMa(String maNV) {
+        txtPhone.setText(maNV);
+    }
+
+    public void setSoDienThoai(String sdt) {
+        txtPhone.setText(sdt);
+    }
+
+    public void setEmail(String email) {
+        txtEmail.setText(email);
+    }
+
+    public void setDiaChi(String diaChi) {
+        txtAddress.setText(diaChi);
+    }
+
+    private void styleComponents() {
+        lblAvatar.setVisible(false);
+
+        lblTenNV.setFont(new java.awt.Font("Segoe UI", 1, 32));
+        lblTenNV.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+
+        lblMa.setFont(new java.awt.Font("Segoe UI", 0, 18));
+        lblMa.setForeground(java.awt.Color.GRAY);
+        lblMa.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+
+        styleReadOnlyTextField(txtPhone);
+        styleReadOnlyTextField(txtEmail);
+        txtAddress.setBackground(this.getBackground());
+        txtAddress.setFont(new java.awt.Font("Segoe UI", 0, 18));
+        txtAddress.setForeground(new java.awt.Color(51, 51, 51));
+        scrAddress.setOpaque(false);
+        scrAddress.getViewport().setOpaque(false);
+        scrAddress.setBorder(null);
+
+        setIcon(lblIconPhone, "/img/icons/phone.svg", "📞");
+        setIcon(lblIconEmail, "/img/icons/email.svg", "📧");
+        setIcon(lblIconAddress, "/img/icons/address.svg", "🏠");
+
+        lblPhoneTitle.setText("Điện thoại:");
+        lblPhoneTitle.setFont(new java.awt.Font("Segoe UI", 1, 18));
+        lblEmailTitle.setText("Email:");
+        lblEmailTitle.setFont(new java.awt.Font("Segoe UI", 1, 18));
+        lblAddressTitle.setText("Địa chỉ:");
+        lblAddressTitle.setFont(new java.awt.Font("Segoe UI", 1, 18));
+
+        btnDoiMatKhau.setFont(new java.awt.Font("Segoe UI", 1, 16));
+        btnDoiMatKhau.setPreferredSize(new java.awt.Dimension(200, 45));
+        btnDoiMatKhau.putClientProperty(com.formdev.flatlaf.FlatClientProperties.STYLE, ""
+                + "arc: 10;"
+                + "background: $Component.accentColor;"
+                + "foreground: #FFFFFF;");
+    }
+
+    private void styleReadOnlyTextField(javax.swing.JTextField textField) {
+        textField.setEditable(false);
+        textField.setBorder(null);
+        textField.setBackground(this.getBackground());
+        textField.setFont(new java.awt.Font("Segoe UI", 0, 18));
+        textField.setForeground(new java.awt.Color(51, 51, 51));
+    }
+
+    private void styleChangePasswordDialog() {
+        txtMkCu.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập mật khẩu cũ của bạn");
+        txtMkMoi.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập mật khẩu mới");
+        txtXacNhanMkMoi.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Xác nhận mật khẩu mới");
+
+        txtMkCu.putClientProperty(FlatClientProperties.STYLE, "showRevealButton: true");
+        txtMkMoi.putClientProperty(FlatClientProperties.STYLE, "showRevealButton: true");
+        txtXacNhanMkMoi.putClientProperty(FlatClientProperties.STYLE, "showRevealButton: true");
+        txtMkCu.setEchoChar('*');
+        txtMkMoi.setEchoChar('*');
+        txtXacNhanMkMoi.setEchoChar('*');
+
+        btnXNDoiMatKhau.putClientProperty(FlatClientProperties.STYLE, "background: $Component.accentColor; foreground: #FFFFFF;");
+
+        lblQuayLai.setText("<html><u>&lt; Quay lại</u></html>");
+        lblQuayLai.setForeground(new java.awt.Color(0, 102, 204));
+        lblQuayLai.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+    }
+
+    private void setIcon(javax.swing.JLabel label, String path, String fallbackText) {
+        try {
+            java.net.URL iconUrl = getClass().getResource(path);
+            if (iconUrl != null) {
+                label.setText("");
+                label.setIcon(new com.formdev.flatlaf.extras.FlatSVGIcon(iconUrl).derive(24, 24));
+            } else {
+                System.err.println("Không tìm thấy icon: " + path);
+                label.setText(fallbackText);
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi load icon: " + path);
+            label.setText(fallbackText);
+        }
+    }
+
     private void btnDoiMatKhauActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDoiMatKhauActionPerformed
 
         styleChangePasswordDialog();
@@ -540,7 +505,6 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
         javax.swing.JFrame parentFrame = (javax.swing.JFrame) SwingUtilities.getWindowAncestor(this);
 
         NhanVien nv = SessionManager.getInstance().getCurrentUser();
-        TaiKhoan tk = UserSession.getInstance().getTaiKhoan();
 
         //chk o day chua chk dc
         if (String.valueOf(txtMkCu.getPassword()).trim().isBlank()) {
@@ -550,7 +514,8 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
             return;
         }
        
-        if (new PasswordUtil().verify(String.valueOf(txtMkCu.getPassword()), new TaiKhoanDAO().findPassByTenDangNhap(nv.getMaNhanVien().toLowerCase()).get()) == false) {
+        if (!PasswordUtil.verify(String.valueOf(txtMkCu.getPassword()), new TaiKhoanDAO()
+                .findPassByTenDangNhap(nv.getMaNhanVien().toLowerCase()).get())) {
             Notifications.getInstance().setJFrame(parentFrame);
             Notifications.getInstance().show(Notifications.Type.ERROR, "Mật khẩu cũ không chính xác!");
             txtMkCu.requestFocus();

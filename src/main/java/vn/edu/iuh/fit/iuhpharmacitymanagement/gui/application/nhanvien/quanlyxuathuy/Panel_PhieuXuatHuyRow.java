@@ -28,7 +28,6 @@ public class Panel_PhieuXuatHuyRow extends JPanel {
     
     private HangHong phieu;
     private ChiTietHangHongBUS chiTietBUS;
-    private GD_QuanLyXuatHuy parentScreen;
     
     private JLabel lblMaPhieu;
     private JLabel lblNgayLap;
@@ -39,10 +38,9 @@ public class Panel_PhieuXuatHuyRow extends JPanel {
     private DecimalFormat currencyFormat = new DecimalFormat("#,###");
     private SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
     
-    public Panel_PhieuXuatHuyRow(HangHong phieu, ChiTietHangHongBUS chiTietBUS, GD_QuanLyXuatHuy parentScreen) {
+    public Panel_PhieuXuatHuyRow(HangHong phieu, ChiTietHangHongBUS chiTietBUS) {
         this.phieu = phieu;
         this.chiTietBUS = chiTietBUS;
-        this.parentScreen = parentScreen;
         
         initComponents();
         loadData();
@@ -112,6 +110,22 @@ public class Panel_PhieuXuatHuyRow extends JPanel {
         label.setHorizontalAlignment(alignment);
         return label;
     }
+
+    private JPanel createInfoRow(String title, String value, boolean bold) {
+        JPanel panel = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 0, 5));
+        panel.setBackground(Color.WHITE);
+
+        JLabel lblTitle = new JLabel(title);
+        lblTitle.setFont(new java.awt.Font("Segoe UI", bold ? java.awt.Font.BOLD : java.awt.Font.PLAIN, 14));
+
+        JLabel lblValue = new JLabel(value);
+        lblValue.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 14));
+
+        panel.add(lblTitle);
+        panel.add(lblValue);
+
+        return panel;
+    }
     
     private void loadData() {
         lblMaPhieu.setText(phieu.getMaHangHong());
@@ -141,8 +155,6 @@ public class Panel_PhieuXuatHuyRow extends JPanel {
                     javax.swing.JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            
-            // Hiển thị dialog xem chi tiết (giống bên quản lý)
             hienThiDialogChiTiet(phieu, danhSachChiTiet);
             
         } catch (Exception e) {
@@ -246,8 +258,6 @@ public class Panel_PhieuXuatHuyRow extends JPanel {
         JPanel btnPanel = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 10, 10));
         btnPanel.setBackground(Color.WHITE);
         
-        // Không có nút Xuất PDF nữa (đã xóa class PDF)
-        
         JButton btnDong = new JButton("Đóng");
         btnDong.setPreferredSize(new Dimension(120, 35));
         ButtonStyles.apply(btnDong, ButtonStyles.Type.SECONDARY);
@@ -262,20 +272,5 @@ public class Panel_PhieuXuatHuyRow extends JPanel {
         dialog.setVisible(true);
     }
     
-    private JPanel createInfoRow(String title, String value, boolean bold) {
-        JPanel panel = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 0, 5));
-        panel.setBackground(Color.WHITE);
-        
-        JLabel lblTitle = new JLabel(title);
-        lblTitle.setFont(new java.awt.Font("Segoe UI", bold ? java.awt.Font.BOLD : java.awt.Font.PLAIN, 14));
-        
-        JLabel lblValue = new JLabel(value);
-        lblValue.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 14));
-        
-        panel.add(lblTitle);
-        panel.add(lblValue);
-        
-        return panel;
-    }
 }
 

@@ -55,38 +55,6 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         ButtonStyles.apply(btnTaoPhieu, ButtonStyles.Type.PRIMARY);
     }
 
-    private void loadUserData() {
-        // Lấy nhân viên hiện tại từ Session
-        NhanVien currentUser = SessionManager.getInstance().getCurrentUser();
-
-        if (currentUser != null) {
-            txtEmpName.setText(currentUser.getTenNhanVien());
-        } else { // không đăng nhập thì hiện này để test
-            txtEmpName.setText("Không xác định");
-            System.err.println("Er: khong co gnuoi dung trong Session!");
-        }
-    }
-
-    /**
-     * Đếm tổng số đơn cần xuất hủy (cho Dashboard)
-     * 
-     * @return Tổng số lô hàng hết hạn + số sản phẩm từ đơn trả hàng
-     */
-    public int demSoDonCanXuatHuy() {
-        try {
-            // Đếm lô hàng hết hạn
-            List<LoHang> danhSachLoHangHetHan = loHangBUS.layTatCaLoHangHetHan();
-
-            // Đếm hàng trả cần hủy
-            List<ChiTietDonTraHang> danhSachHangTra = chiTietDonTraHangBUS.layTatCaChiTietCanHuy();
-
-            return danhSachLoHangHetHan.size() + danhSachHangTra.size();
-        } catch (Exception e) {
-            System.err.println("Lỗi khi đếm số đơn cần xuất hủy: " + e.getMessage());
-            return 0;
-        }
-    }
-
     // <editor-fold defaultstate="collapsed" desc="Generated
     // Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -347,6 +315,34 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         label.setHorizontalAlignment(alignment);
         label.setVerticalAlignment(javax.swing.SwingConstants.CENTER);
         return label;
+    }
+
+    private void loadUserData() {
+        NhanVien currentUser = SessionManager.getInstance().getCurrentUser();
+
+        if (currentUser != null) {
+            txtEmpName.setText(currentUser.getTenNhanVien());
+        } else {
+            txtEmpName.setText("Không xác định");
+            System.err.println("Er: khong co gnuoi dung trong Session!");
+        }
+    }
+
+    /**
+     * Đếm tổng số đơn cần xuất hủy (cho Dashboard)
+     *
+     * @return Tổng số lô hàng hết hạn + số sản phẩm từ đơn trả hàng
+     */
+    public int demSoDonCanXuatHuy() {
+        try {
+            List<LoHang> danhSachLoHangHetHan = loHangBUS.layTatCaLoHangHetHan();
+            List<ChiTietDonTraHang> danhSachHangTra = chiTietDonTraHangBUS.layTatCaChiTietCanHuy();
+
+            return danhSachLoHangHetHan.size() + danhSachHangTra.size();
+        } catch (Exception e) {
+            System.err.println("Lỗi khi đếm số đơn cần xuất hủy: " + e.getMessage());
+            return 0;
+        }
     }
 
     private void btnTaoPhieuActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_btnTaoPhieuActionPerformed

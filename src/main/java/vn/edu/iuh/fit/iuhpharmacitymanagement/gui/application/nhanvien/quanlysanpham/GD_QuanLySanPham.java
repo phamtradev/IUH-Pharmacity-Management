@@ -44,6 +44,7 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
     private TableDesign tableDesign;
     private boolean isManager = false;
 
+    // Business Logic
     private SanPhamBUS sanPhamBUS;
     private SanPhamDAO sanPhamDAO;
     private DonViTinhDAO donViTinhDAO;
@@ -52,12 +53,13 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
     private SimpleDateFormat dateFormat;
 
     public GD_QuanLySanPham() {
-        this(false);
+        this(false); // Mặc định là nhân viên
     }
 
     public GD_QuanLySanPham(boolean isManager) {
         this.isManager = isManager;
 
+        // Khởi tạo DAO và BUS
         sanPhamDAO = new SanPhamDAO();
         donViTinhDAO = new DonViTinhDAO();
         loHangDAO = new LoHangDAO();
@@ -67,6 +69,7 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
 
         initComponents();
 
+        // Áp dụng ButtonStyles và FontStyles
         applyStyles();
 
         styleTextField(txtSearchNamePD, "Nhập tên sản phẩm hoặc số đăng ký");
@@ -77,12 +80,14 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         fillTable();
         addIconFeature();
 
+        // Hiển thị button xóa chỉ khi là quản lý
         if (isManager) {
             btnDelete.setVisible(true);
         }
     }
 
     private void applyStyles() {
+        // Buttons chính
         ButtonStyles.apply(btnAdd, ButtonStyles.Type.SUCCESS);
         FontStyles.apply(btnAdd, FontStyles.Type.BUTTON_MEDIUM);
         btnAdd.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
@@ -107,10 +112,11 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
     private void styleTextField(javax.swing.JTextField textField, String hintText) {
         FontStyles.apply(textField, FontStyles.Type.INPUT_FIELD);
         textField.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, hintText);
-        textField.putClientProperty(FlatClientProperties.TEXT_FIELD_SHOW_CLEAR_BUTTON, true);
+        textField.putClientProperty(FlatClientProperties.TEXT_FIELD_SHOW_CLEAR_BUTTON, true); // nút clear (x)
 
+        // Tạo padding bên trong cho đẹp
         textField.putClientProperty(FlatClientProperties.STYLE, ""
-                + "margin:5,10,5,10;"
+                + "margin:5,10,5,10;" // top, left, bottom, right
                 + "arc:10;"
                 + "borderWidth:1;"
                 + "focusWidth:2;"
@@ -120,19 +126,22 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
     }
 
     private void initGlobalTextFieldStyle() {
-        UIManager.put("Component.arc", 10);
-        UIManager.put("TextComponent.arc", 10);
+        UIManager.put("Component.arc", 10); // Bo tròn cho tất cả component
+        UIManager.put("TextComponent.arc", 10); // Cụ thể cho JTextField
         UIManager.put("Component.borderWidth", 1);
         UIManager.put("Component.borderColor", new java.awt.Color(150, 180, 255));
 
+        // Focus - Khi click vào TextField
         UIManager.put("Component.focusColor", UIManager.getColor("Component.accentColor"));
         UIManager.put("Component.focusWidth", 2);
     }
 
     private void setUIManager() {
         try {
+            // Placeholder cho TextField tìm kiếm
             txtSearchNamePD.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập tên sản phẩm hoặc số đăng ký");
             try {
+                // TextField txtSearchSDKPD có thể chưa được generate, kiểm tra trước
                 java.lang.reflect.Field field = this.getClass().getDeclaredField("txtSearchSDKPD");
                 field.setAccessible(true);
                 javax.swing.JTextField txtSearchSDKPD = (javax.swing.JTextField) field.get(this);
@@ -140,6 +149,7 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
                     txtSearchSDKPD.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập số đăng ký");
                 }
             } catch (Exception e) {
+                // Bỏ qua nếu field chưa tồn tại
             }
         } catch (Exception e) {
             System.err.println("Lỗi khi thiết lập UI Manager: " + e.getMessage());
@@ -147,6 +157,7 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
             return;
         }
 
+        // Placeholder cho modal THÊM sản phẩm
         txtCountryOfOrigin.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập xuất xứ");
         txtProductActiveIngre.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập hoạt chất");
         txtProductDosage.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập liều lượng");
@@ -157,6 +168,7 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         txtProductRegisNumber.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập số đăng kí");
         txtProductSellingPrice.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập giá bán");
 
+        // Placeholder cho modal SỬA sản phẩm
         txtCountryOfOrigin1.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập xuất xứ");
         txtProductActiveIngre1.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập hoạt chất");
         txtProductDosage1.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập liều lượng");
@@ -177,12 +189,13 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         ProductScrollPane.setViewportView(tableDesign.getTable());
         ProductScrollPane.setBorder(BorderFactory.createEmptyBorder(15, 20, 20, 20));
 
+        // Load dữ liệu
         loadTableData(sanPhamBUS.layTatCaSanPham());
     }
 
     private void loadTableData(List<SanPham> danhSachSanPham) {
         DefaultTableModel model = (DefaultTableModel) tableDesign.getTable().getModel();
-        model.setRowCount(0);
+        model.setRowCount(0); // Xóa dữ liệu cũ
 
         for (SanPham sp : danhSachSanPham) {
             Object[] row = {
