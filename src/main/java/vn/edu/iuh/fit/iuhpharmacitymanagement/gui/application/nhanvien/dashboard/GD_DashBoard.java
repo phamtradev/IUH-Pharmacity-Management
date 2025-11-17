@@ -20,6 +20,7 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.LoHangDAO;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.SanPhamDAO;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlyxuathuy.GD_QuanLyXuatHuy;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonHang;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.LoHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhanVien;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham;
@@ -114,11 +115,6 @@ public class GD_DashBoard extends javax.swing.JPanel {
         chartAlertRow.add(alertPanel);
         
         contentPanel.add(chartAlertRow);
-        contentPanel.add(Box.createVerticalStrut(20));
-        
-        // ========== TABLE: Đơn hàng gần đây ==========
-        JPanel tablePanel = createTablePanel();
-        contentPanel.add(tablePanel);
         
         pnAll.add(contentPanel, BorderLayout.CENTER);
     }
@@ -291,65 +287,7 @@ public class GD_DashBoard extends javax.swing.JPanel {
         return panel;
     }
     
-    /**
-     * Tạo table panel
-     */
-    private JPanel createTablePanel() {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setBackground(Color.WHITE);
-        panel.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(new Color(230, 230, 230), 1),
-            BorderFactory.createEmptyBorder(20, 20, 20, 20)
-        ));
-        
-        // Title
-        JLabel lblTableTitle = new JLabel("10 ĐƠN HÀNG GẦN NHẤT (CÁ NHÂN)");
-        lblTableTitle.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        lblTableTitle.setForeground(new Color(51, 51, 51));
-        lblTableTitle.setBorder(BorderFactory.createEmptyBorder(0, 0, 15, 0));
-        
-        // Setup table
-        setupRecentOrdersTable();
-        
-        panel.add(lblTableTitle, BorderLayout.NORTH);
-        panel.add(scrollTable, BorderLayout.CENTER);
-        
-        return panel;
-    }
-
-    /**
-     * Thiết lập bảng hiển thị đơn hàng gần đây
-     */
-    private void setupRecentOrdersTable() {
-        String[] headers = {"Mã hóa đơn", "Ngày tạo", "Khách hàng", "Tổng tiền"};
-        
-        tableModel = new DefaultTableModel(headers, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
-        
-        table = new JTable(tableModel);
-        table.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        table.setRowHeight(50);  // Tăng height để dễ đọc hơn
-        table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
-        table.getTableHeader().setBackground(new Color(245, 245, 245));
-        table.getTableHeader().setForeground(new Color(51, 51, 51));
-        table.getTableHeader().setPreferredSize(new Dimension(0, 45));  // Tăng height header
-        
-        // Màu selection nổi bật khi click
-        table.setSelectionBackground(new Color(64, 158, 255));
-        table.setSelectionForeground(Color.WHITE);
-        
-        table.setGridColor(new Color(235, 235, 235));
-        table.setShowHorizontalLines(true);
-        table.setShowVerticalLines(false);
-        
-        scrollTable.setViewportView(table);
-        scrollTable.setBorder(null);
-        scrollTable.setBackground(Color.WHITE);
-    }
+    // (Đã bỏ phần thống kê 10 đơn gần nhất và donut chart theo yêu cầu)
 
     /**
      * Tải dữ liệu dashboard
@@ -395,9 +333,6 @@ public class GD_DashBoard extends javax.swing.JPanel {
             
             // ========== LOAD DANH SÁCH SẢN PHẨM SẮP HẾT ==========
             loadLowStockProducts();
-            
-            // ========== LOAD BẢNG ĐƠN HÀNG GẦN ĐÂY ==========
-            loadRecentOrders(maNhanVien);
             
         } catch (Exception e) {
             e.printStackTrace();
@@ -525,41 +460,6 @@ public class GD_DashBoard extends javax.swing.JPanel {
         return panel;
     }
     
-    /**
-     * Load bảng đơn hàng gần đây (cá nhân)
-     */
-    private void loadRecentOrders(String maNhanVien) {
-        try {
-            tableModel.setRowCount(0);
-            
-            List<DonHang> allOrders = donHangBUS.layTatCaDonHang();
-            
-            // Lọc đơn hàng của nhân viên này, sắp xếp theo ngày mới nhất
-            List<DonHang> myOrders = allOrders.stream()
-                    .filter(dh -> dh.getNhanVien() != null && 
-                            dh.getNhanVien().getMaNhanVien().equals(maNhanVien))
-                    .sorted((a, b) -> b.getNgayDatHang().compareTo(a.getNgayDatHang()))
-                    .limit(10)  // Chỉ lấy 10 đơn gần nhất
-                    .collect(Collectors.toList());
-            
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-            
-            for (DonHang dh : myOrders) {
-                String tenKhach = dh.getKhachHang() != null ? 
-                        dh.getKhachHang().getTenKhachHang() : "Khách lẻ";
-                
-                tableModel.addRow(new Object[]{
-                    dh.getMaDonHang(),
-                    dh.getNgayDatHang().format(formatter),
-                    tenKhach,
-                    currencyFormat.format(dh.getThanhTien()) + " đ"
-                });
-            }
-            
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
     
     /**
      * Animation fade in khi load dashboard
