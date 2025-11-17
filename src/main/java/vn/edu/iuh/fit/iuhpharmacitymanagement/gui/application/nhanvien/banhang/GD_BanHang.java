@@ -13,7 +13,13 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -21,9 +27,14 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.UIManager;
 import raven.toast.Notifications;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.LoHangBUS;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.SanPhamBUS;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.SanPhamDAO;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietKhuyenMaiSanPham;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhuyenMai;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.LoHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.constant.LoaiKhuyenMai;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
 
 /**
@@ -398,20 +409,16 @@ public class GD_BanHang extends javax.swing.JPanel {
             }
         }
         
-        vn.edu.iuh.fit.iuhpharmacitymanagement.bus.LoHangBUS loHangBUS = 
-            new vn.edu.iuh.fit.iuhpharmacitymanagement.bus.LoHangBUS();
-        java.util.List<vn.edu.iuh.fit.iuhpharmacitymanagement.entity.LoHang> danhSachLoHangGoc = 
-            loHangBUS.getLoHangBySanPham(sanPham);
+        LoHangBUS loHangBUS = new LoHangBUS();
+        List<LoHang> danhSachLoHangGoc = loHangBUS.getLoHangBySanPham(sanPham);
         
-        java.util.List<vn.edu.iuh.fit.iuhpharmacitymanagement.entity.LoHang> danhSachLoHangFIFO = 
-            danhSachLoHangGoc.stream()
+        List<LoHang> danhSachLoHangFIFO = danhSachLoHangGoc.stream()
                 .filter(lh -> lh.getTonKho() > 0 && lh.isTrangThai())
-                .sorted(java.util.Comparator.comparing(
-                    vn.edu.iuh.fit.iuhpharmacitymanagement.entity.LoHang::getHanSuDung))
-                .collect(java.util.stream.Collectors.toList());
+                .sorted(Comparator.comparing(LoHang::getHanSuDung))
+                .collect(Collectors.toList());
         
         int tongTonKho = danhSachLoHangFIFO.stream()
-            .mapToInt(vn.edu.iuh.fit.iuhpharmacitymanagement.entity.LoHang::getTonKho)
+            .mapToInt(LoHang::getTonKho)
             .sum();
 
         int soLuongCanThem = 1;
@@ -471,8 +478,7 @@ public class GD_BanHang extends javax.swing.JPanel {
         double tongGiamGiaSanPham = 0;
         double giamGiaHoaDon = 0;
         
-        java.util.Map<vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham, Integer> danhSachSanPham = 
-            new java.util.HashMap<>();
+        Map<SanPham, Integer> danhSachSanPham = new HashMap<>();
         
         int soLuongSanPham = 0;
         for (Component comp : containerPanel.getComponents()) {
@@ -500,25 +506,23 @@ public class GD_BanHang extends javax.swing.JPanel {
             }
         }
         
-        java.util.List<vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhuyenMai> danhSachKMSanPham = 
-            panelDonHang.getKhuyenMaiBUS().getKhuyenMaiConHan()
+        List<KhuyenMai> danhSachKMSanPham = panelDonHang.getKhuyenMaiBUS().getKhuyenMaiConHan()
                 .stream()
-                .filter(km -> km.getLoaiKhuyenMai() == vn.edu.iuh.fit.iuhpharmacitymanagement.constant.LoaiKhuyenMai.SAN_PHAM)
-                .collect(java.util.stream.Collectors.toList());
+                .filter(km -> km.getLoaiKhuyenMai() == LoaiKhuyenMai.SAN_PHAM)
+                .collect(Collectors.toList());
         
-        int countPanels = 0;
         for (Component comp : containerPanel.getComponents()) {
             if (comp instanceof Panel_ChiTietSanPham) {
                 Panel_ChiTietSanPham panel = (Panel_ChiTietSanPham) comp;
-                countPanels++;
-                vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhuyenMai kmTotNhat = null;
+                KhuyenMai kmTotNhat = null;
                 double giamGiaMax = 0;
                 
-                for (vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhuyenMai km : danhSachKMSanPham) {
-                    java.util.List<vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietKhuyenMaiSanPham> danhSachCTKM = 
-                        panelDonHang.getChiTietKhuyenMaiSanPhamBUS().timTheoMaKhuyenMai(km.getMaKhuyenMai());
+                for (KhuyenMai km : danhSachKMSanPham) {
+                    List<ChiTietKhuyenMaiSanPham> danhSachCTKM =
+                        panelDonHang.getChiTietKhuyenMaiSanPhamBUS()
+                            .timTheoMaKhuyenMai(km.getMaKhuyenMai());
                     
-                    for (vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietKhuyenMaiSanPham ctkm : danhSachCTKM) {
+                    for (ChiTietKhuyenMaiSanPham ctkm : danhSachCTKM) {
                         if (ctkm.getSanPham().getMaSanPham().equals(panel.getSanPham().getMaSanPham())) {
                             int soLuongMua = panel.getSoLuong();
                             int soLuongToiDa = km.getSoLuongToiDa();
@@ -566,16 +570,15 @@ public class GD_BanHang extends javax.swing.JPanel {
             }
         }
 
-        java.util.List<vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhuyenMai> danhSachKMDonHang = 
-            panelDonHang.getKhuyenMaiBUS().getKhuyenMaiConHan()
+        List<KhuyenMai> danhSachKMDonHang = panelDonHang.getKhuyenMaiBUS().getKhuyenMaiConHan()
                 .stream()
-                .filter(km -> km.getLoaiKhuyenMai() == vn.edu.iuh.fit.iuhpharmacitymanagement.constant.LoaiKhuyenMai.DON_HANG)
-                .collect(java.util.stream.Collectors.toList());
+                .filter(km -> km.getLoaiKhuyenMai() == LoaiKhuyenMai.DON_HANG)
+                .collect(Collectors.toList());
         
-        vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhuyenMai kmDonHangTotNhat = null;
+        KhuyenMai kmDonHangTotNhat = null;
         double giamGiaDonHangMax = 0;
         
-        for (vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhuyenMai km : danhSachKMDonHang) {
+        for (KhuyenMai km : danhSachKMDonHang) {
             if (tongTienHang >= km.getGiaToiThieu()) {
                 if (km.getGiaToiDa() > 0 && tongTienHang > km.getGiaToiDa()) {
                     continue;
@@ -594,12 +597,10 @@ public class GD_BanHang extends javax.swing.JPanel {
             giamGiaHoaDon = giamGiaDonHangMax;
         }
         
-        java.util.Map<vn.edu.iuh.fit.iuhpharmacitymanagement.constant.LoaiKhuyenMai, 
-                       vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhuyenMai> danhSachKMDaChon = 
-            new java.util.HashMap<>();
+        Map<LoaiKhuyenMai, KhuyenMai> danhSachKMDaChon = new HashMap<>();
         
         if (kmDonHangTotNhat != null) {
-            danhSachKMDaChon.put(vn.edu.iuh.fit.iuhpharmacitymanagement.constant.LoaiKhuyenMai.DON_HANG, kmDonHangTotNhat);
+            danhSachKMDaChon.put(LoaiKhuyenMai.DON_HANG, kmDonHangTotNhat);
         }
         
         if (panelDonHang != null) {
@@ -662,8 +663,8 @@ public class GD_BanHang extends javax.swing.JPanel {
         }
     }
     
-    public java.util.List<Panel_ChiTietSanPham> getDanhSachSanPhamTrongGio() {
-        java.util.List<Panel_ChiTietSanPham> danhSach = new java.util.ArrayList<>();
+    public List<Panel_ChiTietSanPham> getDanhSachSanPhamTrongGio() {
+        List<Panel_ChiTietSanPham> danhSach = new ArrayList<>();
         
         for (Component comp : containerPanel.getComponents()) {
             if (comp instanceof Panel_ChiTietSanPham) {
@@ -675,7 +676,7 @@ public class GD_BanHang extends javax.swing.JPanel {
     }
     
     public void xoaToanBoGioHang() {
-        java.util.List<Panel_ChiTietSanPham> danhSach = getDanhSachSanPhamTrongGio();
+        List<Panel_ChiTietSanPham> danhSach = getDanhSachSanPhamTrongGio();
         
         for (Panel_ChiTietSanPham panel : danhSach) {
             containerPanel.remove(panel);
@@ -691,8 +692,8 @@ public class GD_BanHang extends javax.swing.JPanel {
         capNhatTongTien();
     }
     
-    public void themSanPhamVaoGio(vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham sanPham, 
-                                   vn.edu.iuh.fit.iuhpharmacitymanagement.entity.LoHang loHang,
+    public void themSanPhamVaoGio(SanPham sanPham, 
+                                   LoHang loHang,
                                    int soLuong) {
         Panel_ChiTietSanPham panelDaTonTai = null;
         for (Component comp : containerPanel.getComponents()) {
