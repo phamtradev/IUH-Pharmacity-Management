@@ -904,13 +904,6 @@ public class Panel_DonHang extends javax.swing.JPanel {
                 // TỔNG GIẢM GIÁ = Giảm giá sản phẩm + Giảm giá hóa đơn phân bổ
                 double tongGiamGia = giamGiaSP + giamGiaHoaDonPhanBo;
 
-                // Debug log
-                System.out.println("DEBUG - Sản phẩm: " + panel.getSanPham().getTenSanPham() +
-                        ", Giá gốc: " + tongTienGoc +
-                        ", Giảm giá SP: " + giamGiaSP +
-                        ", Giảm giá HĐ phân bổ: " + giamGiaHoaDonPhanBo +
-                        ", TỔNG giảm giá: " + tongGiamGia);
-
                 // LƯU RIÊNG 2 LOẠI GIẢM GIÁ VÀO DATABASE
                 chiTiet.setGiamGiaSanPham(giamGiaSP); // CHỈ giảm giá sản phẩm
                 chiTiet.setGiamGiaHoaDonPhanBo(giamGiaHoaDonPhanBo); // Giảm giá hóa đơn phân bổ
@@ -982,11 +975,6 @@ public class Panel_DonHang extends javax.swing.JPanel {
                             return;
                         }
 
-                        // Ghi log
-                        System.out.println("✓ Giảm tồn kho lô " + loHang.getMaLoHang() +
-                                ": " + tonKhoHienTai + " → " + tonKhoMoi +
-                                " (bán " + soLuongTuLoNay + ")");
-
                         soLuongConLai -= soLuongTuLoNay;
 
                     } catch (Exception e) {
@@ -1017,7 +1005,6 @@ public class Panel_DonHang extends javax.swing.JPanel {
             // Nếu hủy đơn, giỏ hàng vẫn giữ nguyên để tiếp tục
 
         } catch (Exception e) {
-            e.printStackTrace();
             Notifications.getInstance().show(Notifications.Type.ERROR,
                     Notifications.Location.TOP_CENTER,
                     "Lỗi: " + e.getMessage());
@@ -1950,16 +1937,11 @@ public class Panel_DonHang extends javax.swing.JPanel {
                 // Sau khi đóng QR dialog, kiểm tra xem đã thanh toán chưa
                 javax.swing.SwingUtilities.invokeLater(() -> {
                     if (qrDialog.isDaThanhtoan()) {
-                        // ✅ ĐÃ THANH TOÁN THÀNH CÔNG - Cập nhật phương thức và in hóa đơn
-                        System.out.println("✅ [QR Banking] Thanh toán thành công! Cập nhật phương thức...");
-
+                        // Đã thanh toán thành công - cập nhật phương thức và in hóa đơn
                         try {
                             donHang.setPhuongThucThanhToan(PhuongThucThanhToan.CHUYEN_KHOAN_NGAN_HANG);
 
                             if (donHangBUS.capNhatDonHang(donHang)) {
-                                System.out.println(
-                                        "✅ [QR Banking] Đã cập nhật phương thức thanh toán: CHUYEN_KHOAN_NGAN_HANG");
-
                                 // Đóng dialog xác nhận
                                 dialog.dispose();
 
@@ -1972,20 +1954,15 @@ public class Panel_DonHang extends javax.swing.JPanel {
                                         "⚠️ Đã thanh toán nhưng không thể cập nhật phương thức!");
                             }
                         } catch (Exception ex) {
-                            ex.printStackTrace();
                             Notifications.getInstance().show(
                                     Notifications.Type.ERROR,
                                     Notifications.Location.TOP_CENTER,
                                     "Lỗi khi cập nhật phương thức: " + ex.getMessage());
                         }
-                    } else {
-                        // ❌ CHƯA THANH TOÁN
-                        System.out.println("⚠️ [QR Banking] Chưa thanh toán.");
                     }
                 });
 
             } catch (Exception ex) {
-                System.out.println("❌ DEBUG - Lỗi: " + ex.getMessage());
                 Notifications.getInstance().show(Notifications.Type.ERROR, Notifications.Location.TOP_CENTER,
                         "Lỗi khi hiển thị QR Code: " + ex.getMessage());
                 ex.printStackTrace();
@@ -2088,8 +2065,6 @@ public class Panel_DonHang extends javax.swing.JPanel {
         final double tongTienFinal = donHang.getThanhTien();
 
         Thread pollingThread = new Thread(() -> {
-            System.out.println("🔍 [QR Banking] Bắt đầu kiểm tra thanh toán cho đơn: " + maDonHangFinal);
-
             while (!stopPolling.get()) {
                 try {
                     // Kiểm tra xem đã thanh toán chưa
@@ -2115,9 +2090,6 @@ public class Panel_DonHang extends javax.swing.JPanel {
                                     ButtonStyles.apply(btnQRBanking, ButtonStyles.Type.SUCCESS);
                                     btnQRBanking.setText("✅ Đã Thanh Toán QR");
                                     btnQRBanking.setEnabled(false);
-
-                                    System.out.println(
-                                            "✅ [QR Banking] Đã cập nhật phương thức thanh toán: CHUYEN_KHOAN_NGAN_HANG");
                                 } else {
                                     Notifications.getInstance().show(
                                             Notifications.Type.WARNING,
@@ -2142,14 +2114,11 @@ public class Panel_DonHang extends javax.swing.JPanel {
                     Thread.sleep(2000);
 
                 } catch (InterruptedException ex) {
-                    System.out.println("⚠️ [QR Banking] Polling thread bị interrupt");
                     break;
                 } catch (Exception ex) {
-                    ex.printStackTrace();
+                    // ignore and continue polling
                 }
             }
-
-            System.out.println("🛑 [QR Banking] Dừng kiểm tra thanh toán cho đơn: " + maDonHangFinal);
         });
 
         // Đặt thread là daemon để tự động tắt khi app đóng
@@ -2161,12 +2130,6 @@ public class Panel_DonHang extends javax.swing.JPanel {
             @Override
             public void windowClosing(java.awt.event.WindowEvent e) {
                 stopPolling.set(true);
-                System.out.println("🔴 [QR Banking] Dialog đóng - dừng polling");
-            }
-
-            @Override
-            public void windowOpened(java.awt.event.WindowEvent e) {
-                System.out.println("🟢 [Debug] Dialog đã mở!");
             }
         });
 
@@ -2240,7 +2203,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
             lblBarcode.setAlignmentX(Component.CENTER_ALIGNMENT);
             mainPanel.add(lblBarcode);
         } catch (Exception ex) {
-            System.err.println("Lỗi tạo barcode: " + ex.getMessage());
+            // Bỏ qua lỗi tạo barcode, không chặn việc hiển thị hóa đơn
         }
         mainPanel.add(Box.createVerticalStrut(2));
 
@@ -2360,21 +2323,14 @@ public class Panel_DonHang extends javax.swing.JPanel {
         }
 
         // Bước 2: Tính tổng giảm giá sản phẩm và giảm giá hóa đơn từ DB
-        // ĐƠN GIẢN - KHÔNG CẦN TÍNH NGƯỢC!
         double tongGiamGiaSanPham = 0;
         double giamGiaHoaDon = 0;
         for (ChiTietDonHang ct : danhSachChiTiet) {
             double ggSP = ct.getGiamGiaSanPham();
             double ggHD = ct.getGiamGiaHoaDonPhanBo();
-            tongGiamGiaSanPham += ggSP; // Giảm giá sản phẩm
-            giamGiaHoaDon += ggHD; // Giảm giá hóa đơn phân bổ
-
-            // Debug
-            System.out.println("DEBUG HÓA ĐƠN - SP: " + ct.getLoHang().getSanPham().getTenSanPham() +
-                    ", giamGiaSP: " + ggSP + ", giamGiaHD: " + ggHD);
+            tongGiamGiaSanPham += ggSP;
+            giamGiaHoaDon += ggHD;
         }
-        System.out.println(
-                "DEBUG HÓA ĐƠN - TỔNG giảm giá SP: " + tongGiamGiaSanPham + ", TỔNG giảm giá HĐ: " + giamGiaHoaDon);
 
         // Thêm dữ liệu vào bảng - CHỈ HIỂN THỊ GIẢM GIÁ SẢN PHẨM
         int stt = 1;
@@ -2382,7 +2338,6 @@ public class Panel_DonHang extends javax.swing.JPanel {
             LoHang loHang = chiTiet.getLoHang();
             SanPham sanPham = loHang != null ? loHang.getSanPham() : null;
 
-            // Tên sản phẩm (bỏ thông tin lô hàng để gọn)
             String tenSP = sanPham != null ? sanPham.getTenSanPham() : "";
             String tenSPFull = tenSP;
 
