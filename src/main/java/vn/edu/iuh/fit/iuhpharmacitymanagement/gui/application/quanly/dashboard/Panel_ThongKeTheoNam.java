@@ -6,6 +6,7 @@ package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.dashboard;
 
 import raven.toast.Notifications;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.DonHangBUS;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.constant.LoaiSanPham;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.barchart.Chart;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.barchart.ModelChart;
@@ -382,12 +383,34 @@ public class Panel_ThongKeTheoNam extends javax.swing.JPanel {
         List<DonHang> allOrders = donHangBUS.layTatCaDonHang();
         String paymentType = comboPaymentType.getSelectedItem().toString();
         String promotionType = comboIsPromotion.getSelectedItem().toString();
+        String productType = comboProductType.getSelectedItem().toString();
 
         // Lọc đơn hàng theo năm
         List<DonHang> filteredOrders = allOrders.stream()
                 .filter(dh -> dh.getNgayDatHang() != null)
                 .filter(dh -> dh.getNgayDatHang().getYear() >= yearStart && dh.getNgayDatHang().getYear() <= yearEnd)
                 .collect(Collectors.toList());
+
+        // Lọc theo loại sản phẩm (nếu được chọn)
+        if (!"Tất cả".equals(productType)) {
+            LoaiSanPham loaiSanPham = null;
+            if ("Thuốc".equals(productType)) {
+                loaiSanPham = LoaiSanPham.THUOC;
+            } else if ("Vật tư y tế".equals(productType)) {
+                loaiSanPham = LoaiSanPham.VAT_TU_Y_TE;
+            }
+
+            if (loaiSanPham != null) {
+                LoaiSanPham finalLoaiSanPham = loaiSanPham;
+                filteredOrders = filteredOrders.stream()
+                        .filter(dh -> dh.getChiTietDonHang() != null
+                                && dh.getChiTietDonHang().stream().anyMatch(ct ->
+                                ct.getLoHang() != null
+                                        && ct.getLoHang().getSanPham() != null
+                                        && ct.getLoHang().getSanPham().getLoaiSanPham() == finalLoaiSanPham))
+                        .collect(Collectors.toList());
+            }
+        }
 
         // Lọc theo phương thức thanh toán
         if (!paymentType.equals("Tất cả")) {
@@ -424,6 +447,7 @@ public class Panel_ThongKeTheoNam extends javax.swing.JPanel {
         List<DonHang> allOrders = donHangBUS.layTatCaDonHang();
         String paymentType = comboPaymentType.getSelectedItem().toString();
         String promotionType = comboIsPromotion.getSelectedItem().toString();
+        String productType = comboProductType.getSelectedItem().toString();
 
         int totalYears = yearEnd - yearStart + 1;
 
@@ -432,6 +456,27 @@ public class Panel_ThongKeTheoNam extends javax.swing.JPanel {
                 .filter(dh -> dh.getNgayDatHang() != null)
                 .filter(dh -> dh.getNgayDatHang().getYear() >= yearStart && dh.getNgayDatHang().getYear() <= yearEnd)
                 .collect(Collectors.toList());
+
+        // Lọc theo loại sản phẩm (nếu được chọn)
+        if (!"Tất cả".equals(productType)) {
+            LoaiSanPham loaiSanPham = null;
+            if ("Thuốc".equals(productType)) {
+                loaiSanPham = LoaiSanPham.THUOC;
+            } else if ("Vật tư y tế".equals(productType)) {
+                loaiSanPham = LoaiSanPham.VAT_TU_Y_TE;
+            }
+
+            if (loaiSanPham != null) {
+                LoaiSanPham finalLoaiSanPham = loaiSanPham;
+                filteredOrders = filteredOrders.stream()
+                        .filter(dh -> dh.getChiTietDonHang() != null
+                                && dh.getChiTietDonHang().stream().anyMatch(ct ->
+                                ct.getLoHang() != null
+                                        && ct.getLoHang().getSanPham() != null
+                                        && ct.getLoHang().getSanPham().getLoaiSanPham() == finalLoaiSanPham))
+                        .collect(Collectors.toList());
+            }
+        }
 
         // Lọc theo phương thức thanh toán
         if (!paymentType.equals("Tất cả")) {
