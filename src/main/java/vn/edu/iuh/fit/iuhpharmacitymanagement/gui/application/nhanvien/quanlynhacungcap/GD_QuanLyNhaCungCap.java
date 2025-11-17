@@ -30,7 +30,6 @@ public class GD_QuanLyNhaCungCap extends javax.swing.JPanel {
         this.nhaCungCapBUS = new NhaCungCapBUS();
         initComponents();
 
-        // Áp dụng ButtonStyles và FontStyles
         applyStyles();
 
         setUIManager();
@@ -39,7 +38,6 @@ public class GD_QuanLyNhaCungCap extends javax.swing.JPanel {
     }
 
     private void applyStyles() {
-        // Buttons chính
         ButtonStyles.apply(btnThem, ButtonStyles.Type.SUCCESS);
         FontStyles.apply(btnThem, FontStyles.Type.BUTTON_MEDIUM);
         btnThem.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
@@ -62,39 +60,31 @@ public class GD_QuanLyNhaCungCap extends javax.swing.JPanel {
     }
 
     private void setupModalSize() {
-        // Tăng kích thước modal lên 900x800
         modelSupplierAdd.setSize(900, 800);
         modelSupplierEdit.setSize(900, 800);
 
-        // Thêm tiêu đề đẹp cho modal
         modelSupplierAdd.setTitle("THÊM NHÀ CUNG CẤP MỚI");
         modelSupplierEdit.setTitle("CẬP NHẬT THÔNG TIN NHÀ CUNG CẤP");
 
-        // Loại bỏ viền thừa của panel trong modal
         jPanel7.putClientProperty(FlatClientProperties.STYLE, "background:#F8F9FA;border:0,0,0,0");
         jPanel8.putClientProperty(FlatClientProperties.STYLE, "background:#F8F9FA;border:0,0,0,0");
 
-        // Style cho buttons trong modal Add
         ButtonStyles.apply(btnSupplierAdd, ButtonStyles.Type.SUCCESS);
         ButtonStyles.apply(btnSupplierExit, ButtonStyles.Type.DANGER);
 
-        // Style cho buttons trong modal Edit
         ButtonStyles.apply(btnSupplierEdit, ButtonStyles.Type.PRIMARY);
         ButtonStyles.apply(btnSupplierExit2, ButtonStyles.Type.DANGER);
     }
 
     private void setUIManager() {
-        // Placeholder cho search
         txtTimKiem.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Tìm kiếm theo tên, email, số điện thoại");
 
-        // Placeholder cho Add form
         txtSupNameAdd.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập tên nhà cung cấp");
         txtSupPhoneAdd.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập số điện thoại (10 chữ số)");
         txtSupAddressAdd.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập địa chỉ");
         txtSupEmailAdd.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập email");
         txtSupTaxCodeAdd.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập mã số thuế (10 hoặc 13 ký tự)");
 
-        // Placeholder cho Edit form
         txtSupNameEdit.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập tên nhà cung cấp");
         txtSupPhoneEdit.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập số điện thoại (10 chữ số)");
         txtSupAddressEdit.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập địa chỉ");
@@ -102,7 +92,6 @@ public class GD_QuanLyNhaCungCap extends javax.swing.JPanel {
         txtSupTaxCodeEdit.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT,
                 "Nhập mã số thuế (10 hoặc 13 ký tự)");
 
-        // Thêm viền cho các TextField
         txtTimKiem.putClientProperty(FlatClientProperties.STYLE, "arc:10");
         txtSupNameAdd.putClientProperty(FlatClientProperties.STYLE, "arc:10");
         txtSupPhoneAdd.putClientProperty(FlatClientProperties.STYLE, "arc:10");
@@ -125,7 +114,6 @@ public class GD_QuanLyNhaCungCap extends javax.swing.JPanel {
         SupplierScroll.setViewportView(tableDesign.getTable());
         SupplierScroll.setBorder(BorderFactory.createEmptyBorder(15, 20, 20, 20));
 
-        // Load sample data
         loadSampleData();
     }
 
@@ -152,14 +140,11 @@ public class GD_QuanLyNhaCungCap extends javax.swing.JPanel {
         }
     }
 
-    // Helper method để clear nhiều text field cùng lúc
     public void clearData(JTextField... fields) {
         for (JTextField field : fields) {
-            // field.setText("");
             field.setText("");
         }
     }
-    // ok
 
     /**
      * This method is called from within the constructor to initialize the form.
