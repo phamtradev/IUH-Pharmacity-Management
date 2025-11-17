@@ -36,6 +36,7 @@ public class Menu extends JPanel {
         {"Thông tin cá nhân"},
         {"Chat Bot"},
         {"Trợ giúp"},
+        {"Phiên bản"},
         {"Đăng xuất"}
     };
 
@@ -51,6 +52,7 @@ public class Menu extends JPanel {
         {"Thông tin cá nhân"},
         {"Chat Bot"},
         {"Trợ giúp"},
+        {"Phiên bản"},
         {"Đăng xuất"}
     };
 
