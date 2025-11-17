@@ -5,6 +5,7 @@
 package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlyphieutrahang;
 
 import com.formdev.flatlaf.FlatClientProperties;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
 
 /**
@@ -1040,9 +1041,6 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
         String donVi = productPanel.getDonVi();
         int soLuongDaMua = productPanel.getSoLuong();
 
-        System.out.println("DEBUG onProductClicked: Tên SP = '" + tenSP + "', Đơn vị = '" + donVi
-                + "', Số lượng đã mua = " + soLuongDaMua);
-
         // Kiểm tra sản phẩm đã có trong danh sách trả hàng chưa
         for (java.awt.Component comp : pnHaveReturn.getComponents()) {
             if (comp instanceof Panel_ChiTietSanPhamTraHang) {
@@ -1076,29 +1074,23 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
         // Copy hình ảnh nếu có - tìm sản phẩm từ database để lấy đường dẫn hình ảnh
         try {
             vn.edu.iuh.fit.iuhpharmacitymanagement.dao.SanPhamDAO sanPhamDAO = new vn.edu.iuh.fit.iuhpharmacitymanagement.dao.SanPhamDAO();
-            java.util.List<vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham> dsSanPham = sanPhamDAO.findAll();
+            java.util.List<SanPham> dsSanPham = sanPhamDAO.findAll();
 
             boolean found = false;
-            for (vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham sp : dsSanPham) {
+            for (SanPham sp : dsSanPham) {
                 if (sp.getTenSanPham().equals(tenSP)) {
                     String hinhAnh = sp.getHinhAnh();
-                    System.out.println("DEBUG: Tìm thấy SP trong DB - Hình: " + hinhAnh);
                     if (hinhAnh != null && !hinhAnh.isEmpty()) {
                         // Chuyển đổi đường dẫn tương đối thành đường dẫn đầy đủ
                         String fullPath = "src/main/resources/img/" + hinhAnh;
                         returnProduct.setHinhAnh(fullPath);
-                        System.out.println("DEBUG: Đã set hình cho panel trả hàng với đường dẫn: " + fullPath);
                     }
                     found = true;
                     break;
                 }
             }
-            if (!found) {
-                System.out.println("DEBUG: KHÔNG tìm thấy sản phẩm '" + tenSP + "' trong DB");
-            }
         } catch (Exception e) {
-            System.err.println("Lỗi khi load hình ảnh: " + e.getMessage());
-            e.printStackTrace();
+            // Bỏ qua lỗi load hình, không chặn thêm sản phẩm trả hàng
         }
 
         // Thiết lập listener để cập nhật tổng tiền khi xóa
@@ -1262,11 +1254,9 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
                 String sdtKH = currentDonHang.getKhachHang().getSoDienThoai();
                 txtCusName.setText(tenKH != null && !tenKH.trim().isEmpty() ? tenKH : "Khách vãng lai");
                 txtCusPhone.setText(sdtKH != null && !sdtKH.trim().isEmpty() ? sdtKH : "N/A");
-                System.out.println("DEBUG: Khách hàng - Tên: " + tenKH + ", SĐT: " + sdtKH);
             } else {
                 txtCusName.setText("Khách vãng lai");
                 txtCusPhone.setText("N/A");
-                System.out.println("DEBUG: Không có thông tin khách hàng");
             }
 
             // Hiển thị tên nhân viên hiện tại
@@ -1274,11 +1264,7 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
                     .getInstance();
             if (sessionManager.getCurrentUser() != null) {
                 String tenNV = sessionManager.getCurrentUser().getTenNhanVien();
-                String sdtNV = sessionManager.getCurrentUser().getSoDienThoai();
                 txtEmpName.setText(tenNV);
-                System.out.println("DEBUG: Nhân viên lập: " + tenNV + " - SĐT: " + sdtNV);
-            } else {
-                System.out.println("DEBUG: Không có thông tin nhân viên trong session");
             }
 
             // Load chi tiết đơn hàng
@@ -1302,7 +1288,7 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
                 Panel_ChiTietSanPhamDaMua productPanel = new Panel_ChiTietSanPhamDaMua();
 
                 vn.edu.iuh.fit.iuhpharmacitymanagement.entity.LoHang loHang = chiTiet.getLoHang();
-                vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham sanPham = loHang != null ? loHang.getSanPham()
+                SanPham sanPham = loHang != null ? loHang.getSanPham()
                         : null;
 
                 if (sanPham != null) {
@@ -1316,15 +1302,10 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
 
                     // Thiết lập hình ảnh sản phẩm
                     String hinhAnh = sanPham.getHinhAnh();
-                    System.out
-                            .println("DEBUG: Sản phẩm '" + sanPham.getTenSanPham() + "' - Đường dẫn hình: " + hinhAnh);
                     if (hinhAnh != null && !hinhAnh.isEmpty()) {
                         // Chuyển đổi đường dẫn tương đối thành đường dẫn đầy đủ
                         String fullPath = "src/main/resources/img/" + hinhAnh;
                         productPanel.setHinhAnh(fullPath);
-                        System.out.println("DEBUG: Đã gọi setHinhAnh() với đường dẫn: " + fullPath);
-                    } else {
-                        System.out.println("DEBUG: Không có hình ảnh cho sản phẩm này");
                     }
 
                     pnHaveOrder.add(productPanel);
@@ -1350,7 +1331,6 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
                     "Tải hóa đơn thành công!");
 
         } catch (Exception e) {
-            e.printStackTrace();
             raven.toast.Notifications.getInstance().show(
                     raven.toast.Notifications.Type.ERROR,
                     "Lỗi khi tải hóa đơn: " + e.getMessage());
@@ -1367,13 +1347,9 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
         for (java.awt.Component comp : pnHaveReturn.getComponents()) {
             if (comp instanceof Panel_ChiTietSanPhamTraHang) {
                 Panel_ChiTietSanPhamTraHang panel = (Panel_ChiTietSanPhamTraHang) comp;
-                try {
-                    int soLuong = panel.getSoLuongTra();
-                    double donGia = panel.getDonGia();
-                    tongTien += soLuong * donGia;
-                } catch (Exception e) {
-                    System.err.println("Error calculating return total: " + e.getMessage());
-                }
+                int soLuong = panel.getSoLuongTra();
+                double donGia = panel.getDonGia();
+                tongTien += soLuong * donGia;
             }
         }
 
@@ -1454,13 +1430,6 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
             // Lưu mã đơn trả tạm
             maDonTraTam = donTraHang.getMaDonTraHang();
 
-            // Debug: Kiểm tra mã đơn trả đã được tạo
-            System.out.println("=== DEBUG: Đơn trả hàng đã lưu TẠM ===");
-            System.out.println("Mã đơn trả: " + maDonTraTam);
-            System.out.println("Ngày trả: " + donTraHang.getNgayTraHang());
-            System.out.println("Thành tiền: " + donTraHang.getThanhTien());
-            System.out.println("===================================");
-
             // Kiểm tra mã đơn trả hàng đã được tạo chưa
             if (donTraHang.getMaDonTraHang() == null || donTraHang.getMaDonTraHang().trim().isEmpty()) {
                 raven.toast.Notifications.getInstance().show(
@@ -1480,11 +1449,11 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
 
                     // Tìm sản phẩm từ tên
                     String tenSanPham = panel.getTenSanPham();
-                    java.util.List<vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham> dsSanPham = sanPhamDAO
+                    java.util.List<SanPham> dsSanPham = sanPhamDAO
                             .findAll();
 
-                    vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham sanPham = null;
-                    for (vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham sp : dsSanPham) {
+                    SanPham sanPham = null;
+                    for (SanPham sp : dsSanPham) {
                         if (sp.getTenSanPham().equals(tenSanPham)) {
                             sanPham = sp;
                             break;
@@ -1509,29 +1478,13 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
             // Lưu chi tiết đơn trả hàng
             vn.edu.iuh.fit.iuhpharmacitymanagement.dao.ChiTietDonTraHangDAO chiTietDonTraHangDAO = new vn.edu.iuh.fit.iuhpharmacitymanagement.dao.ChiTietDonTraHangDAO();
 
-            System.out.println("=== DEBUG: Lưu chi tiết đơn trả hàng ===");
-            System.out.println("Số lượng chi tiết cần lưu: " + chiTietList.size());
-
             int successCount = 0;
             for (vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonTraHang chiTiet : chiTietList) {
-                System.out.println("  - Đang lưu chi tiết: " + chiTiet.getSanPham().getTenSanPham());
-                System.out.println("    Mã đơn trả: " + chiTiet.getDonTraHang().getMaDonTraHang());
-                System.out.println("    Mã sản phẩm: " + chiTiet.getSanPham().getMaSanPham());
-                System.out.println("    Số lượng: " + chiTiet.getSoLuong());
-                System.out.println("    Đơn giá: " + chiTiet.getDonGia());
-                System.out.println("    Lý do: " + chiTiet.getLyDoTra());
-
                 boolean success = chiTietDonTraHangDAO.insert(chiTiet);
                 if (success) {
                     successCount++;
-                    System.out.println("    ✓ Lưu thành công!");
-                } else {
-                    System.out.println("    ✗ Lưu THẤT BẠI!");
                 }
             }
-
-            System.out.println("Kết quả: " + successCount + "/" + chiTietList.size() + " chi tiết được lưu thành công");
-            System.out.println("==========================================");
 
             if (successCount == 0) {
                 raven.toast.Notifications.getInstance().show(
@@ -1553,7 +1506,6 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
             hienThiDialogXacNhan(donTraHang, chiTietList);
 
         } catch (Exception e) {
-            e.printStackTrace();
             raven.toast.Notifications.getInstance().show(
                     raven.toast.Notifications.Type.ERROR,
                     "Lỗi khi tạo phiếu trả hàng: " + e.getMessage());
@@ -1685,8 +1637,6 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
 
                 // Xóa đơn trả
                 donTraHangDAO.delete(maDonTraTam);
-
-                System.out.println("=== DEBUG: Đã xóa đơn trả tạm: " + maDonTraTam + " ===");
             }
 
             dialog.dispose();
@@ -1781,7 +1731,7 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
             lblBarcode.setAlignmentX(java.awt.Component.CENTER_ALIGNMENT);
             mainPanel.add(lblBarcode);
         } catch (Exception ex) {
-            System.err.println("Lỗi tạo barcode: " + ex.getMessage());
+            // Bỏ qua lỗi tạo barcode, không chặn hiển thị hóa đơn
         }
         mainPanel.add(javax.swing.Box.createVerticalStrut(2));
 
@@ -1882,7 +1832,7 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
         // Thêm dữ liệu vào bảng
         int stt = 1;
         for (vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonTraHang chiTiet : danhSachChiTiet) {
-            vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham sanPham = chiTiet.getSanPham();
+            SanPham sanPham = chiTiet.getSanPham();
 
             tableModel.addRow(new Object[] {
                     stt++,
@@ -1979,7 +1929,6 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
             raven.toast.Notifications.getInstance().show(
                     raven.toast.Notifications.Type.WARNING,
                     "Không thể mở PDF. File đã được lưu tại: " + pdfPath);

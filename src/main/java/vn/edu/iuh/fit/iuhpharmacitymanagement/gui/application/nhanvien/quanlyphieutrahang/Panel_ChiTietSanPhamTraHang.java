@@ -38,7 +38,6 @@ public class Panel_ChiTietSanPhamTraHang extends javax.swing.JPanel {
     public void setSoLuongTra(int soLuong) {
         // Kiểm tra số lượng không vượt quá số lượng tối đa
         if (soLuong > soLuongToiDa) {
-            System.out.println("WARN setSoLuongTra: Số lượng " + soLuong + " vượt quá tối đa " + soLuongToiDa + ", tự động điều chỉnh");
             spinnerSoLuongTra.setValue(soLuongToiDa);
         } else {
             spinnerSoLuongTra.setValue(soLuong);
@@ -51,7 +50,6 @@ public class Panel_ChiTietSanPhamTraHang extends javax.swing.JPanel {
     
     public void setSoLuongToiDa(int soLuong) {
         this.soLuongToiDa = soLuong;
-        System.out.println("DEBUG setSoLuongToiDa: Đã set số lượng tối đa = " + soLuong);
         // Lấy giá trị hiện tại của spinner
         int currentValue = (int) spinnerSoLuongTra.getValue();
         // Cập nhật model của spinner với giới hạn RẤT LỚN (Integer.MAX_VALUE)
@@ -65,7 +63,6 @@ public class Panel_ChiTietSanPhamTraHang extends javax.swing.JPanel {
     }
 
     public void setTenSanPham(String ten) {
-        System.out.println("DEBUG Panel_ChiTietSanPhamTraHang.setTenSanPham: '" + ten + "'");
         lblTenSP.setText(ten);
     }
     
@@ -74,33 +71,25 @@ public class Panel_ChiTietSanPhamTraHang extends javax.swing.JPanel {
     }
 
     public void setDonVi(String donVi) {
-        System.out.println("DEBUG Panel_ChiTietSanPhamTraHang.setDonVi: '" + donVi + "'");
         lblDonVi.setText(donVi);
     }
     
     public void setHinhAnh(String imagePath) {
-        System.out.println("DEBUG Panel_ChiTietSanPhamTraHang.setHinhAnh: '" + imagePath + "'");
         if (imagePath != null && !imagePath.isEmpty()) {
             try {
                 java.io.File imgFile = new java.io.File(imagePath);
-                System.out.println("DEBUG: File exists? " + imgFile.exists() + " - Absolute path: " + imgFile.getAbsolutePath());
                 if (imgFile.exists()) {
                     javax.swing.ImageIcon imageIcon = new javax.swing.ImageIcon(imagePath);
                     java.awt.Image image = imageIcon.getImage().getScaledInstance(80, 80, java.awt.Image.SCALE_SMOOTH);
                     lblHinh.setIcon(new javax.swing.ImageIcon(image));
                     lblHinh.setText("");
-                    System.out.println("DEBUG: Đã set icon thành công");
                 } else {
                     lblHinh.setText("No Img");
-                    System.out.println("DEBUG: File không tồn tại");
                 }
             } catch (Exception e) {
                 lblHinh.setText("Error");
-                System.err.println("Error loading image: " + e.getMessage());
-                e.printStackTrace();
             }
         } else {
-            System.out.println("DEBUG: imagePath null hoặc rỗng");
             lblHinh.setText("No Img");
         }
     }
@@ -319,14 +308,11 @@ public class Panel_ChiTietSanPhamTraHang extends javax.swing.JPanel {
     private void spinnerSoLuongTraStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_spinnerSoLuongTraStateChanged
         // Nếu đang trong quá trình reset value, bỏ qua validation
         if (isResettingValue) {
-            System.out.println("DEBUG: Đang reset value, bỏ qua validation");
             return;
         }
         
         // Kiểm tra số lượng trả không vượt quá số lượng đã mua
         int soLuongNhap = (int) spinnerSoLuongTra.getValue();
-        
-        System.out.println("DEBUG spinnerStateChanged: Số lượng nhập = " + soLuongNhap + ", Tối đa = " + soLuongToiDa);
         
         if (soLuongNhap > soLuongToiDa) {
             // Hiển thị thông báo lỗi
@@ -336,9 +322,7 @@ public class Panel_ChiTietSanPhamTraHang extends javax.swing.JPanel {
                 3000,
                 "Số lượng trả (" + soLuongNhap + ") không được lớn hơn số lượng đã mua (" + soLuongToiDa + ")"
             );
-            
-            System.out.println("DEBUG: Đang reset spinner về " + soLuongToiDa);
-            
+
             // Reset về số lượng tối đa
             isResettingValue = true; // Đánh dấu đang reset
             spinnerSoLuongTra.setValue(soLuongToiDa);
