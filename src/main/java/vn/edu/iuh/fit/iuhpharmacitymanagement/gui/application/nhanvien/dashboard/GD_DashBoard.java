@@ -326,9 +326,6 @@ public class GD_DashBoard extends javax.swing.JPanel {
         
         return panel;
     }
-    
-    // (Đã bỏ phần thống kê 10 đơn gần nhất và donut chart theo yêu cầu)
-
     /**
      * Tải dữ liệu dashboard
      */
