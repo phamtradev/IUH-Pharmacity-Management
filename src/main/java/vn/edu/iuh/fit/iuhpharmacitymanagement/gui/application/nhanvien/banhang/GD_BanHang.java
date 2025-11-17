@@ -55,26 +55,20 @@ public class GD_BanHang extends javax.swing.JPanel {
     }
 
     private void addPanelThanhToan() {
-        // Tạo panel wrapper để panel thanh toán chỉ nằm ngang với phần giữa
         javax.swing.JPanel wrapperPanel = new javax.swing.JPanel(new java.awt.BorderLayout());
         wrapperPanel.setBackground(java.awt.Color.WHITE);
 
         panelDonHang = new Panel_DonHang();
-        panelDonHang.setGdBanHang(this); // Set reference đến form cha
-        
-        // KHÔNG cần listener cho "khuyenMaiChanged" vì capNhatTongTien() đã gọi tuDongApDungKhuyenMai()
-        // Nếu thêm listener này sẽ gây ra việc tính toán lại không cần thiết
-        
+        panelDonHang.setGdBanHang(this);
+
         wrapperPanel.add(pnMi, java.awt.BorderLayout.CENTER);
         wrapperPanel.add(panelDonHang, java.awt.BorderLayout.EAST);
 
-        // Xóa pnMi khỏi vị trí cũ và thêm wrapper
         remove(pnMi);
         add(wrapperPanel, java.awt.BorderLayout.CENTER);
     }
 
     private void addHeaderRow() {
-        // Tạo panel header với GridBagLayout giống HỆT Panel_ChiTietSanPham
         javax.swing.JPanel headerPanel = new javax.swing.JPanel();
         headerPanel.setBackground(new java.awt.Color(245, 245, 245));
         headerPanel.setBorder(javax.swing.BorderFactory.createMatteBorder(0, 0, 2, 0, new java.awt.Color(200, 200, 200)));
@@ -82,7 +76,6 @@ public class GD_BanHang extends javax.swing.JPanel {
         headerPanel.setMinimumSize(new java.awt.Dimension(800, 50));
         headerPanel.setPreferredSize(new java.awt.Dimension(1000, 50));
 
-        // Sử dụng GridBagLayout với constraints giống Panel_ChiTietSanPham
         headerPanel.setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
         gbc.fill = java.awt.GridBagConstraints.BOTH;
@@ -91,7 +84,6 @@ public class GD_BanHang extends javax.swing.JPanel {
         gbc.gridy = 0;
         gbc.weighty = 1.0;
 
-        // 1. Hình ảnh - 80x100px (giống lblHinh)
         javax.swing.JLabel lblHeaderImg = new javax.swing.JLabel("Hình ảnh");
         lblHeaderImg.setFont(new java.awt.Font("Segoe UI", 1, 13));
         lblHeaderImg.setPreferredSize(new java.awt.Dimension(80, 30));
@@ -101,7 +93,6 @@ public class GD_BanHang extends javax.swing.JPanel {
         gbc.weightx = 0.0;
         headerPanel.add(lblHeaderImg, gbc);
 
-        // 2. Tên sản phẩm - 180px (giống lblTenSP)
         javax.swing.JLabel lblHeaderName = new javax.swing.JLabel("Tên sản phẩm");
         lblHeaderName.setFont(new java.awt.Font("Segoe UI", 1, 13));
         lblHeaderName.setPreferredSize(new java.awt.Dimension(180, 30));
@@ -110,7 +101,6 @@ public class GD_BanHang extends javax.swing.JPanel {
         gbc.weightx = 1.0;
         headerPanel.add(lblHeaderName, gbc);
 
-        // 3. Lô hàng - 100px (giống jLabel1)
         javax.swing.JLabel lblHeaderBatch = new javax.swing.JLabel("Lô hàng");
         lblHeaderBatch.setFont(new java.awt.Font("Segoe UI", 1, 13));
         lblHeaderBatch.setPreferredSize(new java.awt.Dimension(100, 30));
@@ -120,7 +110,6 @@ public class GD_BanHang extends javax.swing.JPanel {
         gbc.weightx = 0.0;
         headerPanel.add(lblHeaderBatch, gbc);
 
-        // 4. Số lượng - 150px (giống pnSpinner với nút +/-)
         javax.swing.JLabel lblHeaderQty = new javax.swing.JLabel("Số lượng");
         lblHeaderQty.setFont(new java.awt.Font("Segoe UI", 1, 13));
         lblHeaderQty.setPreferredSize(new java.awt.Dimension(150, 30));
@@ -130,7 +119,6 @@ public class GD_BanHang extends javax.swing.JPanel {
         gbc.weightx = 0.0;
         headerPanel.add(lblHeaderQty, gbc);
 
-        // 5. Giảm giá - 70px (giống txtDiscount)
         javax.swing.JLabel lblHeaderDiscount = new javax.swing.JLabel("Giảm giá");
         lblHeaderDiscount.setFont(new java.awt.Font("Segoe UI", 1, 13));
         lblHeaderDiscount.setPreferredSize(new java.awt.Dimension(70, 30));
@@ -140,7 +128,6 @@ public class GD_BanHang extends javax.swing.JPanel {
         gbc.weightx = 0.0;
         headerPanel.add(lblHeaderDiscount, gbc);
 
-        // 6. Đơn giá - 100px (giống txtDonGia)
         javax.swing.JLabel lblHeaderPrice = new javax.swing.JLabel("Đơn giá");
         lblHeaderPrice.setFont(new java.awt.Font("Segoe UI", 1, 13));
         lblHeaderPrice.setPreferredSize(new java.awt.Dimension(100, 30));
@@ -150,7 +137,6 @@ public class GD_BanHang extends javax.swing.JPanel {
         gbc.weightx = 0.0;
         headerPanel.add(lblHeaderPrice, gbc);
 
-        // 7. Tổng tiền - 120px (giống txtTongTien)
         javax.swing.JLabel lblHeaderTotal = new javax.swing.JLabel("Tổng tiền");
         lblHeaderTotal.setFont(new java.awt.Font("Segoe UI", 1, 13));
         lblHeaderTotal.setPreferredSize(new java.awt.Dimension(120, 30));
@@ -160,7 +146,6 @@ public class GD_BanHang extends javax.swing.JPanel {
         gbc.weightx = 0.0;
         headerPanel.add(lblHeaderTotal, gbc);
 
-        // 8. Chức năng - 70px (giống pnXoa)
         javax.swing.JLabel lblHeaderAction = new javax.swing.JLabel("Chức năng");
         lblHeaderAction.setFont(new java.awt.Font("Segoe UI", 1, 13));
         lblHeaderAction.setPreferredSize(new java.awt.Dimension(70, 30));
@@ -174,7 +159,6 @@ public class GD_BanHang extends javax.swing.JPanel {
     }
 
     private void customUI() {
-        // TextField tìm đơn hàng
         txtTimDonHang.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Vui lòng quét mã vạch hoặc nhập mã hóa đơn");
         txtTimDonHang.putClientProperty(FlatClientProperties.OUTLINE, "default");
         txtTimDonHang.putClientProperty(FlatClientProperties.STYLE,
@@ -184,12 +168,9 @@ public class GD_BanHang extends javax.swing.JPanel {
         );
         txtTimDonHang.setToolTipText("Quét barcode hoặc nhập mã đơn hàng rồi nhấn Enter");
         
-        // Button tìm đơn hàng
         ButtonStyles.apply(btnTimDonHang, ButtonStyles.Type.PRIMARY);
         
-        // TextField tìm sản phẩm
         txtTimSanPham.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Vui lòng quét mã vạch hoặc nhập số đăng ký");
-        // Thêm viền cho text field
         txtTimSanPham.putClientProperty(FlatClientProperties.OUTLINE, "default");
         txtTimSanPham.putClientProperty(FlatClientProperties.STYLE,
                 "arc:8;"
@@ -197,18 +178,14 @@ public class GD_BanHang extends javax.swing.JPanel {
                 + "borderColor:#CCCCCC"
         );
 
-        // Style cho button Thêm
         ButtonStyles.apply(btnMa, ButtonStyles.Type.SUCCESS);
 
-        // Style cho button Xóa trắng
         ButtonStyles.apply(btnXoa, ButtonStyles.Type.DANGER);
         
-        // Tự động focus vào ô tìm kiếm khi load form (QUAN TRỌNG cho máy quét barcode)
         javax.swing.SwingUtilities.invokeLater(() -> {
             txtTimSanPham.requestFocusInWindow();
         });
         
-        // Chọn toàn bộ text khi focus vào (để máy quét ghi đè text cũ)
         txtTimSanPham.addFocusListener(new java.awt.event.FocusAdapter() {
             @Override
             public void focusGained(java.awt.event.FocusEvent evt) {
@@ -258,12 +235,9 @@ public class GD_BanHang extends javax.swing.JPanel {
                 txtTimDonHangActionPerformed(evt);
             }
         });
-        
-        // Thêm KeyListener để hỗ trợ quét barcode
         txtTimDonHang.addKeyListener(new java.awt.event.KeyAdapter() {
             @Override
             public void keyPressed(java.awt.event.KeyEvent evt) {
-                // Khi quét barcode và nhấn Enter, tự động tìm đơn hàng
                 if (evt.getKeyCode() == java.awt.event.KeyEvent.VK_ENTER) {
                     timDonHang();
                 }
@@ -337,7 +311,6 @@ public class GD_BanHang extends javax.swing.JPanel {
         jPanel2.setPreferredSize(new java.awt.Dimension(600, 500));
         jPanel2.setLayout(new java.awt.BorderLayout());
 
-        // Container panel để chứa các Panel_ChiTietSanPham
         containerPanel.setBackground(new java.awt.Color(255, 255, 255));
         containerPanel.setLayout(new javax.swing.BoxLayout(containerPanel, javax.swing.BoxLayout.Y_AXIS));
 
@@ -374,20 +347,10 @@ public class GD_BanHang extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_txtTimSanPhamKeyPressed
     
-    /**
-     * Tìm sản phẩm theo số đăng ký (hỗ trợ máy quét barcode)
-     */
     private void timSanPham() {
-        // Lấy và làm sạch input (trim, loại bỏ ký tự đặc biệt có thể có từ barcode scanner)
         String soDangKy = txtTimSanPham.getText().trim().replaceAll("[\\r\\n\\t]", "");
-        
-        // Cập nhật lại textfield với giá trị đã làm sạch
         txtTimSanPham.setText(soDangKy);
-        
-        // Debug: In ra console để kiểm tra
-        System.out.println("🔍 Đang tìm sản phẩm với số đăng ký: '" + soDangKy + "' (length: " + soDangKy.length() + ")");
-        
-        // Kiểm tra input rỗng
+
         if (soDangKy.isEmpty()) {
             Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER, 
                 "Vui lòng nhập số đăng ký sản phẩm hoặc quét mã vạch");
@@ -395,15 +358,11 @@ public class GD_BanHang extends javax.swing.JPanel {
             return;
         }
         
-        // Tìm sản phẩm theo số đăng ký
         Optional<SanPham> sanPhamOpt = sanPhamBUS.timSanPhamTheoSoDangKy(soDangKy);
         
         if (sanPhamOpt.isPresent()) {
             SanPham sanPham = sanPhamOpt.get();
-            
-            System.out.println("✅ Tìm thấy sản phẩm: " + sanPham.getTenSanPham());
-            
-            // Kiểm tra sản phẩm có đang hoạt động không
+
             if (!sanPham.isHoatDong()) {
                 Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER, 
                     "Sản phẩm '" + sanPham.getTenSanPham() + "' đã ngưng bán");
@@ -412,18 +371,14 @@ public class GD_BanHang extends javax.swing.JPanel {
                 return;
             }
             
-            // Thêm sản phẩm vào giỏ hàng
             themSanPhamVaoGioHang(sanPham);
             
-            // Thông báo thành công
             Notifications.getInstance().show(Notifications.Type.SUCCESS, Notifications.Location.TOP_CENTER, 
                 "✓ Đã thêm: " + sanPham.getTenSanPham());
             
-            // Xóa text field và focus lại (quan trọng cho lần quét tiếp theo)
             txtTimSanPham.setText("");
             txtTimSanPham.requestFocusInWindow();
         } else {
-            System.out.println("❌ KHÔNG tìm thấy sản phẩm với số đăng ký: '" + soDangKy + "'");
             Notifications.getInstance().show(Notifications.Type.ERROR, Notifications.Location.TOP_CENTER, 
                 "❌ Không tìm thấy sản phẩm: " + soDangKy);
             txtTimSanPham.selectAll();
@@ -431,14 +386,7 @@ public class GD_BanHang extends javax.swing.JPanel {
         }
     }
     
-    /**
-     * Thêm sản phẩm vào giỏ hàng (container panel)
-     * - Nếu sản phẩm đã có trong giỏ → cộng dồn số lượng
-     * - Nếu chưa có → tạo mới
-     * - Luôn kiểm tra tồn kho từ TẤT CẢ lô hàng (FIFO)
-     */
     private void themSanPhamVaoGioHang(SanPham sanPham) {
-        // 1. Kiểm tra xem sản phẩm đã có trong giỏ hàng chưa
         Panel_ChiTietSanPham panelDaTonTai = null;
         for (Component comp : containerPanel.getComponents()) {
             if (comp instanceof Panel_ChiTietSanPham) {
@@ -450,38 +398,23 @@ public class GD_BanHang extends javax.swing.JPanel {
             }
         }
         
-        // 2. Lấy TẤT CẢ lô hàng của sản phẩm và áp dụng FIFO
         vn.edu.iuh.fit.iuhpharmacitymanagement.bus.LoHangBUS loHangBUS = 
             new vn.edu.iuh.fit.iuhpharmacitymanagement.bus.LoHangBUS();
         java.util.List<vn.edu.iuh.fit.iuhpharmacitymanagement.entity.LoHang> danhSachLoHangGoc = 
             loHangBUS.getLoHangBySanPham(sanPham);
         
-        // FIFO: Lọc + Sắp xếp theo HẠN SỬ DỤNG TĂNG DẦN (hết hạn sớm nhất → bán trước)
         java.util.List<vn.edu.iuh.fit.iuhpharmacitymanagement.entity.LoHang> danhSachLoHangFIFO = 
             danhSachLoHangGoc.stream()
-                .filter(lh -> lh.getTonKho() > 0 && lh.isTrangThai()) // Lọc: Còn hàng + Còn hạn
+                .filter(lh -> lh.getTonKho() > 0 && lh.isTrangThai())
                 .sorted(java.util.Comparator.comparing(
-                    vn.edu.iuh.fit.iuhpharmacitymanagement.entity.LoHang::getHanSuDung)) // FIFO: Sắp xếp
+                    vn.edu.iuh.fit.iuhpharmacitymanagement.entity.LoHang::getHanSuDung))
                 .collect(java.util.stream.Collectors.toList());
         
-        // Tính tổng tồn kho từ các lô FIFO
         int tongTonKho = danhSachLoHangFIFO.stream()
             .mapToInt(vn.edu.iuh.fit.iuhpharmacitymanagement.entity.LoHang::getTonKho)
             .sum();
-        
-        // DEBUG: In ra thứ tự lô hàng theo FIFO
-        if (!danhSachLoHangFIFO.isEmpty()) {
-            System.out.println("📦 FIFO - Thứ tự bán lô hàng cho: " + sanPham.getTenSanPham());
-            for (int i = 0; i < danhSachLoHangFIFO.size(); i++) {
-                vn.edu.iuh.fit.iuhpharmacitymanagement.entity.LoHang lh = danhSachLoHangFIFO.get(i);
-                System.out.println("  " + (i+1) + ". " + lh.getTenLoHang() + 
-                    " | HSD: " + lh.getHanSuDung() + 
-                    " | Tồn: " + lh.getTonKho());
-            }
-        }
-        
-        // 3. Xác định số lượng cần thêm
-        int soLuongCanThem = 1; // Mặc định thêm 1
+
+        int soLuongCanThem = 1;
         int soLuongHienTai = 0;
         
         if (panelDaTonTai != null) {
@@ -489,12 +422,11 @@ public class GD_BanHang extends javax.swing.JPanel {
             soLuongCanThem = soLuongHienTai + 1; // Cộng dồn
         }
         
-        // 4. Kiểm tra tồn kho
         if (tongTonKho <= 0) {
             Notifications.getInstance().show(
                 Notifications.Type.ERROR, 
                 Notifications.Location.TOP_CENTER,
-                "❌ Sản phẩm '" + sanPham.getTenSanPham() + "' đã HẾT HÀNG!"
+                "❌ Sản phẩm '" + sanPham.getTenSanPham() + "' đã hết hàng"
             );
             return;
         }
@@ -510,55 +442,38 @@ public class GD_BanHang extends javax.swing.JPanel {
             return;
         }
         
-        // 5. Thêm hoặc cộng dồn
         if (panelDaTonTai != null) {
-            // Sản phẩm đã có → cộng dồn số lượng
-            final Panel_ChiTietSanPham panelFinal = panelDaTonTai; // Final để dùng trong lambda
+            final Panel_ChiTietSanPham panelFinal = panelDaTonTai;
             panelFinal.setSoLuong(soLuongCanThem);
             
-            // Highlight panel để người dùng biết đã cộng dồn
-            panelFinal.setBackground(new java.awt.Color(200, 255, 200)); // Màu xanh nhạt
+            panelFinal.setBackground(new java.awt.Color(200, 255, 200));
             javax.swing.Timer timer = new javax.swing.Timer(500, e -> {
                 panelFinal.setBackground(java.awt.Color.WHITE);
             });
             timer.setRepeats(false);
             timer.start();
-            
-            System.out.println("✅ Cộng dồn: " + sanPham.getTenSanPham() + 
-                " | SL: " + soLuongHienTai + " → " + soLuongCanThem);
         } else {
-            // Sản phẩm chưa có → tạo panel mới
             Panel_ChiTietSanPham panelChiTiet = new Panel_ChiTietSanPham(sanPham);
             
-            // Thêm listener để cập nhật tổng tiền khi có thay đổi
             panelChiTiet.addPropertyChangeListener("tongTien", evt -> capNhatTongTien());
             panelChiTiet.addPropertyChangeListener("sanPhamXoa", evt -> capNhatTongTien());
             
             containerPanel.add(panelChiTiet);
             containerPanel.revalidate();
             containerPanel.repaint();
-            
-            System.out.println("✅ Thêm mới: " + sanPham.getTenSanPham() + " | SL: 1");
         }
         
-        // 6. Cập nhật tổng tiền
         capNhatTongTien();
     }
     
-    /**
-     * Cập nhật tổng tiền đơn hàng từ tất cả các sản phẩm
-     * LOGIC MỚI: Hỗ trợ áp dụng CẢ 2 loại khuyến mãi đồng thời
-     */
     public void capNhatTongTien() {
         double tongTienHang = 0;
         double tongGiamGiaSanPham = 0;
         double giamGiaHoaDon = 0;
         
-        // Thu thập danh sách sản phẩm và số lượng trong giỏ hàng
         java.util.Map<vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham, Integer> danhSachSanPham = 
             new java.util.HashMap<>();
         
-        // Đếm số lượng sản phẩm trong giỏ hàng (không tính header)
         int soLuongSanPham = 0;
         for (Component comp : containerPanel.getComponents()) {
             if (comp instanceof Panel_ChiTietSanPham) {
@@ -566,7 +481,6 @@ public class GD_BanHang extends javax.swing.JPanel {
             }
         }
         
-        // Nếu giỏ hàng rỗng (chỉ còn header), reset tất cả về 0
         if (soLuongSanPham == 0) {
             if (panelDonHang != null) {
                 panelDonHang.resetThanhToan();
@@ -574,79 +488,53 @@ public class GD_BanHang extends javax.swing.JPanel {
             return;
         }
         
-        // Duyệt qua tất cả các Panel_ChiTietSanPham để tính tổng tiền và thu thập sản phẩm
         for (Component comp : containerPanel.getComponents()) {
             if (comp instanceof Panel_ChiTietSanPham) {
                 Panel_ChiTietSanPham panel = (Panel_ChiTietSanPham) comp;
                 tongTienHang += panel.getTongTien();
                 
-                // Thêm vào danh sách sản phẩm
                 danhSachSanPham.put(panel.getSanPham(), panel.getSoLuong());
                 
-                // Reset giảm giá sản phẩm về 0
                 panel.setGiamGia(0);
-                panel.setSoTienGiamGiaThucTe(null); // Reset số tiền giảm giá thực tế
+                panel.setSoTienGiamGiaThucTe(null);
             }
         }
         
-        // ========== XỬ LÝ KHUYẾN MÃI SẢN PHẨM - ÁP DỤNG NHIỀU CHƯƠNG TRÌNH ==========
-        // Lấy TẤT CẢ khuyến mãi sản phẩm còn hiệu lực
         java.util.List<vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhuyenMai> danhSachKMSanPham = 
             panelDonHang.getKhuyenMaiBUS().getKhuyenMaiConHan()
                 .stream()
                 .filter(km -> km.getLoaiKhuyenMai() == vn.edu.iuh.fit.iuhpharmacitymanagement.constant.LoaiKhuyenMai.SAN_PHAM)
                 .collect(java.util.stream.Collectors.toList());
         
-        System.out.println("\n====== DEBUG ÁP DỤNG NHIỀU KHUYẾN MÃI SẢN PHẨM ======");
-        System.out.println("Số chương trình KM sản phẩm: " + danhSachKMSanPham.size());
-        
-        // Duyệt qua từng sản phẩm trong giỏ hàng
         int countPanels = 0;
         for (Component comp : containerPanel.getComponents()) {
             if (comp instanceof Panel_ChiTietSanPham) {
                 Panel_ChiTietSanPham panel = (Panel_ChiTietSanPham) comp;
                 countPanels++;
-                
-                System.out.println("\n  Panel " + countPanels + ": " + panel.getSanPham().getTenSanPham());
-                
-                // Tìm khuyến mãi TỐT NHẤT cho sản phẩm này
                 vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhuyenMai kmTotNhat = null;
                 double giamGiaMax = 0;
                 
                 for (vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhuyenMai km : danhSachKMSanPham) {
-                    // Lấy danh sách sản phẩm trong chương trình khuyến mãi
                     java.util.List<vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietKhuyenMaiSanPham> danhSachCTKM = 
                         panelDonHang.getChiTietKhuyenMaiSanPhamBUS().timTheoMaKhuyenMai(km.getMaKhuyenMai());
                     
-                    // Kiểm tra xem sản phẩm có trong chương trình khuyến mãi không
                     for (vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietKhuyenMaiSanPham ctkm : danhSachCTKM) {
                         if (ctkm.getSanPham().getMaSanPham().equals(panel.getSanPham().getMaSanPham())) {
-                            // Kiểm tra số lượng tối đa
                             int soLuongMua = panel.getSoLuong();
                             int soLuongToiDa = km.getSoLuongToiDa();
                             
-                                // Tính giảm giá cho sản phẩm này
-                            // Nếu có giới hạn số lượng tối đa (soLuongToiDa > 0), chỉ tính giảm giá cho số lượng tối đa
                             double tongTienApDung;
                             int soLuongApDung;
                             if (soLuongToiDa > 0) {
-                                // Chỉ áp dụng khuyến mãi cho số lượng tối đa
                                 soLuongApDung = Math.min(soLuongMua, soLuongToiDa);
                                 tongTienApDung = panel.getSanPham().getGiaBan() * soLuongApDung;
                             } else {
-                                // Không giới hạn, áp dụng cho toàn bộ số lượng mua
                                 soLuongApDung = soLuongMua;
                                 tongTienApDung = panel.getTongTien();
                             }
                             
                             double giamGia = tongTienApDung * km.getGiamGia();
                             
-                            System.out.println("    - KM: " + km.getTenKhuyenMai() + " (" + (km.getGiamGia() * 100) + "%) → Giảm: " + giamGia + 
-                                (soLuongToiDa > 0 && soLuongMua > soLuongToiDa ? 
-                                    " (áp dụng cho " + soLuongApDung + "/" + soLuongMua + " sản phẩm, giới hạn " + soLuongToiDa + ")" : 
-                                    ""));
-                            
-                            // Chọn khuyến mãi tốt nhất
                             if (giamGia > giamGiaMax) {
                                 giamGiaMax = giamGia;
                                 kmTotNhat = km;
@@ -656,107 +544,67 @@ public class GD_BanHang extends javax.swing.JPanel {
                     }
                 }
                 
-                // Áp dụng khuyến mãi tốt nhất cho sản phẩm này
                 if (kmTotNhat != null) {
                     tongGiamGiaSanPham += giamGiaMax;
                     
-                    // Kiểm tra xem có giới hạn số lượng tối đa không
                     int soLuongMua = panel.getSoLuong();
                     int soLuongToiDa = kmTotNhat.getSoLuongToiDa();
                     
                     if (soLuongToiDa > 0 && soLuongMua > soLuongToiDa) {
-                        // Có giới hạn số lượng tối đa và số lượng mua vượt quá
-                        // → Chỉ áp dụng giảm giá cho số lượng tối đa
-                        // → Set số tiền giảm giá thực tế (chỉ cho số lượng tối đa)
                         panel.setSoTienGiamGiaThucTe(giamGiaMax);
-                        // Vẫn hiển thị % giảm giá để người dùng biết
                         panel.setGiamGia(kmTotNhat.getGiamGia(), kmTotNhat.getTenKhuyenMai());
-                        System.out.println("    ✓ ÁP DỤNG (giới hạn): " + kmTotNhat.getTenKhuyenMai() + 
-                            " → Giảm: " + giamGiaMax + " (chỉ cho " + soLuongToiDa + "/" + soLuongMua + " sản phẩm)");
                     } else {
-                        // Không có giới hạn hoặc số lượng mua <= số lượng tối đa
-                        // → Áp dụng giảm giá cho toàn bộ số lượng
-                        panel.setSoTienGiamGiaThucTe(null); // Reset về null để dùng % giảm giá
+                        panel.setSoTienGiamGiaThucTe(null);
                         panel.setGiamGia(kmTotNhat.getGiamGia(), kmTotNhat.getTenKhuyenMai());
-                        System.out.println("    ✓ ÁP DỤNG: " + kmTotNhat.getTenKhuyenMai() + " → Giảm: " + giamGiaMax);
                     }
                     
-                    panel.setKhuyenMaiDuocApDung(kmTotNhat); // Lưu thông tin khuyến mãi để save vào DB
+                    panel.setKhuyenMaiDuocApDung(kmTotNhat);
                 } else {
-                    panel.setKhuyenMaiDuocApDung(null); // Không có khuyến mãi (giảm giá thủ công)
-                    panel.setSoTienGiamGiaThucTe(null); // Reset số tiền giảm giá thực tế
-                    System.out.println("    → KHÔNG CÓ KHUYẾN MÃI");
+                    panel.setKhuyenMaiDuocApDung(null);
+                    panel.setSoTienGiamGiaThucTe(null);
                 }
             }
         }
-        System.out.println("\nTổng số panel đã xử lý: " + countPanels);
-        System.out.println("Tổng giảm giá sản phẩm: " + tongGiamGiaSanPham);
-        System.out.println("======================================================\n");
-        
-        // ========== XỬ LÝ KHUYẾN MÃI ĐƠN HÀNG ==========
-        // Lấy TẤT CẢ khuyến mãi đơn hàng còn hiệu lực
+
         java.util.List<vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhuyenMai> danhSachKMDonHang = 
             panelDonHang.getKhuyenMaiBUS().getKhuyenMaiConHan()
                 .stream()
                 .filter(km -> km.getLoaiKhuyenMai() == vn.edu.iuh.fit.iuhpharmacitymanagement.constant.LoaiKhuyenMai.DON_HANG)
                 .collect(java.util.stream.Collectors.toList());
         
-        System.out.println("\n====== DEBUG KHUYẾN MÃI ĐƠN HÀNG ======");
-        System.out.println("Số chương trình KM đơn hàng: " + danhSachKMDonHang.size());
-        System.out.println("Tổng tiền hàng: " + tongTienHang);
-        
-        // Tìm khuyến mãi đơn hàng TỐT NHẤT
         vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhuyenMai kmDonHangTotNhat = null;
         double giamGiaDonHangMax = 0;
         
         for (vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhuyenMai km : danhSachKMDonHang) {
-            // Kiểm tra điều kiện giá tối thiểu và tối đa
             if (tongTienHang >= km.getGiaToiThieu()) {
-                // Kiểm tra giá tối đa (nếu có)
                 if (km.getGiaToiDa() > 0 && tongTienHang > km.getGiaToiDa()) {
-                    System.out.println("  - KM: " + km.getTenKhuyenMai() + " → KHÔNG ÁP DỤNG (vượt giá tối đa)");
                     continue;
                 }
                 
-                // Tính giảm giá
                 double giamGia = tongTienHang * km.getGiamGia();
-                
-                System.out.println("  - KM: " + km.getTenKhuyenMai() + " (" + (km.getGiamGia() * 100) + "%) → Giảm: " + giamGia);
-                
-                // Chọn khuyến mãi tốt nhất
+
                 if (giamGia > giamGiaDonHangMax) {
                     giamGiaDonHangMax = giamGia;
                     kmDonHangTotNhat = km;
                 }
-            } else {
-                System.out.println("  - KM: " + km.getTenKhuyenMai() + " → KHÔNG ÁP DỤNG (chưa đủ điều kiện)");
             }
         }
         
-        // Áp dụng khuyến mãi đơn hàng tốt nhất
         if (kmDonHangTotNhat != null) {
             giamGiaHoaDon = giamGiaDonHangMax;
-            System.out.println("\n  ✓ ÁP DỤNG KM ĐƠN HÀNG: " + kmDonHangTotNhat.getTenKhuyenMai() + " → Giảm: " + giamGiaHoaDon);
-        } else {
-            System.out.println("\n  → KHÔNG CÓ KHUYẾN MÃI ĐƠN HÀNG");
         }
-        System.out.println("==========================================\n");
         
-        // Cập nhật danh sách khuyến mãi đã chọn vào Panel_DonHang
         java.util.Map<vn.edu.iuh.fit.iuhpharmacitymanagement.constant.LoaiKhuyenMai, 
                        vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhuyenMai> danhSachKMDaChon = 
             new java.util.HashMap<>();
         
-        // Thêm khuyến mãi đơn hàng (nếu có)
         if (kmDonHangTotNhat != null) {
             danhSachKMDaChon.put(vn.edu.iuh.fit.iuhpharmacitymanagement.constant.LoaiKhuyenMai.DON_HANG, kmDonHangTotNhat);
         }
         
-        // Cập nhật vào Panel_DonHang
         if (panelDonHang != null) {
-            // Cập nhật số tiền
             panelDonHang.updateTongTienHang(tongTienHang);
-            panelDonHang.updateDiscountProduct(tongGiamGiaSanPham, null);  // Không hiển thị tên KM (vì có nhiều KM)
+            panelDonHang.updateDiscountProduct(tongGiamGiaSanPham, null);
             panelDonHang.updateDiscountOrder(giamGiaHoaDon, kmDonHangTotNhat);
         }
     }
@@ -765,16 +613,13 @@ public class GD_BanHang extends javax.swing.JPanel {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         panel.setOpaque(false);
 
-        // Label hiển thị tên tab
         JLabel label = new JLabel(title);
         panel.add(label);
 
-        // Nút close
         JButton closeButton = new JButton("x");
         closeButton.setMargin(new Insets(0, 1, 0, 0));
         closeButton.setPreferredSize(new Dimension(15, 15));
 
-        // Hành động khi nhấn nút close
         closeButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -792,13 +637,10 @@ public class GD_BanHang extends javax.swing.JPanel {
     }
 
     private void btnXoaActionPerformed(java.awt.event.ActionEvent evt) {
-        // Xóa nội dung text field
         txtTimSanPham.setText("");
         
-        // Xóa toàn bộ sản phẩm trong giỏ hàng
         xoaToanBoGioHang();
         
-        // Đặt focus vào text field
         txtTimSanPham.requestFocus();
         
         Notifications.getInstance().show(Notifications.Type.SUCCESS, "Đã xóa trắng thành công !");
@@ -812,9 +654,6 @@ public class GD_BanHang extends javax.swing.JPanel {
         timDonHang();
     }
     
-    /**
-     * Tìm đơn hàng theo mã và hiển thị sản phẩm đã mua
-     */
     private void timDonHang() {
         if (panelDonHang != null) {
             panelDonHang.timDonHangTuGDBanHang(txtTimDonHang.getText().trim());
@@ -823,13 +662,9 @@ public class GD_BanHang extends javax.swing.JPanel {
         }
     }
     
-    /**
-     * Lấy danh sách sản phẩm trong giỏ hàng
-     */
     public java.util.List<Panel_ChiTietSanPham> getDanhSachSanPhamTrongGio() {
         java.util.List<Panel_ChiTietSanPham> danhSach = new java.util.ArrayList<>();
         
-        // Duyệt qua tất cả components trong containerPanel
         for (Component comp : containerPanel.getComponents()) {
             if (comp instanceof Panel_ChiTietSanPham) {
                 danhSach.add((Panel_ChiTietSanPham) comp);
@@ -839,42 +674,26 @@ public class GD_BanHang extends javax.swing.JPanel {
         return danhSach;
     }
     
-    /**
-     * Xóa toàn bộ giỏ hàng
-     */
     public void xoaToanBoGioHang() {
-        // Lấy danh sách Panel_ChiTietSanPham
         java.util.List<Panel_ChiTietSanPham> danhSach = getDanhSachSanPhamTrongGio();
         
-        // Xóa từng panel
         for (Panel_ChiTietSanPham panel : danhSach) {
             containerPanel.remove(panel);
         }
         
-        // Cập nhật giao diện
         containerPanel.revalidate();
         containerPanel.repaint();
         
-        // Reset mã đơn hàng hiện tại trong Panel_DonHang
         if (panelDonHang != null) {
             panelDonHang.resetMaDonHangHienTai();
         }
         
-        // Cập nhật tổng tiền (sẽ về 0)
         capNhatTongTien();
     }
     
-    /**
-     * Thêm sản phẩm vào giỏ hàng với lô hàng và số lượng cụ thể
-     * Method này dùng cho việc load đơn hàng cũ (chỉ để xem, không kiểm tra tồn kho)
-     * @param sanPham Sản phẩm cần thêm
-     * @param loHang Lô hàng của sản phẩm
-     * @param soLuong Số lượng cần thêm
-     */
     public void themSanPhamVaoGio(vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham sanPham, 
                                    vn.edu.iuh.fit.iuhpharmacitymanagement.entity.LoHang loHang,
                                    int soLuong) {
-        // 1. Kiểm tra xem sản phẩm đã có trong giỏ hàng chưa
         Panel_ChiTietSanPham panelDaTonTai = null;
         for (Component comp : containerPanel.getComponents()) {
             if (comp instanceof Panel_ChiTietSanPham) {
@@ -886,7 +705,6 @@ public class GD_BanHang extends javax.swing.JPanel {
             }
         }
         
-        // 2. Kiểm tra lô hàng có tồn tại (BỎ QUA kiểm tra tồn kho vì đây là đơn hàng cũ đã bán)
         if (loHang == null) {
             Notifications.getInstance().show(
                 Notifications.Type.WARNING, 
@@ -896,7 +714,6 @@ public class GD_BanHang extends javax.swing.JPanel {
             return;
         }
         
-        // 3. Kiểm tra số lượng yêu cầu
         if (soLuong <= 0) {
             Notifications.getInstance().show(
                 Notifications.Type.WARNING, 
@@ -906,12 +723,10 @@ public class GD_BanHang extends javax.swing.JPanel {
             return;
         }
         
-        // 4. Nếu sản phẩm đã có → cộng dồn số lượng (KHÔNG kiểm tra tồn kho)
         if (panelDaTonTai != null) {
             int soLuongMoi = panelDaTonTai.getSoLuong() + soLuong;
             panelDaTonTai.setSoLuong(soLuongMoi);
             
-            // Highlight panel
             final Panel_ChiTietSanPham panelFinal = panelDaTonTai;
             panelFinal.setBackground(new java.awt.Color(200, 255, 200));
             javax.swing.Timer timer = new javax.swing.Timer(500, e -> {
@@ -920,30 +735,23 @@ public class GD_BanHang extends javax.swing.JPanel {
             timer.setRepeats(false);
             timer.start();
             
-            System.out.println("✅ Cộng dồn từ đơn hàng cũ: " + sanPham.getTenSanPham() + " | SL: +" + soLuong);
         } else {
-            // 5. Sản phẩm chưa có → tạo panel mới với số lượng đã cho
             Panel_ChiTietSanPham panelChiTiet = new Panel_ChiTietSanPham(sanPham);
             panelChiTiet.setSoLuong(soLuong); // Set số lượng từ đơn hàng
             
-            // Thêm listener
             panelChiTiet.addPropertyChangeListener("tongTien", evt -> capNhatTongTien());
             panelChiTiet.addPropertyChangeListener("sanPhamXoa", evt -> capNhatTongTien());
             
             containerPanel.add(panelChiTiet);
             containerPanel.revalidate();
             containerPanel.repaint();
-            
-            System.out.println("✅ Thêm mới từ đơn hàng: " + sanPham.getTenSanPham() + " | SL: " + soLuong);
-            
-            // Scroll đến sản phẩm vừa thêm
+
             javax.swing.SwingUtilities.invokeLater(() -> {
                 java.awt.Rectangle bounds = panelChiTiet.getBounds();
                 scrollPaneProducts.getViewport().scrollRectToVisible(bounds);
             });
         }
         
-        // 6. Cập nhật tổng tiền
         capNhatTongTien();
     }
     
@@ -958,9 +766,6 @@ public class GD_BanHang extends javax.swing.JPanel {
     private javax.swing.JTextField txtTimSanPham;
     // End of variables declaration//GEN-END:variables
     
-    /**
-     * Getter cho containerPanel (để Panel_DonHang truy cập các Panel_ChiTietSanPham)
-     */
     public javax.swing.JPanel getContainerPanel() {
         return containerPanel;
     }
