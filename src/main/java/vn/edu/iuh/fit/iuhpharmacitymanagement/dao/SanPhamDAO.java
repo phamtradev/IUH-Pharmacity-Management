@@ -225,14 +225,14 @@ public class SanPhamDAO implements DAOInterface<SanPham, String> {
              PreparedStatement stmt = con.prepareStatement(SQL_TIM_THEO_TEN)) {
             
             String searchPattern = "%" + tenSanPham + "%";
-            System.out.println("🔍 DEBUG - Tìm kiếm sản phẩm với pattern: " + searchPattern);
+            
             stmt.setString(1, searchPattern);
             ResultSet rs = stmt.executeQuery();
             
             while (rs.next()) {
                 danhSachSanPham.add(mapResultSetToSanPham(rs));
             }
-            System.out.println("✅ DEBUG - Tìm thấy " + danhSachSanPham.size() + " sản phẩm");
+           
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -343,8 +343,6 @@ public class SanPhamDAO implements DAOInterface<SanPham, String> {
                 danhSachMaNCC.add(maNCC);
             }
             
-            System.out.println("🔍 [DAO] Số đăng ký '" + soDangKy + "' đã được nhập bởi " + 
-                             danhSachMaNCC.size() + " nhà cung cấp: " + danhSachMaNCC);
         } catch (SQLException e) {
             e.printStackTrace();
         }

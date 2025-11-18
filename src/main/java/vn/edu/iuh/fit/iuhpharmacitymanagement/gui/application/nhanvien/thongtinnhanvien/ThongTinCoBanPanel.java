@@ -5,11 +5,24 @@
 package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.thongtinnhanvien;
 
 import com.formdev.flatlaf.FlatClientProperties;
+import java.awt.Dimension;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Base64;
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
 import raven.toast.Notifications;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.TaiKhoanDAO;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhanVien;
-import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.TaiKhoan;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.session.SessionManager;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.util.PasswordUtil;
 
@@ -18,6 +31,8 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.util.PasswordUtil;
  * @author User
  */
 public class ThongTinCoBanPanel extends javax.swing.JPanel {
+
+    private String currentAnhNhanVien;
 
     /**
      * Creates new form ThongTinCoBanPanel
@@ -62,6 +77,9 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
         lblQuayLai = new javax.swing.JLabel();
         btnXNDoiMatKhau = new javax.swing.JButton();
         btnDoiMatKhau1 = new javax.swing.JButton();
+        lblGenderIcon = new javax.swing.JLabel();
+        lblGenderTitle = new javax.swing.JLabel();
+        lblGenderValue = new javax.swing.JLabel();
         lblAvatar = new javax.swing.JLabel();
         lblTenNV = new javax.swing.JLabel();
         lblMa = new javax.swing.JLabel();
@@ -72,6 +90,9 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
         lblIconEmail = new javax.swing.JLabel();
         lblEmailTitle = new javax.swing.JLabel();
         txtEmail = new javax.swing.JTextField();
+        lblIconCccd = new javax.swing.JLabel();
+        lblCccdTitle = new javax.swing.JLabel();
+        txtCccd = new javax.swing.JTextField();
         lblIconAddress = new javax.swing.JLabel();
         lblAddressTitle = new javax.swing.JLabel();
         scrAddress = new javax.swing.JScrollPane();
@@ -219,7 +240,9 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
         setBorder(javax.swing.BorderFactory.createEmptyBorder(20, 20, 20, 20));
         setLayout(new java.awt.GridBagLayout());
 
+        lblAvatar.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         lblAvatar.setText("lblAv");
+        lblAvatar.setPreferredSize(new java.awt.Dimension(160, 160));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -242,11 +265,40 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 15, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 10, 0);
         add(lblMa, gridBagConstraints);
+
+        lblGenderIcon.setText("genderIcon");
+        lblGenderIcon.setPreferredSize(new java.awt.Dimension(30, 30));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 5);
+        add(lblGenderIcon, gridBagConstraints);
+
+        lblGenderTitle.setText("lblGenderTitle");
+        lblGenderTitle.setPreferredSize(new java.awt.Dimension(100, 30));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 10);
+        add(lblGenderTitle, gridBagConstraints);
+
+        lblGenderValue.setText("lblGenderValue");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 0);
+        add(lblGenderValue, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 15, 0);
@@ -256,7 +308,7 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
         lblIconPhone.setPreferredSize(new java.awt.Dimension(30, 30));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 5);
         add(lblIconPhone, gridBagConstraints);
@@ -265,7 +317,7 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
         lblPhoneTitle.setPreferredSize(new java.awt.Dimension(100, 30));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 10);
         add(lblPhoneTitle, gridBagConstraints);
@@ -273,7 +325,7 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
         txtPhone.setText("txtPhone");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -284,7 +336,7 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
         lblIconEmail.setPreferredSize(new java.awt.Dimension(30, 30));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 5);
         add(lblIconEmail, gridBagConstraints);
@@ -293,7 +345,7 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
         lblEmailTitle.setPreferredSize(new java.awt.Dimension(100, 30));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 10);
         add(lblEmailTitle, gridBagConstraints);
@@ -301,18 +353,46 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
         txtEmail.setText("txtEmail");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 0);
         add(txtEmail, gridBagConstraints);
 
+        lblIconCccd.setText("lblIconCccd");
+        lblIconCccd.setPreferredSize(new java.awt.Dimension(30, 30));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 5);
+        add(lblIconCccd, gridBagConstraints);
+
+        lblCccdTitle.setText("lblCccdTitle");
+        lblCccdTitle.setPreferredSize(new java.awt.Dimension(100, 30));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 10);
+        add(lblCccdTitle, gridBagConstraints);
+
+        txtCccd.setText("txtCccd");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 0);
+        add(txtCccd, gridBagConstraints);
+
         lblIconAddress.setText("lblIconAddress");
         lblIconAddress.setPreferredSize(new java.awt.Dimension(30, 30));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 5);
         add(lblIconAddress, gridBagConstraints);
@@ -321,7 +401,7 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
         lblAddressTitle.setPreferredSize(new java.awt.Dimension(100, 30));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 10);
         add(lblAddressTitle, gridBagConstraints);
@@ -335,7 +415,7 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -350,7 +430,7 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 9;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.insets = new java.awt.Insets(20, 0, 0, 0);
         add(btnDoiMatKhau, gridBagConstraints);
@@ -368,37 +448,22 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
     }
 
     private void populateData(NhanVien nv) {
-        String ten = nv.getTenNhanVien();
-        if (ten != null && !ten.isEmpty()) {
-            String[] parts = ten.split(" ");
-            String lastName = parts[parts.length - 1];
-            lblAvatar.setText(String.valueOf(lastName.charAt(0)).toUpperCase());
-        } else {
-            lblAvatar.setText("?");
-        }
+        currentAnhNhanVien = nv.getAnhNhanVien();
 
+        String ten = nv.getTenNhanVien();
         lblTenNV.setText(ten);
         lblMa.setText(nv.getMaNhanVien());
+        updateGenderDisplay(nv.getGioiTinh());
         txtPhone.setText(nv.getSoDienThoai());
         txtEmail.setText(nv.getEmail());
+        txtCccd.setText(nv.getCccd());
         txtAddress.setText(nv.getDiaChi());
+        updateAvatarPreview(currentAnhNhanVien, ten);
     }
 
     public void setTenNhanVien(String ten) {
         lblTenNV.setText(ten);
-        if (ten != null && !ten.isEmpty()) {
-            String[] parts = ten.split(" ");
-            String lastPart = "?";
-            for (int i = parts.length - 1; i >= 0; i--) {
-                if (parts[i].matches(".*[a-zA-Z]+.*")) {
-                    lastPart = parts[i];
-                    break;
-                }
-            }
-            lblAvatar.setText(String.valueOf(lastPart.charAt(0)).toUpperCase());
-        } else {
-            lblAvatar.setText("?");
-        }
+        updateAvatarPreview(currentAnhNhanVien, ten);
     }
 
     public void setMa(String maNV) {
@@ -418,8 +483,15 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
     }
 
     private void styleComponents() {
-        lblAvatar.setVisible(false);
-
+        lblAvatar.setOpaque(true);
+        lblAvatar.setPreferredSize(new Dimension(160, 160));
+        lblAvatar.putClientProperty(FlatClientProperties.STYLE, ""
+                + "arc: 80;"
+                + "font: 700 48 $h1.font;"
+                + "foreground: #1F1F1F;"
+                + "borderColor: #E0E0E0;"
+                + "borderWidth: 2;"
+                + "background: #F5F5F5;");
         lblTenNV.setFont(new java.awt.Font("Segoe UI", 1, 32));
         lblTenNV.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 
@@ -427,8 +499,14 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
         lblMa.setForeground(java.awt.Color.GRAY);
         lblMa.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 
+        lblGenderTitle.setText("Giới tính:");
+        lblGenderTitle.setFont(new java.awt.Font("Segoe UI", 1, 18));
+        lblGenderValue.setFont(new java.awt.Font("Segoe UI", 0, 18));
+        lblGenderValue.setForeground(new java.awt.Color(51, 51, 51));
+
         styleReadOnlyTextField(txtPhone);
         styleReadOnlyTextField(txtEmail);
+        styleReadOnlyTextField(txtCccd);
         txtAddress.setBackground(this.getBackground());
         txtAddress.setFont(new java.awt.Font("Segoe UI", 0, 18));
         txtAddress.setForeground(new java.awt.Color(51, 51, 51));
@@ -439,6 +517,8 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
         setIcon(lblIconPhone, "/img/icons/phone.svg", "📞");
         setIcon(lblIconEmail, "/img/icons/email.svg", "📧");
         setIcon(lblIconAddress, "/img/icons/address.svg", "🏠");
+        setIcon(lblIconCccd, "/img/icons/user_icon.svg", "🆔");
+        setIcon(lblGenderIcon, "/img/icons/user_icon.svg", "👤");
 
         lblPhoneTitle.setText("Điện thoại:");
         lblPhoneTitle.setFont(new java.awt.Font("Segoe UI", 1, 18));
@@ -446,6 +526,8 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
         lblEmailTitle.setFont(new java.awt.Font("Segoe UI", 1, 18));
         lblAddressTitle.setText("Địa chỉ:");
         lblAddressTitle.setFont(new java.awt.Font("Segoe UI", 1, 18));
+        lblCccdTitle.setText("CCCD:");
+        lblCccdTitle.setFont(new java.awt.Font("Segoe UI", 1, 18));
 
         btnDoiMatKhau.setFont(new java.awt.Font("Segoe UI", 1, 16));
         btnDoiMatKhau.setPreferredSize(new java.awt.Dimension(200, 45));
@@ -453,6 +535,98 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
                 + "arc: 10;"
                 + "background: $Component.accentColor;"
                 + "foreground: #FFFFFF;");
+    }
+
+    private void updateGenderDisplay(String gioiTinh) {
+        String displayGender = (gioiTinh != null && !gioiTinh.isBlank()) ? gioiTinh : "Không rõ";
+        lblGenderValue.setText(displayGender);
+        if (gioiTinh == null) {
+            setIcon(lblGenderIcon, "/img/icons/user_icon.svg", "👤");
+            return;
+        }
+        if (gioiTinh.equalsIgnoreCase("Nam")) {
+            setIcon(lblGenderIcon, "/img/icons/male.svg", "♂");
+        } else if (gioiTinh.equalsIgnoreCase("Nữ")) {
+            setIcon(lblGenderIcon, "/img/icons/female.svg", "♀");
+        } else {
+            setIcon(lblGenderIcon, "/img/icons/user_icon.svg", "⚧");
+        }
+    }
+
+    private void updateAvatarPreview(String data, String hoTen) {
+        ImageIcon icon = createAvatarIcon(data);
+        if (icon != null) {
+            lblAvatar.setIcon(icon);
+            lblAvatar.setText("");
+        } else {
+            lblAvatar.setIcon(null);
+            lblAvatar.setText(extractInitial(hoTen));
+        }
+    }
+
+    private ImageIcon createAvatarIcon(String data) {
+        BufferedImage image = loadImageFromData(data);
+        if (image == null) {
+            return null;
+        }
+        Image scaledImage = image.getScaledInstance(160, 160, Image.SCALE_SMOOTH);
+        return new ImageIcon(scaledImage);
+    }
+
+    private BufferedImage loadImageFromData(String data) {
+        if (data == null) {
+            return null;
+        }
+        String trimmed = data.trim();
+        if (trimmed.isEmpty()) {
+            return null;
+        }
+        try {
+            if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+                return ImageIO.read(URI.create(trimmed).toURL());
+            }
+        } catch (IOException e) {
+            System.err.println("Không thể tải ảnh từ URL: " + e.getMessage());
+        }
+
+        try {
+            Path path = Paths.get(trimmed);
+            if (Files.exists(path)) {
+                return ImageIO.read(path.toFile());
+            }
+        } catch (InvalidPathException | IOException ignored) {
+        }
+
+        try {
+            URL resourceUrl = getClass().getResource(trimmed);
+            if (resourceUrl != null) {
+                return ImageIO.read(resourceUrl);
+            }
+        } catch (IOException ignored) {
+        }
+
+        try {
+            String base64 = trimmed.contains(",") ? trimmed.substring(trimmed.indexOf(',') + 1) : trimmed;
+            byte[] decoded = Base64.getDecoder().decode(base64);
+            return ImageIO.read(new ByteArrayInputStream(decoded));
+        } catch (IllegalArgumentException | IOException e) {
+            System.err.println("Không thể đọc dữ liệu ảnh: " + e.getMessage());
+        }
+        return null;
+    }
+
+    private String extractInitial(String fullName) {
+        if (fullName == null || fullName.isBlank()) {
+            return "?";
+        }
+        String[] parts = fullName.trim().split("\\s+");
+        for (int i = parts.length - 1; i >= 0; i--) {
+            String part = parts[i];
+            if (!part.isBlank()) {
+                return String.valueOf(Character.toUpperCase(part.charAt(0)));
+            }
+        }
+        return "?";
     }
 
     private void styleReadOnlyTextField(javax.swing.JTextField textField) {
@@ -562,8 +736,6 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
     private void txtMkCuFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtMkCuFocusLost
         javax.swing.JFrame parentFrame = (javax.swing.JFrame) SwingUtilities.getWindowAncestor(this);
 
-        String maNhanVien = SessionManager.getInstance().getCurrentUser().getMaNhanVien().toLowerCase();
-        TaiKhoan tk = new TaiKhoanDAO().findById(maNhanVien).get();
 
         if (String.valueOf(txtMkCu.getPassword()).length() == 0) {
             Notifications.getInstance().setJFrame(parentFrame);
@@ -633,11 +805,16 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
     private javax.swing.JDialog jdiaDoiPass;
     private javax.swing.JLabel lblAddressTitle;
     private javax.swing.JLabel lblAvatar;
+    private javax.swing.JLabel lblCccdTitle;
     private javax.swing.JLabel lblConfirmPassTitle;
     private javax.swing.JLabel lblDialogTitle;
     private javax.swing.JLabel lblEmailTitle;
+    private javax.swing.JLabel lblGenderIcon;
+    private javax.swing.JLabel lblGenderTitle;
+    private javax.swing.JLabel lblGenderValue;
     private javax.swing.JLabel lblIconAddress;
     private javax.swing.JLabel lblIconEmail;
+    private javax.swing.JLabel lblIconCccd;
     private javax.swing.JLabel lblIconPhone;
     private javax.swing.JLabel lblMa;
     private javax.swing.JLabel lblNewPassTitle;
@@ -650,6 +827,7 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
     private javax.swing.JScrollPane scrAddress;
     private javax.swing.JTextArea txtAddress;
     private javax.swing.JTextField txtEmail;
+    private javax.swing.JTextField txtCccd;
     private javax.swing.JPasswordField txtMkCu;
     private javax.swing.JPasswordField txtMkMoi;
     private javax.swing.JTextField txtPhone;

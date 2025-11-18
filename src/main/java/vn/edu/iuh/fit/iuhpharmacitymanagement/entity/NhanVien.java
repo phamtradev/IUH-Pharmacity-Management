@@ -18,6 +18,9 @@ public class NhanVien {
     private String soDienThoai;
     private String email;
     private String vaiTro;
+    private String gioiTinh; 
+    private String anhNhanVien;
+    private String cccd;
     
     public static final String MA_NHAN_VIEN_SAI = "Mã nhân viên phải có dạng NVxxxxx (5 chữ số dương)";
     public static final String TEN_NHAN_VIEN_RONG = "Tên nhân viên không được rỗng";
@@ -44,6 +47,21 @@ public class NhanVien {
         this.soDienThoai = soDienThoai;
         this.email = email;
         this.vaiTro = vaiTro;
+    }
+
+    public NhanVien(String maNhanVien, String tenNhanVien, String diaChi, String soDienThoai, String email, String vaiTro, String gioiTinh) {
+        this(maNhanVien, tenNhanVien, diaChi, soDienThoai, email, vaiTro);
+        this.gioiTinh = gioiTinh;
+    }
+
+    public NhanVien(String maNhanVien, String tenNhanVien, String diaChi, String soDienThoai, String email, String vaiTro, String gioiTinh, String anhNhanVien) {
+        this(maNhanVien, tenNhanVien, diaChi, soDienThoai, email, vaiTro, gioiTinh);
+        this.anhNhanVien = anhNhanVien;
+    }
+
+    public NhanVien(String maNhanVien, String tenNhanVien, String diaChi, String soDienThoai, String email, String vaiTro, String gioiTinh, String anhNhanVien, String cccd) {
+        this(maNhanVien, tenNhanVien, diaChi, soDienThoai, email, vaiTro, gioiTinh, anhNhanVien);
+        this.cccd = cccd;
     }
 
     public String getMaNhanVien() {
@@ -112,9 +130,33 @@ public class NhanVien {
         this.vaiTro = vaiTro;
     }
 
+    public String getGioiTinh() {
+        return gioiTinh;
+    }
+
+    public void setGioiTinh(String gioiTinh) {
+        this.gioiTinh = gioiTinh;
+    }
+
+    public String getAnhNhanVien() {
+        return anhNhanVien;
+    }
+
+    public void setAnhNhanVien(String anhNhanVien) {
+        this.anhNhanVien = anhNhanVien;
+    }
+
+    public String getCccd() {
+        return cccd;
+    }
+
+    public void setCccd(String cccd) {
+        this.cccd = cccd;
+    }
+
     @Override
     public int hashCode() {
-        return Objects.hash(maNhanVien, tenNhanVien, diaChi, soDienThoai, email, vaiTro);
+        return Objects.hash(maNhanVien, tenNhanVien, diaChi, soDienThoai, email, vaiTro, gioiTinh, anhNhanVien, cccd);
     }
 
     @Override
@@ -127,7 +169,10 @@ public class NhanVien {
                 && Objects.equals(diaChi, other.diaChi)
                 && Objects.equals(soDienThoai, other.soDienThoai)
                 && Objects.equals(email, other.email)
-                && Objects.equals(vaiTro, other.vaiTro);
+                && Objects.equals(vaiTro, other.vaiTro)
+                && Objects.equals(gioiTinh, other.gioiTinh)
+                && Objects.equals(anhNhanVien, other.anhNhanVien)
+                && Objects.equals(cccd, other.cccd);
     }
 
     @Override
@@ -139,6 +184,9 @@ public class NhanVien {
                 ", soDienThoai='" + soDienThoai + '\'' +
                 ", email='" + email + '\'' +
                 ", vaiTro='" + vaiTro + '\'' +
+                ", gioiTinh='" + gioiTinh + '\'' +
+                ", anhNhanVien='" + anhNhanVien + '\'' +
+                ", cccd='" + cccd + '\'' +
                 '}';
     }
 }

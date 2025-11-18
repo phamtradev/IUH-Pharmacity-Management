@@ -10,9 +10,9 @@ import java.util.Optional;
 
 public class NhanVienDAO implements DAOInterface<NhanVien, String> {
 
-    private final String SQL_THEM = "INSERT INTO NhanVien (maNhanVien, tenNhanVien, diaChi, soDienThoai, email, vaiTro) VALUES (?, ?, ?, ?, ?, ?)";
+    private final String SQL_THEM = "INSERT INTO NhanVien (maNhanVien, tenNhanVien, diaChi, soDienThoai, email, vaiTro, gioiTinh, anhNhanVien, cccd) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-    private final String SQL_CAP_NHAT = "UPDATE NhanVien SET tenNhanVien = ?, diaChi = ?, soDienThoai = ?, email = ?, vaiTro = ? WHERE maNhanVien = ?";
+    private final String SQL_CAP_NHAT = "UPDATE NhanVien SET tenNhanVien = ?, diaChi = ?, soDienThoai = ?, email = ?, vaiTro = ?, gioiTinh = ?, anhNhanVien = ?, cccd = ? WHERE maNhanVien = ?";
 
     private final String SQL_TIM_THEO_MA = "SELECT * FROM NhanVien WHERE maNhanVien = ?";
 
@@ -42,6 +42,9 @@ public class NhanVienDAO implements DAOInterface<NhanVien, String> {
             stmt.setString(4, nhanVien.getSoDienThoai());
             stmt.setString(5, nhanVien.getEmail());
             stmt.setString(6, nhanVien.getVaiTro());
+            stmt.setString(7, nhanVien.getGioiTinh());
+            stmt.setString(8, nhanVien.getAnhNhanVien());
+            stmt.setString(9, nhanVien.getCccd());
 
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -60,7 +63,10 @@ public class NhanVienDAO implements DAOInterface<NhanVien, String> {
             stmt.setString(3, nhanVien.getSoDienThoai());
             stmt.setString(4, nhanVien.getEmail());
             stmt.setString(5, nhanVien.getVaiTro());
-            stmt.setString(6, nhanVien.getMaNhanVien());
+            stmt.setString(6, nhanVien.getGioiTinh());
+            stmt.setString(7, nhanVien.getAnhNhanVien());
+            stmt.setString(8, nhanVien.getCccd());
+            stmt.setString(9, nhanVien.getMaNhanVien());
 
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -127,13 +133,17 @@ public class NhanVienDAO implements DAOInterface<NhanVien, String> {
 
     private NhanVien mapResultSetToNhanVien(ResultSet rs) throws SQLException {
         // pass validation
-        return new NhanVien(
+        NhanVien nv = new NhanVien(
                 rs.getString("maNhanVien"),
                 rs.getString("tenNhanVien"),
                 rs.getString("diaChi"),
                 rs.getString("soDienThoai"),
                 rs.getString("email"),
-                rs.getString("vaiTro"));
+                rs.getString("vaiTro"),
+                rs.getString("gioiTinh"));
+        nv.setAnhNhanVien(rs.getString("anhNhanVien"));
+        nv.setCccd(rs.getString("cccd"));
+        return nv;
     }
 
     private String taoMaNhanVien() {
