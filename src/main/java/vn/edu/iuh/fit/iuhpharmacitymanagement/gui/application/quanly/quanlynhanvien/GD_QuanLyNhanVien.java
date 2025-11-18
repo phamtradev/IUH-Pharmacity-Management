@@ -322,8 +322,8 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
 
         modalAddEmployee.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         modalAddEmployee.setTitle("Thêm nhân viên");
-        modalAddEmployee.setMinimumSize(new java.awt.Dimension(810, 950));
-        modalAddEmployee.setPreferredSize(new java.awt.Dimension(810, 950));
+        modalAddEmployee.setMinimumSize(new java.awt.Dimension(1100, 620));
+        modalAddEmployee.setPreferredSize(new java.awt.Dimension(1100, 620));
         modalAddEmployee.setModal(true);
         modalAddEmployee.setResizable(false);
 
@@ -425,129 +425,124 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
         panelAddEmployeeLayout.setHorizontalGroup(
                 panelAddEmployeeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addGroup(panelAddEmployeeLayout.createSequentialGroup()
-                                .addGap(0, 0, Short.MAX_VALUE)
+                                .addGap(40, 40, 40)
                                 .addGroup(panelAddEmployeeLayout
-                                        .createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                                        .createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER, false)
                                         .addComponent(lblAddEmployeeImage)
-                                        .addComponent(lblAddEmployeePreview, javax.swing.GroupLayout.PREFERRED_SIZE, 200,
+                                        .addComponent(lblAddEmployeePreview, javax.swing.GroupLayout.PREFERRED_SIZE, 240,
                                                 javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(btnChooseAddEmployeeImage, javax.swing.GroupLayout.PREFERRED_SIZE, 160,
+                                        .addComponent(btnChooseAddEmployeeImage, javax.swing.GroupLayout.PREFERRED_SIZE, 200,
                                                 javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGap(0, 0, Short.MAX_VALUE))
-                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING,
-                                panelAddEmployeeLayout.createSequentialGroup()
-                                        .addContainerGap(54, Short.MAX_VALUE)
+                                .addGap(60, 60, 60)
+                                .addGroup(panelAddEmployeeLayout
+                                        .createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                         .addGroup(panelAddEmployeeLayout
-                                                .createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                .createSequentialGroup()
                                                 .addGroup(panelAddEmployeeLayout
-                                                        .createSequentialGroup()
-                                                        .addGroup(panelAddEmployeeLayout
-                                                                .createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING,
-                                                                        false)
-                                                                .addComponent(lblAddEmployeeName)
-                                                                .addComponent(txtAddEmployeeName,
-                                                                        javax.swing.GroupLayout.DEFAULT_SIZE, 300,
-                                                                        Short.MAX_VALUE)
-                                                                .addComponent(lblAddEmployeeAddress)
-                                                                .addComponent(txtAddEmployeeAddress)
-                                                                .addComponent(lblAddEmployeeCccd)
-                                                                .addComponent(txtAddEmployeeCccd)
-                                                                .addComponent(lblAddEmployeeGender)
-                                                                .addComponent(cboAddEmployeeGender, 0,
-                                                                        javax.swing.GroupLayout.DEFAULT_SIZE,
-                                                                        Short.MAX_VALUE))
-                                                        .addGap(83, 83, 83)
-                                                        .addGroup(panelAddEmployeeLayout
-                                                                .createParallelGroup(
-                                                                        javax.swing.GroupLayout.Alignment.LEADING, false)
-                                                                .addComponent(lblAddEmployeeEmail)
-                                                                .addComponent(txtAddEmployeeEmail,
-                                                                        javax.swing.GroupLayout.DEFAULT_SIZE, 300,
-                                                                        Short.MAX_VALUE)
-                                                                .addComponent(lblAddEmployeePhone)
-                                                                .addComponent(txtAddEmployeePhone)
-                                                                .addComponent(lblAddEmployeeRole)
-                                                                .addComponent(cboAddEmployeeRole, 0,
-                                                                        javax.swing.GroupLayout.DEFAULT_SIZE,
-                                                                        Short.MAX_VALUE)))
-                                                .addComponent(lblAddPassword)
-                                                .addComponent(txtAddPassword, javax.swing.GroupLayout.PREFERRED_SIZE, 683,
-                                                        javax.swing.GroupLayout.PREFERRED_SIZE))
-                                        .addGap(55, 55, 55))
+                                                        .createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                                        .addComponent(lblAddEmployeeName)
+                                                        .addComponent(txtAddEmployeeName,
+                                                                javax.swing.GroupLayout.PREFERRED_SIZE, 320,
+                                                                javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                        .addComponent(lblAddEmployeeAddress)
+                                                        .addComponent(txtAddEmployeeAddress)
+                                                        .addComponent(lblAddEmployeeCccd)
+                                                        .addComponent(txtAddEmployeeCccd)
+                                                        .addComponent(lblAddEmployeeGender)
+                                                        .addComponent(cboAddEmployeeGender, 0,
+                                                                javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                                .addGap(40, 40, 40)
+                                                .addGroup(panelAddEmployeeLayout
+                                                        .createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                                        .addComponent(lblAddEmployeeEmail)
+                                                        .addComponent(txtAddEmployeeEmail,
+                                                                javax.swing.GroupLayout.PREFERRED_SIZE, 320,
+                                                                javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                        .addComponent(lblAddEmployeePhone)
+                                                        .addComponent(txtAddEmployeePhone)
+                                                        .addComponent(lblAddEmployeeRole)
+                                                        .addComponent(cboAddEmployeeRole, 0,
+                                                                javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                                        .addComponent(lblAddPassword)
+                                        .addComponent(txtAddPassword, javax.swing.GroupLayout.PREFERRED_SIZE, 680,
+                                                javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGap(40, 40, 40))
                         .addGroup(javax.swing.GroupLayout.Alignment.TRAILING,
                                 panelAddEmployeeLayout.createSequentialGroup()
                                         .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(btnAddNewEmployee, javax.swing.GroupLayout.PREFERRED_SIZE, 93,
+                                        .addComponent(btnAddNewEmployee, javax.swing.GroupLayout.PREFERRED_SIZE, 130,
                                                 javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addGap(18, 18, 18)
-                                        .addComponent(btnCancelAddEmployee, javax.swing.GroupLayout.PREFERRED_SIZE, 93,
+                                        .addComponent(btnCancelAddEmployee, javax.swing.GroupLayout.PREFERRED_SIZE, 130,
                                                 javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(55, 55, 55)));
+                                        .addGap(60, 60, 60)));
         panelAddEmployeeLayout.setVerticalGroup(
                 panelAddEmployeeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addGroup(panelAddEmployeeLayout.createSequentialGroup()
-                                .addGap(47, 47, 47)
-                                .addComponent(lblAddEmployeeImage)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(lblAddEmployeePreview, javax.swing.GroupLayout.PREFERRED_SIZE, 200,
-                                        javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(12, 12, 12)
-                                .addComponent(btnChooseAddEmployeeImage, javax.swing.GroupLayout.PREFERRED_SIZE, 38,
-                                        javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(24, 24, 24)
+                                .addGap(40, 40, 40)
+                                .addGroup(panelAddEmployeeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addGroup(panelAddEmployeeLayout.createSequentialGroup()
+                                                .addComponent(lblAddEmployeeImage)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                                .addComponent(lblAddEmployeePreview, javax.swing.GroupLayout.PREFERRED_SIZE, 240,
+                                                        javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addGap(18, 18, 18)
+                                                .addComponent(btnChooseAddEmployeeImage, javax.swing.GroupLayout.PREFERRED_SIZE, 38,
+                                                        javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addGroup(panelAddEmployeeLayout.createSequentialGroup()
+                                                .addGroup(panelAddEmployeeLayout
+                                                        .createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                                        .addComponent(lblAddEmployeeName)
+                                                        .addComponent(lblAddEmployeeEmail))
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addGroup(panelAddEmployeeLayout
+                                                        .createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                                        .addComponent(txtAddEmployeeName, javax.swing.GroupLayout.PREFERRED_SIZE, 46,
+                                                                javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                        .addComponent(txtAddEmployeeEmail, javax.swing.GroupLayout.PREFERRED_SIZE, 46,
+                                                                javax.swing.GroupLayout.PREFERRED_SIZE))
+                                                .addGap(18, 18, 18)
+                                                .addGroup(panelAddEmployeeLayout
+                                                        .createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                                        .addComponent(lblAddEmployeeAddress)
+                                                        .addComponent(lblAddEmployeePhone))
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addGroup(panelAddEmployeeLayout
+                                                        .createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                                        .addComponent(txtAddEmployeeAddress, javax.swing.GroupLayout.PREFERRED_SIZE, 46,
+                                                                javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                        .addComponent(txtAddEmployeePhone, javax.swing.GroupLayout.PREFERRED_SIZE, 46,
+                                                                javax.swing.GroupLayout.PREFERRED_SIZE))
+                                                .addGap(18, 18, 18)
+                                                .addGroup(panelAddEmployeeLayout
+                                                        .createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                                        .addComponent(lblAddEmployeeCccd)
+                                                        .addComponent(lblAddEmployeeRole))
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addGroup(panelAddEmployeeLayout
+                                                        .createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                                        .addComponent(txtAddEmployeeCccd, javax.swing.GroupLayout.PREFERRED_SIZE, 46,
+                                                                javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                        .addComponent(cboAddEmployeeRole, javax.swing.GroupLayout.PREFERRED_SIZE, 46,
+                                                                javax.swing.GroupLayout.PREFERRED_SIZE))
+                                                .addGap(18, 18, 18)
+                                                .addComponent(lblAddEmployeeGender)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(cboAddEmployeeGender, javax.swing.GroupLayout.PREFERRED_SIZE, 46,
+                                                        javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addGap(18, 18, 18)
+                                                .addComponent(lblAddPassword)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(txtAddPassword, javax.swing.GroupLayout.PREFERRED_SIZE, 46,
+                                                        javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addGap(30, 30, 30)
                                 .addGroup(panelAddEmployeeLayout
                                         .createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                        .addComponent(lblAddEmployeeName)
-                                        .addComponent(lblAddEmployeeEmail))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(panelAddEmployeeLayout
-                                        .createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                        .addComponent(txtAddEmployeeName, javax.swing.GroupLayout.PREFERRED_SIZE, 46,
+                                        .addComponent(btnCancelAddEmployee, javax.swing.GroupLayout.PREFERRED_SIZE, 42,
                                                 javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(txtAddEmployeeEmail, javax.swing.GroupLayout.PREFERRED_SIZE, 46,
+                                        .addComponent(btnAddNewEmployee, javax.swing.GroupLayout.PREFERRED_SIZE, 42,
                                                 javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGap(18, 18, 18)
-                                .addGroup(panelAddEmployeeLayout
-                                        .createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                        .addComponent(lblAddEmployeeAddress)
-                                        .addComponent(lblAddEmployeePhone))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(panelAddEmployeeLayout
-                                        .createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                        .addComponent(txtAddEmployeeAddress, javax.swing.GroupLayout.PREFERRED_SIZE, 46,
-                                                javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(txtAddEmployeePhone, javax.swing.GroupLayout.PREFERRED_SIZE, 46,
-                                                javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGap(18, 18, 18)
-                                .addGroup(panelAddEmployeeLayout
-                                        .createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                        .addComponent(lblAddEmployeeCccd)
-                                        .addComponent(lblAddEmployeeRole))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(panelAddEmployeeLayout
-                                        .createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                        .addComponent(txtAddEmployeeCccd, javax.swing.GroupLayout.PREFERRED_SIZE, 46,
-                                                javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(cboAddEmployeeRole, javax.swing.GroupLayout.PREFERRED_SIZE, 46,
-                                                javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGap(18, 18, 18)
-                                .addComponent(lblAddEmployeeGender)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(cboAddEmployeeGender, javax.swing.GroupLayout.PREFERRED_SIZE, 46,
-                                        javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(18, 18, 18)
-                                .addComponent(lblAddPassword)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(txtAddPassword, javax.swing.GroupLayout.PREFERRED_SIZE, 46,
-                                        javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(39, 39, 39)
-                                .addGroup(panelAddEmployeeLayout
-                                        .createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                        .addComponent(btnCancelAddEmployee, javax.swing.GroupLayout.PREFERRED_SIZE, 38,
-                                                javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(btnAddNewEmployee, javax.swing.GroupLayout.PREFERRED_SIZE, 38,
-                                                javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addContainerGap(72, Short.MAX_VALUE)));
+                                .addContainerGap(50, Short.MAX_VALUE)));
 
         btnAddNewEmployee.getAccessibleContext().setAccessibleDescription("");
 
@@ -564,8 +559,8 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
 
         modalUpdateEmployee.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         modalUpdateEmployee.setTitle("Cập nhật thông tin nhân viên");
-        modalUpdateEmployee.setMinimumSize(new java.awt.Dimension(790, 930));
-        modalUpdateEmployee.setPreferredSize(new java.awt.Dimension(790, 930));
+        modalUpdateEmployee.setMinimumSize(new java.awt.Dimension(790, 800));
+        modalUpdateEmployee.setPreferredSize(new java.awt.Dimension(790, 800));
         modalUpdateEmployee.setModal(true);
         modalUpdateEmployee.setResizable(false);
 
