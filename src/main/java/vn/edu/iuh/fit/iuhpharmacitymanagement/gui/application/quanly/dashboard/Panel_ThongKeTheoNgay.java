@@ -6,6 +6,7 @@ package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.dashboard;
 
 import raven.toast.Notifications;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.DonHangBUS;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.constant.LoaiSanPham;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.barchart.Chart;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.barchart.ModelChart;
@@ -20,10 +21,10 @@ import java.util.stream.Collectors;
 
 /**
  *
- * @author Hoang
+ * @author PhamTra
  */
 public class Panel_ThongKeTheoNgay extends javax.swing.JPanel {
-    
+
     private final DonHangBUS donHangBUS;
     private Chart chart;
 
@@ -33,12 +34,12 @@ public class Panel_ThongKeTheoNgay extends javax.swing.JPanel {
         initComponents();
         initSimpleUI();
     }
-    
+
     private void initSimpleUI() {
         jDateFrom.setDate(java.util.Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant()));
         jDateTo.setDate(java.util.Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant()));
     }
-    
+
     private void initChart() {
         chart = new Chart();
         chart.addLegend("Doanh thu", new Color(135, 189, 245));
@@ -383,33 +384,55 @@ public class Panel_ThongKeTheoNgay extends javax.swing.JPanel {
             Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER, "Vui lòng chọn ngày bắt đầu và ngày kết thúc");
             return;
         }
-        
+
         LocalDate dateFrom = jDateFrom.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
         LocalDate dateTo = jDateTo.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-        
+
         if (dateFrom.isAfter(dateTo)) {
             Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER, "Ngày bắt đầu phải trước ngày kết thúc");
             return;
         }
-        
+
         loadChartData(dateFrom, dateTo);
         loadStatistics(dateFrom, dateTo);
         Notifications.getInstance().show(Notifications.Type.SUCCESS, Notifications.Location.TOP_CENTER, "Đã tải dữ liệu thống kê theo ngày");
     }//GEN-LAST:event_btnSearchActionPerformed
-    
+
     private void loadChartData(LocalDate dateFrom, LocalDate dateTo) {
         chart.clear();
-        
+
         List<DonHang> allOrders = donHangBUS.layTatCaDonHang();
         String paymentType = comboPaymentType.getSelectedItem().toString();
         String promotionType = comboIsPromotion.getSelectedItem().toString();
-        
+        String productType = comboProductType.getSelectedItem().toString();
+
         // Lọc đơn hàng theo điều kiện
         List<DonHang> filteredOrders = allOrders.stream()
                 .filter(dh -> dh.getNgayDatHang() != null)
                 .filter(dh -> !dh.getNgayDatHang().isBefore(dateFrom) && !dh.getNgayDatHang().isAfter(dateTo))
                 .collect(Collectors.toList());
-        
+
+        // Lọc theo loại sản phẩm (nếu được chọn)
+        if (!"Tất cả".equals(productType)) {
+            LoaiSanPham loaiSanPham = null;
+            if ("Thuốc".equals(productType)) {
+                loaiSanPham = LoaiSanPham.THUOC;
+            } else if ("Vật tư y tế".equals(productType)) {
+                loaiSanPham = LoaiSanPham.VAT_TU_Y_TE;
+            }
+
+            if (loaiSanPham != null) {
+                LoaiSanPham finalLoaiSanPham = loaiSanPham;
+                filteredOrders = filteredOrders.stream()
+                        .filter(dh -> dh.getChiTietDonHang() != null
+                                && dh.getChiTietDonHang().stream().anyMatch(ct ->
+                                ct.getLoHang() != null
+                                        && ct.getLoHang().getSanPham() != null
+                                        && ct.getLoHang().getSanPham().getLoaiSanPham() == finalLoaiSanPham))
+                        .collect(Collectors.toList());
+            }
+        }
+
         // Lọc theo phương thức thanh toán
         if (!paymentType.equals("Tất cả")) {
             String paymentMethod = paymentType.equals("Tiền mặt") ? "TIEN_MAT" : "TIN_DUNG";
@@ -417,7 +440,7 @@ public class Panel_ThongKeTheoNgay extends javax.swing.JPanel {
                     .filter(dh -> dh.getPhuongThucThanhToan() != null && dh.getPhuongThucThanhToan().toString().equals(paymentMethod))
                     .collect(Collectors.toList());
         }
-        
+
         // Lọc theo khuyến mãi
         if (!promotionType.equals("Tất cả")) {
             boolean hasPromotion = promotionType.equals("Có khuyến mãi");
@@ -425,81 +448,102 @@ public class Panel_ThongKeTheoNgay extends javax.swing.JPanel {
                     .filter(dh -> (dh.getKhuyenMai() != null) == hasPromotion)
                     .collect(Collectors.toList());
         }
-        
+
         // Tính số ngày giữa dateFrom và dateTo
         long daysBetween = ChronoUnit.DAYS.between(dateFrom, dateTo) + 1;
-        
+
         // Hiển thị dữ liệu theo ngày
         for (int i = 0; i < daysBetween; i++) {
             LocalDate currentDate = dateFrom.plusDays(i);
-            
+
             double sumPrice = filteredOrders.stream()
                     .filter(dh -> dh.getNgayDatHang().equals(currentDate))
                     .mapToDouble(DonHang::getThanhTien)
                     .sum();
-            
+
             String label = currentDate.getDayOfMonth() + "/" + currentDate.getMonthValue();
             chart.addData(new ModelChart(label, new double[]{sumPrice}));
         }
-        
+
         chart.start();
     }
-    
+
     private void loadStatistics(LocalDate dateFrom, LocalDate dateTo) {
         List<DonHang> allOrders = donHangBUS.layTatCaDonHang();
         String paymentType = comboPaymentType.getSelectedItem().toString();
         String promotionType = comboIsPromotion.getSelectedItem().toString();
-        
+        String productType = comboProductType.getSelectedItem().toString();
+
         // Lọc đơn hàng theo điều kiện (giống như loadChartData)
         List<DonHang> filteredOrders = allOrders.stream()
                 .filter(dh -> dh.getNgayDatHang() != null)
                 .filter(dh -> !dh.getNgayDatHang().isBefore(dateFrom) && !dh.getNgayDatHang().isAfter(dateTo))
                 .collect(Collectors.toList());
-        
+
+        // Lọc theo loại sản phẩm (nếu được chọn)
+        if (!"Tất cả".equals(productType)) {
+            LoaiSanPham loaiSanPham = null;
+            if ("Thuốc".equals(productType)) {
+                loaiSanPham = LoaiSanPham.THUOC;
+            } else if ("Vật tư y tế".equals(productType)) {
+                loaiSanPham = LoaiSanPham.VAT_TU_Y_TE;
+            }
+
+            if (loaiSanPham != null) {
+                LoaiSanPham finalLoaiSanPham = loaiSanPham;
+                filteredOrders = filteredOrders.stream()
+                        .filter(dh -> dh.getChiTietDonHang() != null
+                                && dh.getChiTietDonHang().stream().anyMatch(ct ->
+                                ct.getLoHang() != null
+                                        && ct.getLoHang().getSanPham() != null
+                                        && ct.getLoHang().getSanPham().getLoaiSanPham() == finalLoaiSanPham))
+                        .collect(Collectors.toList());
+            }
+        }
+
         if (!paymentType.equals("Tất cả")) {
             String paymentMethod = paymentType.equals("Tiền mặt") ? "TIEN_MAT" : "TIN_DUNG";
             filteredOrders = filteredOrders.stream()
                     .filter(dh -> dh.getPhuongThucThanhToan() != null && dh.getPhuongThucThanhToan().toString().equals(paymentMethod))
                     .collect(Collectors.toList());
         }
-        
+
         if (!promotionType.equals("Tất cả")) {
             boolean hasPromotion = promotionType.equals("Có khuyến mãi");
             filteredOrders = filteredOrders.stream()
                     .filter(dh -> (dh.getKhuyenMai() != null) == hasPromotion)
                     .collect(Collectors.toList());
         }
-        
+
         // Tính toán thống kê
         long daysBetween = ChronoUnit.DAYS.between(dateFrom, dateTo) + 1;
         double totalRevenue = filteredOrders.stream().mapToDouble(DonHang::getThanhTien).sum();
         double averageRevenue = daysBetween > 0 ? totalRevenue / daysBetween : 0;
         int totalOrders = filteredOrders.size();
-        
+
         // Tìm ngày có doanh thu cao nhất
         LocalDate bestDay = null;
         double maxRevenue = 0;
-        
+
         for (int i = 0; i < daysBetween; i++) {
             LocalDate currentDate = dateFrom.plusDays(i);
             double dayRevenue = filteredOrders.stream()
                     .filter(dh -> dh.getNgayDatHang().equals(currentDate))
                     .mapToDouble(DonHang::getThanhTien)
                     .sum();
-            
+
             if (dayRevenue > maxRevenue) {
                 maxRevenue = dayRevenue;
                 bestDay = currentDate;
             }
         }
-        
+
         // Hiển thị thống kê
         txtAverage.setText(DinhDangSo.dinhDangTien(averageRevenue));
         txtSumOfQuantity.setText(totalOrders + " đơn");
         txtBestDay.setText(bestDay != null ? bestDay.getDayOfMonth() + "/" + bestDay.getMonthValue() + "/" + bestDay.getYear() : "N/A");
         txtMaxPrice.setText(DinhDangSo.dinhDangTien(maxRevenue));
     }
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnSearch;

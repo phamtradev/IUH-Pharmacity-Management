@@ -91,28 +91,21 @@ public class Panel_ChiTietSanPhamDaMua extends javax.swing.JPanel {
     }
     
     public void setHinhAnh(String imagePath) {
-        System.out.println("DEBUG Panel_ChiTietSanPhamDaMua.setHinhAnh: '" + imagePath + "'");
         if (imagePath != null && !imagePath.isEmpty()) {
             try {
                 java.io.File imgFile = new java.io.File(imagePath);
-                System.out.println("DEBUG: File exists? " + imgFile.exists() + " - Absolute path: " + imgFile.getAbsolutePath());
                 if (imgFile.exists()) {
                     javax.swing.ImageIcon imageIcon = new javax.swing.ImageIcon(imagePath);
                     java.awt.Image image = imageIcon.getImage().getScaledInstance(80, 80, java.awt.Image.SCALE_SMOOTH);
                     lblHinh.setIcon(new javax.swing.ImageIcon(image));
                     lblHinh.setText("");
-                    System.out.println("DEBUG: Đã set icon thành công");
                 } else {
                     lblHinh.setText("No Img");
-                    System.out.println("DEBUG: File không tồn tại");
                 }
             } catch (Exception e) {
                 lblHinh.setText("Error");
-                System.err.println("Error loading image: " + e.getMessage());
-                e.printStackTrace();
             }
         } else {
-            System.out.println("DEBUG: imagePath null hoặc rỗng");
             lblHinh.setText("No Img");
         }
     }

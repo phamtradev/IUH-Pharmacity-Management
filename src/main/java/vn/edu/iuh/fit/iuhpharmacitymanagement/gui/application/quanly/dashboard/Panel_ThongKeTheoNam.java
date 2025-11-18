@@ -6,6 +6,7 @@ package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.dashboard;
 
 import raven.toast.Notifications;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.DonHangBUS;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.constant.LoaiSanPham;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.barchart.Chart;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.barchart.ModelChart;
@@ -18,10 +19,10 @@ import java.util.stream.Collectors;
 
 /**
  *
- * @author Hoang
+ * @author PhamTra
  */
 public class Panel_ThongKeTheoNam extends javax.swing.JPanel {
-    
+
     private final DonHangBUS donHangBUS;
     private Chart chart;
 
@@ -31,7 +32,7 @@ public class Panel_ThongKeTheoNam extends javax.swing.JPanel {
         initComponents();
         fillComboBoxMonthAndYear();
     }
-    
+
     private void initChart() {
         chart = new Chart();
         chart.addLegend("Doanh thu", new Color(135, 189, 245));
@@ -365,30 +366,52 @@ public class Panel_ThongKeTheoNam extends javax.swing.JPanel {
     private void btnSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSearchActionPerformed
         int yearStart = Integer.parseInt(comboYearStart.getSelectedItem().toString());
         int yearEnd = Integer.parseInt(comboYearEnd.getSelectedItem().toString());
-        
+
         if (yearStart > yearEnd) {
             Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER, "Năm bắt đầu phải nhỏ hơn hoặc bằng năm kết thúc");
             return;
         }
-        
+
         loadChartData(yearStart, yearEnd);
         loadStatistics(yearStart, yearEnd);
         Notifications.getInstance().show(Notifications.Type.SUCCESS, Notifications.Location.TOP_CENTER, "Đã tải dữ liệu thống kê từ năm " + yearStart + " đến " + yearEnd);
     }//GEN-LAST:event_btnSearchActionPerformed
-    
+
     private void loadChartData(int yearStart, int yearEnd) {
         chart.clear();
-        
+
         List<DonHang> allOrders = donHangBUS.layTatCaDonHang();
         String paymentType = comboPaymentType.getSelectedItem().toString();
         String promotionType = comboIsPromotion.getSelectedItem().toString();
-        
+        String productType = comboProductType.getSelectedItem().toString();
+
         // Lọc đơn hàng theo năm
         List<DonHang> filteredOrders = allOrders.stream()
                 .filter(dh -> dh.getNgayDatHang() != null)
                 .filter(dh -> dh.getNgayDatHang().getYear() >= yearStart && dh.getNgayDatHang().getYear() <= yearEnd)
                 .collect(Collectors.toList());
-        
+
+        // Lọc theo loại sản phẩm (nếu được chọn)
+        if (!"Tất cả".equals(productType)) {
+            LoaiSanPham loaiSanPham = null;
+            if ("Thuốc".equals(productType)) {
+                loaiSanPham = LoaiSanPham.THUOC;
+            } else if ("Vật tư y tế".equals(productType)) {
+                loaiSanPham = LoaiSanPham.VAT_TU_Y_TE;
+            }
+
+            if (loaiSanPham != null) {
+                LoaiSanPham finalLoaiSanPham = loaiSanPham;
+                filteredOrders = filteredOrders.stream()
+                        .filter(dh -> dh.getChiTietDonHang() != null
+                                && dh.getChiTietDonHang().stream().anyMatch(ct ->
+                                ct.getLoHang() != null
+                                        && ct.getLoHang().getSanPham() != null
+                                        && ct.getLoHang().getSanPham().getLoaiSanPham() == finalLoaiSanPham))
+                        .collect(Collectors.toList());
+            }
+        }
+
         // Lọc theo phương thức thanh toán
         if (!paymentType.equals("Tất cả")) {
             String paymentMethod = paymentType.equals("Tiền mặt") ? "TIEN_MAT" : "TIN_DUNG";
@@ -396,7 +419,7 @@ public class Panel_ThongKeTheoNam extends javax.swing.JPanel {
                     .filter(dh -> dh.getPhuongThucThanhToan() != null && dh.getPhuongThucThanhToan().toString().equals(paymentMethod))
                     .collect(Collectors.toList());
         }
-        
+
         // Lọc theo khuyến mãi
         if (!promotionType.equals("Tất cả")) {
             boolean hasPromotion = promotionType.equals("Có khuyến mãi");
@@ -404,35 +427,57 @@ public class Panel_ThongKeTheoNam extends javax.swing.JPanel {
                     .filter(dh -> (dh.getKhuyenMai() != null) == hasPromotion)
                     .collect(Collectors.toList());
         }
-        
+
         // Hiển thị dữ liệu theo từng năm
         for (int year = yearStart; year <= yearEnd; year++) {
             int currentYear = year;
-            
+
             double sumPrice = filteredOrders.stream()
                     .filter(dh -> dh.getNgayDatHang().getYear() == currentYear)
                     .mapToDouble(DonHang::getThanhTien)
                     .sum();
-            
+
             chart.addData(new ModelChart(year + "", new double[]{sumPrice}));
         }
-        
+
         chart.start();
     }
-    
+
     private void loadStatistics(int yearStart, int yearEnd) {
         List<DonHang> allOrders = donHangBUS.layTatCaDonHang();
         String paymentType = comboPaymentType.getSelectedItem().toString();
         String promotionType = comboIsPromotion.getSelectedItem().toString();
-        
+        String productType = comboProductType.getSelectedItem().toString();
+
         int totalYears = yearEnd - yearStart + 1;
-        
+
         // Lọc đơn hàng theo năm
         List<DonHang> filteredOrders = allOrders.stream()
                 .filter(dh -> dh.getNgayDatHang() != null)
                 .filter(dh -> dh.getNgayDatHang().getYear() >= yearStart && dh.getNgayDatHang().getYear() <= yearEnd)
                 .collect(Collectors.toList());
-        
+
+        // Lọc theo loại sản phẩm (nếu được chọn)
+        if (!"Tất cả".equals(productType)) {
+            LoaiSanPham loaiSanPham = null;
+            if ("Thuốc".equals(productType)) {
+                loaiSanPham = LoaiSanPham.THUOC;
+            } else if ("Vật tư y tế".equals(productType)) {
+                loaiSanPham = LoaiSanPham.VAT_TU_Y_TE;
+            }
+
+            if (loaiSanPham != null) {
+                LoaiSanPham finalLoaiSanPham = loaiSanPham;
+                filteredOrders = filteredOrders.stream()
+                        .filter(dh -> dh.getChiTietDonHang() != null
+                                && dh.getChiTietDonHang().stream().anyMatch(ct ->
+                                ct.getLoHang() != null
+                                        && ct.getLoHang().getSanPham() != null
+                                        && ct.getLoHang().getSanPham().getLoaiSanPham() == finalLoaiSanPham))
+                        .collect(Collectors.toList());
+            }
+        }
+
         // Lọc theo phương thức thanh toán
         if (!paymentType.equals("Tất cả")) {
             String paymentMethod = paymentType.equals("Tiền mặt") ? "TIEN_MAT" : "TIN_DUNG";
@@ -440,7 +485,7 @@ public class Panel_ThongKeTheoNam extends javax.swing.JPanel {
                     .filter(dh -> dh.getPhuongThucThanhToan() != null && dh.getPhuongThucThanhToan().toString().equals(paymentMethod))
                     .collect(Collectors.toList());
         }
-        
+
         // Lọc theo khuyến mãi
         if (!promotionType.equals("Tất cả")) {
             boolean hasPromotion = promotionType.equals("Có khuyến mãi");
@@ -448,36 +493,35 @@ public class Panel_ThongKeTheoNam extends javax.swing.JPanel {
                     .filter(dh -> (dh.getKhuyenMai() != null) == hasPromotion)
                     .collect(Collectors.toList());
         }
-        
+
         // Tính toán thống kê
         double totalRevenue = filteredOrders.stream().mapToDouble(DonHang::getThanhTien).sum();
         double averageRevenue = totalYears > 0 ? totalRevenue / totalYears : 0;
         int totalOrders = filteredOrders.size();
-        
+
         // Tìm năm có doanh thu cao nhất
         int bestYear = 0;
         double maxRevenue = 0;
-        
+
         for (int year = yearStart; year <= yearEnd; year++) {
             int currentYear = year;
             double yearRevenue = filteredOrders.stream()
                     .filter(dh -> dh.getNgayDatHang().getYear() == currentYear)
                     .mapToDouble(DonHang::getThanhTien)
                     .sum();
-            
+
             if (yearRevenue > maxRevenue) {
                 maxRevenue = yearRevenue;
                 bestYear = year;
             }
         }
-        
+
         // Hiển thị thống kê
         txtAverage.setText(DinhDangSo.dinhDangTien(averageRevenue));
         txtSumOfQuantity.setText(totalOrders + " đơn");
         txtBestDay.setText(bestYear > 0 ? "Năm " + bestYear : "N/A");
         txtMaxPrice.setText(DinhDangSo.dinhDangTien(maxRevenue));
     }
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnSearch;

@@ -6,6 +6,7 @@ package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.dashboard;
 
 import raven.toast.Notifications;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.DonHangBUS;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.constant.LoaiSanPham;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.barchart.Chart;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.barchart.ModelChart;
@@ -20,10 +21,10 @@ import java.util.stream.Collectors;
 
 /**
  *
- * @author Hoang
+ * @author PhamTra
  */
 public class Panel_ThongKeTheoThang extends javax.swing.JPanel {
-    
+
     private final DonHangBUS donHangBUS;
     private Chart chart;
 
@@ -33,7 +34,7 @@ public class Panel_ThongKeTheoThang extends javax.swing.JPanel {
         initComponents();
         fillComboBoxMonthAndYear();
     }
-    
+
     private void initChart() {
         chart = new Chart();
         chart.addLegend("Doanh thu", new Color(135, 189, 245));
@@ -50,7 +51,7 @@ public class Panel_ThongKeTheoThang extends javax.swing.JPanel {
             comboMonth.addItem(month);
         }
 
-        comboMonth.setSelectedIndex( LocalDate.now().getMonthValue() - 1);
+        comboMonth.setSelectedIndex(LocalDate.now().getMonthValue() - 1);
         int currentYear = Calendar.getInstance().get(Calendar.YEAR);
 
         for (int i = 0; i < 10; i++) {
@@ -377,29 +378,51 @@ public class Panel_ThongKeTheoThang extends javax.swing.JPanel {
     private void btnSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSearchActionPerformed
         int month = comboMonth.getSelectedIndex() + 1;
         int year = Integer.parseInt(comboYear.getSelectedItem().toString());
-        
+
         loadChartData(month, year);
         loadStatistics(month, year);
         Notifications.getInstance().show(Notifications.Type.SUCCESS, Notifications.Location.TOP_CENTER, "Đã tải dữ liệu thống kê tháng " + month + "/" + year);
     }//GEN-LAST:event_btnSearchActionPerformed
-    
+
     private void loadChartData(int month, int year) {
         chart.clear();
-        
+
         List<DonHang> allOrders = donHangBUS.layTatCaDonHang();
         String paymentType = comboPaymentType.getSelectedItem().toString();
         String promotionType = comboIsPromotion.getSelectedItem().toString();
-        
+        String productType = comboProductType.getSelectedItem().toString();
+
         // Lấy số ngày trong tháng
         YearMonth yearMonth = YearMonth.of(year, month);
         int daysInMonth = yearMonth.lengthOfMonth();
-        
+
         // Lọc đơn hàng theo tháng và năm
         List<DonHang> filteredOrders = allOrders.stream()
                 .filter(dh -> dh.getNgayDatHang() != null)
                 .filter(dh -> dh.getNgayDatHang().getMonthValue() == month && dh.getNgayDatHang().getYear() == year)
                 .collect(Collectors.toList());
-        
+
+        // Lọc theo loại sản phẩm (nếu được chọn)
+        if (!"Tất cả".equals(productType)) {
+            LoaiSanPham loaiSanPham = null;
+            if ("Thuốc".equals(productType)) {
+                loaiSanPham = LoaiSanPham.THUOC;
+            } else if ("Vật tư y tế".equals(productType)) {
+                loaiSanPham = LoaiSanPham.VAT_TU_Y_TE;
+            }
+
+            if (loaiSanPham != null) {
+                LoaiSanPham finalLoaiSanPham = loaiSanPham;
+                filteredOrders = filteredOrders.stream()
+                        .filter(dh -> dh.getChiTietDonHang() != null
+                                && dh.getChiTietDonHang().stream().anyMatch(ct ->
+                                ct.getLoHang() != null
+                                        && ct.getLoHang().getSanPham() != null
+                                        && ct.getLoHang().getSanPham().getLoaiSanPham() == finalLoaiSanPham))
+                        .collect(Collectors.toList());
+            }
+        }
+
         // Lọc theo phương thức thanh toán
         if (!paymentType.equals("Tất cả")) {
             String paymentMethod = paymentType.equals("Tiền mặt") ? "TIEN_MAT" : "TIN_DUNG";
@@ -407,7 +430,7 @@ public class Panel_ThongKeTheoThang extends javax.swing.JPanel {
                     .filter(dh -> dh.getPhuongThucThanhToan() != null && dh.getPhuongThucThanhToan().toString().equals(paymentMethod))
                     .collect(Collectors.toList());
         }
-        
+
         // Lọc theo khuyến mãi
         if (!promotionType.equals("Tất cả")) {
             boolean hasPromotion = promotionType.equals("Có khuyến mãi");
@@ -415,37 +438,59 @@ public class Panel_ThongKeTheoThang extends javax.swing.JPanel {
                     .filter(dh -> (dh.getKhuyenMai() != null) == hasPromotion)
                     .collect(Collectors.toList());
         }
-        
+
         // Hiển thị dữ liệu theo từng ngày trong tháng
         for (int day = 1; day <= daysInMonth; day++) {
             int currentDay = day;
-            
+
             double sumPrice = filteredOrders.stream()
                     .filter(dh -> dh.getNgayDatHang().getDayOfMonth() == currentDay)
                     .mapToDouble(DonHang::getThanhTien)
                     .sum();
-            
+
             chart.addData(new ModelChart(day + "", new double[]{sumPrice}));
         }
-        
+
         chart.start();
     }
-    
+
     private void loadStatistics(int month, int year) {
         List<DonHang> allOrders = donHangBUS.layTatCaDonHang();
         String paymentType = comboPaymentType.getSelectedItem().toString();
         String promotionType = comboIsPromotion.getSelectedItem().toString();
-        
+        String productType = comboProductType.getSelectedItem().toString();
+
         // Lấy số ngày trong tháng
         YearMonth yearMonth = YearMonth.of(year, month);
         int daysInMonth = yearMonth.lengthOfMonth();
-        
+
         // Lọc đơn hàng theo tháng và năm
         List<DonHang> filteredOrders = allOrders.stream()
                 .filter(dh -> dh.getNgayDatHang() != null)
                 .filter(dh -> dh.getNgayDatHang().getMonthValue() == month && dh.getNgayDatHang().getYear() == year)
                 .collect(Collectors.toList());
-        
+
+        // Lọc theo loại sản phẩm (nếu được chọn)
+        if (!"Tất cả".equals(productType)) {
+            LoaiSanPham loaiSanPham = null;
+            if ("Thuốc".equals(productType)) {
+                loaiSanPham = LoaiSanPham.THUOC;
+            } else if ("Vật tư y tế".equals(productType)) {
+                loaiSanPham = LoaiSanPham.VAT_TU_Y_TE;
+            }
+
+            if (loaiSanPham != null) {
+                LoaiSanPham finalLoaiSanPham = loaiSanPham;
+                filteredOrders = filteredOrders.stream()
+                        .filter(dh -> dh.getChiTietDonHang() != null
+                                && dh.getChiTietDonHang().stream().anyMatch(ct ->
+                                ct.getLoHang() != null
+                                        && ct.getLoHang().getSanPham() != null
+                                        && ct.getLoHang().getSanPham().getLoaiSanPham() == finalLoaiSanPham))
+                        .collect(Collectors.toList());
+            }
+        }
+
         // Lọc theo phương thức thanh toán
         if (!paymentType.equals("Tất cả")) {
             String paymentMethod = paymentType.equals("Tiền mặt") ? "TIEN_MAT" : "TIN_DUNG";
@@ -453,7 +498,7 @@ public class Panel_ThongKeTheoThang extends javax.swing.JPanel {
                     .filter(dh -> dh.getPhuongThucThanhToan() != null && dh.getPhuongThucThanhToan().toString().equals(paymentMethod))
                     .collect(Collectors.toList());
         }
-        
+
         // Lọc theo khuyến mãi
         if (!promotionType.equals("Tất cả")) {
             boolean hasPromotion = promotionType.equals("Có khuyến mãi");
@@ -461,36 +506,35 @@ public class Panel_ThongKeTheoThang extends javax.swing.JPanel {
                     .filter(dh -> (dh.getKhuyenMai() != null) == hasPromotion)
                     .collect(Collectors.toList());
         }
-        
+
         // Tính toán thống kê
         double totalRevenue = filteredOrders.stream().mapToDouble(DonHang::getThanhTien).sum();
         double averageRevenue = daysInMonth > 0 ? totalRevenue / daysInMonth : 0;
         int totalOrders = filteredOrders.size();
-        
+
         // Tìm ngày có doanh thu cao nhất
         int bestDay = 0;
         double maxRevenue = 0;
-        
+
         for (int day = 1; day <= daysInMonth; day++) {
             int currentDay = day;
             double dayRevenue = filteredOrders.stream()
                     .filter(dh -> dh.getNgayDatHang().getDayOfMonth() == currentDay)
                     .mapToDouble(DonHang::getThanhTien)
                     .sum();
-            
+
             if (dayRevenue > maxRevenue) {
                 maxRevenue = dayRevenue;
                 bestDay = day;
             }
         }
-        
+
         // Hiển thị thống kê
         txtAverage.setText(DinhDangSo.dinhDangTien(averageRevenue));
         txtSumOfQuantity.setText(totalOrders + " đơn");
         txtBestDay.setText(bestDay > 0 ? bestDay + "/" + month + "/" + year : "N/A");
         txtMaxPrice.setText(DinhDangSo.dinhDangTien(maxRevenue));
     }
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnSearch;

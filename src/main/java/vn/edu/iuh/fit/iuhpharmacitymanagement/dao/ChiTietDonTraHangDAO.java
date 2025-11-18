@@ -25,23 +25,26 @@ public class ChiTietDonTraHangDAO implements DAOInterface<ChiTietDonTraHang, Str
 
     @Override
     public boolean insert(ChiTietDonTraHang t) {
-        String sql = "INSERT into chitietdontrahang(donGia, lyDoTra, soLuong, thanhTien, maDonTra, maSanPham) "
-                + " VALUES(?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT into chitietdontrahang(donGia, lyDoTra, soLuong, thanhTien, trangThaiXuLy, maDonTra, maSanPham) "
+                + " VALUES(?, ?, ?, ?, ?, ?, ?)";
         try (Connection con = ConnectDB.getConnection(); PreparedStatement pre = con.prepareStatement(sql)) {
             pre.setDouble(1, t.getDonGia());
             pre.setString(2, t.getLyDoTra());
             pre.setInt(3, t.getSoLuong());
             pre.setDouble(4, t.getThanhTien());
-            pre.setString(5, t.getDonTraHang().getMaDonTraHang());
-            pre.setString(6, t.getSanPham().getMaSanPham());
+            pre.setString(5, t.getTrangThaiXuLy() != null ? t.getTrangThaiXuLy() : "Chưa xử lý");
+            pre.setString(6, t.getDonTraHang().getMaDonTraHang());
+            pre.setString(7, t.getSanPham().getMaSanPham());
 
             int rowsAffected = pre.executeUpdate();
             System.out.println("      [DAO] Rows affected: " + rowsAffected);
             return rowsAffected > 0;
         } catch (Exception e) {
             System.err.println("      [DAO] LỖI KHI INSERT CHI TIẾT ĐÔN TRẢ HÀNG:");
-            System.err.println("      - Mã đơn trả: " + (t.getDonTraHang() != null ? t.getDonTraHang().getMaDonTraHang() : "NULL"));
-            System.err.println("      - Mã sản phẩm: " + (t.getSanPham() != null ? t.getSanPham().getMaSanPham() : "NULL"));
+            System.err.println("      - Mã đơn trả: "
+                    + (t.getDonTraHang() != null ? t.getDonTraHang().getMaDonTraHang() : "NULL"));
+            System.err.println(
+                    "      - Mã sản phẩm: " + (t.getSanPham() != null ? t.getSanPham().getMaSanPham() : "NULL"));
             System.err.println("      - Lý do: " + e.getMessage());
             e.printStackTrace();
         }
@@ -51,15 +54,16 @@ public class ChiTietDonTraHangDAO implements DAOInterface<ChiTietDonTraHang, Str
     @Override
     public boolean update(ChiTietDonTraHang t) {
         String sql = "update chitietdontrahang "
-                + " set donGia = ?, lyDoTra = ?, soLuong = ?, thanhTien = ? "
+                + " set donGia = ?, lyDoTra = ?, soLuong = ?, thanhTien = ?, trangThaiXuLy = ? "
                 + " WHERE maDonTra = ? and maSanPham = ? ";
         try (Connection con = ConnectDB.getConnection(); PreparedStatement pre = con.prepareStatement(sql)) {
             pre.setDouble(1, t.getDonGia());
             pre.setString(2, t.getLyDoTra());
             pre.setInt(3, t.getSoLuong());
             pre.setDouble(4, t.getThanhTien());
-            pre.setString(5, t.getDonTraHang().getMaDonTraHang());
-            pre.setString(6, t.getSanPham().getMaSanPham());
+            pre.setString(5, t.getTrangThaiXuLy() != null ? t.getTrangThaiXuLy() : "Chưa xử lý");
+            pre.setString(6, t.getDonTraHang().getMaDonTraHang());
+            pre.setString(7, t.getSanPham().getMaSanPham());
             return pre.executeUpdate() > 0;
         } catch (Exception e) {
             e.printStackTrace();
@@ -93,7 +97,9 @@ public class ChiTietDonTraHangDAO implements DAOInterface<ChiTietDonTraHang, Str
     @Override
     public List<ChiTietDonTraHang> findAll() {
         List<ChiTietDonTraHang> dsCt = new ArrayList<>();
-        try (Connection con = ConnectDB.getConnection(); Statement stm = con.createStatement(); ResultSet rs = stm.executeQuery("select * from chitietdontrahang")) {
+        try (Connection con = ConnectDB.getConnection();
+                Statement stm = con.createStatement();
+                ResultSet rs = stm.executeQuery("select * from chitietdontrahang")) {
             while (rs.next()) {
                 double donGia = rs.getDouble("donGia");
                 String lyDo = rs.getString("lyDoTra");
@@ -101,7 +107,8 @@ public class ChiTietDonTraHangDAO implements DAOInterface<ChiTietDonTraHang, Str
                 double thanhTien = rs.getDouble("thanhTien");
                 String maDonTra = rs.getString("maDonTra");
                 String masp = rs.getString("maSanPham");
-                ChiTietDonTraHang ct = new ChiTietDonTraHang(sl, donGia, lyDo, thanhTien, new SanPham(masp), new DonTraHang(maDonTra));
+                ChiTietDonTraHang ct = new ChiTietDonTraHang(sl, donGia, lyDo, thanhTien, new SanPham(masp),
+                        new DonTraHang(maDonTra));
                 dsCt.add(ct);
             }
         } catch (Exception e) {
@@ -133,6 +140,7 @@ public class ChiTietDonTraHangDAO implements DAOInterface<ChiTietDonTraHang, Str
                 String lyDo = rs.getString("lyDoTra");
                 int sl = rs.getInt("soLuong");
                 double thanhTien = rs.getDouble("thanhTien");
+                String trangThaiXuLy = rs.getString("trangThaiXuLy");
                 String maDonTraResult = rs.getString("maDonTra");
                 String masp = rs.getString("maSanPham");
 
@@ -152,6 +160,7 @@ public class ChiTietDonTraHangDAO implements DAOInterface<ChiTietDonTraHang, Str
 
                 ChiTietDonTraHang ct = new ChiTietDonTraHang(sl, donGia, lyDo, thanhTien,
                         sp, new DonTraHang(maDonTraResult));
+                ct.setTrangThaiXuLy(trangThaiXuLy != null ? trangThaiXuLy : "Chưa xử lý");
                 dsCt.add(ct);
             }
         } catch (Exception e) {
@@ -160,19 +169,48 @@ public class ChiTietDonTraHangDAO implements DAOInterface<ChiTietDonTraHang, Str
         return dsCt;
     }
 
+    /**
+     * Xóa một chi tiết đơn trả hàng
+     * 
+     * @param maDonTra  Mã đơn trả hàng
+     * @param maSanPham Mã sản phẩm
+     * @return true nếu xóa thành công
+     */
+    public boolean delete(String maDonTra, String maSanPham) {
+        String sql = "DELETE FROM chitietdontrahang WHERE maDonTra = ? AND maSanPham = ?";
+        try (Connection con = ConnectDB.getConnection();
+                PreparedStatement pre = con.prepareStatement(sql)) {
+            pre.setString(1, maDonTra);
+            pre.setString(2, maSanPham);
+            int rowsAffected = pre.executeUpdate();
+            System.out.println("[DAO] Đã xóa chi tiết đơn trả: " + maDonTra + " - " + maSanPham);
+            return rowsAffected > 0;
+        } catch (Exception e) {
+            System.err.println("[DAO] Lỗi khi xóa chi tiết đơn trả hàng: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     // Lấy tất cả sản phẩm trong đơn trả ĐÃ ĐƯỢC DUYỆT (chờ xuất hủy)
     public List<ChiTietDonTraHang> findAllWithDetails() {
         List<ChiTietDonTraHang> danhSach = new ArrayList<>();
-        String sql = "SELECT ct.*, sp.tenSanPham, sp.giaNhap, sp.hinhAnh, dv.tenDonVi, dth.trangThaiXuLy "
+        String sql = "SELECT ct.*, sp.tenSanPham, sp.giaNhap, sp.hinhAnh, dv.tenDonVi "
                 + "FROM chitietdontrahang ct "
                 + "JOIN SanPham sp ON ct.maSanPham = sp.maSanPham "
                 + "JOIN DonViTinh dv ON sp.maDonVi = dv.maDonVi "
-                + "JOIN DonTraHang dth ON ct.maDonTra = dth.maDonTra "
-                + "WHERE dth.trangThaiXuLy = N'Chờ xuất hủy'";
+                + "WHERE ct.trangThaiXuLy = N'Đã duyệt xuất hủy'";
 
-        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
+        System.out.println("[DAO] Đang lấy chi tiết đơn trả có trạng thái 'Đã duyệt xuất hủy'");
+
+        try (Connection con = ConnectDB.getConnection();
+                PreparedStatement stmt = con.prepareStatement(sql);
+                ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
+                String trangThai = rs.getString("trangThaiXuLy");
+                String maSP = rs.getString("maSanPham");
+                System.out.println("[DAO] - Sản phẩm: " + maSP + " | Trạng thái: " + trangThai);
                 SanPham sanPham = new SanPham();
                 sanPham.setMaSanPham(rs.getString("maSanPham"));
                 sanPham.setTenSanPham(rs.getString("tenSanPham"));

@@ -1,10 +1,10 @@
 package vn.edu.iuh.fit.iuhpharmacitymanagement.entity;
 
 /**
- * @author PhamTra
- * Chi tiết hàng hỏng - Composite key (maLoHang + maHangHong)
+ * @author PhamTra Chi tiết hàng hỏng - Composite key (maLoHang + maHangHong)
  */
 public class ChiTietHangHong {
+
     private int soLuong;
     private double donGia;
     private double thanhTien;
@@ -12,7 +12,7 @@ public class ChiTietHangHong {
 
     private LoHang loHang;
     private HangHong hangHong;
-    
+
     public static final String SO_LUONG_SAI = "Số lượng phải là số nguyên dương lớn hơn 0, không được rỗng";
     public static final String DON_GIA_SAI = "Đơn giá phải là số thực dương lớn hơn 0, không được rỗng";
     public static final String LO_HANG_RONG = "Lô hàng không được để trống";
@@ -95,6 +95,4 @@ public class ChiTietHangHong {
         return "ChiTietHangHong{" + "soLuong=" + soLuong + ", donGia=" + donGia + ", thanhTien=" + thanhTien + ", loHang=" + (loHang != null ? loHang.getMaLoHang() : "null") + ", hangHong=" + (hangHong != null ? hangHong.getMaHangHong() : "null") + ", lyDoXuatHuy=" + lyDoXuatHuy + '}';
     }
 
-    
-    
 }

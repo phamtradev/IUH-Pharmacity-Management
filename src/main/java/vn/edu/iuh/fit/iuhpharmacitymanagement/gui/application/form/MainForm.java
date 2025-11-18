@@ -135,96 +135,140 @@ public class MainForm extends JLayeredPane {
         menu.addMenuEvent((int index, int subIndex, MenuAction action) -> {
             // Application.mainForm.showForm(new DefaultForm("Form : " + index + " " + subIndex));
             try{
-            if (getType() == 1) {
-                // Type 1 = Nhân viên (index từ 20-31)
-                if (index == 20) {
-                    // Dashboard (Thống kê cá nhân) - Vị trí đầu tiên
-                    showForm(new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.dashboard.GD_DashBoard());
-                } else if (index == 21) {
-                    showForm(new GD_BanHang());
-                } else if (index == 22) {
-                    showForm(new GD_QuanLySanPham());
-                } else if (index == 23) {
-                    showForm(new GD_QuanLyKhachHang());
-                } else if (index == 24) {
-                    showForm(new GD_QuanLyNhaCungCap());
-                } else if (index == 25) {
-                    showForm(new GD_QuanLyPhieuNhapHang());
-                } else if (index == 26) {
-                    showForm(new GD_QuanLyPhieuTraHang());
-                } else if (index == 27) {
-                    showForm(new GD_QuanLyXuatHuy());
-                } else if (index == 28) {
-                    showForm(new GD_ThongTinCaNhan(false));
-                } else if (index == 29) {
-                    // Chat Bot
-                    showForm(new GD_ChatBot());
-//                } else if (index == 30) {
-//                    // Trợ giúp
-//                    showForm(new ViewPdfPanel(1));
-                } else if (index == 31) { 
-                    // Đăng xuất nhân viên
-                    handleLogout();
-                } else {
-                    action.cancel();
+                if (getType() == 1) {
+                    // Type 1 = Nhân viên (index từ 20-32)
+                    if (index == 20) {
+                        // Dashboard (Thống kê cá nhân) - Vị trí đầu tiên
+                        showForm(new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.dashboard.GD_DashBoard());
+                    } else if (index == 21) {
+                        showForm(new GD_BanHang());
+                    } else if (index == 22) {
+                        showForm(new GD_QuanLySanPham());
+                    } else if (index == 23) {
+                        showForm(new GD_QuanLyKhachHang());
+                    } else if (index == 24) {
+                        showForm(new GD_QuanLyNhaCungCap());
+                    } else if (index == 25) {
+                        showForm(new GD_QuanLyPhieuNhapHang());
+                    } else if (index == 26) {
+                        showForm(new GD_QuanLyPhieuTraHang());
+                    } else if (index == 27) {
+                        showForm(new GD_QuanLyXuatHuy());
+                    } else if (index == 28) {
+                        showForm(new GD_ThongTinCaNhan(false));
+                    } else if (index == 29) {
+                        // Chat Bot
+                        showForm(new GD_ChatBot());
+                    } else if (index == 30) {
+                        // Trợ giúp
+                        javax.swing.JOptionPane.showMessageDialog(
+                            this,
+                            "Chức năng trợ giúp sẽ được cập nhật sau.",
+                            "Trợ giúp",
+                            javax.swing.JOptionPane.INFORMATION_MESSAGE
+                        );
+                    } else if (index == 31) {
+                        // Phiên bản
+                        javax.swing.JOptionPane.showMessageDialog(
+                            this,
+                            "PHẦN MỀM QUẢN LÝ BÁN THUỐC TRƯỜNG ĐẠI HỌC CÔNG NGHIỆP THÀNH PHỐ HỒ CHÍ MINH\n\n"
+                            + "Phiên Bản: RELEASE 1.0\n"
+                            + "Giảng viên hướng dẫn: ThS. Trần Thị Anh Thi\n"
+                            + "Lớp học phần: DHKTPM19A\n\n"
+                            + "Nhóm phát triển:\n"
+                            + "- Phạm Văn Trà\n"
+                            + "- Đỗ Hoài Nhớ\n"
+                            + "- Tô Nguyễn An Thuyên\n"
+                            + "- Nguyễn Công Tuyến\n"
+                            + "- Phạm Minh Thịnh",
+                            "Thông tin Phiên bản",
+                            javax.swing.JOptionPane.INFORMATION_MESSAGE
+                        );
+                    } else if (index == 32) { 
+                        // Đăng xuất nhân viên
+                        handleLogout();
+                    } else {
+                        action.cancel();
+                    }
+                } else if (getType() == 2) {
+                    // Type 2 = Quản lý (index từ 0-17)
+                    if (index == 0) {
+                        // Dashboard
+                        showForm(new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.dashboard.GD_DashBoardQuanLy());
+                    } else if (index == 1) {
+                        // Báo cáo thu chi
+                        showForm(new GD_BaoCaoThuChi());
+                    } else if (index == 2) {
+                        // Quản lý sản phẩm (quản lý có button xóa)
+                        showForm(new GD_QuanLySanPham(true));
+                    } else if (index == 3) {
+                        // Quản lý đơn vị tính
+                        showForm(new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlydonvitinh.GD_QuanLyDonViTinh());
+                    } else if (index == 4) {
+                        // Quản lý lô hàng
+                        showForm(new GD_QuanLyLoHang());
+                    } else if (index == 5) {
+                        // Quản lý nhân viên
+                        showForm(new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlynhanvien.GD_QuanLyNhanVien());
+                    } else if (index == 6) {
+                        // Quản lý khách hàng (quản lý có button xóa)
+                        showForm(new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlykhachhang.GD_QuanLyKhachHang());
+                    } else if (index == 7) {
+                        // Quản lý nhà cung cấp (quản lý)
+                        showForm(new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlynhacungcap.GD_QuanLyNhaCungCap());
+                    } else if (index == 8) {
+                        // Quản lý nhập hàng
+                        showForm(new GD_QuanLyNhapHang());
+                    } else if (index == 9) {
+                        // Quản lý trả hàng
+                        showForm(new GD_QuanLyTraHang());
+                    } else if (index == 10) {
+                        // Quản lý xuất hủy
+                        showForm(new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlyxuathuy.GD_QuanLyXuatHuy());
+                    } else if (index == 11) {
+                        // Quản lý đơn hàng
+                        showForm(new GD_QuanLyDonHang());
+                    } else if (index == 12) {
+                        // Quản lý khuyến mãi
+                        showForm(new GD_QuanLyKhuyenMai());
+                    } else if (index == 13) {
+                        // Thông tin cá nhân
+                        showForm(new GD_ThongTinCaNhan(true));
+                    } else if (index == 14) {
+                        // Chat Bot
+                        showForm(new GD_ChatBot());
+                    } else if (index == 15) {
+                        // Trợ giúp
+                        javax.swing.JOptionPane.showMessageDialog(
+                            this,
+                            "Chức năng trợ giúp sẽ được cập nhật sau.",
+                            "Trợ giúp",
+                            javax.swing.JOptionPane.INFORMATION_MESSAGE
+                        );
+                    } else if (index == 16) {
+                        // Phiên bản
+                        javax.swing.JOptionPane.showMessageDialog(
+                            this,
+                            "PHẦN MỀM QUẢN LÝ BÁN THUỐC TRƯỜNG ĐẠI HỌC CÔNG NGHIỆP THÀNH PHỐ HỒ CHÍ MINH\n\n"
+                            + "Phiên Bản: RELEASE 1.0\n"
+                            + "Giảng viên hướng dẫn: ThS. Trần Thị Anh Thi\n"
+                            + "Lớp học phần: DHKTPM19A\n\n"
+                            + "Nhóm phát triển:\n"
+                            + "- Phạm Văn Trà\n"
+                            + "- Đỗ Hoài Nhớ\n"
+                            + "- Tô Nguyễn An Thuyên\n"
+                            + "- Nguyễn Công Tuyến\n"
+                            + "- Phạm Minh Thịnh",
+                            "Thông tin Phiên bản",
+                            javax.swing.JOptionPane.INFORMATION_MESSAGE
+                        );
+                    } else if (index == 17) {
+                        // Đăng xuất quản lý
+                        handleLogout();
+                    } else {
+                        action.cancel();
+                    }
                 }
-            } else if (getType() == 2) {
-                // Type 2 = Quản lý (index từ 0-16)
-                if (index == 0) {
-                    // Dashboard
-                    showForm(new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.dashboard.GD_DashBoardQuanLy());
-                } else if (index == 1) {
-                    // Báo cáo thu chi
-                    showForm(new GD_BaoCaoThuChi());
-                } else if (index == 2) {
-                    // Quản lý sản phẩm (quản lý có button xóa)
-                    showForm(new GD_QuanLySanPham(true));
-                } else if (index == 3) {
-                    // Quản lý đơn vị tính
-                    showForm(new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlydonvitinh.GD_QuanLyDonViTinh());
-                } else if (index == 4) {
-                    // Quản lý lô hàng
-                    showForm(new GD_QuanLyLoHang());
-                } else if (index == 5) {
-                    // Quản lý nhân viên
-                    showForm(new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlynhanvien.GD_QuanLyNhanVien());
-                } else if (index == 6) {
-                    // Quản lý khách hàng (quản lý có button xóa)
-                    showForm(new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlykhachhang.GD_QuanLyKhachHang());
-                } else if (index == 7) {
-                    // Quản lý nhà cung cấp (quản lý)
-                    showForm(new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlynhacungcap.GD_QuanLyNhaCungCap());
-                } else if (index == 8) {
-                    // Quản lý nhập hàng
-                    showForm(new GD_QuanLyNhapHang());
-                } else if (index == 9) {
-                    // Quản lý trả hàng
-                    showForm(new GD_QuanLyTraHang());
-                } else if (index == 10) {
-                    // Quản lý xuất hủy
-                    showForm(new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlyxuathuy.GD_QuanLyXuatHuy());
-                } else if (index == 11) {
-                    // Quản lý đơn hàng
-                    showForm(new GD_QuanLyDonHang());
-                } else if (index == 12) {
-                    // Quản lý khuyến mãi
-                    showForm(new GD_QuanLyKhuyenMai());
-                } else if (index == 13) {
-                    // Thông tin cá nhân
-                    showForm(new GD_ThongTinCaNhan(true));
-                } else if (index == 14) {
-                    // Chat Bot
-                    showForm(new GD_ChatBot());
-//                } else if (index == 15) {
-//                    // Trợ giúp
-//                    showForm(new ViewPdfPanel(2));
-                } else if (index == 16) {
-                    // Đăng xuất quản lý
-                    handleLogout();
-                } else {
-                    action.cancel();
-                }
-            }
             }catch(Exception e){
                 System.err.println("ĐÃ XẢY RA LỖI NGHIÊM TRỌNG KHI TẠO FORM:");
             e.printStackTrace();

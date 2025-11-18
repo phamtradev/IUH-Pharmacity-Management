@@ -8,6 +8,7 @@ import java.awt.*;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.YearMonth;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.swing.*;
@@ -20,6 +21,7 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.LoHangDAO;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.SanPhamDAO;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlyxuathuy.GD_QuanLyXuatHuy;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonHang;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.LoHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhanVien;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham;
@@ -54,12 +56,21 @@ public class GD_DashBoard extends javax.swing.JPanel {
     
     // Chart
     private Chart chart;
+    private JLabel lblChartTitle;
+    private JComboBox<String> cboChartMode;
+    private ChartMode chartMode = ChartMode.DAY;
     
     // Alert panel
     private JPanel alertPanel;
     
     // Animation
     private Animator fadeInAnimator;
+
+    private enum ChartMode {
+        DAY,   // Theo ngày (7 ngày gần nhất)
+        MONTH, // Theo tháng (12 tháng gần nhất)
+        YEAR   // Theo năm (5 năm gần nhất)
+    }
 
     public GD_DashBoard() {
         currencyFormat = new DecimalFormat("#,###");
@@ -114,11 +125,6 @@ public class GD_DashBoard extends javax.swing.JPanel {
         chartAlertRow.add(alertPanel);
         
         contentPanel.add(chartAlertRow);
-        contentPanel.add(Box.createVerticalStrut(20));
-        
-        // ========== TABLE: Đơn hàng gần đây ==========
-        JPanel tablePanel = createTablePanel();
-        contentPanel.add(tablePanel);
         
         pnAll.add(contentPanel, BorderLayout.CENTER);
     }
@@ -253,17 +259,47 @@ public class GD_DashBoard extends javax.swing.JPanel {
             BorderFactory.createEmptyBorder(20, 20, 20, 20)
         ));
         
+        // Thanh tiêu đề + nút chọn chế độ xem
+        JPanel topBar = new JPanel(new BorderLayout());
+        topBar.setOpaque(false);
+
         // Title
-        JLabel lblTitle = new JLabel("DOANH THU 7 NGÀY GẦN NHẤT (CÁ NHÂN)");
-        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        lblTitle.setForeground(new Color(51, 51, 51));
-        lblTitle.setBorder(BorderFactory.createEmptyBorder(0, 0, 15, 0));
+        lblChartTitle = new JLabel();
+        lblChartTitle.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        lblChartTitle.setForeground(new Color(51, 51, 51));
+        lblChartTitle.setBorder(BorderFactory.createEmptyBorder(0, 0, 15, 0));
+        updateChartTitle();
+
+        // Bộ lọc chế độ xem: Ngày / Tháng / Năm
+        JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        filterPanel.setOpaque(false);
+        JLabel lblFilter = new JLabel("Xem theo:");
+        lblFilter.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        cboChartMode = new JComboBox<>(new String[] { "Ngày", "Tháng", "Năm" });
+        cboChartMode.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        cboChartMode.addActionListener(e -> {
+            int idx = cboChartMode.getSelectedIndex();
+            if (idx == 0) {
+                chartMode = ChartMode.DAY;
+            } else if (idx == 1) {
+                chartMode = ChartMode.MONTH;
+            } else {
+                chartMode = ChartMode.YEAR;
+            }
+            updateChartTitle();
+            loadChartData();
+        });
+        filterPanel.add(lblFilter);
+        filterPanel.add(cboChartMode);
+
+        topBar.add(lblChartTitle, BorderLayout.WEST);
+        topBar.add(filterPanel, BorderLayout.EAST);
         
         // Chart
         chart = new Chart();
         chart.setPreferredSize(new Dimension(600, 600));
         
-        panel.add(lblTitle, BorderLayout.NORTH);
+        panel.add(topBar, BorderLayout.NORTH);
         panel.add(chart, BorderLayout.CENTER);
         
         return panel;
@@ -290,67 +326,6 @@ public class GD_DashBoard extends javax.swing.JPanel {
         
         return panel;
     }
-    
-    /**
-     * Tạo table panel
-     */
-    private JPanel createTablePanel() {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setBackground(Color.WHITE);
-        panel.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(new Color(230, 230, 230), 1),
-            BorderFactory.createEmptyBorder(20, 20, 20, 20)
-        ));
-        
-        // Title
-        JLabel lblTableTitle = new JLabel("10 ĐƠN HÀNG GẦN NHẤT (CÁ NHÂN)");
-        lblTableTitle.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        lblTableTitle.setForeground(new Color(51, 51, 51));
-        lblTableTitle.setBorder(BorderFactory.createEmptyBorder(0, 0, 15, 0));
-        
-        // Setup table
-        setupRecentOrdersTable();
-        
-        panel.add(lblTableTitle, BorderLayout.NORTH);
-        panel.add(scrollTable, BorderLayout.CENTER);
-        
-        return panel;
-    }
-
-    /**
-     * Thiết lập bảng hiển thị đơn hàng gần đây
-     */
-    private void setupRecentOrdersTable() {
-        String[] headers = {"Mã hóa đơn", "Ngày tạo", "Khách hàng", "Tổng tiền"};
-        
-        tableModel = new DefaultTableModel(headers, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
-        
-        table = new JTable(tableModel);
-        table.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        table.setRowHeight(50);  // Tăng height để dễ đọc hơn
-        table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
-        table.getTableHeader().setBackground(new Color(245, 245, 245));
-        table.getTableHeader().setForeground(new Color(51, 51, 51));
-        table.getTableHeader().setPreferredSize(new Dimension(0, 45));  // Tăng height header
-        
-        // Màu selection nổi bật khi click
-        table.setSelectionBackground(new Color(64, 158, 255));
-        table.setSelectionForeground(Color.WHITE);
-        
-        table.setGridColor(new Color(235, 235, 235));
-        table.setShowHorizontalLines(true);
-        table.setShowVerticalLines(false);
-        
-        scrollTable.setViewportView(table);
-        scrollTable.setBorder(null);
-        scrollTable.setBackground(Color.WHITE);
-    }
-
     /**
      * Tải dữ liệu dashboard
      */
@@ -390,14 +365,11 @@ public class GD_DashBoard extends javax.swing.JPanel {
             cardDonNhapHang.updateValue(String.valueOf(soDonNhapHangTrongTuan) + " đơn");
             cardDonXuatHuy.updateValue(String.valueOf(soDonCanXuatHuy) + " đơn");
             
-            // ========== LOAD BIỂU ĐỒ 7 NGÀY ==========
+            // ========== LOAD BIỂU ĐỒ DOANH THU ==========
             loadChartData();
             
             // ========== LOAD DANH SÁCH SẢN PHẨM SẮP HẾT ==========
             loadLowStockProducts();
-            
-            // ========== LOAD BẢNG ĐƠN HÀNG GẦN ĐÂY ==========
-            loadRecentOrders(maNhanVien);
             
         } catch (Exception e) {
             e.printStackTrace();
@@ -409,7 +381,29 @@ public class GD_DashBoard extends javax.swing.JPanel {
     }
 
     /**
-     * Load dữ liệu biểu đồ doanh thu 7 ngày gần nhất (cá nhân)
+     * Cập nhật tiêu đề biểu đồ theo chế độ xem hiện tại
+     */
+    private void updateChartTitle() {
+        if (lblChartTitle == null) {
+            return;
+        }
+        switch (chartMode) {
+            case DAY:
+                lblChartTitle.setText("DOANH THU 7 NGÀY GẦN NHẤT (CÁ NHÂN)");
+                break;
+            case MONTH:
+                lblChartTitle.setText("DOANH THU 12 THÁNG GẦN NHẤT (CÁ NHÂN)");
+                break;
+            case YEAR:
+                lblChartTitle.setText("DOANH THU 5 NĂM GẦN NHẤT (CÁ NHÂN)");
+                break;
+            default:
+                lblChartTitle.setText("DOANH THU (CÁ NHÂN)");
+        }
+    }
+
+    /**
+     * Load dữ liệu biểu đồ doanh thu (cá nhân) theo chế độ xem
      */
     private void loadChartData() {
         chart.clear();
@@ -419,20 +413,68 @@ public class GD_DashBoard extends javax.swing.JPanel {
         LocalDate today = LocalDate.now();
         String maNhanVien = currentUser != null ? currentUser.getMaNhanVien() : "";
         List<DonHang> allOrders = donHangBUS.layTatCaDonHang();
-        
-        for (int i = 6; i >= 0; i--) {
-            LocalDate date = today.minusDays(i);
-            
-            // Lọc đơn hàng của nhân viên này trong ngày
-            double sumPrice = allOrders.stream()
-                    .filter(dh -> dh.getNgayDatHang() != null && dh.getNgayDatHang().equals(date))
-                    .filter(dh -> dh.getNhanVien() != null && 
-                            dh.getNhanVien().getMaNhanVien().equals(maNhanVien))
-                    .mapToDouble(DonHang::getThanhTien)
-                    .sum();
-            
-            chart.addData(new ModelChart(date.getDayOfMonth() + "/" + date.getMonthValue(),
-                    new double[]{sumPrice}));
+
+        switch (chartMode) {
+            case DAY:
+                // 7 ngày gần nhất
+                for (int i = 6; i >= 0; i--) {
+                    LocalDate date = today.minusDays(i);
+
+                    double sumPrice = allOrders.stream()
+                            .filter(dh -> dh.getNgayDatHang() != null && dh.getNgayDatHang().equals(date))
+                            .filter(dh -> dh.getNhanVien() != null &&
+                                    dh.getNhanVien().getMaNhanVien().equals(maNhanVien))
+                            .mapToDouble(DonHang::getThanhTien)
+                            .sum();
+
+                    chart.addData(new ModelChart(
+                            date.getDayOfMonth() + "/" + date.getMonthValue(),
+                            new double[]{sumPrice}
+                    ));
+                }
+                break;
+
+            case MONTH:
+                // 12 tháng gần nhất
+                YearMonth currentMonth = YearMonth.from(today);
+                for (int i = 11; i >= 0; i--) {
+                    YearMonth ym = currentMonth.minusMonths(i);
+
+                    double sumPrice = allOrders.stream()
+                            .filter(dh -> dh.getNgayDatHang() != null)
+                            .filter(dh -> {
+                                LocalDate d = dh.getNgayDatHang();
+                                return d.getYear() == ym.getYear() && d.getMonthValue() == ym.getMonthValue();
+                            })
+                            .filter(dh -> dh.getNhanVien() != null &&
+                                    dh.getNhanVien().getMaNhanVien().equals(maNhanVien))
+                            .mapToDouble(DonHang::getThanhTien)
+                            .sum();
+
+                    String label = ym.getMonthValue() + "/" + ym.getYear();
+                    chart.addData(new ModelChart(label, new double[]{sumPrice}));
+                }
+                break;
+
+            case YEAR:
+                // 5 năm gần nhất
+                int currentYear = today.getYear();
+                for (int i = 4; i >= 0; i--) {
+                    int year = currentYear - i;
+
+                    double sumPrice = allOrders.stream()
+                            .filter(dh -> dh.getNgayDatHang() != null)
+                            .filter(dh -> dh.getNgayDatHang().getYear() == year)
+                            .filter(dh -> dh.getNhanVien() != null &&
+                                    dh.getNhanVien().getMaNhanVien().equals(maNhanVien))
+                            .mapToDouble(DonHang::getThanhTien)
+                            .sum();
+
+                    chart.addData(new ModelChart(String.valueOf(year), new double[]{sumPrice}));
+                }
+                break;
+            default:
+                break;
         }
         chart.start();
     }
@@ -525,41 +567,6 @@ public class GD_DashBoard extends javax.swing.JPanel {
         return panel;
     }
     
-    /**
-     * Load bảng đơn hàng gần đây (cá nhân)
-     */
-    private void loadRecentOrders(String maNhanVien) {
-        try {
-            tableModel.setRowCount(0);
-            
-            List<DonHang> allOrders = donHangBUS.layTatCaDonHang();
-            
-            // Lọc đơn hàng của nhân viên này, sắp xếp theo ngày mới nhất
-            List<DonHang> myOrders = allOrders.stream()
-                    .filter(dh -> dh.getNhanVien() != null && 
-                            dh.getNhanVien().getMaNhanVien().equals(maNhanVien))
-                    .sorted((a, b) -> b.getNgayDatHang().compareTo(a.getNgayDatHang()))
-                    .limit(10)  // Chỉ lấy 10 đơn gần nhất
-                    .collect(Collectors.toList());
-            
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-            
-            for (DonHang dh : myOrders) {
-                String tenKhach = dh.getKhachHang() != null ? 
-                        dh.getKhachHang().getTenKhachHang() : "Khách lẻ";
-                
-                tableModel.addRow(new Object[]{
-                    dh.getMaDonHang(),
-                    dh.getNgayDatHang().format(formatter),
-                    tenKhach,
-                    currencyFormat.format(dh.getThanhTien()) + " đ"
-                });
-            }
-            
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
     
     /**
      * Animation fade in khi load dashboard

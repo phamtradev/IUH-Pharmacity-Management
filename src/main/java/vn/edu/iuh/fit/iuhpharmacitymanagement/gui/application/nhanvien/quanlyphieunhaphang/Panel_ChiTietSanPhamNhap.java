@@ -46,7 +46,9 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
     private List<LoHang> danhSachLoHang;
     private LoHang loHangDaChon = null;
     private String tenLoHangTuExcel = null; // Lưu tên lô từ Excel
-    private String soDienThoaiNCCTuExcel = null; // Lưu SĐT NCC từ Excel
+    // Giữ lại cho future use khi cần sử dụng SĐT NCC từ Excel
+    @SuppressWarnings("unused")
+    private String soDienThoaiNCCTuExcel = null;
 
     // Thông tin lô mới sẽ tạo
     private String tenLoMoi = null;
@@ -88,96 +90,60 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
      */
     public Panel_ChiTietSanPhamNhap(SanPham sanPham, int soLuong, double donGiaNhap, Date hanDung, String tenLoHang,
             String soDienThoaiNCC) throws Exception {
-        System.out.println("→→ Panel Constructor: " + sanPham.getTenSanPham() + " | SL=" + soLuong + " | TênLô="
-                + tenLoHang + " | SĐT NCC=" + soDienThoaiNCC);
-
         this.sanPham = sanPham;
         this.currencyFormat = new DecimalFormat("#,###");
         this.dateFormat = new SimpleDateFormat("dd/MM/yyyy");
         this.loHangBUS = new LoHangBUS();
         this.sanPhamDAO = new SanPhamDAO();
-        this.tenLoHangTuExcel = tenLoHang; // Lưu tên lô từ Excel
-        this.soDienThoaiNCCTuExcel = soDienThoaiNCC; // Lưu SĐT NCC từ Excel
+        this.tenLoHangTuExcel = tenLoHang;
+        this.soDienThoaiNCCTuExcel = soDienThoaiNCC;
 
-        // Lưu dữ liệu từ Excel để tự động điền vào form tạo lô mới
         this.hsdTuExcel = hanDung;
         this.soLuongTuExcel = soLuong;
-        this.donGiaTuExcel = donGiaNhap; // Lưu đơn giá từ Excel
+        this.donGiaTuExcel = donGiaNhap;
 
         try {
             initComponents();
             loadSanPhamData();
             loadLoHangData();
 
-            // Set các giá trị từ Excel
             spinnerSoLuong.setValue(soLuong);
             txtDonGia.setText(currencyFormat.format(donGiaNhap) + " đ");
-
-            // 🔍 TÌM LÔ HÀNG THEO SỐ ĐĂNG KÝ + HẠN SỬ DỤNG + SĐT NCC
-            System.out.println("📅 [PANEL] Date từ Excel: " + hanDung);
-            System.out.println("📅 [PANEL] Date format: " + dateFormat.format(hanDung));
-            System.out.println("📞 [PANEL] SĐT NCC từ Excel: " + soDienThoaiNCC);
 
             LocalDate hsd = hanDung.toInstant()
                     .atZone(java.time.ZoneId.systemDefault())
                     .toLocalDate();
 
-            System.out.println("📅 [PANEL] LocalDate sau convert: " + hsd);
-
-            // ═══════════════════════════════════════════════════════════════════
-            // KIỂM TRA SỐ ĐIỆN THOẠI NCC
-            // ═══════════════════════════════════════════════════════════════════
             if (soDienThoaiNCC != null && !soDienThoaiNCC.trim().isEmpty()) {
-                // Lấy danh sách SĐT của các NCC đã nhập sản phẩm này
                 List<String> danhSachSDT = sanPhamDAO.getSoDienThoaiNCCBySoDangKy(sanPham.getSoDangKy());
 
                 if (!danhSachSDT.isEmpty() && !danhSachSDT.contains(soDienThoaiNCC.trim())) {
-                    // ❌ SĐT NCC KHÔNG KHỚP → BÁO LỖI
                     String errorMsg = "Sản phẩm '" + sanPham.getTenSanPham() +
                             "' có số đăng ký " + sanPham.getSoDangKy() +
                             " không thể nhập từ nhiều nhà cung cấp khác nhau";
-
-                    System.out.println("❌ [PANEL] " + errorMsg);
                     throw new Exception(errorMsg);
                 }
             }
 
-            // ═══════════════════════════════════════════════════════════════════
-            // TÌM LÔ HÀNG THEO SỐ ĐĂNG KÝ + HẠN SỬ DỤNG
-            // ═══════════════════════════════════════════════════════════════════
             Optional<LoHang> loTrung = loHangBUS.timLoHangTheoSoDangKyVaHanSuDung(
                     sanPham.getSoDangKy(),
                     hsd);
 
             if (loTrung.isPresent()) {
-                // ✅ TÌM THẤY LÔ TRÙNG → TỰ ĐỘNG CHỌN
                 loHangDaChon = loTrung.get();
-
-                // ⚠️ QUAN TRỌNG: Cập nhật lại sanPham từ loHangDaChon để có đầy đủ thông tin
-                // (bao gồm hinhAnh từ JOIN)
                 if (loHangDaChon.getSanPham() != null) {
                     this.sanPham = loHangDaChon.getSanPham();
-                    System.out.println(
-                            "✅ [Panel] Đã cập nhật sanPham từ loHangDaChon, hinhAnh = " + this.sanPham.getHinhAnh());
-                    // Load lại dữ liệu sản phẩm (bao gồm hình ảnh)
                     loadSanPhamData();
                 }
 
                 updateLoInfo(); // Hiển thị thẻ lô
             } else {
-                // ❌ KHÔNG TÌM THẤY LÔ → HIỂN thị nút "Chọn lô" (dữ liệu Excel sẽ tự động điền
-                // vào form)
-                System.out.println("→→ Không tìm thấy lô trùng, hiển thị nút 'Chọn lô' với dữ liệu từ Excel");
-                // Không tự động tạo lô, để user bấm "Chọn lô" và chọn tab "Tạo lô mới"
-                // Dữ liệu từ Excel (tenLoHangTuExcel, hsdTuExcel, soLuongTuExcel) đã được lưu
-                // và sẽ tự động điền vào form khi mở dialog
+                // Không tìm thấy lô trùng: dữ liệu Excel sẽ được điền sẵn khi chọn "Tạo lô mới"
             }
 
-            // Cập nhật tổng tiền
             updateTongTien();
         } catch (Exception e) {
-            System.out.println("✗✗ LỖI khởi tạo panel: " + e.getMessage());
-            throw e; // ⚠️ THROW LẠI để method gọi bắt được
+            throw e;
         }
     }
 
@@ -185,11 +151,9 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
      * Cập nhật hiển thị: Nút "Chọn lô" → Thẻ lô đẹp
      */
     private void updateLoInfo() {
-        // Clear panel lô
         pnLo.removeAll();
 
         if (loHangDaChon != null || (tenLoMoi != null && hsdLoMoi != null)) {
-            // Đã chọn lô → Hiển thị THẺ LÔ đẹp
             pnTheLo = new javax.swing.JPanel();
             pnTheLo.setBackground(java.awt.Color.WHITE);
             pnTheLo.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204)));
@@ -201,26 +165,22 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
             int tonKho = 0;
 
             if (loHangDaChon != null) {
-                // Lô cũ: hiển thị tồn kho của lô đó
                 tenLo = loHangDaChon.getTenLoHang();
                 hsd = loHangDaChon.getHanSuDung().format(
                         java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"));
-                tonKho = loHangDaChon.getTonKho(); // Tồn kho của lô này
+                tonKho = loHangDaChon.getTonKho();
             } else {
-                // Lô mới: hiển thị tồn kho = 0
                 tenLo = tenLoMoi + " (mới)";
                 hsd = dateFormat.format(hsdLoMoi);
-                tonKho = 0; // Lô mới chưa có tồn
+                tonKho = 0;
             }
 
-            // Tên lô
             lblTheLo_TenLo = new javax.swing.JLabel("Lô: " + tenLo);
             lblTheLo_TenLo.setFont(new java.awt.Font("Segoe UI", 1, 13));
             lblTheLo_TenLo.setForeground(new java.awt.Color(51, 51, 51));
             lblTheLo_TenLo.setAlignmentX(Component.LEFT_ALIGNMENT);
             lblTheLo_TenLo.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 4, 8));
 
-            // HSD
             lblTheLo_HSD = new javax.swing.JLabel("HSD: " + hsd);
             lblTheLo_HSD.setFont(new java.awt.Font("Segoe UI", 0, 12));
             lblTheLo_HSD.setForeground(new java.awt.Color(102, 102, 102));
@@ -230,7 +190,6 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
             pnTheLo.add(lblTheLo_TenLo);
             pnTheLo.add(lblTheLo_HSD);
 
-            // Tồn kho (luôn hiển thị)
             lblTheLo_TonKho = new javax.swing.JLabel("Tồn: " + tonKho);
             lblTheLo_TonKho.setFont(new java.awt.Font("Segoe UI", 0, 12));
             lblTheLo_TonKho.setForeground(new java.awt.Color(34, 139, 34));
@@ -240,7 +199,6 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
 
             pnLo.add(pnTheLo);
         } else {
-            // Chưa chọn → Hiển thị NÚT "Chọn lô"
             btnChonLo = new javax.swing.JButton("Chọn lô");
             btnChonLo.setFont(new java.awt.Font("Segoe UI", 0, 13));
             btnChonLo.setPreferredSize(new java.awt.Dimension(120, 40));
@@ -257,49 +215,34 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
 
     private void loadSanPhamData() {
         if (sanPham != null) {
-            // Set tên sản phẩm
             lblTenSP.setText(sanPham.getTenSanPham());
 
-            // Set đơn giá nhập: Nếu có đơn giá từ Excel thì dùng, không thì mặc định = 0
             if (donGiaTuExcel != null && donGiaTuExcel > 0) {
                 txtDonGia.setText(currencyFormat.format(donGiaTuExcel) + " đ");
             } else {
                 txtDonGia.setText("0 đ");
             }
 
-            // Set tổng tiền ban đầu
             updateTongTien();
 
-            // Load hình ảnh nếu có
             if (sanPham.getHinhAnh() != null && !sanPham.getHinhAnh().isEmpty()) {
                 try {
                     ImageIcon icon = null;
-                    String hinhAnh = sanPham.getHinhAnh().trim(); // Loại bỏ khoảng trắng thừa
+                    String hinhAnh = sanPham.getHinhAnh().trim();
 
-                    System.out.println("🔍 [Panel_ChiTietSanPhamNhap] Đang load hình ảnh: '" + hinhAnh + "'");
-                    System.out.println(
-                            "🔍 [Panel_ChiTietSanPhamNhap] Working directory: " + System.getProperty("user.dir"));
-
-                    // 1. Thử load từ đường dẫn tuyệt đối (nếu file được chọn từ JFileChooser)
                     java.io.File imageFile = new java.io.File(hinhAnh);
                     if (imageFile.exists() && imageFile.isFile()) {
                         icon = new ImageIcon(hinhAnh);
-                        System.out.println("✅ Load hình từ đường dẫn tuyệt đối: " + hinhAnh);
                     } else {
-                        // 2. Thử load từ resources (khi chạy từ JAR)
                         java.net.URL imgURL = getClass().getResource("/img/" + hinhAnh);
                         if (imgURL != null) {
                             icon = new ImageIcon(imgURL);
-                            System.out.println("✅ Load hình từ resources: /img/" + hinhAnh);
                         } else {
-                            // 3. Thử load từ file system với đường dẫn tương đối (khi chạy từ IDE)
                             String imagePath = "src/main/resources/img/" + hinhAnh;
                             java.io.File fileSystemImage = new java.io.File(imagePath);
                             if (fileSystemImage.exists() && fileSystemImage.isFile()) {
                                 icon = new ImageIcon(imagePath);
-                                System.out.println("✅ Load hình từ file system (relative): " + imagePath);
                             } else {
-                                // 4. Thử load từ file system với đường dẫn tuyệt đối từ project root
                                 String projectRoot = System.getProperty("user.dir");
                                 String absoluteImagePath = projectRoot + java.io.File.separator + "src"
                                         + java.io.File.separator + "main" + java.io.File.separator + "resources"
@@ -307,23 +250,13 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
                                 java.io.File absoluteFile = new java.io.File(absoluteImagePath);
                                 if (absoluteFile.exists() && absoluteFile.isFile()) {
                                     icon = new ImageIcon(absoluteImagePath);
-                                    System.out.println("✅ Load hình từ file system (absolute): " + absoluteImagePath);
                                 } else {
-                                    // 5. Thử load từ target/classes/img/ (khi chạy từ IDE với Maven)
                                     String targetImagePath = projectRoot + java.io.File.separator + "target"
                                             + java.io.File.separator + "classes" + java.io.File.separator + "img"
                                             + java.io.File.separator + hinhAnh;
                                     java.io.File targetFile = new java.io.File(targetImagePath);
                                     if (targetFile.exists() && targetFile.isFile()) {
                                         icon = new ImageIcon(targetImagePath);
-                                        System.out.println("✅ Load hình từ target/classes/img/: " + targetImagePath);
-                                    } else {
-                                        System.err.println("❌ Không tìm thấy hình ảnh ở bất kỳ đâu:");
-                                        System.err.println("   - Đường dẫn tuyệt đối: " + hinhAnh);
-                                        System.err.println("   - Resources: /img/" + hinhAnh);
-                                        System.err.println("   - File system (relative): " + imagePath);
-                                        System.err.println("   - File system (absolute): " + absoluteImagePath);
-                                        System.err.println("   - Target/classes: " + targetImagePath);
                                     }
                                 }
                             }
@@ -331,24 +264,17 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
                     }
 
                     if (icon != null && icon.getIconWidth() > 0) {
-                        // Scale image to fit label
                         java.awt.Image img = icon.getImage().getScaledInstance(100, 100, java.awt.Image.SCALE_SMOOTH);
                         lblHinh.setIcon(new ImageIcon(img));
                         lblHinh.setText("");
-                        System.out.println("✅ Đã hiển thị hình ảnh thành công!");
                     } else {
                         lblHinh.setText("IMG");
-                        System.err.println("❌ Icon null hoặc không hợp lệ (width="
-                                + (icon != null ? icon.getIconWidth() : "null") + ")");
                     }
                 } catch (Exception e) {
                     lblHinh.setText("IMG");
-                    System.err.println("❌ Lỗi khi load hình ảnh: " + sanPham.getHinhAnh() + " - " + e.getMessage());
-                    e.printStackTrace();
                 }
             } else {
                 lblHinh.setText("IMG");
-                System.out.println("⚠️ Sản phẩm không có hình ảnh (hinhAnh = null hoặc empty)");
             }
         }
     }

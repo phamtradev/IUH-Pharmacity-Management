@@ -25,6 +25,7 @@ import javax.swing.JTable;
 import javax.swing.UIManager;
 import javax.swing.ImageIcon;
 import raven.toast.Notifications;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.HangHongDAO;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
 
 /**
@@ -46,13 +47,16 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
     }
 
     private void setUIManager() {
-        txtEmp.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Mã phiếu xuất hủy");
+        txtEmp.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập hoặc quét mã phiếu xuất hủy");
         UIManager.put("Button.arc", 10);
         jDateFrom.setDate(Date.valueOf(LocalDate.now()));
         jDateTo.setDate(Date.valueOf(LocalDate.now()));
 
         // Style cho button Xem chi tiết - màu xanh nước biển, kích thước nhỏ
         ButtonStyles.apply(btnView, ButtonStyles.Type.INFO);
+        
+        // Setup barcode scanner cho textfield tìm kiếm
+        setupBarcodeScanner();
     }
 
     private void fillTable() {
@@ -65,9 +69,41 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         fillContent(hangHongs);
     }
 
+    private List<HangHong> sortNewToOld(List<HangHong> hangHongs) {
+        List<HangHong> hh = new HangHongDAO().findAll();
+        hh.sort((a, b) -> {
+            String maA = a.getMaHangHong().substring(2); // DDMMYYYYNNNN
+            String maB = b.getMaHangHong().substring(2);
+
+            int ngayA = Integer.parseInt(maA.substring(0, 2));
+            int thangA = Integer.parseInt(maA.substring(2, 4));
+            int namA = Integer.parseInt(maA.substring(4, 8));
+            int soCuoiA = Integer.parseInt(maA.substring(8));
+
+            int ngayB = Integer.parseInt(maB.substring(0, 2));
+            int thangB = Integer.parseInt(maB.substring(2, 4));
+            int namB = Integer.parseInt(maB.substring(4, 8));
+            int soCuoiB = Integer.parseInt(maB.substring(8));
+
+            if (namA != namB) {
+                return Integer.compare(namA, namB);
+            }
+            if (thangA != thangB) {
+                return Integer.compare(thangA, thangB);
+            }
+            if (ngayA != ngayB) {
+                return Integer.compare(ngayA, ngayB);
+            }
+
+            return Integer.compare(soCuoiB, soCuoiA);
+        });
+        return hh;
+    }
+
     private void fillContent(List<HangHong> hangHongs) {
         tableDesign.getModelTable().setRowCount(0);
-        for (HangHong hangHong : hangHongs) {
+        List<HangHong> hh = sortNewToOld(hangHongs);
+        for (HangHong hangHong : hh) {
             String tenNV = hangHong.getNhanVien() != null ? hangHong.getNhanVien().getMaNhanVien() : "N/A";
 
             tableDesign.getModelTable().addRow(new Object[]{
@@ -117,6 +153,182 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
     private String formatToVND(double amount) {
         NumberFormat formatter = NumberFormat.getCurrencyInstance(new Locale("vi", "VN"));
         return formatter.format(amount);
+    }
+
+    /**
+     * Thiết lập barcode scanner listener cho textfield tìm kiếm mã phiếu xuất hủy
+     * Hỗ trợ cả quét barcode (tự động xử lý) và nhập thủ công (xử lý khi nhấn Enter)
+     */
+    private void setupBarcodeScanner() {
+        // Biến để theo dõi trạng thái xử lý (tránh xử lý nhiều lần)
+        final java.util.concurrent.atomic.AtomicBoolean isProcessing = new java.util.concurrent.atomic.AtomicBoolean(false);
+        final java.util.concurrent.atomic.AtomicBoolean isClearing = new java.util.concurrent.atomic.AtomicBoolean(false);
+        final javax.swing.Timer[] barcodeTimer = new javax.swing.Timer[1]; // Mảng để có thể thay đổi trong lambda
+        
+        // Theo dõi thời gian giữa các lần gõ để phân biệt quét vs nhập thủ công
+        final long[] lastKeyTime = new long[1];
+        lastKeyTime[0] = System.currentTimeMillis();
+        final int[] keyCount = new int[1];
+        keyCount[0] = 0;
+        final long[] firstKeyTime = new long[1];
+        firstKeyTime[0] = 0;
+
+        // KeyListener để theo dõi tốc độ gõ phím
+        txtEmp.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                long currentTime = System.currentTimeMillis();
+                long timeSinceLastKey = currentTime - lastKeyTime[0];
+                
+                // Ghi nhận thời gian ký tự đầu tiên
+                if (firstKeyTime[0] == 0) {
+                    firstKeyTime[0] = currentTime;
+                }
+                
+                // Nếu khoảng cách giữa các lần gõ < 50ms → có thể là quét barcode
+                if (timeSinceLastKey < 50) {
+                    keyCount[0]++;
+                } else if (timeSinceLastKey > 200) {
+                    // Nếu khoảng cách > 200ms → rõ ràng là nhập thủ công, reset counter
+                    keyCount[0] = 1;
+                    firstKeyTime[0] = currentTime;
+                } else {
+                    // Khoảng cách 50-200ms → có thể là gõ nhanh, tăng counter
+                    keyCount[0]++;
+                }
+                
+                lastKeyTime[0] = currentTime;
+            }
+            
+            @Override
+            public void keyPressed(java.awt.event.KeyEvent e) {
+                // Khi nhấn Enter, tự động tìm kiếm (nhập thủ công)
+                if (e.getKeyCode() == java.awt.event.KeyEvent.VK_ENTER) {
+                    btnSearchActionPerformed(null);
+                }
+            }
+        });
+
+        // DocumentListener để bắt mọi thay đổi text
+        txtEmp.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            private void handleTextChange() {
+                // Bỏ qua nếu đang clear textfield
+                if (isClearing.get()) {
+                    return;
+                }
+                
+                // Hủy timer cũ nếu có
+                if (barcodeTimer[0] != null && barcodeTimer[0].isRunning()) {
+                    barcodeTimer[0].stop();
+                }
+
+                // Tạo timer mới: đợi 200ms không có thay đổi → kiểm tra xem có phải quét không
+                barcodeTimer[0] = new javax.swing.Timer(200, evt -> {
+                    String scannedText = txtEmp.getText().trim();
+                    
+                    // Loại bỏ ký tự đặc biệt từ barcode scanner (\r, \n, \t)
+                    scannedText = scannedText.replaceAll("[\\r\\n\\t]", "");
+                    
+                    // Cập nhật lại textfield với giá trị đã làm sạch (nếu cần)
+                    if (!scannedText.equals(txtEmp.getText().trim()) && !isClearing.get()) {
+                        isClearing.set(true);
+                        txtEmp.setText(scannedText);
+                        isClearing.set(false);
+                    }
+
+                    // Phân biệt quét barcode vs nhập thủ công:
+                    // - Quét barcode: nhiều ký tự (>= 5) được nhập rất nhanh (keyCount >= 5 và thời gian tổng < 500ms)
+                    // - Nhập thủ công: ít ký tự hoặc gõ chậm → không tự động xử lý, chờ Enter
+                    long totalTime = firstKeyTime[0] > 0 ? (System.currentTimeMillis() - firstKeyTime[0]) : 0;
+                    boolean isBarcodeScan = scannedText.length() >= 5 && keyCount[0] >= 5 && totalTime < 500;
+                    
+                    if (!scannedText.isEmpty() && !isProcessing.get() && !isClearing.get() && isBarcodeScan) {
+                        isProcessing.set(true);
+                        // Tự động tìm kiếm khi quét barcode
+                        performSearch(scannedText);
+                        isProcessing.set(false);
+
+                        // Clear textfield sau khi xử lý để sẵn sàng quét tiếp
+                        javax.swing.SwingUtilities.invokeLater(() -> {
+                            javax.swing.Timer clearTimer = new javax.swing.Timer(500, e -> {
+                                isClearing.set(true);
+                                txtEmp.setText("");
+                                isClearing.set(false);
+                                keyCount[0] = 0; // Reset counter
+                                firstKeyTime[0] = 0; // Reset first key time
+                            });
+                            clearTimer.setRepeats(false);
+                            clearTimer.start();
+                        });
+                    }
+                    
+                    // Reset counter sau một khoảng thời gian (nếu không phải quét)
+                    if (!isBarcodeScan) {
+                        keyCount[0] = 0;
+                        firstKeyTime[0] = 0;
+                    }
+                });
+                barcodeTimer[0].setRepeats(false);
+                barcodeTimer[0].start();
+            }
+
+            @Override
+            public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                handleTextChange();
+            }
+
+            @Override
+            public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                // Khi xóa text, reset counter (người dùng đang chỉnh sửa)
+                keyCount[0] = 0;
+                firstKeyTime[0] = 0;
+                lastKeyTime[0] = System.currentTimeMillis();
+            }
+
+            @Override
+            public void changedUpdate(javax.swing.event.DocumentEvent e) {
+                handleTextChange();
+            }
+        });
+    }
+    
+    /**
+     * Thực hiện tìm kiếm với mã phiếu đã quét/nhập
+     */
+    private void performSearch(String maPhieu) {
+        // Lấy thông tin từ form
+        java.util.Date date1 = jDateFrom.getDate();
+        java.util.Date date2 = jDateTo.getDate();
+
+        if (date1 == null || date2 == null) {
+            Notifications.getInstance().show(Notifications.Type.WARNING, "Vui lòng chọn khoảng thời gian!");
+            return;
+        }
+
+        LocalDate localDateStart = date1.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate localDateEnd = date2.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+
+        if (localDateStart.isAfter(localDateEnd)) {
+            Notifications.getInstance().show(Notifications.Type.WARNING, "Ngày bắt đầu phải trước ngày kết thúc!");
+            return;
+        }
+
+        List<HangHong> hangHongs = searchHangHong(localDateStart, localDateEnd, maPhieu);
+        fillContent(hangHongs);
+
+        if (hangHongs.isEmpty()) {
+            Notifications.getInstance().show(Notifications.Type.INFO, "Không tìm thấy phiếu xuất hủy với mã: " + maPhieu);
+        } else {
+            Notifications.getInstance().show(Notifications.Type.SUCCESS, "Tìm thấy " + hangHongs.size() + " phiếu xuất hủy!");
+            
+            // Tự động chọn dòng đầu tiên nếu có kết quả
+            if (hangHongs.size() == 1 && tableDesign != null && tableDesign.getTable() != null) {
+                javax.swing.SwingUtilities.invokeLater(() -> {
+                    tableDesign.getTable().setRowSelectionInterval(0, 0);
+                    tableDesign.getTable().scrollRectToVisible(tableDesign.getTable().getCellRect(0, 0, true));
+                });
+            }
+        }
     }
 
     /**
@@ -195,8 +407,8 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         });
 
         txtEmp.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        txtEmp.setMinimumSize(new java.awt.Dimension(300, 40));
-        txtEmp.setPreferredSize(new java.awt.Dimension(300, 40));
+        txtEmp.setMinimumSize(new java.awt.Dimension(350, 40));
+        txtEmp.setPreferredSize(new java.awt.Dimension(350, 40));
 
         jDateTo.setBackground(new java.awt.Color(255, 255, 255));
         jDateTo.setDateFormatString("dd/MM/yyyy");
@@ -255,7 +467,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jDateTo, javax.swing.GroupLayout.PREFERRED_SIZE, 210, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(txtEmp, javax.swing.GroupLayout.PREFERRED_SIZE, 210, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(txtEmp, javax.swing.GroupLayout.PREFERRED_SIZE, 350, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnSearch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -360,34 +572,34 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
             Notifications.getInstance().show(Notifications.Type.WARNING, "Hãy chọn phiếu xuất hủy cần xem chi tiết!");
             return;
         }
-        
+
         String maHH = (String) table.getValueAt(selectedRow, 0);
 
         HangHong hangHong = hangHongBUS.layHangHongTheoMa(maHH);
-        
+
         if (hangHong == null) {
             Notifications.getInstance().show(Notifications.Type.ERROR, "Không tìm thấy phiếu xuất hủy với mã: " + maHH);
             return;
         }
-        
+
         List<ChiTietHangHong> chiTietHangHongs = chiTietHangHongBUS.layChiTietTheoHangHong(hangHong);
-        
+
         if (chiTietHangHongs == null || chiTietHangHongs.isEmpty()) {
             Notifications.getInstance().show(Notifications.Type.WARNING, "Phiếu xuất hủy không có chi tiết sản phẩm!");
             return;
         }
-        
+
         // Tạo header panel thông tin phiếu
         javax.swing.JPanel headerInfoPanel = createHeaderInfoPanel(hangHong);
-        
+
         // Sử dụng Map để cộng dồn các chi tiết CÙNG lô hàng VÀ CÙNG lý do
         // (KHÔNG gộp nếu khác lý do xuất hủy)
         Map<String, ChiTietHangHong> productMap = new HashMap<>();
 
         for (ChiTietHangHong chiTiet : chiTietHangHongs) {
             String maLoHang = chiTiet.getLoHang() != null ? chiTiet.getLoHang().getMaLoHang() : "N/A";
-            String lyDoXuatHuy = chiTiet.getLyDoXuatHuy() != null && !chiTiet.getLyDoXuatHuy().trim().isEmpty() 
-                                 ? chiTiet.getLyDoXuatHuy() : "N/A";
+            String lyDoXuatHuy = chiTiet.getLyDoXuatHuy() != null && !chiTiet.getLyDoXuatHuy().trim().isEmpty()
+                    ? chiTiet.getLyDoXuatHuy() : "N/A";
 
             // Key duy nhất: maLoHang + lyDoXuatHuy
             // → Chỉ gộp khi CÙNG lô hàng VÀ CÙNG lý do
@@ -415,7 +627,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
             public boolean isCellEditable(int row, int column) {
                 return false;
             }
-            
+
             @Override
             public Class<?> getColumnClass(int columnIndex) {
                 if (columnIndex == 1) { // Cột hình ảnh
@@ -424,14 +636,14 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
                 return Object.class;
             }
         };
-        
+
         // Thêm dữ liệu vào bảng
         int stt = 1;
         for (ChiTietHangHong chiTiet : productMap.values()) {
             if (chiTiet.getLoHang() != null && chiTiet.getLoHang().getSanPham() != null) {
                 LoHang loHang = chiTiet.getLoHang();
                 SanPham sp = loHang.getSanPham();
-                
+
                 // Load hình ảnh
                 ImageIcon imageIcon = null;
                 String hinhAnh = sp.getHinhAnh();
@@ -452,7 +664,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
                         System.err.println("Lỗi khi load hình ảnh: " + hinhAnh + " - " + e.getMessage());
                     }
                 }
-                
+
                 String tenSP = sp.getTenSanPham();
                 String maLoHang = loHang.getMaLoHang();
                 String hsd = loHang.getHanSuDung() != null ? loHang.getHanSuDung().toString() : "N/A";
@@ -460,13 +672,13 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
                 int soLuong = chiTiet.getSoLuong();
                 String donGia = formatToVND(chiTiet.getDonGia());
                 String thanhTien = formatToVND(chiTiet.getThanhTien());
-                String lyDo = chiTiet.getLyDoXuatHuy() != null && !chiTiet.getLyDoXuatHuy().trim().isEmpty() 
-                              ? chiTiet.getLyDoXuatHuy() : "N/A";
-                
+                String lyDo = chiTiet.getLyDoXuatHuy() != null && !chiTiet.getLyDoXuatHuy().trim().isEmpty()
+                        ? chiTiet.getLyDoXuatHuy() : "N/A";
+
                 tableModel.addRow(new Object[]{stt++, imageIcon, tenSP, maLoHang, hsd, donVi, soLuong, donGia, thanhTien, lyDo});
             }
         }
-        
+
         // Tạo JTable
         javax.swing.JTable tableDetail = new javax.swing.JTable(tableModel);
         tableDetail.setRowHeight(70);
@@ -476,10 +688,10 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         tableDetail.setGridColor(new java.awt.Color(220, 220, 220));
         tableDetail.setSelectionBackground(new java.awt.Color(173, 216, 230)); // Light Blue
         tableDetail.setSelectionForeground(new java.awt.Color(0, 0, 0)); // Black text
-        
+
         // Thiết lập renderer cho cột hình ảnh
         tableDetail.getColumnModel().getColumn(1).setCellRenderer(new vn.edu.iuh.fit.iuhpharmacitymanagement.common.ImageTableCellRenderer());
-        
+
         // Thiết lập độ rộng cột
         tableDetail.getColumnModel().getColumn(0).setPreferredWidth(50);   // STT
         tableDetail.getColumnModel().getColumn(1).setPreferredWidth(80);   // Hình ảnh
@@ -491,23 +703,23 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         tableDetail.getColumnModel().getColumn(7).setPreferredWidth(100);  // Đơn giá
         tableDetail.getColumnModel().getColumn(8).setPreferredWidth(120);  // Thành tiền
         tableDetail.getColumnModel().getColumn(9).setPreferredWidth(150);  // Lý do
-        
+
         // Center align cho các cột số
         javax.swing.table.DefaultTableCellRenderer centerRenderer = new javax.swing.table.DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(javax.swing.JLabel.CENTER);
         tableDetail.getColumnModel().getColumn(0).setCellRenderer(centerRenderer);
         tableDetail.getColumnModel().getColumn(5).setCellRenderer(centerRenderer);
         tableDetail.getColumnModel().getColumn(6).setCellRenderer(centerRenderer);
-        
+
         // Right align cho các cột tiền
         javax.swing.table.DefaultTableCellRenderer rightRenderer = new javax.swing.table.DefaultTableCellRenderer();
         rightRenderer.setHorizontalAlignment(javax.swing.JLabel.RIGHT);
         tableDetail.getColumnModel().getColumn(7).setCellRenderer(rightRenderer);
         tableDetail.getColumnModel().getColumn(8).setCellRenderer(rightRenderer);
-        
+
         scrollTableDetail.setViewportView(tableDetail);
         scrollTableDetail.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        
+
         // Cập nhật jPanel1 với header và table
         jPanel1.removeAll();
         jPanel1.setLayout(new java.awt.BorderLayout());
@@ -516,10 +728,10 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         jPanel1.revalidate();
         jPanel1.repaint();
 
-            modalPurchaseOrderDetail.setLocationRelativeTo(null);
-            modalPurchaseOrderDetail.setVisible(true);
+        modalPurchaseOrderDetail.setLocationRelativeTo(null);
+        modalPurchaseOrderDetail.setVisible(true);
     }//GEN-LAST:event_btnViewActionPerformed
-    
+
     /**
      * Tạo panel thông tin phiếu xuất hủy cho dialog chi tiết
      */
@@ -527,43 +739,43 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         javax.swing.JPanel headerInfoPanel = new javax.swing.JPanel();
         headerInfoPanel.setBackground(new java.awt.Color(240, 248, 255)); // Alice Blue
         headerInfoPanel.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createMatteBorder(0, 0, 2, 0, new java.awt.Color(23, 162, 184)),
-            BorderFactory.createEmptyBorder(15, 20, 15, 20)
+                BorderFactory.createMatteBorder(0, 0, 2, 0, new java.awt.Color(23, 162, 184)),
+                BorderFactory.createEmptyBorder(15, 20, 15, 20)
         ));
         headerInfoPanel.setLayout(new java.awt.GridLayout(2, 2, 20, 10));
-        
+
         // Thông tin phiếu
         String maNV = hangHong.getNhanVien() != null ? hangHong.getNhanVien().getMaNhanVien() : "N/A";
         String tenNV = hangHong.getNhanVien() != null ? hangHong.getNhanVien().getTenNhanVien() : "N/A";
-        
+
         // Tạo các label thông tin
         headerInfoPanel.add(createInfoLabel("Mã phiếu xuất hủy:", hangHong.getMaHangHong()));
         headerInfoPanel.add(createInfoLabel("Ngày xuất hủy:", formatDate(hangHong.getNgayNhap())));
         headerInfoPanel.add(createInfoLabel("Nhân viên:", maNV + " - " + tenNV));
         headerInfoPanel.add(createInfoLabel("Tổng tiền:", formatToVND(hangHong.getThanhTien())));
-        
+
         return headerInfoPanel;
     }
-    
+
     /**
      * Tạo label thông tin với title và value
      */
     private javax.swing.JPanel createInfoLabel(String title, String value) {
         javax.swing.JPanel panel = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 5, 0));
         panel.setBackground(new java.awt.Color(240, 248, 255));
-        
+
         javax.swing.JLabel lblTitle = new javax.swing.JLabel(title);
         lblTitle.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 14));
-        
+
         javax.swing.JLabel lblValue = new javax.swing.JLabel(value);
         lblValue.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 14));
-        
+
         panel.add(lblTitle);
         panel.add(lblValue);
-        
+
         return panel;
     }
-    
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnSearch;
     private javax.swing.JButton btnView;

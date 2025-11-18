@@ -91,7 +91,6 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
                     }
                     
                     if (icon != null && icon.getIconWidth() > 0) {
-                        // Scale image to fit label
                         java.awt.Image img = icon.getImage().getScaledInstance(80, 80, java.awt.Image.SCALE_SMOOTH);
                         lblHinh.setIcon(new ImageIcon(img));
                         lblHinh.setText("");
@@ -100,7 +99,6 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
                     }
                 } catch (Exception e) {
                     lblHinh.setText("IMG");
-                    e.printStackTrace();
                 }
             } else {
                 lblHinh.setText("IMG");
@@ -301,18 +299,12 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
             return;
         }
         
-        // Xóa tất cả Panel_ChonLo cũ trong container
         containerLoHang.removeAll();
-        
-        System.out.println("🔍 [Panel_ChiTietSanPham] Cập nhật hiển thị " + mapLoHangVaSoLuong.size() + " lô:");
         
         // Thêm các Panel_ChonLo cho mỗi lô trong map
         for (java.util.Map.Entry<LoHang, Integer> entry : mapLoHangVaSoLuong.entrySet()) {
             LoHang loHang = entry.getKey();
             int soLuongLay = entry.getValue();
-            
-            // DEBUG
-            System.out.println("   - Lô " + loHang.getMaLoHang() + ": Lấy " + soLuongLay + "/" + loHang.getTonKho());
             
             Panel_ChonLo panel = new Panel_ChonLo();
             panel.setLoHang(loHang);
@@ -340,9 +332,6 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
                 containerLoHang.add(javax.swing.Box.createRigidArea(new java.awt.Dimension(0, 5)));
             }
         }
-        
-        System.out.println("   → Container có " + containerLoHang.getComponentCount() + " panels");
-        
         // Kiểm soát scrollbar: chỉ hiển thị khi có >= 2 lô
         if (mapLoHangVaSoLuong.size() >= 2) {
             scrollPaneLoHang.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
