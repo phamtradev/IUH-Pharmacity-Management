@@ -9,6 +9,7 @@ import java.awt.Color;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Image;
+import java.awt.Font;
 import java.awt.Window;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -38,6 +39,7 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
 
     private String currentAnhNhanVien;
     private static final Dimension CHANGE_PASSWORD_DIALOG_SIZE = new Dimension(700, 500);
+    private static final int INFO_ICON_SIZE = 20;
 
     /**
      * Creates new form ThongTinCoBanPanel
@@ -262,150 +264,159 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 15, 0);
         add(jSeparator1, gridBagConstraints);
 
+        pnlThongTin = new javax.swing.JPanel();
+        pnlThongTin.setOpaque(false);
+        pnlThongTin.setLayout(new java.awt.GridBagLayout());
+
         lblIconPhone.setText("conPhone");
         lblIconPhone.setPreferredSize(new java.awt.Dimension(30, 30));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 5);
-        add(lblIconPhone, gridBagConstraints);
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 6, 12);
+        pnlThongTin.add(lblIconPhone, gridBagConstraints);
 
         lblPhoneTitle.setText("phoneTitle");
-        lblPhoneTitle.setPreferredSize(new java.awt.Dimension(100, 30));
+        lblPhoneTitle.setPreferredSize(new java.awt.Dimension(120, 30));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 10);
-        add(lblPhoneTitle, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 6, 16);
+        pnlThongTin.add(lblPhoneTitle, gridBagConstraints);
 
         txtPhone.setText("txtPhone");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 0);
-        add(txtPhone, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 6, 0);
+        pnlThongTin.add(txtPhone, gridBagConstraints);
 
         lblIconEmail.setText("lblIconEmail");
         lblIconEmail.setPreferredSize(new java.awt.Dimension(30, 30));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 5);
-        add(lblIconEmail, gridBagConstraints);
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 6, 12);
+        pnlThongTin.add(lblIconEmail, gridBagConstraints);
 
         lblEmailTitle.setText("lblEmailTitle");
-        lblEmailTitle.setPreferredSize(new java.awt.Dimension(100, 30));
+        lblEmailTitle.setPreferredSize(new java.awt.Dimension(120, 30));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 10);
-        add(lblEmailTitle, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 6, 16);
+        pnlThongTin.add(lblEmailTitle, gridBagConstraints);
 
         txtEmail.setText("txtEmail");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 0);
-        add(txtEmail, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 6, 0);
+        pnlThongTin.add(txtEmail, gridBagConstraints);
 
         lblIconAddress.setText("lblIconAddress");
         lblIconAddress.setPreferredSize(new java.awt.Dimension(30, 30));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 5);
-        add(lblIconAddress, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 6, 12);
+        pnlThongTin.add(lblIconAddress, gridBagConstraints);
 
         lblAddressTitle.setText("lblAddressTitle");
-        lblAddressTitle.setPreferredSize(new java.awt.Dimension(100, 30));
+        lblAddressTitle.setPreferredSize(new java.awt.Dimension(120, 30));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 10);
-        add(lblAddressTitle, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 6, 16);
+        pnlThongTin.add(lblAddressTitle, gridBagConstraints);
 
         txtAddress.setEditable(false);
         txtAddress.setColumns(20);
         txtAddress.setLineWrap(true);
-        txtAddress.setRows(3);
+        txtAddress.setRows(2);
         txtAddress.setWrapStyleWord(true);
         scrAddress.setViewportView(txtAddress);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 0);
-        add(scrAddress, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        pnlThongTin.add(scrAddress, gridBagConstraints);
 
         lblIconCccd.setText("lblIconCccd");
         lblIconCccd.setPreferredSize(new java.awt.Dimension(30, 30));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 7;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 5);
-        add(lblIconCccd, gridBagConstraints);
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 4, 12);
+        pnlThongTin.add(lblIconCccd, gridBagConstraints);
 
         lblCccdTitle.setText("lblCccdTitle");
-        lblCccdTitle.setPreferredSize(new java.awt.Dimension(100, 30));
+        lblCccdTitle.setPreferredSize(new java.awt.Dimension(120, 30));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 10);
-        add(lblCccdTitle, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 4, 16);
+        pnlThongTin.add(lblCccdTitle, gridBagConstraints);
 
         txtCccd.setText("txtCccd");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 0);
-        add(txtCccd, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 4, 0);
+        pnlThongTin.add(txtCccd, gridBagConstraints);
 
         lblGenderIcon.setText("lblGenderIcon");
         lblGenderIcon.setPreferredSize(new java.awt.Dimension(30, 30));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 8;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 5);
-        add(lblGenderIcon, gridBagConstraints);
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 6, 12);
+        pnlThongTin.add(lblGenderIcon, gridBagConstraints);
 
         lblGenderTitle.setText("lblGenderTitle");
-        lblGenderTitle.setPreferredSize(new java.awt.Dimension(100, 30));
+        lblGenderTitle.setPreferredSize(new java.awt.Dimension(120, 30));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 10);
-        add(lblGenderTitle, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 6, 16);
+        pnlThongTin.add(lblGenderTitle, gridBagConstraints);
 
         lblGenderValue.setText("lblGenderValue");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 0);
-        add(lblGenderValue, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 6, 0);
+        pnlThongTin.add(lblGenderValue, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 0);
+        add(pnlThongTin, gridBagConstraints);
 
         btnDoiMatKhau.setText("Đổi mật khẩu");
         btnDoiMatKhau.addActionListener(new java.awt.event.ActionListener() {
@@ -415,7 +426,7 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.insets = new java.awt.Insets(20, 0, 0, 0);
         add(btnDoiMatKhau, gridBagConstraints);
@@ -470,9 +481,8 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
     private void styleComponents() {
         lblAvatar.setOpaque(true);
         lblAvatar.setPreferredSize(new Dimension(160, 160));
+        lblAvatar.setFont(lblAvatar.getFont().deriveFont(Font.BOLD, 48f));
         lblAvatar.putClientProperty(FlatClientProperties.STYLE, ""
-                + "arc: 80;"
-                + "font: 700 48;"
                 + "foreground: #1F1F1F;"
                 + "borderColor: #E0E0E0;"
                 + "borderWidth: 2;"
@@ -892,6 +902,7 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
     private javax.swing.JLabel lblTenNV;
     private javax.swing.JPanel pnlDoiMatKhau;
     private javax.swing.JPanel pnlNut;
+    private javax.swing.JPanel pnlThongTin;
     private javax.swing.JScrollPane scrAddress;
     private javax.swing.JTextArea txtAddress;
     private javax.swing.JTextField txtEmail;
