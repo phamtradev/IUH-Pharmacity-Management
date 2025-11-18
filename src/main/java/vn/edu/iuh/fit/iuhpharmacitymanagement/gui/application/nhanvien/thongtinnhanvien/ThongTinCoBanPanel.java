@@ -9,6 +9,7 @@ import javax.swing.SwingUtilities;
 import raven.toast.Notifications;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.TaiKhoanDAO;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhanVien;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.TaiKhoan;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.session.SessionManager;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.util.PasswordUtil;
 
@@ -100,6 +101,16 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
 
         txtMkCu.setMinimumSize(new java.awt.Dimension(300, 22));
         txtMkCu.setPreferredSize(new java.awt.Dimension(64, 40));
+        txtMkCu.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                txtMkCuFocusLost(evt);
+            }
+        });
+        txtMkCu.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                txtMkCuMouseExited(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -118,6 +129,11 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
         pnlDoiMatKhau.add(lblNewPassTitle, gridBagConstraints);
 
         txtMkMoi.setPreferredSize(new java.awt.Dimension(300, 40));
+        txtMkMoi.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                txtMkMoiFocusLost(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -136,6 +152,11 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
         pnlDoiMatKhau.add(lblConfirmPassTitle, gridBagConstraints);
 
         txtXacNhanMkMoi.setPreferredSize(new java.awt.Dimension(300, 40));
+        txtXacNhanMkMoi.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                txtXacNhanMkMoiFocusLost(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
@@ -503,61 +524,105 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
 
     private void btnXNDoiMatKhauActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnXNDoiMatKhauActionPerformed
         javax.swing.JFrame parentFrame = (javax.swing.JFrame) SwingUtilities.getWindowAncestor(this);
-
         NhanVien nv = SessionManager.getInstance().getCurrentUser();
-
-        //chk o day chua chk dc
-        if (String.valueOf(txtMkCu.getPassword()).trim().isBlank()) {
+        if (String.valueOf(txtMkCu.getPassword()).length() > 0 && String.valueOf(txtMkMoi.getPassword()).length() > 0 && String.valueOf(txtXacNhanMkMoi.getPassword()).length() > 0) {
+            if (!String.valueOf(txtXacNhanMkMoi.getPassword()).equalsIgnoreCase(String.valueOf(txtMkMoi.getPassword()))) {
+                Notifications.getInstance().setJFrame(parentFrame);
+                Notifications.getInstance().show(Notifications.Type.ERROR, "Mật khẩu xác nhận chưa trùng khớp!");
+                txtMkMoi.putClientProperty("JComponent.outline", "error");
+                txtXacNhanMkMoi.requestFocus();
+                return;
+            }
+            if (new TaiKhoanDAO().resetMatKhau(nv.getMaNhanVien().toLowerCase(), String.valueOf(txtMkMoi.getPassword()))) {
+                Notifications.getInstance().setJFrame(parentFrame);
+                Notifications.getInstance().show(Notifications.Type.SUCCESS, "Cập nhật mật khẩu thành công!");
+                jdiaDoiPass.dispose();
+            }
+        } else {
             Notifications.getInstance().setJFrame(parentFrame);
-            Notifications.getInstance().show(Notifications.Type.ERROR, "Vui lòng nhập mật khẩu cũ!");
-            txtMkCu.requestFocus();
+            Notifications.getInstance().show(Notifications.Type.ERROR, "Vui lòng nhập đầy đủ thông tin!");
             return;
         }
-       
+
+
+    }//GEN-LAST:event_btnXNDoiMatKhauActionPerformed
+
+    private void txtMkCuMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_txtMkCuMouseExited
+//        javax.swing.JFrame parentFrame = (javax.swing.JFrame) SwingUtilities.getWindowAncestor(this);
+//        String maNhanVien = SessionManager.getInstance().getCurrentUser().getMaNhanVien().toLowerCase();
+//        TaiKhoan tk = new TaiKhoanDAO().findById(maNhanVien).get();
+//        if (!String.valueOf(txtMkCu.getPassword()).equalsIgnoreCase(maNhanVien)) {
+//            Notifications.getInstance().setJFrame(parentFrame);
+//            Notifications.getInstance().show(Notifications.Type.ERROR, "Mật khẩu cũ không đúng!");
+//            //txtMkCu.requestFocus();
+//            return;
+//        }
+    }//GEN-LAST:event_txtMkCuMouseExited
+
+    private void txtMkCuFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtMkCuFocusLost
+        javax.swing.JFrame parentFrame = (javax.swing.JFrame) SwingUtilities.getWindowAncestor(this);
+
+        String maNhanVien = SessionManager.getInstance().getCurrentUser().getMaNhanVien().toLowerCase();
+        TaiKhoan tk = new TaiKhoanDAO().findById(maNhanVien).get();
+
+        if (String.valueOf(txtMkCu.getPassword()).length() == 0) {
+            Notifications.getInstance().setJFrame(parentFrame);
+            Notifications.getInstance().show(Notifications.Type.ERROR, "Hãy nhập mật khẩu cũ!");
+            txtMkCu.putClientProperty("JComponent.outline", "error");
+            return;
+        }
+        NhanVien nv = SessionManager.getInstance().getCurrentUser();
         if (!PasswordUtil.verify(String.valueOf(txtMkCu.getPassword()), new TaiKhoanDAO()
                 .findPassByTenDangNhap(nv.getMaNhanVien().toLowerCase()).get())) {
             Notifications.getInstance().setJFrame(parentFrame);
             Notifications.getInstance().show(Notifications.Type.ERROR, "Mật khẩu cũ không chính xác!");
-            txtMkCu.requestFocus();
+            //txtMkCu.requestFocus();
+            txtMkCu.putClientProperty("JComponent.outline", "error");
             return;
         }
+        txtMkCu.putClientProperty("JComponent.outline", "success");
+    }//GEN-LAST:event_txtMkCuFocusLost
+
+    private void txtMkMoiFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtMkMoiFocusLost
+        javax.swing.JFrame parentFrame = (javax.swing.JFrame) SwingUtilities.getWindowAncestor(this);
         if (String.valueOf(txtMkMoi.getPassword()).trim().isBlank()) {
             Notifications.getInstance().setJFrame(parentFrame);
             Notifications.getInstance().show(Notifications.Type.ERROR, "Vui lòng nhập mật khẩu mới!");
-            txtMkMoi.requestFocus();
+            //txtMkMoi.requestFocus();
+            txtMkMoi.putClientProperty("JComponent.outline", "error");
             return;
         }
-         //o entity taikhoan
+        //o entity taikhoan
         String MAT_KHAU_SAI = "Mật khẩu phải từ 6 ký tự trở lên, có ít nhất 1 chữ số và 1 ký tự đặc biệt (@#$^*)";
         String REGEX_PASSWORD = "^(?=.*[0-9])(?=.*[@#$^*]).{6,}$";
         if (!String.valueOf(txtMkMoi.getPassword()).matches(REGEX_PASSWORD)) {
             Notifications.getInstance().setJFrame(parentFrame);
             Notifications.getInstance().show(Notifications.Type.ERROR, MAT_KHAU_SAI);
-            txtMkMoi.requestFocus();
+            //txtMkMoi.requestFocus();
+            txtMkMoi.putClientProperty("JComponent.outline", "error");
             return;
         }
+        txtMkMoi.putClientProperty("JComponent.outline", "success");
+    }//GEN-LAST:event_txtMkMoiFocusLost
+
+    private void txtXacNhanMkMoiFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtXacNhanMkMoiFocusLost
+        javax.swing.JFrame parentFrame = (javax.swing.JFrame) SwingUtilities.getWindowAncestor(this);
         if (String.valueOf(txtXacNhanMkMoi.getPassword()).trim().isBlank()) {
             Notifications.getInstance().setJFrame(parentFrame);
             Notifications.getInstance().show(Notifications.Type.ERROR, "Vui lòng xác nhận mật khẩu mới!");
-            txtXacNhanMkMoi.requestFocus();
+            //txtXacNhanMkMoi.requestFocus();
+            txtXacNhanMkMoi.putClientProperty("JComponent.outline", "error");
             return;
         }
         if (!String.valueOf(txtMkMoi.getPassword()).trim().equals(String.valueOf(txtXacNhanMkMoi.getPassword()).trim())) {
             Notifications.getInstance().setJFrame(parentFrame);
             Notifications.getInstance().show(Notifications.Type.ERROR, "Mật khẩu xác nhận chưa trùng khớp!");
-            txtXacNhanMkMoi.requestFocus();
+            //txtXacNhanMkMoi.requestFocus();
+            txtXacNhanMkMoi.putClientProperty("JComponent.outline", "error");
             return;
         }
-       
-
-        if (new TaiKhoanDAO().resetMatKhau(nv.getMaNhanVien().toLowerCase(), String.valueOf(txtMkMoi.getPassword()))) {
-            Notifications.getInstance().setJFrame(parentFrame);
-            Notifications.getInstance().show(Notifications.Type.SUCCESS, "Cập nhật mật khẩu thành công!");
-            jdiaDoiPass.dispose();
-        }
-
-
-    }//GEN-LAST:event_btnXNDoiMatKhauActionPerformed
+        txtXacNhanMkMoi.putClientProperty("JComponent.outline", "success");
+    }//GEN-LAST:event_txtXacNhanMkMoiFocusLost
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
