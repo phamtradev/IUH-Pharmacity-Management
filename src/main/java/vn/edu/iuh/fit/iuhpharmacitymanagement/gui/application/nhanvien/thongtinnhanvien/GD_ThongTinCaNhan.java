@@ -47,69 +47,20 @@ public class GD_ThongTinCaNhan extends javax.swing.JPanel {
         java.awt.GridBagConstraints gridBagConstraints;
 
         thongTinCoBanPanel1 = new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.thongtinnhanvien.ThongTinCoBanPanel();
-        lichSuChamCongPanel1 = new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.thongtinnhanvien.LichSuChamCongPanel();
-        thongKeNhanhPanel1 = new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.thongtinnhanvien.ThongKeNhanhPanel();
 
         setLayout(new java.awt.GridBagLayout());
-
-        // === THÔNG TIN CƠ BẢN ===
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 0.3;
         gridBagConstraints.weighty = 0.4;
-        gridBagConstraints.insets = new java.awt.Insets(10, 10, 10, 10);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 10, 10);
         add(thongTinCoBanPanel1, gridBagConstraints);
-
-        // === LỊCH SỬ CHẤM CÔNG ===
-        javax.swing.GroupLayout lichSuChamCongPanel1Layout = new javax.swing.GroupLayout(lichSuChamCongPanel1);
-        lichSuChamCongPanel1.setLayout(lichSuChamCongPanel1Layout);
-        lichSuChamCongPanel1Layout.setHorizontalGroup(
-                lichSuChamCongPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGap(0, 0, Short.MAX_VALUE)
-        );
-        lichSuChamCongPanel1Layout.setVerticalGroup(
-                lichSuChamCongPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGap(0, 0, Short.MAX_VALUE)
-        );
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 0.6;
-        gridBagConstraints.insets = new java.awt.Insets(0, 10, 10, 10);
-        add(lichSuChamCongPanel1, gridBagConstraints);
-
-        // === THỐNG KÊ NHANH ===
-        javax.swing.GroupLayout thongKeNhanhPanel1Layout = new javax.swing.GroupLayout(thongKeNhanhPanel1);
-        thongKeNhanhPanel1.setLayout(thongKeNhanhPanel1Layout);
-        thongKeNhanhPanel1Layout.setHorizontalGroup(
-                thongKeNhanhPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGap(0, 0, Short.MAX_VALUE)
-        );
-        thongKeNhanhPanel1Layout.setVerticalGroup(
-                thongKeNhanhPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGap(0, 0, Short.MAX_VALUE)
-        );
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 0.7;
-        gridBagConstraints.weighty = 0.4;
-        gridBagConstraints.insets = new java.awt.Insets(10, 0, 10, 10);
-        add(thongKeNhanhPanel1, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.thongtinnhanvien.LichSuChamCongPanel lichSuChamCongPanel1;
-    private vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.thongtinnhanvien.ThongKeNhanhPanel thongKeNhanhPanel1;
     private vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.thongtinnhanvien.ThongTinCoBanPanel thongTinCoBanPanel1;
     // End of variables declaration//GEN-END:variables
 }
