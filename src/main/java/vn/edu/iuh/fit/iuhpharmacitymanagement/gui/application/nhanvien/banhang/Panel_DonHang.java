@@ -2237,17 +2237,11 @@ public class Panel_DonHang extends javax.swing.JPanel {
                 document.add(new Paragraph(""));
             }
 
-            document.add(new Paragraph("\n"));
-
             document.add(new Paragraph("HOA DON BAN HANG")
                     .setFont(fontBold)
                     .setFontSize(13)
                     .setTextAlignment(TextAlignment.CENTER));
 
-            document.add(new Paragraph("Ma don: " + donHang.getMaDonHang())
-                    .setFont(font)
-                    .setFontSize(9)
-                    .setTextAlignment(TextAlignment.CENTER.CENTER));
             document.add(new Paragraph("Ngay lap: " + donHang.getNgayDatHang().format(dateFormatter))
                     .setFont(font)
                     .setFontSize(9)
