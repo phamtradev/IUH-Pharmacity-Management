@@ -1582,7 +1582,7 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
         headerPanel.add(javax.swing.Box.createVerticalStrut(10));
 
         String maDonHienTai = donTraHang.getMaDonTraHang() != null ? donTraHang.getMaDonTraHang() : "TẠM THỜI";
-        javax.swing.JLabel lblMaDon = new javax.swing.JLabel("Mã phiếu: " + maDonHienTai + " - TẠM THỜI (chưa lưu)");
+        javax.swing.JLabel lblMaDon = new javax.swing.JLabel("Mã phiếu: " + maDonHienTai);
         lblMaDon.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 16));
         lblMaDon.setAlignmentX(java.awt.Component.CENTER_ALIGNMENT);
         headerPanel.add(lblMaDon);
@@ -1716,6 +1716,7 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
 
     /**
      * Lưu đơn trả hàng và chi tiết vào database
+     *
      * @param donTraHang Đơn trả hàng cần lưu
      * @param danhSachChiTiet Danh sách chi tiết cần lưu
      * @return true nếu lưu thành công, false nếu thất bại
@@ -1726,15 +1727,15 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
             // Tạo mã đơn trả hàng mới (thay thế mã tạm)
             String maDonTraMoi = taoMaDonTraHangTam();
             donTraHang.setMaDonTraHang(maDonTraMoi);
-            
+
             // Set trạng thái mặc định nếu chưa có
             if (donTraHang.getTrangThaiXuLy() == null || donTraHang.getTrangThaiXuLy().trim().isEmpty()) {
                 donTraHang.setTrangThaiXuLy("Chưa xử lý");
             }
 
             // 1. Lưu đơn trả hàng vào database
-            vn.edu.iuh.fit.iuhpharmacitymanagement.bus.DonTraHangBUS donTraHangBUS = 
-                    new vn.edu.iuh.fit.iuhpharmacitymanagement.bus.DonTraHangBUS();
+            vn.edu.iuh.fit.iuhpharmacitymanagement.bus.DonTraHangBUS donTraHangBUS
+                    = new vn.edu.iuh.fit.iuhpharmacitymanagement.bus.DonTraHangBUS();
             boolean savedDonTra = donTraHangBUS.taoDonTraHang(donTraHang);
 
             if (!savedDonTra) {
@@ -1743,24 +1744,24 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
             }
 
             // 2. Lưu chi tiết đơn trả hàng
-            vn.edu.iuh.fit.iuhpharmacitymanagement.bus.ChiTietDonTraHangBUS chiTietBUS = 
-                    new vn.edu.iuh.fit.iuhpharmacitymanagement.bus.ChiTietDonTraHangBUS();
-            
+            vn.edu.iuh.fit.iuhpharmacitymanagement.bus.ChiTietDonTraHangBUS chiTietBUS
+                    = new vn.edu.iuh.fit.iuhpharmacitymanagement.bus.ChiTietDonTraHangBUS();
+
             boolean allDetailsSaved = true;
             for (vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonTraHang chiTiet : danhSachChiTiet) {
                 // Cập nhật mã đơn trả hàng mới cho chi tiết
                 chiTiet.setDonTraHang(donTraHang);
-                
+
                 // Set trạng thái mặc định nếu chưa có
                 if (chiTiet.getTrangThaiXuLy() == null || chiTiet.getTrangThaiXuLy().trim().isEmpty()) {
                     chiTiet.setTrangThaiXuLy("Chưa xử lý");
                 }
-                
+
                 boolean chiTietSaved = chiTietBUS.themChiTietDonTraHang(chiTiet);
                 if (!chiTietSaved) {
                     allDetailsSaved = false;
-                    System.err.println("Lỗi khi lưu chi tiết đơn trả hàng cho sản phẩm: " + 
-                            (chiTiet.getSanPham() != null ? chiTiet.getSanPham().getTenSanPham() : "N/A"));
+                    System.err.println("Lỗi khi lưu chi tiết đơn trả hàng cho sản phẩm: "
+                            + (chiTiet.getSanPham() != null ? chiTiet.getSanPham().getTenSanPham() : "N/A"));
                 }
             }
 
@@ -2059,15 +2060,14 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
             } catch (Exception ex) {
                 document.add(new Paragraph(""));
             }
-            
-            // Hiển thị mã phiếu với chú thích tạm thời
-            document.add(new Paragraph("Ma phieu: " + maPhieu + " - TAM THOI (chua luu)")
-                    .setFont(font)
-                    .setFontSize(10)
-                    .setTextAlignment(TextAlignment.CENTER)
-                    .setFontColor(ColorConstants.DARK_GRAY));
-            document.add(new Paragraph(""));
 
+            // Hiển thị mã phiếu với chú thích tạm thời
+//            document.add(new Paragraph("Ma phieu: " + maPhieu)
+//                    .setFont(font)
+//                    .setFontSize(10)
+//                    .setTextAlignment(TextAlignment.CENTER)
+//                    .setFontColor(ColorConstants.DARK_GRAY));
+//            document.add(new Paragraph(""));
             document.add(new Paragraph("PHIEU TRA HANG")
                     .setFont(fontBold)
                     .setFontSize(13)
