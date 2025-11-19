@@ -11,7 +11,6 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RenderingHints;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Arc2D;
 import java.text.DecimalFormat;
@@ -32,12 +31,6 @@ public class PieChart extends JPanel {
         setOpaque(false);
         setPreferredSize(new Dimension(320, 320));
         ToolTipManager.sharedInstance().registerComponent(this);
-        addMouseMotionListener(new MouseAdapter() {
-            @Override
-            public void mouseMoved(MouseEvent e) {
-                updateHoverToolTip(e.getPoint());
-            }
-        });
     }
 
     public void setData(List<PieChartItem> data) {
@@ -132,17 +125,16 @@ public class PieChart extends JPanel {
         g2.drawString(emptyMessage, x, y);
     }
 
-    private void updateHoverToolTip(Point point) {
-        SliceInfo slice = findSliceAt(point);
+    @Override
+    public String getToolTipText(MouseEvent event) {
+        SliceInfo slice = findSliceAt(event.getPoint());
         if (slice == null) {
-            setToolTipText(null);
-            return;
+            return null;
         }
-        String tooltip = String.format("%s: %s (%.1f%%)",
+        return String.format("%s: %s (%.1f%%)",
                 slice.item.getLabel(),
                 valueFormat.format(slice.item.getValue()),
                 slice.percent * 100);
-        setToolTipText(tooltip);
     }
 
     private SliceInfo findSliceAt(Point point) {
