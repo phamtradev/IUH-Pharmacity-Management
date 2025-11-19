@@ -1169,6 +1169,7 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
                 txtSupplierId.setText(nccDaLuu.getMaNhaCungCap());
             }
 
+            // Tạo đơn nhập hàng TẠM (KHÔNG lưu vào database)
             DonNhapHang donNhapHang = new DonNhapHang();
             donNhapHang.setNgayNhap(java.time.LocalDate.now());
             donNhapHang.setNhanVien(nhanVienHienTai);
@@ -1180,20 +1181,11 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
             }
             donNhapHang.setThanhTien(tongTien);
 
-            boolean savedDonNhap = donNhapHangBUS.taoDonNhapHang(donNhapHang);
-
-            if (!savedDonNhap) {
-                Notifications.getInstance().show(Notifications.Type.ERROR,
-                        Notifications.Location.TOP_CENTER,
-                        "Lỗi khi lưu đơn nhập hàng!");
-                return;
-            }
-
+            // Tạo danh sách chi tiết TẠM (chưa lưu vào DB)
             List<ChiTietDonNhapHang> danhSachChiTiet = new ArrayList<>();
-            boolean allDetailsSaved = true;
+            boolean allDetailsValid = true;
 
             Map<String, String> mapLoHangDaChon = new HashMap<>();
-
             Set<String> setSanPhamDaXuLy = new HashSet<>();
 
             for (Panel_ChiTietSanPhamNhap panel : danhSachPanel) {
@@ -1207,7 +1199,7 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
                     Notifications.getInstance().show(Notifications.Type.ERROR,
                             Notifications.Location.TOP_CENTER,
                             "Không thể nhập trùng sản phẩm '" + sanPham.getTenSanPham() + "'! Vui lòng xóa sản phẩm trùng.");
-                    allDetailsSaved = false;
+                    allDetailsValid = false;
                     continue;
                 }
 
@@ -1217,7 +1209,7 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
                     Notifications.getInstance().show(Notifications.Type.WARNING,
                             Notifications.Location.TOP_CENTER,
                             "Vui lòng chọn lô hàng cho sản phẩm: " + sanPham.getTenSanPham());
-                    allDetailsSaved = false;
+                    allDetailsValid = false;
                     continue;
                 }
 
@@ -1227,7 +1219,7 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
                     Notifications.getInstance().show(Notifications.Type.ERROR,
                             Notifications.Location.TOP_CENTER,
                             "Lô không đúng sản phẩm! Vui lòng chọn lại.");
-                    allDetailsSaved = false;
+                    allDetailsValid = false;
                     continue;
                 }
 
@@ -1236,7 +1228,7 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
                     Notifications.getInstance().show(Notifications.Type.ERROR,
                             Notifications.Location.TOP_CENTER,
                             "Lô này đã được chọn! Vui lòng chọn lô khác.");
-                    allDetailsSaved = false;
+                    allDetailsValid = false;
                     continue;
                 }
 
@@ -1249,10 +1241,11 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
                     Notifications.getInstance().show(Notifications.Type.WARNING,
                             Notifications.Location.TOP_CENTER,
                             "HSD của lô '" + loHang.getTenLoHang() + "' phải lớn hơn 6 tháng!");
-                    allDetailsSaved = false;
+                    allDetailsValid = false;
                     continue;
                 }
 
+                // Tạo chi tiết TẠM (chưa lưu vào DB)
                 ChiTietDonNhapHang chiTiet = new ChiTietDonNhapHang();
                 chiTiet.setSoLuong(soLuong);
                 chiTiet.setDonGia(donGia);
@@ -1260,30 +1253,29 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
                 chiTiet.setDonNhapHang(donNhapHang);
                 chiTiet.setLoHang(loHang);
 
-                boolean chiTietSaved = chiTietDonNhapHangBUS.themChiTietDonNhapHang(chiTiet);
-                if (chiTietSaved) {
-                    danhSachChiTiet.add(chiTiet);
-                } else {
-                    allDetailsSaved = false;
-                }
+                danhSachChiTiet.add(chiTiet);
             }
 
-            if (allDetailsSaved && !danhSachChiTiet.isEmpty()) {
-                hienThiHoaDon(donNhapHang, danhSachChiTiet);
+            if (allDetailsValid && !danhSachChiTiet.isEmpty()) {
+                // Hiển thị hóa đơn với đơn hàng TẠM (chưa lưu DB)
+                boolean isDonHangCancelled = hienThiHoaDon(donNhapHang, danhSachChiTiet, danhSachPanel);
 
-                xoaToanBoSanPham();
-                nhaCungCapHienTai = null;
-                txtSupplierId.setText("");
-                txtSupplierName.setText("");
-                txtTotalPrice.setText("0 đ");
+                // CHỈ reset khi đã lưu (không hủy)
+                if (!isDonHangCancelled) {
+                    xoaToanBoSanPham();
+                    nhaCungCapHienTai = null;
+                    txtSupplierId.setText("");
+                    txtSupplierName.setText("");
+                    txtTotalPrice.setText("0 đ");
 
-                Notifications.getInstance().show(Notifications.Type.SUCCESS,
-                        Notifications.Location.TOP_CENTER,
-                        "Nhập hàng thành công! Mã đơn nhập: " + donNhapHang.getMaDonNhapHang());
+                    Notifications.getInstance().show(Notifications.Type.SUCCESS,
+                            Notifications.Location.TOP_CENTER,
+                            "Nhập hàng thành công! Mã đơn nhập: " + donNhapHang.getMaDonNhapHang());
+                }
             } else {
                 Notifications.getInstance().show(Notifications.Type.WARNING,
                         Notifications.Location.TOP_CENTER,
-                        "Có lỗi khi lưu một số chi tiết đơn nhập!");
+                        "Có lỗi khi kiểm tra thông tin đơn nhập!");
             }
 
         } catch (Exception ex) {
@@ -1318,8 +1310,12 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
 
     /**
      * Hiển thị hóa đơn nhập hàng
+     * @param donNhapHang Đơn nhập hàng (tạm, chưa lưu DB)
+     * @param danhSachChiTiet Danh sách chi tiết (tạm, chưa lưu DB)
+     * @param danhSachPanel Danh sách panel sản phẩm để lưu sau
+     * @return true nếu hủy đơn, false nếu đã lưu
      */
-    private void hienThiHoaDon(DonNhapHang donNhapHang, List<ChiTietDonNhapHang> danhSachChiTiet) {
+    private boolean hienThiHoaDon(DonNhapHang donNhapHang, List<ChiTietDonNhapHang> danhSachChiTiet, List<Panel_ChiTietSanPhamNhap> danhSachPanel) {
         javax.swing.JDialog dialog = new javax.swing.JDialog();
         dialog.setTitle("Hóa đơn");
         dialog.setModal(true);
@@ -1449,20 +1445,100 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
         javax.swing.JPanel buttonPanel = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 10, 0));
         buttonPanel.setBackground(Color.WHITE);
 
+        // Biến để theo dõi trạng thái
+        final boolean[] isDonHangCancelled = {true}; // Mặc định là hủy
+        final boolean[] isDonHangSaved = {false}; // Chưa lưu
+
+        // Nút In (lưu vào DB + tăng tồn kho)
         javax.swing.JButton btnInHoaDon = new javax.swing.JButton("📄 In phiếu nhập");
         btnInHoaDon.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 16));
-        btnInHoaDon.setPreferredSize(new java.awt.Dimension(220, 42));
+        btnInHoaDon.setPreferredSize(new java.awt.Dimension(200, 42));
         ButtonStyles.apply(btnInHoaDon, ButtonStyles.Type.PRIMARY);
         btnInHoaDon.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        btnInHoaDon.addActionListener(e -> inHoaDonNhapHang(donNhapHang, danhSachChiTiet));
+        btnInHoaDon.addActionListener(e -> {
+            // Lưu vào DB và tăng tồn kho
+            if (luuDonNhapHangVaoDB(donNhapHang, danhSachChiTiet)) {
+                isDonHangSaved[0] = true;
+                isDonHangCancelled[0] = false;
+                // In hóa đơn
+                inHoaDonNhapHang(donNhapHang, danhSachChiTiet);
+                // Đóng dialog
+                dialog.dispose();
+            }
+        });
+
+        // Nút Hủy bỏ
+        javax.swing.JButton btnHuyBo = new javax.swing.JButton("❌ Hủy bỏ");
+        btnHuyBo.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 16));
+        btnHuyBo.setPreferredSize(new java.awt.Dimension(200, 42));
+        ButtonStyles.apply(btnHuyBo, ButtonStyles.Type.DANGER);
+        btnHuyBo.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnHuyBo.addActionListener(e -> {
+            isDonHangCancelled[0] = true;
+            dialog.dispose();
+        });
 
         buttonPanel.add(btnInHoaDon);
+        buttonPanel.add(btnHuyBo);
         footerPanel.add(buttonPanel);
 
         mainPanel.add(footerPanel, java.awt.BorderLayout.SOUTH);
 
         dialog.add(mainPanel);
         dialog.setVisible(true);
+
+        // Trả về true nếu hủy, false nếu đã lưu
+        return isDonHangCancelled[0];
+    }
+
+    /**
+     * Lưu đơn nhập hàng và chi tiết vào database, đồng thời tăng tồn kho
+     * @param donNhapHang Đơn nhập hàng cần lưu
+     * @param danhSachChiTiet Danh sách chi tiết cần lưu
+     * @return true nếu lưu thành công, false nếu thất bại
+     */
+    private boolean luuDonNhapHangVaoDB(DonNhapHang donNhapHang, List<ChiTietDonNhapHang> danhSachChiTiet) {
+        try {
+            // 1. Lưu đơn nhập hàng vào database
+            boolean savedDonNhap = donNhapHangBUS.taoDonNhapHang(donNhapHang);
+
+            if (!savedDonNhap) {
+                Notifications.getInstance().show(Notifications.Type.ERROR,
+                        Notifications.Location.TOP_CENTER,
+                        "Lỗi khi lưu đơn nhập hàng!");
+                return false;
+            }
+
+            // 2. Lưu chi tiết đơn nhập hàng và tăng tồn kho
+            boolean allDetailsSaved = true;
+            for (ChiTietDonNhapHang chiTiet : danhSachChiTiet) {
+                // Lưu chi tiết (sẽ tự động tăng tồn kho trong BUS)
+                boolean chiTietSaved = chiTietDonNhapHangBUS.themChiTietDonNhapHang(chiTiet);
+                if (!chiTietSaved) {
+                    allDetailsSaved = false;
+                    Notifications.getInstance().show(Notifications.Type.ERROR,
+                            Notifications.Location.TOP_CENTER,
+                            "Lỗi khi lưu chi tiết đơn nhập hàng cho lô: " + 
+                            (chiTiet.getLoHang() != null ? chiTiet.getLoHang().getTenLoHang() : "N/A"));
+                }
+            }
+
+            if (!allDetailsSaved) {
+                Notifications.getInstance().show(Notifications.Type.WARNING,
+                        Notifications.Location.TOP_CENTER,
+                        "Có lỗi khi lưu một số chi tiết đơn nhập!");
+                return false;
+            }
+
+            return true;
+
+        } catch (Exception ex) {
+            Notifications.getInstance().show(Notifications.Type.ERROR,
+                    Notifications.Location.TOP_CENTER,
+                    "Lỗi khi lưu đơn nhập hàng: " + ex.getMessage());
+            ex.printStackTrace();
+            return false;
+        }
     }
 
     private void inHoaDonNhapHang(DonNhapHang donNhapHang, List<ChiTietDonNhapHang> danhSachChiTiet) {
