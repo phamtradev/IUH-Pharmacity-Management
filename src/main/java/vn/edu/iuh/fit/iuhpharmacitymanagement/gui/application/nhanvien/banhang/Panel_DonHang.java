@@ -1249,7 +1249,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
 
     /**
      * Lấy khuyến mãi đã chọn (backward compatibility)
-     *
+     * 
      * @deprecated Sử dụng getDanhSachKhuyenMaiDaChon() thay thế
      */
     @Deprecated

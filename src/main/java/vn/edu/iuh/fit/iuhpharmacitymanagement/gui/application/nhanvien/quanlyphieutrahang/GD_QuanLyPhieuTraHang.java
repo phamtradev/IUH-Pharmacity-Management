@@ -7,6 +7,12 @@ package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlyph
 import com.formdev.flatlaf.FlatClientProperties;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.connectDB.ConnectDB;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.time.LocalDate;
 
 /**
  *
@@ -1357,6 +1363,46 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
     }
 
     /**
+     * Tạo mã đơn trả hàng tạm để hiển thị trong preview
+     * Mã này sẽ được tạo lại chính xác khi lưu vào database
+     * @return Mã đơn trả hàng tạm
+     */
+    private String taoMaDonTraHangTam() {
+        LocalDate ngayHienTai = LocalDate.now();
+        String ngayThangNam = String.format("%02d%02d%04d", 
+                ngayHienTai.getDayOfMonth(), 
+                ngayHienTai.getMonthValue(), 
+                ngayHienTai.getYear());
+        
+        String prefixHienTai = "DT" + ngayThangNam;
+        
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(
+                     "SELECT TOP 1 maDonTra FROM DonTraHang WHERE maDonTra LIKE ? ORDER BY maDonTra DESC")) {
+            
+            stmt.setString(1, prefixHienTai + "%");
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                String maCuoi = rs.getString("maDonTra");
+                try {
+                    // Lấy 4 số cuối: DTddmmyyyyxxxx -> xxxx
+                    String soSTT = maCuoi.substring(12);
+                    int so = Integer.parseInt(soSTT) + 1;
+                    return prefixHienTai + String.format("%04d", so);
+                } catch (NumberFormatException | StringIndexOutOfBoundsException e) {
+                    System.err.println("Mã đơn trả hàng không hợp lệ: " + maCuoi + ". Tạo mã mới.");
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        // Nếu chưa có đơn nào trong ngày, tạo mã đầu tiên
+        return prefixHienTai + "0001";
+    }
+
+    /**
      * Tạo phiếu trả hàng và xem trước PDF
      */
     private void taoPhieuTraHang() {
@@ -1398,11 +1444,8 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
                 }
             }
 
-            // Tạo đơn trả hàng
+            // Tạo đơn trả hàng TẠM (KHÔNG lưu vào database)
             vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonTraHang donTraHang = new vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonTraHang();
-
-            // Tạo mã đơn trả hàng mới
-            vn.edu.iuh.fit.iuhpharmacitymanagement.dao.DonTraHangDAO donTraHangDAO = new vn.edu.iuh.fit.iuhpharmacitymanagement.dao.DonTraHangDAO();
 
             // Tính tổng tiền
             double tongTien = 0;
@@ -1416,30 +1459,17 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
             donTraHang.setDonHang(currentDonHang);
             donTraHang.setNhanVien(
                     vn.edu.iuh.fit.iuhpharmacitymanagement.session.SessionManager.getInstance().getCurrentUser());
+            
+            // Tạo mã đơn trả hàng tạm để hiển thị trong preview
+            String maDonTraTam = taoMaDonTraHangTam();
+            donTraHang.setMaDonTraHang(maDonTraTam);
+            
+            // Lưu mã đơn trả tạm vào biến instance để dùng khi hủy
+            this.maDonTraTam = maDonTraTam;
 
-            // Lưu đơn trả hàng vào database (TẠM THỜI)
-            boolean insertSuccess = donTraHangDAO.insert(donTraHang);
-
-            if (!insertSuccess) {
-                raven.toast.Notifications.getInstance().show(
-                        raven.toast.Notifications.Type.ERROR,
-                        "Lỗi khi lưu đơn trả hàng vào database!");
-                return;
-            }
-
-            // Lưu mã đơn trả tạm
-            maDonTraTam = donTraHang.getMaDonTraHang();
-
-            // Kiểm tra mã đơn trả hàng đã được tạo chưa
-            if (donTraHang.getMaDonTraHang() == null || donTraHang.getMaDonTraHang().trim().isEmpty()) {
-                raven.toast.Notifications.getInstance().show(
-                        raven.toast.Notifications.Type.ERROR,
-                        "Không thể tạo mã đơn trả hàng!");
-                return;
-            }
-
-            // Tạo danh sách chi tiết đơn trả hàng
+            // Tạo danh sách chi tiết TẠM (chưa lưu vào DB)
             java.util.List<vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonTraHang> chiTietList = new java.util.ArrayList<>();
+            boolean allDetailsValid = true;
 
             vn.edu.iuh.fit.iuhpharmacitymanagement.dao.SanPhamDAO sanPhamDAO = new vn.edu.iuh.fit.iuhpharmacitymanagement.dao.SanPhamDAO();
 
@@ -1449,8 +1479,7 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
 
                     // Tìm sản phẩm từ tên
                     String tenSanPham = panel.getTenSanPham();
-                    java.util.List<SanPham> dsSanPham = sanPhamDAO
-                            .findAll();
+                    java.util.List<SanPham> dsSanPham = sanPhamDAO.findAll();
 
                     SanPham sanPham = null;
                     for (SanPham sp : dsSanPham) {
@@ -1460,49 +1489,35 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
                         }
                     }
 
-                    if (sanPham != null) {
-                        vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonTraHang chiTiet = new vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonTraHang();
-
-                        chiTiet.setSoLuong(panel.getSoLuongTra());
-                        chiTiet.setDonGia(panel.getDonGia());
-                        chiTiet.setLyDoTra(panel.getLyDoTraHang());
-                        chiTiet.setThanhTien(panel.getSoLuongTra() * panel.getDonGia());
-                        chiTiet.setSanPham(sanPham);
-                        chiTiet.setDonTraHang(donTraHang);
-
-                        chiTietList.add(chiTiet);
+                    if (sanPham == null) {
+                        allDetailsValid = false;
+                        raven.toast.Notifications.getInstance().show(
+                                raven.toast.Notifications.Type.ERROR,
+                                "Không tìm thấy sản phẩm: " + tenSanPham);
+                        continue;
                     }
+
+                    vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonTraHang chiTiet = new vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonTraHang();
+
+                    chiTiet.setSoLuong(panel.getSoLuongTra());
+                    chiTiet.setDonGia(panel.getDonGia());
+                    chiTiet.setLyDoTra(panel.getLyDoTraHang());
+                    chiTiet.setThanhTien(panel.getSoLuongTra() * panel.getDonGia());
+                    chiTiet.setSanPham(sanPham);
+                    chiTiet.setDonTraHang(donTraHang);
+
+                    chiTietList.add(chiTiet);
                 }
             }
 
-            // Lưu chi tiết đơn trả hàng
-            vn.edu.iuh.fit.iuhpharmacitymanagement.dao.ChiTietDonTraHangDAO chiTietDonTraHangDAO = new vn.edu.iuh.fit.iuhpharmacitymanagement.dao.ChiTietDonTraHangDAO();
-
-            int successCount = 0;
-            for (vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonTraHang chiTiet : chiTietList) {
-                boolean success = chiTietDonTraHangDAO.insert(chiTiet);
-                if (success) {
-                    successCount++;
-                }
-            }
-
-            if (successCount == 0) {
+            if (!allDetailsValid || chiTietList.isEmpty()) {
                 raven.toast.Notifications.getInstance().show(
                         raven.toast.Notifications.Type.ERROR,
-                        "Không thể lưu chi tiết đơn trả hàng! Vui lòng kiểm tra lại.");
+                        "Không thể tạo danh sách chi tiết đơn trả hàng! Vui lòng kiểm tra lại.");
                 return;
-            } else if (successCount < chiTietList.size()) {
-                raven.toast.Notifications.getInstance().show(
-                        raven.toast.Notifications.Type.WARNING,
-                        "Chỉ lưu được " + successCount + "/" + chiTietList.size() + " chi tiết!");
             }
 
-            // Thông báo lưu thành công
-            raven.toast.Notifications.getInstance().show(
-                    raven.toast.Notifications.Type.SUCCESS,
-                    "Tạo phiếu trả hàng thành công! Mã: " + donTraHang.getMaDonTraHang());
-
-            // Hiển thị dialog xác nhận (KHÔNG reset form để giữ dữ liệu khi hủy bỏ)
+            // Hiển thị dialog xác nhận (KHÔNG lưu vào DB, chỉ preview)
             hienThiDialogXacNhan(donTraHang, chiTietList);
 
         } catch (Exception e) {
@@ -1599,24 +1614,86 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
         btnInHoaDon.setBackground(new java.awt.Color(0, 120, 215));
         btnInHoaDon.setForeground(java.awt.Color.WHITE);
         btnInHoaDon.addActionListener(e -> {
-            // Hiển thị thông báo ngay lập tức
-            raven.toast.Notifications.getInstance().show(
-                    raven.toast.Notifications.Type.SUCCESS,
-                    raven.toast.Notifications.Location.TOP_CENTER,
-                    3000,
-                    "Đang mở hóa đơn trả hàng...\nMã đơn: " + donTraHang.getMaDonTraHang());
+            try {
+                // Tạo đơn trả hàng mới để lưu vào database (DAO sẽ tự tạo mã mới)
+                vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonTraHang donTraHangMoi = new vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonTraHang();
+                donTraHangMoi.setNgayTraHang(donTraHang.getNgayTraHang());
+                donTraHangMoi.setThanhTien(donTraHang.getThanhTien());
+                donTraHangMoi.setDonHang(donTraHang.getDonHang());
+                donTraHangMoi.setNhanVien(donTraHang.getNhanVien());
+                donTraHangMoi.setTrangThaiXuLy(donTraHang.getTrangThaiXuLy());
+                
+                // Lưu đơn trả hàng vào database (DAO sẽ tự tạo mã mới)
+                vn.edu.iuh.fit.iuhpharmacitymanagement.dao.DonTraHangDAO donTraHangDAO = new vn.edu.iuh.fit.iuhpharmacitymanagement.dao.DonTraHangDAO();
+                boolean insertSuccess = donTraHangDAO.insert(donTraHangMoi);
 
-            // Đóng dialog xác nhận
-            dialog.dispose();
+                if (!insertSuccess) {
+                    raven.toast.Notifications.getInstance().show(
+                            raven.toast.Notifications.Type.ERROR,
+                            "Lỗi khi lưu đơn trả hàng vào database!");
+                    return;
+                }
 
-            // Xóa mã đơn tạm (đã xác nhận)
-            maDonTraTam = null;
+                // Lưu chi tiết đơn trả hàng
+                vn.edu.iuh.fit.iuhpharmacitymanagement.dao.ChiTietDonTraHangDAO chiTietDonTraHangDAO = new vn.edu.iuh.fit.iuhpharmacitymanagement.dao.ChiTietDonTraHangDAO();
 
-            // Hiển thị preview hóa đơn
-            hienThiPreviewHoaDon(donTraHang, danhSachChiTiet);
+                int successCount = 0;
+                for (vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonTraHang chiTiet : danhSachChiTiet) {
+                    // Cập nhật mã đơn trả hàng mới vào chi tiết
+                    chiTiet.setDonTraHang(donTraHangMoi);
+                    boolean success = chiTietDonTraHangDAO.insert(chiTiet);
+                    if (success) {
+                        successCount++;
+                    }
+                }
 
-            // Reset form sau khi đóng preview
-            resetForm();
+                if (successCount == 0) {
+                    raven.toast.Notifications.getInstance().show(
+                            raven.toast.Notifications.Type.ERROR,
+                            "Không thể lưu chi tiết đơn trả hàng! Vui lòng kiểm tra lại.");
+                    return;
+                } else if (successCount < danhSachChiTiet.size()) {
+                    raven.toast.Notifications.getInstance().show(
+                            raven.toast.Notifications.Type.WARNING,
+                            "Chỉ lưu được " + successCount + "/" + danhSachChiTiet.size() + " chi tiết!");
+                }
+
+                // Hiển thị thông báo thành công
+                raven.toast.Notifications.getInstance().show(
+                        raven.toast.Notifications.Type.SUCCESS,
+                        raven.toast.Notifications.Location.TOP_CENTER,
+                        3000,
+                        "Đã lưu đơn trả hàng! Mã: " + donTraHangMoi.getMaDonTraHang() + "\nĐang mở hóa đơn...");
+
+                // Đóng dialog xác nhận
+                dialog.dispose();
+
+                // Xóa mã đơn tạm (đã xác nhận và lưu)
+                maDonTraTam = null;
+
+                // Lấy lại danh sách chi tiết với mã đơn mới
+                java.util.List<vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonTraHang> danhSachChiTietMoi = new java.util.ArrayList<>();
+                for (vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonTraHang chiTiet : danhSachChiTiet) {
+                    vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonTraHang chiTietMoi = new vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonTraHang();
+                    chiTietMoi.setSoLuong(chiTiet.getSoLuong());
+                    chiTietMoi.setDonGia(chiTiet.getDonGia());
+                    chiTietMoi.setLyDoTra(chiTiet.getLyDoTra());
+                    chiTietMoi.setThanhTien(chiTiet.getThanhTien());
+                    chiTietMoi.setSanPham(chiTiet.getSanPham());
+                    chiTietMoi.setDonTraHang(donTraHangMoi);
+                    danhSachChiTietMoi.add(chiTietMoi);
+                }
+                
+                // Hiển thị preview hóa đơn
+                hienThiPreviewHoaDon(donTraHangMoi, danhSachChiTietMoi);
+
+                // Reset form sau khi đóng preview
+                resetForm();
+            } catch (Exception ex) {
+                raven.toast.Notifications.getInstance().show(
+                        raven.toast.Notifications.Type.ERROR,
+                        "Lỗi khi lưu đơn trả hàng: " + ex.getMessage());
+            }
         });
 
         javax.swing.JButton btnHuyBo = new javax.swing.JButton("Hủy Bỏ");
@@ -1625,20 +1702,8 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
         btnHuyBo.setBackground(new java.awt.Color(220, 53, 69));
         btnHuyBo.setForeground(java.awt.Color.WHITE);
         btnHuyBo.addActionListener(e -> {
-            // Xóa đơn trả tạm khỏi database
-            if (maDonTraTam != null && !maDonTraTam.trim().isEmpty()) {
-                vn.edu.iuh.fit.iuhpharmacitymanagement.dao.DonTraHangDAO donTraHangDAO = new vn.edu.iuh.fit.iuhpharmacitymanagement.dao.DonTraHangDAO();
-                vn.edu.iuh.fit.iuhpharmacitymanagement.dao.ChiTietDonTraHangDAO chiTietDAO = new vn.edu.iuh.fit.iuhpharmacitymanagement.dao.ChiTietDonTraHangDAO();
-
-                // Xóa chi tiết trước
-                for (vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonTraHang ct : danhSachChiTiet) {
-                    chiTietDAO.delete(maDonTraTam, ct.getSanPham().getMaSanPham());
-                }
-
-                // Xóa đơn trả
-                donTraHangDAO.delete(maDonTraTam);
-            }
-
+            // Đóng dialog và xóa mã đơn tạm (chưa lưu vào DB nên không cần xóa)
+            maDonTraTam = null;
             dialog.dispose();
             raven.toast.Notifications.getInstance().show(
                     raven.toast.Notifications.Type.INFO,
