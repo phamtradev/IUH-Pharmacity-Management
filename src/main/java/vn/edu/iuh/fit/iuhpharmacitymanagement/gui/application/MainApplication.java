@@ -4,11 +4,8 @@ import com.formdev.flatlaf.FlatLightLaf;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.JOptionPane;
-import vn.edu.iuh.fit.iuhpharmacitymanagement.connectDB.ConnectDB;
-import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.form.MenuForm;
 
 import java.awt.*;
-import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.login.LoginFrame;
 
 public class MainApplication {
 

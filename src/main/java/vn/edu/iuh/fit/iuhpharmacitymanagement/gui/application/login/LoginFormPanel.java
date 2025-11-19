@@ -13,8 +13,11 @@ import java.awt.Image;
 import java.sql.SQLException;
 import java.util.Optional;
 import javax.swing.ImageIcon;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import raven.toast.Notifications;
@@ -46,8 +49,7 @@ public class LoginFormPanel extends javax.swing.JPanel {
         removePlayhoder(txtTenDangNhap);
         removePlayhoder(txtMatKhau);
         txtMatKhau.setEchoChar('\u2022');
-        
-        
+
         backgroundImage = new ImageIcon(getClass().getResource("/img/LoginImage.png")).getImage();
         setOpaque(false); // Đảm bảo panel cho phép hiển thị ảnh nền
         contentPanel.setOpaque(true);
@@ -70,6 +72,9 @@ public class LoginFormPanel extends javax.swing.JPanel {
         contentPanel.requestFocusInWindow();
         addPlayhoder(txtTenDangNhap);
         addPlayhoder(txtMatKhau);
+        //an lbl khi login sai nhiều       
+        lblTgConLai.setVisible(false);        
+        lblDemNguoc.setVisible(false);
 
         // Tự động focus vào ô tài khoản khi panel được hiển thị
         addComponentListener(new java.awt.event.ComponentAdapter() {
@@ -130,6 +135,8 @@ public class LoginFormPanel extends javax.swing.JPanel {
         lblTieuDe = new javax.swing.JLabel();
         txtTenDangNhap = new javax.swing.JTextField();
         txtMatKhau = new javax.swing.JPasswordField();
+        lblDemNguoc = new javax.swing.JLabel();
+        lblTgConLai = new javax.swing.JLabel();
         pnlDangNhap = new javax.swing.JPanel();
         chkHienMatKhau = new javax.swing.JCheckBox();
         jPanel1 = new javax.swing.JPanel();
@@ -205,6 +212,24 @@ public class LoginFormPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 310, 0, 0);
         contentPanel.add(txtMatKhau, gridBagConstraints);
         txtMatKhau.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Mật khẩu");
+
+        lblDemNguoc.setForeground(new java.awt.Color(255, 51, 51));
+        lblDemNguoc.setText("jLabel1");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.insets = new java.awt.Insets(-80, 350, 0, 0);
+        contentPanel.add(lblDemNguoc, gridBagConstraints);
+
+        lblTgConLai.setForeground(new java.awt.Color(255, 51, 51));
+        lblTgConLai.setText("Vui lòng thử lại sau:");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.insets = new java.awt.Insets(-80, 180, 0, 0);
+        contentPanel.add(lblTgConLai, gridBagConstraints);
 
         pnlDangNhap.setBackground(javax.swing.UIManager.getDefaults().getColor("Component.success.borderColor"));
         pnlDangNhap.setOpaque(false);
@@ -286,96 +311,69 @@ public class LoginFormPanel extends javax.swing.JPanel {
         UIManager.put("ScrollPane.background", Color.WHITE);
         UIManager.put("Viewport.background", Color.WHITE);
     }
-    private void btnDangNhapActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDangNhapActionPerformed
-//        System.out.println("đã nhấn");
-//        
-//        // Lấy parent frame hiện tại thay vì tạo mới
-//        javax.swing.JFrame parentFrame = (javax.swing.JFrame) SwingUtilities.getWindowAncestor(this);
-//        
-//        try {
-//            ConnectDB.getConnection();
-//        } catch (SQLException ex) {
-//            System.getLogger(LoginFormPanel.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
-//        }
-//        if (txtTenDangNhap.getText().trim().isEmpty() || txtTenDangNhap.getText().trim().length() == 0) {
-//            Notifications.getInstance().setJFrame(parentFrame);
-//            Notifications.getInstance().show(
-//                    Notifications.Type.ERROR,
-//                    Notifications.Location.TOP_CENTER,
-//                    "Hãy nhập tên đăng nhập!"
-//            );
-//            txtTenDangNhap.requestFocus();
-//            return;
-//        }
-//        if (String.valueOf(txtMatKhau.getPassword()).trim().isEmpty() || String.valueOf(txtMatKhau.getPassword()).trim().length() == 0) {
-//            Notifications.getInstance().setJFrame(parentFrame);
-//            Notifications.getInstance().show(
-//                    Notifications.Type.ERROR,
-//                    Notifications.Location.TOP_CENTER,
-//                    "Hãy nhập mật đăng nhập!"
-//            );
-//            txtMatKhau.requestFocus();
-//            return;
-//        }
-//        Optional<String> optVaiTro = tkDao.tonTaiTaiKhoanKhiLogin(txtTenDangNhap.getText(), String.valueOf(txtMatKhau.getPassword()));
-//        if (optVaiTro.isEmpty()) {
-//            Notifications.getInstance().setJFrame(parentFrame);
-//            Notifications.getInstance().show(
-//                    Notifications.Type.ERROR,
-//                    Notifications.Location.TOP_CENTER,
-//                    "Sai tên đăng nhập hoặc mật khẩu hãy nhập lại!"
-//            );
-//            txtTenDangNhap.requestFocus();
-//            return;
-//        }
-//        if (optVaiTro.get().equalsIgnoreCase("Nhân viên")) {
-//            SwingUtilities.invokeLater(() -> {
-//                try {
-//                    setupLookAndFeel();
-//                    MenuForm menuForm = new MenuForm(1);
-//                    menuForm.setVisible(true);
-//                    
-//                    // Đóng LoginFrame sau khi mở MenuForm
-//                    if (parentFrame != null) {
-//                        parentFrame.dispose();
-//                    }
-//                    
-//                    Notifications.getInstance().setJFrame(menuForm);
-//                    Notifications.getInstance().show(Notifications.Type.INFO,
-//                            Notifications.Location.TOP_CENTER,
-//                            "Đăng nhập thành công! Xin chào nhân viên");
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
-//            });
-//
-//        } else if (optVaiTro.get().equalsIgnoreCase("Quản lý")) {
-//            try {
-//                setupLookAndFeel();
-//                MenuForm menuForm = new MenuForm(2);
-//                menuForm.setVisible(true);
-//                
-//                // Đóng LoginFrame sau khi mở MenuForm
-//                if (parentFrame != null) {
-//                    parentFrame.dispose();
-//                }
-//                
-//                Notifications.getInstance().setJFrame(menuForm);
-//                Notifications.getInstance().show(
-//                        Notifications.Type.SUCCESS,
-//                        Notifications.Location.TOP_CENTER,
-//                        "Đăng nhập thành công! Xin chào quản lý!"
-//                );
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//        }
+    public static int SO_LAN_SAI = 0;
+    public static final long THOI_GIAN_KHOA = 3000;   //1p  
+    public static long THOI_DIEM_BI_KHOA = 0;
+    private javax.swing.Timer countdownTimer;
 
+    private void batDauKhoaTaiKhoan() {
+        LoginFormPanel.THOI_DIEM_BI_KHOA = System.currentTimeMillis();
+        // Timer đếm ngược
+        countdownTimer = new javax.swing.Timer(1000, e -> {
+            long tgConLai = System.currentTimeMillis() - LoginFormPanel.THOI_DIEM_BI_KHOA;
+            long remain = (LoginFormPanel.THOI_GIAN_KHOA - tgConLai) / 1000;
+
+            if (remain <= 0) {
+                ((javax.swing.Timer) e.getSource()).stop();
+                lblTgConLai.setText("Bạn có thể đăng nhập lại.");
+                lblTgConLai.setForeground(Color.GREEN);
+                lblTgConLai.setVisible(true);
+                lblDemNguoc.setVisible(false);        
+                LoginFormPanel.SO_LAN_SAI = 0;
+                txtMatKhau.setEditable(true);
+                txtTenDangNhap.setEditable(true);
+                btnDangNhap.setEnabled(true);
+            } else {                
+                lblTgConLai.setVisible(true);
+                lblTgConLai.setText("Vui lòng thử lại sau: ");
+                lblDemNguoc.setVisible(true);
+                lblDemNguoc.setText(remain + " giây.");
+               txtMatKhau.setEditable(false);
+               txtTenDangNhap.setEditable(false);
+               btnDangNhap.setEnabled(false);
+            }
+        });
+
+        countdownTimer.start();
+    }
+
+    private boolean isKhoa() {
+        if (LoginFormPanel.THOI_DIEM_BI_KHOA == 0) {
+            return false;
+        }
+
+        long tgConLai = System.currentTimeMillis() - LoginFormPanel.THOI_DIEM_BI_KHOA;
+
+        return tgConLai < LoginFormPanel.THOI_GIAN_KHOA;
+    }
+
+    private void btnDangNhapActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDangNhapActionPerformed
 // Lấy dữ liệu từ form
         String tenDangNhap = txtTenDangNhap.getText().trim();
         String matKhau = String.valueOf(txtMatKhau.getPassword()).trim();
         javax.swing.JFrame parentFrame = (javax.swing.JFrame) SwingUtilities.getWindowAncestor(this);
+        //dang khoa 
+        if (isKhoa()) {
+            long tgConLai = System.currentTimeMillis() - LoginFormPanel.THOI_DIEM_BI_KHOA;
+            long remain = (LoginFormPanel.THOI_GIAN_KHOA - tgConLai) / 1000;
 
+            Notifications.getInstance().setJFrame(parentFrame);
+            Notifications.getInstance().show(
+                    Notifications.Type.ERROR,
+                    "Tài khoản đang bị khóa! Thử lại sau " + remain + " giây."
+            );
+            return;
+        }
         //kiểm tra rỗng hoặc còn placeholder
         if (tenDangNhap.isEmpty() || tenDangNhap.equals("Tên đăng nhập")) {
             Notifications.getInstance().setJFrame(parentFrame);
@@ -393,12 +391,26 @@ public class LoginFormPanel extends javax.swing.JPanel {
         //Gọi BUS để xác thực và lấy về đối tượng NhanVien
         NhanVienBUS nhanVienBUS = new NhanVienBUS();
         NhanVien nguoiDung = nhanVienBUS.xacThucNguoiDung(tenDangNhap, matKhau);
+//them chk con khoa k
 
         if (nguoiDung == null) {
             //đăng nhập k thành công
             Notifications.getInstance().setJFrame(parentFrame);
             Notifications.getInstance().show(Notifications.Type.ERROR, "Sai tên đăng nhập hoặc mật khẩu!");
             txtTenDangNhap.requestFocus();
+            LoginFormPanel.SO_LAN_SAI++;
+            switch (LoginFormPanel.SO_LAN_SAI) {
+                case 3:
+                    Notifications.getInstance().show(Notifications.Type.ERROR, "Đã nhập sai 3 lần nếu sai 5 lần hệ thống khóa 1 phút");
+                    break;
+                case 4:
+                    Notifications.getInstance().show(Notifications.Type.ERROR, "Đã nhập sai 4 lần còn 1 lần hãy thử lại");
+                    break;
+                case 5:
+                    Notifications.getInstance().show(Notifications.Type.ERROR, "Đã nhập sai 5 lần hệ thống sẽ khóa 1 phút");                    
+                    batDauKhoaTaiKhoan();
+                    break;
+            }            
         } else {
             //Lưu thông tin nv vào session
             SessionManager.getInstance().setCurrentUser(nguoiDung);
@@ -423,7 +435,12 @@ public class LoginFormPanel extends javax.swing.JPanel {
             if (parentFrame != null) {
                 parentFrame.dispose();
             }
-
+            //dung thi reset ve 0            
+            LoginFormPanel.SO_LAN_SAI = 0;
+            LoginFormPanel.THOI_DIEM_BI_KHOA = 0;
+            //an lai lbl
+            lblDemNguoc.setVisible(false);
+            lblTgConLai.setVisible(false);
             Notifications.getInstance().setJFrame(menuForm);
             Notifications.getInstance().show(Notifications.Type.SUCCESS, welcomeMessage);
         }
@@ -438,7 +455,7 @@ public class LoginFormPanel extends javax.swing.JPanel {
 
     public void removePlayhoder(JTextField txt) {
         Font font = txt.getFont();
-        font = font.deriveFont(Font.PLAIN);    
+        font = font.deriveFont(Font.PLAIN);
         txt.setForeground(Color.BLACK);
         txt.setFont(font);
     }
@@ -449,7 +466,7 @@ public class LoginFormPanel extends javax.swing.JPanel {
 
     private void txtTenDangNhapFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtTenDangNhapFocusGained
         if (txtTenDangNhap.getText().equals("Tên đăng nhập")) {
-            txtTenDangNhap.setText("");            
+            txtTenDangNhap.setText("");
             removePlayhoder(txtTenDangNhap);
         }
     }//GEN-LAST:event_txtTenDangNhapFocusGained
@@ -469,7 +486,7 @@ public class LoginFormPanel extends javax.swing.JPanel {
     private void txtTenDangNhapFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtTenDangNhapFocusLost
         if (txtTenDangNhap.getText().length() == 0) {
             txtTenDangNhap.setText("Tên đăng nhập");
-            addPlayhoder(txtTenDangNhap);            
+            addPlayhoder(txtTenDangNhap);
         }
     }//GEN-LAST:event_txtTenDangNhapFocusLost
 
@@ -493,7 +510,7 @@ public class LoginFormPanel extends javax.swing.JPanel {
 
     private void txtMatKhauFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtMatKhauFocusGained
         if (String.valueOf(txtMatKhau.getPassword()).equals("Mật khẩu")) {
-            txtMatKhau.setText("");            
+            txtMatKhau.setText("");
             removePlayhoder(txtMatKhau);
         }
         // Giữ chế độ hiện mật khẩu nếu checkbox đang bật
@@ -540,7 +557,9 @@ public class LoginFormPanel extends javax.swing.JPanel {
     private javax.swing.JCheckBox chkHienMatKhau;
     private javax.swing.JPanel contentPanel;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JLabel lblDemNguoc;
     private javax.swing.JLabel lblQuenMatKhau;
+    private javax.swing.JLabel lblTgConLai;
     private javax.swing.JLabel lblTieuDe;
     private javax.swing.JPanel pnlDangNhap;
     private javax.swing.JPasswordField txtMatKhau;
