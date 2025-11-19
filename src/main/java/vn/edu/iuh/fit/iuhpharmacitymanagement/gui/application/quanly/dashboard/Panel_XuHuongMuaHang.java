@@ -6,15 +6,18 @@ package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.dashboard;
 
 import raven.toast.Notifications;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.ChiTietDonHangBUS;
-import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.barchart.Chart;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.barchart.ModelChart;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.constant.LoaiSanPham;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.ChiTietDonHangDAO.ProductSalesSummary;
 
+import javax.swing.DefaultComboBoxModel;
 import java.awt.Color;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -22,13 +25,18 @@ import java.util.stream.Collectors;
  */
 public class Panel_XuHuongMuaHang extends javax.swing.JPanel {
     
+    private static final int TOP_PRODUCT_LIMIT = 5;
+    private static final int MAX_PRODUCT_NAME_LENGTH = 15;
+
     private final ChiTietDonHangBUS chiTietDonHangBUS;
     private Chart chart;
+    private final Map<String, LoaiSanPham> productTypeOptions = new LinkedHashMap<>();
 
     public Panel_XuHuongMuaHang() {
         chiTietDonHangBUS = new ChiTietDonHangBUS();
         initChart();
         initComponents();
+        initProductTypeFilter();
         initSimpleUI();
     }
     
@@ -43,6 +51,53 @@ public class Panel_XuHuongMuaHang extends javax.swing.JPanel {
         lbdt.setVisible(false);
         lbt5.setVisible(false);
         lbtl.setVisible(false);
+    }
+
+    private void initProductTypeFilter() {
+        productTypeOptions.clear();
+        productTypeOptions.put("Tất cả", null);
+        for (LoaiSanPham type : LoaiSanPham.values()) {
+            productTypeOptions.put(toDisplayName(type), type);
+        }
+
+        DefaultComboBoxModel<String> model = new DefaultComboBoxModel<>(
+                productTypeOptions.keySet().toArray(new String[0])
+        );
+        comboProductType.setModel(model);
+        comboProductType.setSelectedIndex(0);
+    }
+
+    private String toDisplayName(LoaiSanPham type) {
+        switch (type) {
+            case THUOC:
+                return "Thuốc";
+            case VAT_TU_Y_TE:
+                return "Vật tư y tế";
+            case THUC_PHAM_CHUC_NANG:
+                return "Thực phẩm chức năng";
+            case CHAM_SOC_TRE_EM:
+                return "Chăm sóc trẻ em";
+            case THIET_BI_Y_TE:
+                return "Thiết bị y tế";
+            default:
+                return type.name();
+        }
+    }
+
+    private LoaiSanPham getSelectedProductType() {
+        Object selected = comboProductType.getSelectedItem();
+        if (selected == null) {
+            return null;
+        }
+        return productTypeOptions.getOrDefault(selected.toString(), null);
+    }
+
+    private String formatProductLabel(String name, String fallback) {
+        String value = (name == null || name.isBlank()) ? fallback : name.trim();
+        if (value.length() > MAX_PRODUCT_NAME_LENGTH) {
+            return value.substring(0, MAX_PRODUCT_NAME_LENGTH) + "...";
+        }
+        return value;
     }
 
     /**
@@ -278,50 +333,22 @@ public class Panel_XuHuongMuaHang extends javax.swing.JPanel {
     
     private void loadTopProducts(LocalDate dateFrom, LocalDate dateTo) {
         chart.clear();
-        
-        // Lấy tất cả chi tiết đơn hàng
-        List<ChiTietDonHang> allDetails = chiTietDonHangBUS.layTatCaChiTietDonHang();
-        
-        // Lọc theo khoảng thời gian
-        List<ChiTietDonHang> filteredDetails = allDetails.stream()
-                .filter(ct -> ct.getDonHang() != null && ct.getDonHang().getNgayDatHang() != null)
-                .filter(ct -> !ct.getDonHang().getNgayDatHang().isBefore(dateFrom) && !ct.getDonHang().getNgayDatHang().isAfter(dateTo))
-                .collect(Collectors.toList());
-        
-        // Nhóm theo sản phẩm và tính tổng số lượng
-        Map<String, Integer> productQuantityMap = new HashMap<>();
-        Map<String, String> productNameMap = new HashMap<>();
-        
-        for (ChiTietDonHang ct : filteredDetails) {
-            if (ct.getLoHang() != null && ct.getLoHang().getSanPham() != null) {
-                String productId = ct.getLoHang().getSanPham().getMaSanPham();
-                String productName = ct.getLoHang().getSanPham().getTenSanPham();
-                
-                productQuantityMap.put(productId, productQuantityMap.getOrDefault(productId, 0) + ct.getSoLuong());
-                productNameMap.put(productId, productName);
-            }
+
+        LoaiSanPham selectedType = getSelectedProductType();
+        List<ProductSalesSummary> topProducts = chiTietDonHangBUS.layTopSanPhamBanChay(
+                dateFrom,
+                dateTo,
+                selectedType,
+                TOP_PRODUCT_LIMIT
+        );
+
+        for (ProductSalesSummary summary : topProducts) {
+            String label = formatProductLabel(summary.getProductName(), summary.getProductId());
+            chart.addData(new ModelChart(label, new double[]{summary.getTotalQuantity()}));
         }
-        
-        // Sắp xếp theo số lượng giảm dần và lấy top 5
-        List<Map.Entry<String, Integer>> topProducts = productQuantityMap.entrySet().stream()
-                .sorted((e1, e2) -> e2.getValue().compareTo(e1.getValue()))
-                .limit(5)
-                .collect(Collectors.toList());
-        
-        // Hiển thị trên biểu đồ
-        for (Map.Entry<String, Integer> entry : topProducts) {
-            String productName = productNameMap.get(entry.getKey());
-            // Rút gọn tên sản phẩm nếu quá dài
-            if (productName.length() > 15) {
-                productName = productName.substring(0, 15) + "...";
-            }
-            
-            chart.addData(new ModelChart(productName, new double[]{entry.getValue()}));
-        }
-        
+
         chart.start();
-        
-        // Cập nhật label
+
         if (topProducts.isEmpty()) {
             lblChartProduct.setText("KHÔNG CÓ SẢN PHẨM NÀO TRONG KHOẢNG THỜI GIAN NÀY");
         } else {

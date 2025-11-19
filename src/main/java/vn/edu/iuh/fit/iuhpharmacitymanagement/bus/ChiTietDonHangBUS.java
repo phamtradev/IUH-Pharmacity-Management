@@ -1,9 +1,12 @@
 package vn.edu.iuh.fit.iuhpharmacitymanagement.bus;
 
 import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.ChiTietDonHangDAO;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.ChiTietDonHangDAO.ProductSalesSummary;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonHang;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.constant.LoaiSanPham;
 
 import java.util.List;
+import java.time.LocalDate;
 
 /**
  * 
@@ -120,6 +123,13 @@ public class ChiTietDonHangBUS {
     public boolean kiemTraDonHangCoChiTiet(String maDonHang) {
         List<ChiTietDonHang> danhSach = chiTietDonHangDAO.findByIdList(maDonHang);
         return !danhSach.isEmpty();
+    }
+
+    /**
+     * Lấy danh sách top sản phẩm bán chạy trong khoảng thời gian.
+     */
+    public List<ProductSalesSummary> layTopSanPhamBanChay(LocalDate dateFrom, LocalDate dateTo, LoaiSanPham loaiSanPham, int limit) {
+        return chiTietDonHangDAO.findTopSellingProducts(dateFrom, dateTo, loaiSanPham, limit);
     }
 }
 

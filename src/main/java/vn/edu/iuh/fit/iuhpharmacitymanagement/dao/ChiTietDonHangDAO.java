@@ -15,6 +15,8 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.connectDB.ConnectDB;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.LoHang;
+import java.time.LocalDate;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.constant.LoaiSanPham;
 
 /**
  *
@@ -220,5 +222,84 @@ public class ChiTietDonHangDAO implements DAOInterface<ChiTietDonHang, String> {
             e.printStackTrace();
         }
         return 0;
+    }
+
+    /**
+     * Truy vấn top sản phẩm bán chạy trong khoảng ngày với điều kiện loại sản phẩm (tùy chọn).
+     */
+    public List<ProductSalesSummary> findTopSellingProducts(LocalDate dateFrom, LocalDate dateTo, LoaiSanPham loaiSanPham, int limit) {
+        List<ProductSalesSummary> summaries = new ArrayList<>();
+
+        if (dateFrom == null || dateTo == null) {
+            return summaries;
+        }
+
+        StringBuilder sql = new StringBuilder(
+                "SELECT sp.maSanPham, sp.tenSanPham, SUM(ct.soLuong) AS totalQuantity "
+                        + "FROM ChiTietDonHang ct "
+                        + "INNER JOIN DonHang dh ON ct.maDonHang = dh.maDonHang "
+                        + "INNER JOIN LoHang lh ON ct.maLoHang = lh.maLoHang "
+                        + "INNER JOIN SanPham sp ON lh.maSanPham = sp.maSanPham "
+                        + "WHERE dh.ngayDatHang BETWEEN ? AND ?"
+        );
+
+        if (loaiSanPham != null) {
+            sql.append(" AND sp.loaiSanPham = ?");
+        }
+
+        sql.append(" GROUP BY sp.maSanPham, sp.tenSanPham ORDER BY totalQuantity DESC");
+
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement pre = con.prepareStatement(sql.toString())) {
+
+            pre.setDate(1, java.sql.Date.valueOf(dateFrom));
+            pre.setDate(2, java.sql.Date.valueOf(dateTo));
+            if (loaiSanPham != null) {
+                pre.setString(3, loaiSanPham.name());
+            }
+
+            ResultSet rs = pre.executeQuery();
+            while (rs.next()) {
+                String productId = rs.getString("maSanPham");
+                String productName = rs.getString("tenSanPham");
+                long totalQuantity = rs.getLong("totalQuantity");
+                summaries.add(new ProductSalesSummary(productId, productName, totalQuantity));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        if (limit > 0 && summaries.size() > limit) {
+            return new ArrayList<>(summaries.subList(0, limit));
+        }
+
+        return summaries;
+    }
+
+    /**
+     * DTO chứa kết quả thống kê số lượng bán theo sản phẩm.
+     */
+    public static class ProductSalesSummary {
+        private final String productId;
+        private final String productName;
+        private final long totalQuantity;
+
+        public ProductSalesSummary(String productId, String productName, long totalQuantity) {
+            this.productId = productId;
+            this.productName = productName;
+            this.totalQuantity = totalQuantity;
+        }
+
+        public String getProductId() {
+            return productId;
+        }
+
+        public String getProductName() {
+            return productName;
+        }
+
+        public long getTotalQuantity() {
+            return totalQuantity;
+        }
     }
 }
