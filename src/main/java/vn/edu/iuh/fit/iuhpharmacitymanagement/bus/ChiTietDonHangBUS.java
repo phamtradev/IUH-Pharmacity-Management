@@ -1,6 +1,7 @@
 package vn.edu.iuh.fit.iuhpharmacitymanagement.bus;
 
 import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.ChiTietDonHangDAO;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.ChiTietDonHangDAO.CategorySalesSummary;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.ChiTietDonHangDAO.ProductSalesSummary;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.constant.LoaiSanPham;
@@ -130,6 +131,13 @@ public class ChiTietDonHangBUS {
      */
     public List<ProductSalesSummary> layTopSanPhamBanChay(LocalDate dateFrom, LocalDate dateTo, LoaiSanPham loaiSanPham, int limit) {
         return chiTietDonHangDAO.findTopSellingProducts(dateFrom, dateTo, loaiSanPham, limit);
+    }
+
+    /**
+     * Lấy thống kê doanh thu/số lượng theo loại sản phẩm trong khoảng thời gian.
+     */
+    public List<CategorySalesSummary> layThongKeBanHangTheoLoai(LocalDate dateFrom, LocalDate dateTo) {
+        return chiTietDonHangDAO.findSalesByCategory(dateFrom, dateTo);
     }
 }
 

@@ -9,15 +9,21 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.ChiTietDonHangBUS;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.barchart.Chart;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.barchart.ModelChart;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.constant.LoaiSanPham;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.ChiTietDonHangDAO.CategorySalesSummary;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.ChiTietDonHangDAO.ProductSalesSummary;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.piechart.PieChart;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.piechart.PieChartItem;
 
 import javax.swing.DefaultComboBoxModel;
 import java.awt.Color;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.ToDoubleFunction;
 
 /**
  *
@@ -26,31 +32,56 @@ import java.util.Map;
 public class Panel_XuHuongMuaHang extends javax.swing.JPanel {
     
     private static final int TOP_PRODUCT_LIMIT = 5;
-    private static final int MAX_PRODUCT_NAME_LENGTH = 15;
+    private static final Color[] PIE_COLORS = new Color[]{
+            new Color(90, 159, 255),
+            new Color(255, 112, 147),
+            new Color(0, 188, 170),
+            new Color(255, 202, 40),
+            new Color(156, 39, 176),
+            new Color(121, 85, 72)
+    };
+    private static final DateTimeFormatter DATE_DISPLAY_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     private final ChiTietDonHangBUS chiTietDonHangBUS;
     private Chart chart;
+    private PieChart pieChartRevenue;
+    private PieChart pieChartQuantity;
+    private PieChart pieChartTrend;
     private final Map<String, LoaiSanPham> productTypeOptions = new LinkedHashMap<>();
 
     public Panel_XuHuongMuaHang() {
         chiTietDonHangBUS = new ChiTietDonHangBUS();
         initChart();
+        initPieCharts();
         initComponents();
         initProductTypeFilter();
-        initSimpleUI();
+        initDefaultDates();
+        LocalDate today = LocalDate.now();
+        reloadDashboard(today.withDayOfMonth(1), today);
     }
     
     private void initChart() {
         chart = new Chart();
-        chart.addLegend("Số lượng bán", new Color(245, 189, 135));
+        chart.addLegend("Doanh thu", new Color(90, 159, 255));
     }
     
-    private void initSimpleUI() {
-        jDateFrom.setDate(java.util.Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant()));
-        jDateTo.setDate(java.util.Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant()));
-        lbdt.setVisible(false);
-        lbt5.setVisible(false);
-        lbtl.setVisible(false);
+    private void initPieCharts() {
+        pieChartRevenue = createPieChart();
+        pieChartQuantity = createPieChart();
+        pieChartTrend = createPieChart();
+    }
+
+    private PieChart createPieChart() {
+        PieChart pieChart = new PieChart();
+        pieChart.setEmptyMessage("Không có dữ liệu trong khoảng thời gian này");
+        return pieChart;
+    }
+
+    private void initDefaultDates() {
+        LocalDate today = LocalDate.now();
+        LocalDate firstDayOfMonth = today.withDayOfMonth(1);
+        jDateFrom.setDate(java.util.Date.from(firstDayOfMonth.atStartOfDay(ZoneId.systemDefault()).toInstant()));
+        jDateTo.setDate(java.util.Date.from(today.atStartOfDay(ZoneId.systemDefault()).toInstant()));
     }
 
     private void initProductTypeFilter() {
@@ -93,11 +124,13 @@ public class Panel_XuHuongMuaHang extends javax.swing.JPanel {
     }
 
     private String formatProductLabel(String name, String fallback) {
-        String value = (name == null || name.isBlank()) ? fallback : name.trim();
-        if (value.length() > MAX_PRODUCT_NAME_LENGTH) {
-            return value.substring(0, MAX_PRODUCT_NAME_LENGTH) + "...";
+        if (name != null && !name.isBlank()) {
+            return name.trim();
         }
-        return value;
+        if (fallback != null && !fallback.isBlank()) {
+            return fallback.trim();
+        }
+        return "Không tên";
     }
 
     /**
@@ -111,6 +144,10 @@ public class Panel_XuHuongMuaHang extends javax.swing.JPanel {
 
         jPanel1 = new javax.swing.JPanel();
         jPanel4 = new javax.swing.JPanel();
+        chartSummaryPanel = new javax.swing.JPanel();
+        panelRevenueChart = new javax.swing.JPanel();
+        panelQuantityChart = new javax.swing.JPanel();
+        panelTrendChart = new javax.swing.JPanel();
         lblXuHuong = new javax.swing.JLabel();
         lbdt = new javax.swing.JLabel();
         lbt5 = new javax.swing.JLabel();
@@ -139,59 +176,54 @@ public class Panel_XuHuongMuaHang extends javax.swing.JPanel {
 
         jPanel4.setBackground(new java.awt.Color(255, 255, 255));
         jPanel4.setPreferredSize(new java.awt.Dimension(1118, 430));
+        jPanel4.setLayout(new java.awt.BorderLayout(0, 12));
 
         lblXuHuong.setBackground(new java.awt.Color(255, 255, 255));
         lblXuHuong.setFont(new java.awt.Font("Roboto", 1, 16)); // NOI18N
         lblXuHuong.setText("XU HƯỚNG MUA HÀNG");
         lblXuHuong.setPreferredSize(new java.awt.Dimension(37, 30));
+        jPanel4.add(lblXuHuong, java.awt.BorderLayout.PAGE_START);
+
+        chartSummaryPanel.setOpaque(false);
+        chartSummaryPanel.setLayout(new java.awt.GridLayout(1, 3, 40, 0));
+
+        panelRevenueChart.setOpaque(false);
+        panelRevenueChart.setLayout(new java.awt.BorderLayout(0, 8));
+        panelRevenueChart.add(pieChartRevenue, java.awt.BorderLayout.CENTER);
 
         lbdt.setBackground(new java.awt.Color(255, 255, 255));
         lbdt.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         lbdt.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         lbdt.setText("Doanh Thu Theo Loại");
+        panelRevenueChart.add(lbdt, java.awt.BorderLayout.PAGE_END);
 
-        lbt5.setBackground(new java.awt.Color(255, 255, 255));
-        lbt5.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        lbt5.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        lbt5.setText("Xu Hướng Mua");
+        chartSummaryPanel.add(panelRevenueChart);
+
+        panelQuantityChart.setOpaque(false);
+        panelQuantityChart.setLayout(new java.awt.BorderLayout(0, 8));
+        panelQuantityChart.add(pieChartQuantity, java.awt.BorderLayout.CENTER);
 
         lbtl.setBackground(new java.awt.Color(255, 255, 255));
         lbtl.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         lbtl.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         lbtl.setText("Số Lượng Theo Loại");
+        panelQuantityChart.add(lbtl, java.awt.BorderLayout.PAGE_END);
 
-        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
-        jPanel4.setLayout(jPanel4Layout);
-        jPanel4Layout.setHorizontalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel4Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(lblXuHuong, javax.swing.GroupLayout.PREFERRED_SIZE, 1118, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(jPanel4Layout.createSequentialGroup()
-                        .addGap(50, 50, 50)
-                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(lbdt, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addGap(150, 150, 150)
-                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(lbtl, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addGap(150, 150, 150)
-                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(lbt5, javax.swing.GroupLayout.DEFAULT_SIZE, 351, Short.MAX_VALUE))))
-                .addGap(162, 162, 162))
-        );
-        jPanel4Layout.setVerticalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel4Layout.createSequentialGroup()
-                .addComponent(lblXuHuong, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGap(0, 0, 0)
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lbdt, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(lbt5)
-                    .addComponent(lbtl))
-                .addContainerGap())
-        );
+        chartSummaryPanel.add(panelQuantityChart);
+
+        panelTrendChart.setOpaque(false);
+        panelTrendChart.setLayout(new java.awt.BorderLayout(0, 8));
+        panelTrendChart.add(pieChartTrend, java.awt.BorderLayout.CENTER);
+
+        lbt5.setBackground(new java.awt.Color(255, 255, 255));
+        lbt5.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        lbt5.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        lbt5.setText("Xu Hướng Mua");
+        panelTrendChart.add(lbt5, java.awt.BorderLayout.PAGE_END);
+
+        chartSummaryPanel.add(panelTrendChart);
+
+        jPanel4.add(chartSummaryPanel, java.awt.BorderLayout.CENTER);
 
         jPanel1.add(jPanel4, java.awt.BorderLayout.PAGE_START);
 
@@ -327,9 +359,52 @@ public class Panel_XuHuongMuaHang extends javax.swing.JPanel {
             return;
         }
         
-        loadTopProducts(dateFrom, dateTo);
+        reloadDashboard(dateFrom, dateTo);
         Notifications.getInstance().show(Notifications.Type.SUCCESS, Notifications.Location.TOP_CENTER, "Đã tải dữ liệu xu hướng mua hàng");
     }//GEN-LAST:event_btnSearchActionPerformed
+    
+    private void reloadDashboard(LocalDate dateFrom, LocalDate dateTo) {
+        loadCategoryCharts(dateFrom, dateTo);
+        loadTopProducts(dateFrom, dateTo);
+        updateSummaryTitle(dateFrom, dateTo);
+    }
+    
+    private void loadCategoryCharts(LocalDate dateFrom, LocalDate dateTo) {
+        List<CategorySalesSummary> summaries = chiTietDonHangBUS.layThongKeBanHangTheoLoai(dateFrom, dateTo);
+        applyPieData(pieChartRevenue, summaries, CategorySalesSummary::getTotalRevenue);
+        applyPieData(pieChartQuantity, summaries, summary -> summary.getTotalQuantity());
+        applyPieData(pieChartTrend, summaries, CategorySalesSummary::getOrderCount);
+    }
+    
+    private void applyPieData(PieChart chart, List<CategorySalesSummary> summaries, ToDoubleFunction<CategorySalesSummary> valueExtractor) {
+        List<PieChartItem> items = new ArrayList<>();
+        int index = 0;
+        
+        for (CategorySalesSummary summary : summaries) {
+            double value = valueExtractor.applyAsDouble(summary);
+            if (value <= 0) {
+                continue;
+            }
+            String label = summary.getCategory() == null ? "Khác" : toDisplayName(summary.getCategory());
+            items.add(new PieChartItem(label, value, PIE_COLORS[index % PIE_COLORS.length]));
+            index++;
+        }
+        
+        if (items.isEmpty()) {
+            chart.clear();
+        } else {
+            chart.setData(items);
+        }
+    }
+    
+    private void updateSummaryTitle(LocalDate dateFrom, LocalDate dateTo) {
+        String title = String.format(
+                "XU HƯỚNG MUA HÀNG TỪ %s ĐẾN %s",
+                DATE_DISPLAY_FORMATTER.format(dateFrom),
+                DATE_DISPLAY_FORMATTER.format(dateTo)
+        );
+        lblXuHuong.setText(title);
+    }
     
     private void loadTopProducts(LocalDate dateFrom, LocalDate dateTo) {
         chart.clear();
@@ -344,22 +419,32 @@ public class Panel_XuHuongMuaHang extends javax.swing.JPanel {
 
         for (ProductSalesSummary summary : topProducts) {
             String label = formatProductLabel(summary.getProductName(), summary.getProductId());
-            chart.addData(new ModelChart(label, new double[]{summary.getTotalQuantity()}));
+            chart.addData(new ModelChart(label, new double[]{summary.getTotalRevenue()}));
+        }
+
+        if (topProducts.isEmpty()) {
+            lblChartProduct.setText(String.format(
+                    "KHÔNG CÓ SẢN PHẨM NÀO TỪ NGÀY %s ĐẾN NGÀY %s",
+                    DATE_DISPLAY_FORMATTER.format(dateFrom),
+                    DATE_DISPLAY_FORMATTER.format(dateTo)
+            ));
+            return;
         }
 
         chart.start();
-
-        if (topProducts.isEmpty()) {
-            lblChartProduct.setText("KHÔNG CÓ SẢN PHẨM NÀO TRONG KHOẢNG THỜI GIAN NÀY");
-        } else {
-            lblChartProduct.setText("TOP " + topProducts.size() + " SẢN PHẨM BÁN CHẠY");
-        }
+        lblChartProduct.setText(String.format(
+                "TOP %d SẢN PHẨM BÁN CHẠY TỪ NGÀY %s ĐẾN NGÀY %s",
+                Math.min(topProducts.size(), TOP_PRODUCT_LIMIT),
+                DATE_DISPLAY_FORMATTER.format(dateFrom),
+                DATE_DISPLAY_FORMATTER.format(dateTo)
+        ));
     }
 
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnSearch;
+    private javax.swing.JPanel chartSummaryPanel;
     private javax.swing.JComboBox<String> comboProductType;
     private com.toedter.calendar.JDateChooser jDateFrom;
     private com.toedter.calendar.JDateChooser jDateTo;
@@ -377,6 +462,9 @@ public class Panel_XuHuongMuaHang extends javax.swing.JPanel {
     private javax.swing.JLabel lblXuHuong;
     private javax.swing.JLabel lbt5;
     private javax.swing.JLabel lbtl;
+    private javax.swing.JPanel panelQuantityChart;
+    private javax.swing.JPanel panelRevenueChart;
+    private javax.swing.JPanel panelTrendChart;
     private javax.swing.JPanel pnContent;
     // End of variables declaration//GEN-END:variables
 }
