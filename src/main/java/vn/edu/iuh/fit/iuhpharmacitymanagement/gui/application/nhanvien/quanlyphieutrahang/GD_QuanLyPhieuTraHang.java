@@ -1646,6 +1646,16 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
             }
 
             try {
+                // 1. Lưu đơn trả hàng và chi tiết vào database trước
+                boolean luuThanhCong = luuDonTraHangVaoDB(donTraHang, danhSachChiTiet);
+                if (!luuThanhCong) {
+                    raven.toast.Notifications.getInstance().show(
+                            raven.toast.Notifications.Type.ERROR,
+                            "Lỗi khi lưu đơn trả hàng vào database!");
+                    return;
+                }
+
+                // 2. Tạo PDF sau khi đã lưu thành công
                 byte[] pdfData = taoHoaDonTraPdf(donTraHang, danhSachChiTiet);
                 String pdfPath = hienThiPdfTamThoiTra(pdfData, donTraHang);
 
@@ -1654,8 +1664,8 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
                         raven.toast.Notifications.Location.TOP_CENTER,
                         3000,
                         pdfPath != null
-                                ? "Đã mở hóa đơn trả hàng PDF tại: " + pdfPath
-                                : "Đã mở hóa đơn trả hàng PDF tạm thời!");
+                                ? "Đã lưu và mở hóa đơn trả hàng PDF tại: " + pdfPath
+                                : "Đã lưu và mở hóa đơn trả hàng PDF tạm thời!");
 
                 dialog.dispose();
                 maDonTraTam = null;
@@ -1663,7 +1673,8 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
             } catch (Exception ex) {
                 raven.toast.Notifications.getInstance().show(
                         raven.toast.Notifications.Type.ERROR,
-                        "Lỗi khi tạo PDF: " + ex.getMessage());
+                        "Lỗi khi lưu đơn trả hàng: " + ex.getMessage());
+                ex.printStackTrace();
             }
         });
 
@@ -1699,6 +1710,71 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
         mainPanel.add(footerPanel, java.awt.BorderLayout.SOUTH);
         dialog.add(mainPanel);
         dialog.setVisible(true);
+    }
+
+    /**
+     * Lưu đơn trả hàng và chi tiết vào database
+     * @param donTraHang Đơn trả hàng cần lưu
+     * @param danhSachChiTiet Danh sách chi tiết cần lưu
+     * @return true nếu lưu thành công, false nếu thất bại
+     */
+    private boolean luuDonTraHangVaoDB(vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonTraHang donTraHang,
+            java.util.List<vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonTraHang> danhSachChiTiet) {
+        try {
+            // Tạo mã đơn trả hàng mới (thay thế mã tạm)
+            String maDonTraMoi = taoMaDonTraHangTam();
+            donTraHang.setMaDonTraHang(maDonTraMoi);
+            
+            // Set trạng thái mặc định nếu chưa có
+            if (donTraHang.getTrangThaiXuLy() == null || donTraHang.getTrangThaiXuLy().trim().isEmpty()) {
+                donTraHang.setTrangThaiXuLy("Chưa xử lý");
+            }
+
+            // 1. Lưu đơn trả hàng vào database
+            vn.edu.iuh.fit.iuhpharmacitymanagement.bus.DonTraHangBUS donTraHangBUS = 
+                    new vn.edu.iuh.fit.iuhpharmacitymanagement.bus.DonTraHangBUS();
+            boolean savedDonTra = donTraHangBUS.taoDonTraHang(donTraHang);
+
+            if (!savedDonTra) {
+                System.err.println("Lỗi khi lưu đơn trả hàng!");
+                return false;
+            }
+
+            // 2. Lưu chi tiết đơn trả hàng
+            vn.edu.iuh.fit.iuhpharmacitymanagement.bus.ChiTietDonTraHangBUS chiTietBUS = 
+                    new vn.edu.iuh.fit.iuhpharmacitymanagement.bus.ChiTietDonTraHangBUS();
+            
+            boolean allDetailsSaved = true;
+            for (vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonTraHang chiTiet : danhSachChiTiet) {
+                // Cập nhật mã đơn trả hàng mới cho chi tiết
+                chiTiet.setDonTraHang(donTraHang);
+                
+                // Set trạng thái mặc định nếu chưa có
+                if (chiTiet.getTrangThaiXuLy() == null || chiTiet.getTrangThaiXuLy().trim().isEmpty()) {
+                    chiTiet.setTrangThaiXuLy("Chưa xử lý");
+                }
+                
+                boolean chiTietSaved = chiTietBUS.themChiTietDonTraHang(chiTiet);
+                if (!chiTietSaved) {
+                    allDetailsSaved = false;
+                    System.err.println("Lỗi khi lưu chi tiết đơn trả hàng cho sản phẩm: " + 
+                            (chiTiet.getSanPham() != null ? chiTiet.getSanPham().getTenSanPham() : "N/A"));
+                }
+            }
+
+            if (!allDetailsSaved) {
+                System.err.println("Có lỗi khi lưu một số chi tiết đơn trả hàng!");
+                return false;
+            }
+
+            System.out.println("Đã lưu thành công đơn trả hàng: " + maDonTraMoi);
+            return true;
+
+        } catch (Exception ex) {
+            System.err.println("Lỗi khi lưu đơn trả hàng vào database: " + ex.getMessage());
+            ex.printStackTrace();
+            return false;
+        }
     }
 
     /**

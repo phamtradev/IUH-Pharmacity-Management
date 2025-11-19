@@ -487,15 +487,6 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
             bottomPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 10, 10));
             bottomPanel.setBackground(java.awt.Color.WHITE);
 
-            // Nút In Phiếu
-            javax.swing.JButton btnInPhieu = new javax.swing.JButton("In Phiếu");
-            btnInPhieu.setPreferredSize(new java.awt.Dimension(120, 40));
-            ButtonStyles.apply(btnInPhieu, ButtonStyles.Type.INFO);
-            btnInPhieu.addActionListener(e -> {
-                // Hiển thị preview hóa đơn trả hàng
-                hienThiHoaDonTraHang(donTraHang, chiTietList);
-            });
-
             javax.swing.JButton btnDong = new javax.swing.JButton("Đóng");
             btnDong.setPreferredSize(new java.awt.Dimension(120, 40));
             ButtonStyles.apply(btnDong, ButtonStyles.Type.SECONDARY);
@@ -506,7 +497,6 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
                 reloadTableData();
             });
 
-            bottomPanel.add(btnInPhieu);
             bottomPanel.add(btnDong);
             mainPanel.add(bottomPanel, java.awt.BorderLayout.SOUTH);
 
