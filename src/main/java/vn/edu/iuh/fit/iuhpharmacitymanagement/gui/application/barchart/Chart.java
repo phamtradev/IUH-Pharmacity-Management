@@ -62,8 +62,8 @@ public class Chart extends javax.swing.JPanel {
                         // Vẽ cột
                         g2.fillRect(barX, barY, barWidth, barHeight);
 
-                        Double price = Double.parseDouble(String.valueOf((int) model.get(index).getValues()[i]));
-                        String valueText = DinhDangSo.dinhDangTien(price);// Lấy giá trị và chuyển thành chuỗi
+                        double value = model.get(index).getValues()[i];
+                        String valueText = DinhDangSo.dinhDangTien(value);// Lấy giá trị và chuyển thành chuỗi
                         FontMetrics fm = g2.getFontMetrics(); // Lấy thông tin font
 
                         // Thiết lập font chữ nhỏ hơn

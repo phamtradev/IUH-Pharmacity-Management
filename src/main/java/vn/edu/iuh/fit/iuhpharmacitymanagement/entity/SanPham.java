@@ -207,8 +207,9 @@ public class SanPham {
     }
 
     public void setHinhAnh(String hinhAnh) throws Exception {
-        if (hinhAnh.isBlank()) {
-            throw new Exception(HINH_ANH_RONG);
+        if (hinhAnh == null || hinhAnh.isBlank()) {
+            this.hinhAnh = null;
+            return;
         }
         this.hinhAnh = hinhAnh;
     }
