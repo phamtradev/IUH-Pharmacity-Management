@@ -1580,7 +1580,8 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
         headerPanel.add(lblTitle);
         headerPanel.add(javax.swing.Box.createVerticalStrut(10));
 
-        javax.swing.JLabel lblMaDon = new javax.swing.JLabel("Mã đơn: " + donTraHang.getMaDonTraHang());
+        String maDonHienTai = donTraHang.getMaDonTraHang() != null ? donTraHang.getMaDonTraHang() : "TẠM THỜI";
+        javax.swing.JLabel lblMaDon = new javax.swing.JLabel("Mã phiếu: " + maDonHienTai + " - TẠM THỜI (chưa lưu)");
         lblMaDon.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 16));
         lblMaDon.setAlignmentX(java.awt.Component.CENTER_ALIGNMENT);
         headerPanel.add(lblMaDon);
@@ -2057,6 +2058,14 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
             } catch (Exception ex) {
                 document.add(new Paragraph(""));
             }
+            
+            // Hiển thị mã phiếu với chú thích tạm thời
+            document.add(new Paragraph("Ma phieu: " + maPhieu + " - TAM THOI (chua luu)")
+                    .setFont(font)
+                    .setFontSize(10)
+                    .setTextAlignment(TextAlignment.CENTER)
+                    .setFontColor(ColorConstants.DARK_GRAY));
+            document.add(new Paragraph(""));
 
             document.add(new Paragraph("PHIEU TRA HANG")
                     .setFont(fontBold)
