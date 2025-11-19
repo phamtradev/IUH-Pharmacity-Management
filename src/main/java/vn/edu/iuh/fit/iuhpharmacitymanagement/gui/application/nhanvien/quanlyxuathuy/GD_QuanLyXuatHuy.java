@@ -52,10 +52,6 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         loadUserData();
     }
 
-    private void applyButtonStyles() {
-        ButtonStyles.apply(btnTaoPhieu, ButtonStyles.Type.PRIMARY);
-    }
-
     // <editor-fold defaultstate="collapsed" desc="Generated
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -205,6 +201,12 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         add(headerPanel, java.awt.BorderLayout.PAGE_START);
     }// </editor-fold>//GEN-END:initComponents
 
+    //Phần code logic
+    //áp dụng style cho các nút
+    private void applyButtonStyles() {
+        ButtonStyles.apply(btnTaoPhieu, ButtonStyles.Type.PRIMARY);
+    }
+
     private void fillContent() {
         // Tạo tiêu đề "DANH SÁCH THÔNG TIN XUẤT HỦY"
         createTitleHeader();
@@ -301,8 +303,8 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
     }
 
     /**
-     * Đặt khu vực bảng ở giữa và thanh thông tin (tổng tiền + nút tạo) nằm ngang
-     * ở phía dưới để bảng hiển thị full chiều rộng.
+     * Đặt khu vực bảng ở giữa và thanh thông tin (tổng tiền + nút tạo) nằm
+     * ngang ở phía dưới để bảng hiển thị full chiều rộng.
      */
     private void configureMainLayout() {
         if (pnMid == null || pnLeft == null) {

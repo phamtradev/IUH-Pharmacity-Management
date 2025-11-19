@@ -20,119 +20,8 @@ public class Panel_ChiTietSanPhamTraHang extends javax.swing.JPanel {
     public Panel_ChiTietSanPhamTraHang() {
         initComponents();
     }
-    
-    // Interface để thông báo khi panel bị xóa
-    public interface PanelDeleteListener {
-        void onPanelDeleted();
-    }
-    
-    // Setter cho listener
-    public void setDeleteListener(PanelDeleteListener listener) {
-        this.deleteListener = listener;
-    }
 
-    public int getSoLuongTra() {
-        return (int) spinnerSoLuongTra.getValue();
-    }
-
-    public void setSoLuongTra(int soLuong) {
-        // Kiểm tra số lượng không vượt quá số lượng tối đa
-        if (soLuong > soLuongToiDa) {
-            spinnerSoLuongTra.setValue(soLuongToiDa);
-        } else {
-            spinnerSoLuongTra.setValue(soLuong);
-        }
-    }
-    
-    public int getSoLuongToiDa() {
-        return soLuongToiDa;
-    }
-    
-    public void setSoLuongToiDa(int soLuong) {
-        this.soLuongToiDa = soLuong;
-        // Lấy giá trị hiện tại của spinner
-        int currentValue = (int) spinnerSoLuongTra.getValue();
-        // Cập nhật model của spinner với giới hạn RẤT LỚN (Integer.MAX_VALUE)
-        // để KHÔNG tự động chặn, mà để listener xử lý validation
-        int newValue = Math.min(currentValue, soLuong);
-        spinnerSoLuongTra.setModel(new javax.swing.SpinnerNumberModel(newValue, 1, Integer.MAX_VALUE, 1));
-    }
-
-    public String getTenSanPham() {
-        return lblTenSP.getText();
-    }
-
-    public void setTenSanPham(String ten) {
-        lblTenSP.setText(ten);
-    }
-    
-    public String getDonVi() {
-        return lblDonVi.getText();
-    }
-
-    public void setDonVi(String donVi) {
-        lblDonVi.setText(donVi);
-    }
-    
-    public void setHinhAnh(String imagePath) {
-        if (imagePath != null && !imagePath.isEmpty()) {
-            try {
-                java.io.File imgFile = new java.io.File(imagePath);
-                if (imgFile.exists()) {
-                    javax.swing.ImageIcon imageIcon = new javax.swing.ImageIcon(imagePath);
-                    java.awt.Image image = imageIcon.getImage().getScaledInstance(80, 80, java.awt.Image.SCALE_SMOOTH);
-                    lblHinh.setIcon(new javax.swing.ImageIcon(image));
-                    lblHinh.setText("");
-                } else {
-                    lblHinh.setText("No Img");
-                }
-            } catch (Exception e) {
-                lblHinh.setText("Error");
-            }
-        } else {
-            lblHinh.setText("No Img");
-        }
-    }
-    
-    public double getDonGia() {
-        try {
-            return Double.parseDouble(txtDonGia.getText().replaceAll("[^0-9.]", ""));
-        } catch (Exception e) {
-            return 0;
-        }
-    }
-
-    public void setDonGia(double donGia) {
-        txtDonGia.setText(String.format("%,.0f ₫", donGia));
-        updateTongTienTra();
-    }
-
-    public String getLyDoTraHang() {
-        return lyDoTraHang;
-    }
-
-    public void setLyDoTraHang(String lyDo) {
-        this.lyDoTraHang = lyDo;
-        if (lyDo != null && !lyDo.trim().isEmpty()) {
-            btnLyDo.setText("✓ Lý do");
-            ButtonStyles.apply(btnLyDo, ButtonStyles.Type.SUCCESS);
-        } else {
-            btnLyDo.setText("Lý do");
-            ButtonStyles.apply(btnLyDo, ButtonStyles.Type.INFO);
-        }
-    }
-
-    private void updateTongTienTra() {
-        try {
-            int soLuong = (int) spinnerSoLuongTra.getValue();
-            double donGia = Double.parseDouble(txtDonGia.getText().replaceAll("[^0-9.]", ""));
-            double tongTien = soLuong * donGia;
-            txtTongTienTra.setText(String.format("%,.0f ₫", tongTien));
-        } catch (Exception e) {
-            txtTongTienTra.setText("0 ₫");
-        }
-    }
-
+    //Phần logic code
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
@@ -142,7 +31,7 @@ public class Panel_ChiTietSanPhamTraHang extends javax.swing.JPanel {
         setMinimumSize(new java.awt.Dimension(800, 100));
         setPreferredSize(new java.awt.Dimension(1000, 100));
         setRequestFocusEnabled(false);
-        
+
         // Sử dụng GridBagLayout để các cột thẳng hàng
         setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
@@ -245,7 +134,7 @@ public class Panel_ChiTietSanPhamTraHang extends javax.swing.JPanel {
         pnButtons.setLayout(new javax.swing.BoxLayout(pnButtons, javax.swing.BoxLayout.Y_AXIS));
         pnButtons.setPreferredSize(new java.awt.Dimension(70, 100));
         pnButtons.setMinimumSize(new java.awt.Dimension(70, 100));
-        
+
         // Nút Lý do
         btnLyDo = new javax.swing.JButton();
         btnLyDo.setText("Lý do");
@@ -261,7 +150,7 @@ public class Panel_ChiTietSanPhamTraHang extends javax.swing.JPanel {
                 btnLyDoActionPerformed(evt);
             }
         });
-        
+
         // Nút Xóa
         javax.swing.JButton btnXoa = new javax.swing.JButton();
         btnXoa.setText("Xóa");
@@ -277,18 +166,131 @@ public class Panel_ChiTietSanPhamTraHang extends javax.swing.JPanel {
                 btnXoaActionPerformed(evt);
             }
         });
-        
+
         // Thêm 2 nút vào panel theo chiều dọc
         pnButtons.add(javax.swing.Box.createVerticalGlue());
         pnButtons.add(btnLyDo);
         pnButtons.add(javax.swing.Box.createRigidArea(new java.awt.Dimension(0, 10)));
         pnButtons.add(btnXoa);
         pnButtons.add(javax.swing.Box.createVerticalGlue());
-        
+
         gbc.gridx = 6;
         gbc.weightx = 0.0;
         add(pnButtons, gbc);
     }// </editor-fold>//GEN-END:initComponents
+
+    // Interface để thông báo khi panel bị xóa
+    public interface PanelDeleteListener {
+
+        void onPanelDeleted();
+    }
+
+    // Setter cho listener
+    public void setDeleteListener(PanelDeleteListener listener) {
+        this.deleteListener = listener;
+    }
+
+    public int getSoLuongTra() {
+        return (int) spinnerSoLuongTra.getValue();
+    }
+
+    public void setSoLuongTra(int soLuong) {
+        // Kiểm tra số lượng không vượt quá số lượng tối đa
+        if (soLuong > soLuongToiDa) {
+            spinnerSoLuongTra.setValue(soLuongToiDa);
+        } else {
+            spinnerSoLuongTra.setValue(soLuong);
+        }
+    }
+
+    public int getSoLuongToiDa() {
+        return soLuongToiDa;
+    }
+
+    public void setSoLuongToiDa(int soLuong) {
+        this.soLuongToiDa = soLuong;
+        // Lấy giá trị hiện tại của spinner
+        int currentValue = (int) spinnerSoLuongTra.getValue();
+        // Cập nhật model của spinner với giới hạn RẤT LỚN (Integer.MAX_VALUE)
+        // để KHÔNG tự động chặn, mà để listener xử lý validation
+        int newValue = Math.min(currentValue, soLuong);
+        spinnerSoLuongTra.setModel(new javax.swing.SpinnerNumberModel(newValue, 1, Integer.MAX_VALUE, 1));
+    }
+
+    public String getTenSanPham() {
+        return lblTenSP.getText();
+    }
+
+    public void setTenSanPham(String ten) {
+        lblTenSP.setText(ten);
+    }
+
+    public String getDonVi() {
+        return lblDonVi.getText();
+    }
+
+    public void setDonVi(String donVi) {
+        lblDonVi.setText(donVi);
+    }
+
+    public void setHinhAnh(String imagePath) {
+        if (imagePath != null && !imagePath.isEmpty()) {
+            try {
+                java.io.File imgFile = new java.io.File(imagePath);
+                if (imgFile.exists()) {
+                    javax.swing.ImageIcon imageIcon = new javax.swing.ImageIcon(imagePath);
+                    java.awt.Image image = imageIcon.getImage().getScaledInstance(80, 80, java.awt.Image.SCALE_SMOOTH);
+                    lblHinh.setIcon(new javax.swing.ImageIcon(image));
+                    lblHinh.setText("");
+                } else {
+                    lblHinh.setText("No Img");
+                }
+            } catch (Exception e) {
+                lblHinh.setText("Error");
+            }
+        } else {
+            lblHinh.setText("No Img");
+        }
+    }
+
+    public double getDonGia() {
+        try {
+            return Double.parseDouble(txtDonGia.getText().replaceAll("[^0-9.]", ""));
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
+    public void setDonGia(double donGia) {
+        txtDonGia.setText(String.format("%,.0f ₫", donGia));
+        updateTongTienTra();
+    }
+
+    public String getLyDoTraHang() {
+        return lyDoTraHang;
+    }
+
+    public void setLyDoTraHang(String lyDo) {
+        this.lyDoTraHang = lyDo;
+        if (lyDo != null && !lyDo.trim().isEmpty()) {
+            btnLyDo.setText("✓ Lý do");
+            ButtonStyles.apply(btnLyDo, ButtonStyles.Type.SUCCESS);
+        } else {
+            btnLyDo.setText("Lý do");
+            ButtonStyles.apply(btnLyDo, ButtonStyles.Type.INFO);
+        }
+    }
+
+    private void updateTongTienTra() {
+        try {
+            int soLuong = (int) spinnerSoLuongTra.getValue();
+            double donGia = Double.parseDouble(txtDonGia.getText().replaceAll("[^0-9.]", ""));
+            double tongTien = soLuong * donGia;
+            txtTongTienTra.setText(String.format("%,.0f ₫", tongTien));
+        } catch (Exception e) {
+            txtTongTienTra.setText("0 ₫");
+        }
+    }
 
     private void btnXoaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnXoaActionPerformed
         // Xóa panel này khỏi container cha
@@ -297,7 +299,7 @@ public class Panel_ChiTietSanPhamTraHang extends javax.swing.JPanel {
             parent.remove(this);
             parent.revalidate();
             parent.repaint();
-            
+
             // Thông báo cho listener để cập nhật tổng tiền
             if (deleteListener != null) {
                 deleteListener.onPanelDeleted();
@@ -310,17 +312,17 @@ public class Panel_ChiTietSanPhamTraHang extends javax.swing.JPanel {
         if (isResettingValue) {
             return;
         }
-        
+
         // Kiểm tra số lượng trả không vượt quá số lượng đã mua
         int soLuongNhap = (int) spinnerSoLuongTra.getValue();
-        
+
         if (soLuongNhap > soLuongToiDa) {
             // Hiển thị thông báo lỗi
             raven.toast.Notifications.getInstance().show(
-                raven.toast.Notifications.Type.ERROR,
-                raven.toast.Notifications.Location.TOP_CENTER,
-                3000,
-                "Số lượng trả (" + soLuongNhap + ") không được lớn hơn số lượng đã mua (" + soLuongToiDa + ")"
+                    raven.toast.Notifications.Type.ERROR,
+                    raven.toast.Notifications.Location.TOP_CENTER,
+                    3000,
+                    "Số lượng trả (" + soLuongNhap + ") không được lớn hơn số lượng đã mua (" + soLuongToiDa + ")"
             );
 
             // Reset về số lượng tối đa
@@ -330,7 +332,7 @@ public class Panel_ChiTietSanPhamTraHang extends javax.swing.JPanel {
             updateTongTienTra();
             return;
         }
-        
+
         // Tính lại tổng tiền trả khi thay đổi số lượng
         updateTongTienTra();
     }//GEN-LAST:event_spinnerSoLuongTraStateChanged
@@ -339,22 +341,21 @@ public class Panel_ChiTietSanPhamTraHang extends javax.swing.JPanel {
         // Tìm Frame cha để hiển thị dialog
         java.awt.Window window = javax.swing.SwingUtilities.getWindowAncestor(this);
         java.awt.Frame frame = null;
-        
+
         if (window instanceof java.awt.Frame) {
             frame = (java.awt.Frame) window;
         }
-        
+
         // Tạo và hiển thị dialog
         Dialog_NhapLyDoTraHang dialog = new Dialog_NhapLyDoTraHang(frame, true);
         dialog.setLyDo(lyDoTraHang);
         dialog.setVisible(true);
-        
+
         // Nếu người dùng xác nhận, lưu lý do
         if (dialog.isDaXacNhan()) {
             setLyDoTraHang(dialog.getLyDo());
         }
     }//GEN-LAST:event_btnLyDoActionPerformed
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JSpinner spinnerSoLuongTra;

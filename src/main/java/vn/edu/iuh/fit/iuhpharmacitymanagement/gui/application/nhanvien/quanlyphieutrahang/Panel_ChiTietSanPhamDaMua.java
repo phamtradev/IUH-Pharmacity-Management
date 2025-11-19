@@ -13,113 +13,12 @@ import java.awt.event.MouseEvent;
  */
 public class Panel_ChiTietSanPhamDaMua extends javax.swing.JPanel {
 
-    private ProductClickListener clickListener;
-    
-    public interface ProductClickListener {
-        void onProductClicked(Panel_ChiTietSanPhamDaMua productPanel);
-    }
-
     public Panel_ChiTietSanPhamDaMua() {
         initComponents();
         setupClickable();
     }
 
-    public void setProductClickListener(ProductClickListener listener) {
-        this.clickListener = listener;
-    }
-
-    private void setupClickable() {
-        // Làm cho toàn bộ panel có thể click được
-        this.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (clickListener != null) {
-                    clickListener.onProductClicked(Panel_ChiTietSanPhamDaMua.this);
-                }
-            }
-            
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                setBackground(new java.awt.Color(240, 248, 255)); // Màu xanh nhạt khi hover
-                setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-            }
-            
-            @Override
-            public void mouseExited(MouseEvent e) {
-                setBackground(new java.awt.Color(255, 255, 255)); // Trở về màu trắng
-                setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
-            }
-        });
-    }
-
-    // Getters và Setters cho dữ liệu sản phẩm
-    public String getTenSanPham() {
-        return lblTenSP.getText();
-    }
-
-    public void setTenSanPham(String ten) {
-        lblTenSP.setText(ten);
-    }
-
-    public String getDonVi() {
-        return lblDonVi.getText();
-    }
-
-    public void setDonVi(String donVi) {
-        lblDonVi.setText(donVi);
-    }
-
-    public int getSoLuong() {
-        return (int) spinnerSoLuong.getValue();
-    }
-
-    public void setSoLuong(int soLuong) {
-        spinnerSoLuong.setValue(soLuong);
-    }
-
-    public double getDonGia() {
-        return Double.parseDouble(txtDonGia.getText().replaceAll("[^0-9.]", ""));
-    }
-
-    public void setDonGia(double donGia) {
-        txtDonGia.setText(String.format("%,.0f ₫", donGia));
-        updateTongTien();
-    }
-
-    public double getTongTien() {
-        return Double.parseDouble(txtTongTien.getText().replaceAll("[^0-9.]", ""));
-    }
-    
-    public void setHinhAnh(String imagePath) {
-        if (imagePath != null && !imagePath.isEmpty()) {
-            try {
-                java.io.File imgFile = new java.io.File(imagePath);
-                if (imgFile.exists()) {
-                    javax.swing.ImageIcon imageIcon = new javax.swing.ImageIcon(imagePath);
-                    java.awt.Image image = imageIcon.getImage().getScaledInstance(80, 80, java.awt.Image.SCALE_SMOOTH);
-                    lblHinh.setIcon(new javax.swing.ImageIcon(image));
-                    lblHinh.setText("");
-                } else {
-                    lblHinh.setText("No Img");
-                }
-            } catch (Exception e) {
-                lblHinh.setText("Error");
-            }
-        } else {
-            lblHinh.setText("No Img");
-        }
-    }
-
-    private void updateTongTien() {
-        try {
-            int soLuong = (int) spinnerSoLuong.getValue();
-            double donGia = getDonGia();
-            double tongTien = soLuong * donGia;
-            txtTongTien.setText(String.format("%,.0f ₫", tongTien));
-        } catch (Exception e) {
-            txtTongTien.setText("0 ₫");
-        }
-    }
+    private ProductClickListener clickListener;
 
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -130,7 +29,7 @@ public class Panel_ChiTietSanPhamDaMua extends javax.swing.JPanel {
         setMinimumSize(new java.awt.Dimension(800, 100));
         setPreferredSize(new java.awt.Dimension(1000, 100));
         setRequestFocusEnabled(false);
-        
+
         // Sử dụng GridBagLayout để các cột thẳng hàng
         setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
@@ -235,6 +134,109 @@ public class Panel_ChiTietSanPhamDaMua extends javax.swing.JPanel {
         gbc.weightx = 0.0;
         add(lblStatus, gbc);
     }// </editor-fold>//GEN-END:initComponents
+
+    //Phần logoc code
+    public interface ProductClickListener {
+
+        void onProductClicked(Panel_ChiTietSanPhamDaMua productPanel);
+    }
+
+    public void setProductClickListener(ProductClickListener listener) {
+        this.clickListener = listener;
+    }
+
+    private void setupClickable() {
+        // Làm cho toàn bộ panel có thể click được
+        this.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (clickListener != null) {
+                    clickListener.onProductClicked(Panel_ChiTietSanPhamDaMua.this);
+                }
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                setBackground(new java.awt.Color(240, 248, 255)); // Màu xanh nhạt khi hover
+                setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                setBackground(new java.awt.Color(255, 255, 255)); // Trở về màu trắng
+                setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+            }
+        });
+    }
+
+    // Getters và Setters cho dữ liệu sản phẩm
+    public String getTenSanPham() {
+        return lblTenSP.getText();
+    }
+
+    public void setTenSanPham(String ten) {
+        lblTenSP.setText(ten);
+    }
+
+    public String getDonVi() {
+        return lblDonVi.getText();
+    }
+
+    public void setDonVi(String donVi) {
+        lblDonVi.setText(donVi);
+    }
+
+    public int getSoLuong() {
+        return (int) spinnerSoLuong.getValue();
+    }
+
+    public void setSoLuong(int soLuong) {
+        spinnerSoLuong.setValue(soLuong);
+    }
+
+    public double getDonGia() {
+        return Double.parseDouble(txtDonGia.getText().replaceAll("[^0-9.]", ""));
+    }
+
+    public void setDonGia(double donGia) {
+        txtDonGia.setText(String.format("%,.0f ₫", donGia));
+        updateTongTien();
+    }
+
+    public double getTongTien() {
+        return Double.parseDouble(txtTongTien.getText().replaceAll("[^0-9.]", ""));
+    }
+
+    public void setHinhAnh(String imagePath) {
+        if (imagePath != null && !imagePath.isEmpty()) {
+            try {
+                java.io.File imgFile = new java.io.File(imagePath);
+                if (imgFile.exists()) {
+                    javax.swing.ImageIcon imageIcon = new javax.swing.ImageIcon(imagePath);
+                    java.awt.Image image = imageIcon.getImage().getScaledInstance(80, 80, java.awt.Image.SCALE_SMOOTH);
+                    lblHinh.setIcon(new javax.swing.ImageIcon(image));
+                    lblHinh.setText("");
+                } else {
+                    lblHinh.setText("No Img");
+                }
+            } catch (Exception e) {
+                lblHinh.setText("Error");
+            }
+        } else {
+            lblHinh.setText("No Img");
+        }
+    }
+
+    private void updateTongTien() {
+        try {
+            int soLuong = (int) spinnerSoLuong.getValue();
+            double donGia = getDonGia();
+            double tongTien = soLuong * donGia;
+            txtTongTien.setText(String.format("%,.0f ₫", tongTien));
+        } catch (Exception e) {
+            txtTongTien.setText("0 ₫");
+        }
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel lblHinh;
