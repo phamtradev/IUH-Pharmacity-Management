@@ -5,8 +5,11 @@
 package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.dashboard;
 
 import raven.toast.Notifications;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.ChiTietDonHangBUS;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.DonHangBUS;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.constant.LoaiSanPham;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.constant.PhuongThucThanhToan;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.barchart.Chart;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.barchart.ModelChart;
@@ -14,7 +17,10 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.util.DinhDangSo;
 
 import java.awt.Color;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -24,10 +30,13 @@ import java.util.stream.Collectors;
 public class Panel_ThongKeTheoNam extends javax.swing.JPanel {
 
     private final DonHangBUS donHangBUS;
+    private final ChiTietDonHangBUS chiTietDonHangBUS;
+    private final Map<String, List<ChiTietDonHang>> orderDetailsCache = new HashMap<>();
     private Chart chart;
 
     public Panel_ThongKeTheoNam() {
         donHangBUS = new DonHangBUS();
+        chiTietDonHangBUS = new ChiTietDonHangBUS();
         initChart();
         initComponents();
         fillComboBoxMonthAndYear();
@@ -115,7 +124,7 @@ public class Panel_ThongKeTheoNam extends javax.swing.JPanel {
         comboProductType.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Tất cả", "Thuốc", "Vật tư y tế" }));
 
         comboPaymentType.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        comboPaymentType.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Tất cả", "Tiền mặt", "Tín dụng" }));
+        comboPaymentType.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Tất cả", "Tiền mặt", "Chuyển khoản" }));
 
         comboIsPromotion.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         comboIsPromotion.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Tất cả", "Không khuyến mãi", "Có khuyến mãi" }));
@@ -372,6 +381,7 @@ public class Panel_ThongKeTheoNam extends javax.swing.JPanel {
             return;
         }
 
+        orderDetailsCache.clear();
         loadChartData(yearStart, yearEnd);
         loadStatistics(yearStart, yearEnd);
         Notifications.getInstance().show(Notifications.Type.SUCCESS, Notifications.Location.TOP_CENTER, "Đã tải dữ liệu thống kê từ năm " + yearStart + " đến " + yearEnd);
@@ -381,52 +391,12 @@ public class Panel_ThongKeTheoNam extends javax.swing.JPanel {
         chart.clear();
 
         List<DonHang> allOrders = donHangBUS.layTatCaDonHang();
-        String paymentType = comboPaymentType.getSelectedItem().toString();
-        String promotionType = comboIsPromotion.getSelectedItem().toString();
-        String productType = comboProductType.getSelectedItem().toString();
-
         // Lọc đơn hàng theo năm
         List<DonHang> filteredOrders = allOrders.stream()
                 .filter(dh -> dh.getNgayDatHang() != null)
                 .filter(dh -> dh.getNgayDatHang().getYear() >= yearStart && dh.getNgayDatHang().getYear() <= yearEnd)
                 .collect(Collectors.toList());
-
-        // Lọc theo loại sản phẩm (nếu được chọn)
-        if (!"Tất cả".equals(productType)) {
-            LoaiSanPham loaiSanPham = null;
-            if ("Thuốc".equals(productType)) {
-                loaiSanPham = LoaiSanPham.THUOC;
-            } else if ("Vật tư y tế".equals(productType)) {
-                loaiSanPham = LoaiSanPham.VAT_TU_Y_TE;
-            }
-
-            if (loaiSanPham != null) {
-                LoaiSanPham finalLoaiSanPham = loaiSanPham;
-                filteredOrders = filteredOrders.stream()
-                        .filter(dh -> dh.getChiTietDonHang() != null
-                                && dh.getChiTietDonHang().stream().anyMatch(ct ->
-                                ct.getLoHang() != null
-                                        && ct.getLoHang().getSanPham() != null
-                                        && ct.getLoHang().getSanPham().getLoaiSanPham() == finalLoaiSanPham))
-                        .collect(Collectors.toList());
-            }
-        }
-
-        // Lọc theo phương thức thanh toán
-        if (!paymentType.equals("Tất cả")) {
-            String paymentMethod = paymentType.equals("Tiền mặt") ? "TIEN_MAT" : "TIN_DUNG";
-            filteredOrders = filteredOrders.stream()
-                    .filter(dh -> dh.getPhuongThucThanhToan() != null && dh.getPhuongThucThanhToan().toString().equals(paymentMethod))
-                    .collect(Collectors.toList());
-        }
-
-        // Lọc theo khuyến mãi
-        if (!promotionType.equals("Tất cả")) {
-            boolean hasPromotion = promotionType.equals("Có khuyến mãi");
-            filteredOrders = filteredOrders.stream()
-                    .filter(dh -> (dh.getKhuyenMai() != null) == hasPromotion)
-                    .collect(Collectors.toList());
-        }
+        filteredOrders = applySelectionFilters(filteredOrders);
 
         // Hiển thị dữ liệu theo từng năm
         for (int year = yearStart; year <= yearEnd; year++) {
@@ -445,10 +415,6 @@ public class Panel_ThongKeTheoNam extends javax.swing.JPanel {
 
     private void loadStatistics(int yearStart, int yearEnd) {
         List<DonHang> allOrders = donHangBUS.layTatCaDonHang();
-        String paymentType = comboPaymentType.getSelectedItem().toString();
-        String promotionType = comboIsPromotion.getSelectedItem().toString();
-        String productType = comboProductType.getSelectedItem().toString();
-
         int totalYears = yearEnd - yearStart + 1;
 
         // Lọc đơn hàng theo năm
@@ -456,43 +422,7 @@ public class Panel_ThongKeTheoNam extends javax.swing.JPanel {
                 .filter(dh -> dh.getNgayDatHang() != null)
                 .filter(dh -> dh.getNgayDatHang().getYear() >= yearStart && dh.getNgayDatHang().getYear() <= yearEnd)
                 .collect(Collectors.toList());
-
-        // Lọc theo loại sản phẩm (nếu được chọn)
-        if (!"Tất cả".equals(productType)) {
-            LoaiSanPham loaiSanPham = null;
-            if ("Thuốc".equals(productType)) {
-                loaiSanPham = LoaiSanPham.THUOC;
-            } else if ("Vật tư y tế".equals(productType)) {
-                loaiSanPham = LoaiSanPham.VAT_TU_Y_TE;
-            }
-
-            if (loaiSanPham != null) {
-                LoaiSanPham finalLoaiSanPham = loaiSanPham;
-                filteredOrders = filteredOrders.stream()
-                        .filter(dh -> dh.getChiTietDonHang() != null
-                                && dh.getChiTietDonHang().stream().anyMatch(ct ->
-                                ct.getLoHang() != null
-                                        && ct.getLoHang().getSanPham() != null
-                                        && ct.getLoHang().getSanPham().getLoaiSanPham() == finalLoaiSanPham))
-                        .collect(Collectors.toList());
-            }
-        }
-
-        // Lọc theo phương thức thanh toán
-        if (!paymentType.equals("Tất cả")) {
-            String paymentMethod = paymentType.equals("Tiền mặt") ? "TIEN_MAT" : "TIN_DUNG";
-            filteredOrders = filteredOrders.stream()
-                    .filter(dh -> dh.getPhuongThucThanhToan() != null && dh.getPhuongThucThanhToan().toString().equals(paymentMethod))
-                    .collect(Collectors.toList());
-        }
-
-        // Lọc theo khuyến mãi
-        if (!promotionType.equals("Tất cả")) {
-            boolean hasPromotion = promotionType.equals("Có khuyến mãi");
-            filteredOrders = filteredOrders.stream()
-                    .filter(dh -> (dh.getKhuyenMai() != null) == hasPromotion)
-                    .collect(Collectors.toList());
-        }
+        filteredOrders = applySelectionFilters(filteredOrders);
 
         // Tính toán thống kê
         double totalRevenue = filteredOrders.stream().mapToDouble(DonHang::getThanhTien).sum();
@@ -521,6 +451,63 @@ public class Panel_ThongKeTheoNam extends javax.swing.JPanel {
         txtSumOfQuantity.setText(totalOrders + " đơn");
         txtBestDay.setText(bestYear > 0 ? "Năm " + bestYear : "N/A");
         txtMaxPrice.setText(DinhDangSo.dinhDangTien(maxRevenue));
+    }
+
+    private List<DonHang> applySelectionFilters(List<DonHang> orders) {
+        String paymentType = comboPaymentType.getSelectedItem().toString();
+        String promotionType = comboIsPromotion.getSelectedItem().toString();
+        String productType = comboProductType.getSelectedItem().toString();
+
+        List<DonHang> filtered = orders;
+
+        LoaiSanPham loaiSanPham = resolveProductType(productType);
+        if (loaiSanPham != null) {
+            filtered = filtered.stream()
+                    .filter(dh -> orderContainsProductType(dh, loaiSanPham))
+                    .collect(Collectors.toList());
+        }
+
+        if (!"Tất cả".equals(paymentType)) {
+            PhuongThucThanhToan paymentMethod = paymentType.equals("Tiền mặt")
+                    ? PhuongThucThanhToan.TIEN_MAT
+                    : PhuongThucThanhToan.CHUYEN_KHOAN_NGAN_HANG;
+            filtered = filtered.stream()
+                    .filter(dh -> dh.getPhuongThucThanhToan() == paymentMethod)
+                    .collect(Collectors.toList());
+        }
+
+        if (!"Tất cả".equals(promotionType)) {
+            boolean hasPromotion = promotionType.equals("Có khuyến mãi");
+            filtered = filtered.stream()
+                    .filter(dh -> (dh.getKhuyenMai() != null) == hasPromotion)
+                    .collect(Collectors.toList());
+        }
+
+        return filtered;
+    }
+
+    private LoaiSanPham resolveProductType(String productType) {
+        if ("Thuốc".equals(productType)) {
+            return LoaiSanPham.THUOC;
+        }
+        if ("Vật tư y tế".equals(productType)) {
+            return LoaiSanPham.VAT_TU_Y_TE;
+        }
+        return null;
+    }
+
+    private boolean orderContainsProductType(DonHang order, LoaiSanPham loaiSanPham) {
+        return getOrderDetails(order).stream()
+                .filter(ct -> ct.getLoHang() != null && ct.getLoHang().getSanPham() != null)
+                .anyMatch(ct -> ct.getLoHang().getSanPham().getLoaiSanPham() == loaiSanPham);
+    }
+
+    private List<ChiTietDonHang> getOrderDetails(DonHang order) {
+        if (order == null || order.getMaDonHang() == null) {
+            return Collections.emptyList();
+        }
+        return orderDetailsCache.computeIfAbsent(order.getMaDonHang(),
+                chiTietDonHangBUS::layDanhSachChiTietTheoMaDonHang);
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

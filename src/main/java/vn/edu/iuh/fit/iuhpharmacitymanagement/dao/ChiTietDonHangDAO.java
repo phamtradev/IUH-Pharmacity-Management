@@ -249,7 +249,7 @@ public class ChiTietDonHangDAO implements DAOInterface<ChiTietDonHang, String> {
             sql.append(" AND sp.loaiSanPham = ?");
         }
 
-        sql.append(" GROUP BY sp.maSanPham, sp.tenSanPham ORDER BY totalRevenue DESC");
+        sql.append(" GROUP BY sp.maSanPham, sp.tenSanPham ORDER BY totalRevenue DESC, totalQuantity DESC");
 
         try (Connection con = ConnectDB.getConnection();
              PreparedStatement pre = con.prepareStatement(sql.toString())) {

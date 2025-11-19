@@ -9,6 +9,7 @@ import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.DoubleFunction;
 import org.jdesktop.animation.timing.Animator;
 import org.jdesktop.animation.timing.TimingTarget;
 import org.jdesktop.animation.timing.TimingTargetAdapter;
@@ -22,6 +23,9 @@ public class Chart extends javax.swing.JPanel {
     private final int seriesSpace = 6;
     private final Animator animator;
     private float animate;
+    private static final DoubleFunction<String> DEFAULT_VALUE_FORMATTER = value ->
+            DinhDangSo.dinhDangTien(value);
+    private DoubleFunction<String> valueFormatter = DEFAULT_VALUE_FORMATTER;
 
     public Chart() {
         initComponents();
@@ -63,7 +67,7 @@ public class Chart extends javax.swing.JPanel {
                         g2.fillRect(barX, barY, barWidth, barHeight);
 
                         double value = model.get(index).getValues()[i];
-                        String valueText = DinhDangSo.dinhDangTien(value);// Lấy giá trị và chuyển thành chuỗi
+                        String valueText = valueFormatter.apply(value);
                         FontMetrics fm = g2.getFontMetrics(); // Lấy thông tin font
 
                         // Thiết lập font chữ nhỏ hơn
@@ -117,6 +121,18 @@ public class Chart extends javax.swing.JPanel {
     public void start() {
         if (!animator.isRunning()) {
             animator.start();
+        }
+    }
+
+    public void setValueFormatter(DoubleFunction<String> valueFormatter) {
+        this.valueFormatter = valueFormatter != null ? valueFormatter : DEFAULT_VALUE_FORMATTER;
+    }
+
+    public void setValuesFormat(String valuesFormat) {
+        if (valuesFormat != null && !valuesFormat.isBlank()) {
+            blankPlotChart.setValuesFormat(valuesFormat);
+        } else {
+            blankPlotChart.setValuesFormat("#,##0.##");
         }
     }
 

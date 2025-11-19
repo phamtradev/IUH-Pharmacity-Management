@@ -75,17 +75,19 @@ public class PieChart extends JPanel {
         }
 
         double startAngle = 90;
+        double radius = size / 2d;
+        double centerX = x + radius;
+        double centerY = y + radius;
         for (PieChartItem item : items) {
             if (item.getValue() <= 0) {
                 continue;
             }
             double percent = item.getValue() / total;
             double angle = percent * 360d;
-            Arc2D.Double sliceShape = new Arc2D.Double(x, y, size, size, startAngle, -angle, Arc2D.PIE);
             g2.setColor(item.getColor());
-            g2.fill(sliceShape);
+            g2.fill(new Arc2D.Double(x, y, size, size, startAngle, -angle, Arc2D.PIE));
             drawSliceLabel(g2, x, y, size, startAngle, angle, percent);
-            sliceInfos.add(new SliceInfo(item, sliceShape, percent));
+            sliceInfos.add(new SliceInfo(item, startAngle, angle, centerX, centerY, radius, percent));
             startAngle -= angle;
         }
 
@@ -146,17 +148,45 @@ public class PieChart extends JPanel {
 
     private static class SliceInfo {
         private final PieChartItem item;
-        private final Arc2D.Double shape;
+        private final double startAngle;
+        private final double extent;
+        private final double centerX;
+        private final double centerY;
+        private final double radius;
         private final double percent;
 
-        private SliceInfo(PieChartItem item, Arc2D.Double shape, double percent) {
+        private SliceInfo(PieChartItem item, double startAngle, double extent,
+                          double centerX, double centerY, double radius, double percent) {
             this.item = item;
-            this.shape = shape;
+            this.startAngle = normalizeAngle(startAngle);
+            this.extent = extent;
+            this.centerX = centerX;
+            this.centerY = centerY;
+            this.radius = radius;
             this.percent = percent;
         }
 
         private boolean contains(int x, int y) {
-            return shape.contains(x, y);
+            double dx = x - centerX;
+            double dy = centerY - y; // invert Y axis
+            double distance = Math.hypot(dx, dy);
+            if (distance <= 0 || distance > radius) {
+                return false;
+            }
+            double angle = Math.toDegrees(Math.atan2(dy, dx));
+            if (angle < 0) {
+                angle += 360;
+            }
+            double endAngle = normalizeAngle(startAngle - extent);
+            if (startAngle >= endAngle) {
+                return angle <= startAngle && angle >= endAngle;
+            }
+            return angle <= startAngle || angle >= endAngle;
+        }
+
+        private static double normalizeAngle(double angle) {
+            double normalized = angle % 360;
+            return normalized < 0 ? normalized + 360 : normalized;
         }
     }
 }
