@@ -10,31 +10,10 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
 
 /**
  * Dialog để nhập lý do trả hàng
+ *
  * @author PhamTra
  */
 public class Dialog_NhapLyDoTraHang extends javax.swing.JDialog {
-
-    private String lyDo = "";
-    private boolean daXacNhan = false;
-
-    public Dialog_NhapLyDoTraHang(java.awt.Frame parent, boolean modal) {
-        super(parent, modal);
-        initComponents();
-        setLocationRelativeTo(parent);
-    }
-
-    public String getLyDo() {
-        return lyDo;
-    }
-
-    public void setLyDo(String lyDo) {
-        this.lyDo = lyDo;
-        txtLyDo.setText(lyDo);
-    }
-
-    public boolean isDaXacNhan() {
-        return daXacNhan;
-    }
 
     private void initComponents() {
         setTitle("Nhập lý do trả hàng");
@@ -119,6 +98,30 @@ public class Dialog_NhapLyDoTraHang extends javax.swing.JDialog {
         getContentPane().add(mainPanel);
         pack();
     }
+    
+    //Phần Logic code
+
+    private String lyDo = "";
+    private boolean daXacNhan = false;
+
+    public Dialog_NhapLyDoTraHang(java.awt.Frame parent, boolean modal) {
+        super(parent, modal);
+        initComponents();
+        setLocationRelativeTo(parent);
+    }
+
+    public String getLyDo() {
+        return lyDo;
+    }
+
+    public void setLyDo(String lyDo) {
+        this.lyDo = lyDo;
+        txtLyDo.setText(lyDo);
+    }
+
+    public boolean isDaXacNhan() {
+        return daXacNhan;
+    }
 
     private void btnXacNhanActionPerformed(java.awt.event.ActionEvent evt) {
         lyDo = txtLyDo.getText().trim();
@@ -142,4 +145,3 @@ public class Dialog_NhapLyDoTraHang extends javax.swing.JDialog {
     private javax.swing.JButton btnHuy;
     // End of variables declaration
 }
-

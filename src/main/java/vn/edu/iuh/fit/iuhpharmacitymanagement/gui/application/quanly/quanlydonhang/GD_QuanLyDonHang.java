@@ -40,49 +40,6 @@ public class GD_QuanLyDonHang extends javax.swing.JPanel {
         fillTable();
     }
 
-    private void setUIManager() {
-        txtOrderCode.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Mã hóa đơn");
-        UIManager.put("Button.arc", 10);
-        jDateFrom.setDate(Date.valueOf(LocalDate.now()));
-        jDateTo.setDate(Date.valueOf(LocalDate.now()));
-
-        // Style cho button Xem chi tiết - màu xanh nước biển, kích thước nhỏ
-        ButtonStyles.apply(btnView, ButtonStyles.Type.INFO);
-    }
-
-    private void fillTable() {
-        String[] headers = {"Mã hóa đơn", "Ngày tạo", "Khuyến mãi", "Tổng tiền", "Thanh toán", "Khách hàng", "Nhân viên"};
-        List<Integer> tableWidths = Arrays.asList(200, 200, 200, 200, 200, 200, 200);
-        tableDesign = new TableDesign(headers, tableWidths);
-        scrollTable.setViewportView(tableDesign.getTable());
-        scrollTable.setBorder(BorderFactory.createEmptyBorder(15, 20, 20, 20));
-        List<DonHang> donHangs = donHangBUS.layDonHangTheoKhoangThoiGian(LocalDate.now(), LocalDate.now());
-        fillContent(donHangs);
-    }
-
-    private void fillContent(List<DonHang> donHangs) {
-        tableDesign.getModelTable().setRowCount(0);
-        for (DonHang donHang : donHangs) {
-            String khachHang = "Khách vãng lai";
-            if (donHang.getKhachHang() != null) {
-                khachHang = donHang.getKhachHang().getTenKhachHang();
-            }
-            String khuyenMai = "Không có";
-            if (donHang.getKhuyenMai() != null) {
-                khuyenMai = donHang.getKhuyenMai().getMaKhuyenMai();
-            }
-            tableDesign.getModelTable().addRow(new Object[]{
-                donHang.getMaDonHang(),
-                DinhDangNgay.dinhDangNgay(donHang.getNgayDatHang()),
-                khuyenMai,
-                DinhDangSo.dinhDangTien(donHang.getThanhTien()),
-                donHang.getPhuongThucThanhToan() == PhuongThucThanhToan.CHUYEN_KHOAN_NGAN_HANG ? "Ngân hàng" : "Tiền mặt",
-                khachHang,
-                donHang.getNhanVien() != null ? donHang.getNhanVien().getTenNhanVien() : ""
-            });
-        }
-    }
-
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -274,6 +231,52 @@ public class GD_QuanLyDonHang extends javax.swing.JPanel {
         add(pnAll);
     }// </editor-fold>//GEN-END:initComponents
 
+    //Phaanan Logic code
+    
+    //setUI cho toàn bộ các phần tử trong file
+    private void setUIManager() {
+        txtOrderCode.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Mã hóa đơn");
+        UIManager.put("Button.arc", 10);
+        jDateFrom.setDate(Date.valueOf(LocalDate.now()));
+        jDateTo.setDate(Date.valueOf(LocalDate.now()));
+
+        // Style cho button Xem chi tiết - màu xanh nước biển, kích thước nhỏ
+        ButtonStyles.apply(btnView, ButtonStyles.Type.INFO);
+    }
+
+    private void fillTable() {
+        String[] headers = {"Mã hóa đơn", "Ngày tạo", "Khuyến mãi", "Tổng tiền", "Thanh toán", "Khách hàng", "Nhân viên"};
+        List<Integer> tableWidths = Arrays.asList(200, 200, 200, 200, 200, 200, 200);
+        tableDesign = new TableDesign(headers, tableWidths);
+        scrollTable.setViewportView(tableDesign.getTable());
+        scrollTable.setBorder(BorderFactory.createEmptyBorder(15, 20, 20, 20));
+        List<DonHang> donHangs = donHangBUS.layDonHangTheoKhoangThoiGian(LocalDate.now(), LocalDate.now());
+        fillContent(donHangs);
+    }
+
+    private void fillContent(List<DonHang> donHangs) {
+        tableDesign.getModelTable().setRowCount(0);
+        for (DonHang donHang : donHangs) {
+            String khachHang = "Khách vãng lai";
+            if (donHang.getKhachHang() != null) {
+                khachHang = donHang.getKhachHang().getTenKhachHang();
+            }
+            String khuyenMai = "Không có";
+            if (donHang.getKhuyenMai() != null) {
+                khuyenMai = donHang.getKhuyenMai().getMaKhuyenMai();
+            }
+            tableDesign.getModelTable().addRow(new Object[]{
+                donHang.getMaDonHang(),
+                DinhDangNgay.dinhDangNgay(donHang.getNgayDatHang()),
+                khuyenMai,
+                DinhDangSo.dinhDangTien(donHang.getThanhTien()),
+                donHang.getPhuongThucThanhToan() == PhuongThucThanhToan.CHUYEN_KHOAN_NGAN_HANG ? "Ngân hàng" : "Tiền mặt",
+                khachHang,
+                donHang.getNhanVien() != null ? donHang.getNhanVien().getTenNhanVien() : ""
+            });
+        }
+    }
+    
     private void btnSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSearchActionPerformed
         // Lấy thông tin từ form
         java.util.Date date1 = jDateFrom.getDate();

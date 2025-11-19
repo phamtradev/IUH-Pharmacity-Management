@@ -128,228 +128,6 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
         txtSearchSupplier.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Số điện thoại nhà cung cấp");
     }
 
-    private void applyButtonStyles() {
-        ButtonStyles.apply(btnMa, ButtonStyles.Type.SUCCESS);
-        ButtonStyles.apply(btnImportExcel, ButtonStyles.Type.INFO);
-        ButtonStyles.apply(btnConfirmPurchase, ButtonStyles.Type.PRIMARY);
-    }
-
-    private void setupPanelSanPham() {
-        // Setup panel chứa danh sách sản phẩm
-        pnSanPham.setLayout(new BoxLayout(pnSanPham, BoxLayout.Y_AXIS));
-        pnSanPham.setBackground(Color.WHITE);
-
-        // Tạo header cho danh sách sản phẩm
-        javax.swing.JPanel headerPanel = createHeaderPanel();
-        pnSanPham.add(headerPanel);
-        pnSanPham.add(Box.createVerticalStrut(5));
-    }
-
-    /**
-     * Thiết lập listener cho textfield tìm kiếm nhà cung cấp Tự động tìm và
-     * hiển thị thông tin NCC khi nhập số điện thoại
-     */
-    private void setupSupplierSearchListener() {
-        // Khởi tạo NhaCungCapBUS nếu chưa có
-        if (nhaCungCapBUS == null) {
-            nhaCungCapBUS = new NhaCungCapBUS();
-        }
-
-        // Thêm DocumentListener để tìm kiếm real-time
-        txtSearchSupplier.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
-            private javax.swing.Timer searchTimer;
-
-            @Override
-            public void insertUpdate(javax.swing.event.DocumentEvent e) {
-                scheduleSearch();
-            }
-
-            @Override
-            public void removeUpdate(javax.swing.event.DocumentEvent e) {
-                scheduleSearch();
-            }
-
-            @Override
-            public void changedUpdate(javax.swing.event.DocumentEvent e) {
-                scheduleSearch();
-            }
-
-            // Debounce: chờ người dùng gõ xong 300ms mới search
-            private void scheduleSearch() {
-                if (searchTimer != null) {
-                    searchTimer.stop();
-                }
-
-                searchTimer = new javax.swing.Timer(300, evt -> {
-                    searchSupplierByPhone();
-                });
-                searchTimer.setRepeats(false);
-                searchTimer.start();
-            }
-        });
-    }
-
-    /**
-     * Tìm kiếm nhà cung cấp theo số điện thoại Tự động điền mã và tên nhà cung
-     * cấp khi tìm thấy
-     */
-    private void searchSupplierByPhone() {
-        String soDienThoai = txtSearchSupplier.getText().trim();
-
-        // Nếu rỗng → xóa thông tin hiện tại
-        if (soDienThoai.isEmpty()) {
-            txtSupplierId.setText("");
-            txtSupplierName.setText("");
-            nhaCungCapHienTai = null;
-            return;
-        }
-
-        // Tìm nhà cung cấp theo số điện thoại
-        try {
-            NhaCungCap ncc = nhaCungCapBUS.layNhaCungCapTheoSoDienThoai(soDienThoai);
-
-            if (ncc != null) {
-                txtSupplierId.setText(ncc.getMaNhaCungCap() != null ? ncc.getMaNhaCungCap() : "");
-                txtSupplierName.setText(ncc.getTenNhaCungCap() != null ? ncc.getTenNhaCungCap() : "");
-                nhaCungCapHienTai = ncc;
-
-                txtSearchSupplier.setBackground(new Color(220, 255, 220));
-            } else {
-                txtSupplierId.setText("");
-                txtSupplierName.setText("");
-                nhaCungCapHienTai = null;
-                txtSearchSupplier.setBackground(new Color(255, 255, 200));
-            }
-        } catch (Exception e) {
-            txtSupplierId.setText("");
-            txtSupplierName.setText("");
-            nhaCungCapHienTai = null;
-            txtSearchSupplier.setBackground(Color.WHITE);
-        }
-    }
-
-    private javax.swing.JPanel createHeaderPanel() {
-        javax.swing.JPanel panel = new javax.swing.JPanel();
-        panel.setLayout(new java.awt.GridBagLayout());
-        panel.setBackground(new Color(240, 240, 240));
-        panel.setMaximumSize(new java.awt.Dimension(32767, 40));
-        panel.setPreferredSize(new java.awt.Dimension(1000, 40));
-        panel.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, new Color(200, 200, 200)));
-
-        java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
-        gbc.fill = java.awt.GridBagConstraints.BOTH;
-        gbc.insets = new java.awt.Insets(5, 8, 5, 8);
-        gbc.gridy = 0;
-        gbc.weighty = 1.0;
-
-        // Headers: Hình → Tên SP → Lô hàng/HSD → Số lượng → Đơn giá → Tổng tiền → Xóa
-        String[] headers = {"Hình", "Tên sản phẩm", "Lô hàng / HSD", "Số lượng", "Đơn giá nhập", "Tổng tiền", ""};
-        double[] widths = {0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-        int[] minWidths = {80, 200, 170, 120, 130, 130, 90};
-
-        for (int i = 0; i < headers.length; i++) {
-            javax.swing.JLabel label = new javax.swing.JLabel(headers[i]);
-            label.setFont(new java.awt.Font("Segoe UI", 1, 13));
-            label.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-            label.setPreferredSize(new java.awt.Dimension(minWidths[i], 40));
-            label.setMinimumSize(new java.awt.Dimension(minWidths[i], 40));
-
-            gbc.gridx = i;
-            gbc.weightx = widths[i];
-            panel.add(label, gbc);
-        }
-
-        return panel;
-    }
-
-    private void themSanPhamVaoPanelNhap(SanPham sanPham) {
-        Panel_ChiTietSanPhamNhap panelSP = new Panel_ChiTietSanPhamNhap(sanPham);
-
-        // Listener để cập nhật tổng tiền
-        panelSP.addPropertyChangeListener("tongTien", new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                updateTongTienHang();
-            }
-        });
-
-        pnSanPham.add(panelSP);
-        pnSanPham.add(Box.createVerticalStrut(2));
-        pnSanPham.revalidate();
-        pnSanPham.repaint();
-
-        updateTongTienHang();
-    }
-
-    private void themSanPhamVaoPanelNhap(SanPham sanPham, int soLuong, double donGiaNhap, Date hanDung, String loHang) throws Exception {
-
-        if (kiemTraSanPhamDaTonTai(sanPham.getMaSanPham())) {
-            throw new Exception("Sản phẩm '" + sanPham.getTenSanPham() + "' đã có trong danh sách nhập");
-        }
-
-        // Lấy số điện thoại nhà cung cấp hiện tại
-        String soDienThoaiNCC = (nhaCungCapHienTai != null) ? nhaCungCapHienTai.getSoDienThoai() : null;
-
-        Panel_ChiTietSanPhamNhap panelSP = new Panel_ChiTietSanPhamNhap(sanPham, soLuong, donGiaNhap, hanDung, loHang, soDienThoaiNCC);
-
-        // Listener để cập nhật tổng tiền
-        panelSP.addPropertyChangeListener("tongTien", new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                updateTongTienHang();
-            }
-        });
-
-        pnSanPham.add(panelSP);
-        pnSanPham.add(Box.createVerticalStrut(2));
-        pnSanPham.revalidate();
-        pnSanPham.repaint();
-
-        updateTongTienHang();
-    }
-
-    /**
-     * Kiểm tra sản phẩm đã tồn tại trong panel chưa
-     *
-     * @param maSanPham Mã sản phẩm cần kiểm tra
-     * @return true nếu đã tồn tại, false nếu chưa
-     */
-    private boolean kiemTraSanPhamDaTonTai(String maSanPham) {
-        for (Component comp : pnSanPham.getComponents()) {
-            if (comp instanceof Panel_ChiTietSanPhamNhap) {
-                Panel_ChiTietSanPhamNhap panel = (Panel_ChiTietSanPhamNhap) comp;
-                if (panel.getSanPham().getMaSanPham().equals(maSanPham)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    private void updateTongTienHang() {
-        double tongTien = 0;
-
-        // Duyệt qua các panel chi tiết sản phẩm
-        for (Component comp : pnSanPham.getComponents()) {
-            if (comp instanceof Panel_ChiTietSanPhamNhap) {
-                Panel_ChiTietSanPhamNhap panel = (Panel_ChiTietSanPhamNhap) comp;
-                tongTien += panel.getTongTien();
-            }
-        }
-
-        txtTotalPrice.setText(currencyFormat.format(tongTien) + " đ");
-    }
-
-    private void lookAndFeelSet() {
-        UIManager.put("TextComponent.arc", 8);
-        UIManager.put("Component.arc", 8);
-        UIManager.put("Button.arc", 10);
-        UIManager.put("TabbedPane.selectedBackground", Color.white);
-        UIManager.put("TabbedPane.tabHeight", 45);
-        UIManager.put("ToggleButton.selectedBackground", new Color(81, 154, 244));
-        UIManager.put("ToggleButton.selectedForeground", Color.WHITE);
-    }
-
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
@@ -688,6 +466,228 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_btnImportExcelActionPerformed
 
+        private void applyButtonStyles() {
+        ButtonStyles.apply(btnMa, ButtonStyles.Type.SUCCESS);
+        ButtonStyles.apply(btnImportExcel, ButtonStyles.Type.INFO);
+        ButtonStyles.apply(btnConfirmPurchase, ButtonStyles.Type.PRIMARY);
+    }
+
+    private void setupPanelSanPham() {
+        // Setup panel chứa danh sách sản phẩm
+        pnSanPham.setLayout(new BoxLayout(pnSanPham, BoxLayout.Y_AXIS));
+        pnSanPham.setBackground(Color.WHITE);
+
+        // Tạo header cho danh sách sản phẩm
+        javax.swing.JPanel headerPanel = createHeaderPanel();
+        pnSanPham.add(headerPanel);
+        pnSanPham.add(Box.createVerticalStrut(5));
+    }
+
+    /**
+     * Thiết lập listener cho textfield tìm kiếm nhà cung cấp Tự động tìm và
+     * hiển thị thông tin NCC khi nhập số điện thoại
+     */
+    private void setupSupplierSearchListener() {
+        // Khởi tạo NhaCungCapBUS nếu chưa có
+        if (nhaCungCapBUS == null) {
+            nhaCungCapBUS = new NhaCungCapBUS();
+        }
+
+        // Thêm DocumentListener để tìm kiếm real-time
+        txtSearchSupplier.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            private javax.swing.Timer searchTimer;
+
+            @Override
+            public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                scheduleSearch();
+            }
+
+            @Override
+            public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                scheduleSearch();
+            }
+
+            @Override
+            public void changedUpdate(javax.swing.event.DocumentEvent e) {
+                scheduleSearch();
+            }
+
+            // Debounce: chờ người dùng gõ xong 300ms mới search
+            private void scheduleSearch() {
+                if (searchTimer != null) {
+                    searchTimer.stop();
+                }
+
+                searchTimer = new javax.swing.Timer(300, evt -> {
+                    searchSupplierByPhone();
+                });
+                searchTimer.setRepeats(false);
+                searchTimer.start();
+            }
+        });
+    }
+
+    /**
+     * Tìm kiếm nhà cung cấp theo số điện thoại Tự động điền mã và tên nhà cung
+     * cấp khi tìm thấy
+     */
+    private void searchSupplierByPhone() {
+        String soDienThoai = txtSearchSupplier.getText().trim();
+
+        // Nếu rỗng → xóa thông tin hiện tại
+        if (soDienThoai.isEmpty()) {
+            txtSupplierId.setText("");
+            txtSupplierName.setText("");
+            nhaCungCapHienTai = null;
+            return;
+        }
+
+        // Tìm nhà cung cấp theo số điện thoại
+        try {
+            NhaCungCap ncc = nhaCungCapBUS.layNhaCungCapTheoSoDienThoai(soDienThoai);
+
+            if (ncc != null) {
+                txtSupplierId.setText(ncc.getMaNhaCungCap() != null ? ncc.getMaNhaCungCap() : "");
+                txtSupplierName.setText(ncc.getTenNhaCungCap() != null ? ncc.getTenNhaCungCap() : "");
+                nhaCungCapHienTai = ncc;
+
+                txtSearchSupplier.setBackground(new Color(220, 255, 220));
+            } else {
+                txtSupplierId.setText("");
+                txtSupplierName.setText("");
+                nhaCungCapHienTai = null;
+                txtSearchSupplier.setBackground(new Color(255, 255, 200));
+            }
+        } catch (Exception e) {
+            txtSupplierId.setText("");
+            txtSupplierName.setText("");
+            nhaCungCapHienTai = null;
+            txtSearchSupplier.setBackground(Color.WHITE);
+        }
+    }
+
+    private javax.swing.JPanel createHeaderPanel() {
+        javax.swing.JPanel panel = new javax.swing.JPanel();
+        panel.setLayout(new java.awt.GridBagLayout());
+        panel.setBackground(new Color(240, 240, 240));
+        panel.setMaximumSize(new java.awt.Dimension(32767, 40));
+        panel.setPreferredSize(new java.awt.Dimension(1000, 40));
+        panel.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, new Color(200, 200, 200)));
+
+        java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
+        gbc.fill = java.awt.GridBagConstraints.BOTH;
+        gbc.insets = new java.awt.Insets(5, 8, 5, 8);
+        gbc.gridy = 0;
+        gbc.weighty = 1.0;
+
+        // Headers: Hình → Tên SP → Lô hàng/HSD → Số lượng → Đơn giá → Tổng tiền → Xóa
+        String[] headers = {"Hình", "Tên sản phẩm", "Lô hàng / HSD", "Số lượng", "Đơn giá nhập", "Tổng tiền", ""};
+        double[] widths = {0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+        int[] minWidths = {80, 200, 170, 120, 130, 130, 90};
+
+        for (int i = 0; i < headers.length; i++) {
+            javax.swing.JLabel label = new javax.swing.JLabel(headers[i]);
+            label.setFont(new java.awt.Font("Segoe UI", 1, 13));
+            label.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+            label.setPreferredSize(new java.awt.Dimension(minWidths[i], 40));
+            label.setMinimumSize(new java.awt.Dimension(minWidths[i], 40));
+
+            gbc.gridx = i;
+            gbc.weightx = widths[i];
+            panel.add(label, gbc);
+        }
+
+        return panel;
+    }
+
+    private void themSanPhamVaoPanelNhap(SanPham sanPham) {
+        Panel_ChiTietSanPhamNhap panelSP = new Panel_ChiTietSanPhamNhap(sanPham);
+
+        // Listener để cập nhật tổng tiền
+        panelSP.addPropertyChangeListener("tongTien", new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                updateTongTienHang();
+            }
+        });
+
+        pnSanPham.add(panelSP);
+        pnSanPham.add(Box.createVerticalStrut(2));
+        pnSanPham.revalidate();
+        pnSanPham.repaint();
+
+        updateTongTienHang();
+    }
+
+    private void themSanPhamVaoPanelNhap(SanPham sanPham, int soLuong, double donGiaNhap, Date hanDung, String loHang) throws Exception {
+
+        if (kiemTraSanPhamDaTonTai(sanPham.getMaSanPham())) {
+            throw new Exception("Sản phẩm '" + sanPham.getTenSanPham() + "' đã có trong danh sách nhập");
+        }
+
+        // Lấy số điện thoại nhà cung cấp hiện tại
+        String soDienThoaiNCC = (nhaCungCapHienTai != null) ? nhaCungCapHienTai.getSoDienThoai() : null;
+
+        Panel_ChiTietSanPhamNhap panelSP = new Panel_ChiTietSanPhamNhap(sanPham, soLuong, donGiaNhap, hanDung, loHang, soDienThoaiNCC);
+
+        // Listener để cập nhật tổng tiền
+        panelSP.addPropertyChangeListener("tongTien", new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                updateTongTienHang();
+            }
+        });
+
+        pnSanPham.add(panelSP);
+        pnSanPham.add(Box.createVerticalStrut(2));
+        pnSanPham.revalidate();
+        pnSanPham.repaint();
+
+        updateTongTienHang();
+    }
+
+    /**
+     * Kiểm tra sản phẩm đã tồn tại trong panel chưa
+     *
+     * @param maSanPham Mã sản phẩm cần kiểm tra
+     * @return true nếu đã tồn tại, false nếu chưa
+     */
+    private boolean kiemTraSanPhamDaTonTai(String maSanPham) {
+        for (Component comp : pnSanPham.getComponents()) {
+            if (comp instanceof Panel_ChiTietSanPhamNhap) {
+                Panel_ChiTietSanPhamNhap panel = (Panel_ChiTietSanPhamNhap) comp;
+                if (panel.getSanPham().getMaSanPham().equals(maSanPham)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private void updateTongTienHang() {
+        double tongTien = 0;
+
+        // Duyệt qua các panel chi tiết sản phẩm
+        for (Component comp : pnSanPham.getComponents()) {
+            if (comp instanceof Panel_ChiTietSanPhamNhap) {
+                Panel_ChiTietSanPhamNhap panel = (Panel_ChiTietSanPhamNhap) comp;
+                tongTien += panel.getTongTien();
+            }
+        }
+
+        txtTotalPrice.setText(currencyFormat.format(tongTien) + " đ");
+    }
+
+    private void lookAndFeelSet() {
+        UIManager.put("TextComponent.arc", 8);
+        UIManager.put("Component.arc", 8);
+        UIManager.put("Button.arc", 10);
+        UIManager.put("TabbedPane.selectedBackground", Color.white);
+        UIManager.put("TabbedPane.tabHeight", 45);
+        UIManager.put("ToggleButton.selectedBackground", new Color(81, 154, 244));
+        UIManager.put("ToggleButton.selectedForeground", Color.WHITE);
+    }
+    
     private void importFromExcel(File file) {
         try (FileInputStream fis = new FileInputStream(file); Workbook workbook = new XSSFWorkbook(fis)) {
 
