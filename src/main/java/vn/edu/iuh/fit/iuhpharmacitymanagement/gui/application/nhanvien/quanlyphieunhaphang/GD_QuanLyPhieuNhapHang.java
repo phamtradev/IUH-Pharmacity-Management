@@ -5,16 +5,36 @@
 package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlyphieunhaphang;
 
 import com.formdev.flatlaf.FlatClientProperties;
+import com.itextpdf.io.font.constants.StandardFonts;
+import com.itextpdf.io.image.ImageDataFactory;
+import com.itextpdf.kernel.colors.ColorConstants;
+import com.itextpdf.kernel.font.PdfFont;
+import com.itextpdf.kernel.font.PdfFontFactory;
+import com.itextpdf.kernel.geom.PageSize;
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.layout.Document;
+import com.itextpdf.layout.element.Image;
+import com.itextpdf.layout.element.Paragraph;
+import com.itextpdf.layout.element.Table;
+import com.itextpdf.layout.properties.HorizontalAlignment;
+import com.itextpdf.layout.properties.TextAlignment;
+import com.itextpdf.layout.properties.UnitValue;
 import raven.toast.Notifications;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Desktop;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -22,7 +42,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import javax.imageio.ImageIO;
 import javax.swing.UIManager;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -45,6 +67,10 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonNhapHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonNhapHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhanVien;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.util.BarcodeUtil;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 
 /**
  *
@@ -1418,11 +1444,258 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
         tongTienPanel.add(lblTongTien);
 
         footerPanel.add(tongTienPanel);
+        footerPanel.add(Box.createVerticalStrut(10));
+
+        javax.swing.JPanel buttonPanel = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 10, 0));
+        buttonPanel.setBackground(Color.WHITE);
+
+        javax.swing.JButton btnInHoaDon = new javax.swing.JButton("📄 In phiếu nhập");
+        btnInHoaDon.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 16));
+        btnInHoaDon.setPreferredSize(new java.awt.Dimension(220, 42));
+        ButtonStyles.apply(btnInHoaDon, ButtonStyles.Type.PRIMARY);
+        btnInHoaDon.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnInHoaDon.addActionListener(e -> inHoaDonNhapHang(donNhapHang, danhSachChiTiet));
+
+        buttonPanel.add(btnInHoaDon);
+        footerPanel.add(buttonPanel);
 
         mainPanel.add(footerPanel, java.awt.BorderLayout.SOUTH);
 
         dialog.add(mainPanel);
         dialog.setVisible(true);
+    }
+
+    private void inHoaDonNhapHang(DonNhapHang donNhapHang, List<ChiTietDonNhapHang> danhSachChiTiet) {
+        if (donNhapHang == null || danhSachChiTiet == null || danhSachChiTiet.isEmpty()) {
+            Notifications.getInstance().show(Notifications.Type.WARNING,
+                    Notifications.Location.TOP_CENTER,
+                    "Không có dữ liệu để in phiếu nhập!");
+            return;
+        }
+
+        try {
+            byte[] pdfData = taoHoaDonNhapPdf(donNhapHang, danhSachChiTiet);
+            hienThiPdfTamThoiNhap(pdfData, donNhapHang);
+            Notifications.getInstance().show(Notifications.Type.SUCCESS,
+                    Notifications.Location.TOP_CENTER,
+                    "Đã mở phiếu nhập PDF tạm thời để xem/in.");
+        } catch (Exception ex) {
+            Notifications.getInstance().show(Notifications.Type.ERROR,
+                    Notifications.Location.TOP_CENTER,
+                    "Không thể tạo phiếu nhập PDF: " + ex.getMessage());
+        }
+    }
+
+    private byte[] taoHoaDonNhapPdf(DonNhapHang donNhapHang, List<ChiTietDonNhapHang> danhSachChiTiet) throws IOException {
+        DecimalFormat currencyFormat = new DecimalFormat("#,###");
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+        double tongTienHang = 0;
+        for (ChiTietDonNhapHang chiTiet : danhSachChiTiet) {
+            tongTienHang += chiTiet.getDonGia() * chiTiet.getSoLuong();
+        }
+
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                PdfWriter writer = new PdfWriter(baos);
+                PdfDocument pdfDoc = new PdfDocument(writer);
+                Document document = new Document(pdfDoc, PageSize.A5)) {
+
+            document.setMargins(24, 24, 24, 24);
+            PdfFont font = PdfFontFactory.createFont(StandardFonts.HELVETICA);
+            PdfFont fontBold = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
+
+            document.add(new Paragraph("IUH PHARMACITY")
+                    .setFont(fontBold)
+                    .setFontSize(16)
+                    .setFontColor(ColorConstants.BLUE)
+                    .setTextAlignment(TextAlignment.CENTER));
+            document.add(new Paragraph("12 Nguyen Van Bao, Ward 4, Go Vap District, HCMC")
+                    .setFont(font)
+                    .setFontSize(9)
+                    .setTextAlignment(TextAlignment.CENTER));
+            document.add(new Paragraph("Hotline: 1800 6928 | Email: cskh@pharmacity.vn")
+                    .setFont(font)
+                    .setFontSize(9)
+                    .setTextAlignment(TextAlignment.CENTER));
+
+            try {
+                String maPhieu = Optional.ofNullable(donNhapHang)
+                        .map(DonNhapHang::getMaDonNhapHang)
+                        .orElse("UNKNOWN");
+                BufferedImage barcodeRaw = BarcodeUtil.taoBarcode(maPhieu);
+                BufferedImage barcodeWithText = BarcodeUtil.addTextBelow(barcodeRaw, maPhieu);
+                ByteArrayOutputStream barcodeStream = new ByteArrayOutputStream();
+                ImageIO.write(barcodeWithText, "png", barcodeStream);
+                Image barcodeImage = new Image(ImageDataFactory.create(barcodeStream.toByteArray()))
+                        .setHorizontalAlignment(HorizontalAlignment.CENTER)
+                        .setAutoScale(false)
+                        .setWidth(150);
+                document.add(barcodeImage);
+            } catch (Exception ex) {
+                document.add(new Paragraph(""));
+            }
+
+            document.add(new Paragraph("PHIEU NHAP HANG")
+                    .setFont(fontBold)
+                    .setFontSize(13)
+                    .setTextAlignment(TextAlignment.CENTER));
+
+            LocalDate ngayNhap = Optional.ofNullable(donNhapHang)
+                    .map(DonNhapHang::getNgayNhap)
+                    .orElse(LocalDate.now());
+
+            document.add(new Paragraph("Ngay lap: " + ngayNhap.format(dateFormatter))
+                    .setFont(font)
+                    .setFontSize(9)
+                    .setTextAlignment(TextAlignment.CENTER));
+
+            Table infoTable = new Table(UnitValue.createPercentArray(new float[]{1, 1}))
+                    .useAllAvailableWidth();
+            infoTable.addCell(tieuDeThongTinNhap("THONG TIN NHA CUNG CAP", fontBold));
+            infoTable.addCell(tieuDeThongTinNhap("THONG TIN NHAN VIEN", fontBold));
+
+            NhaCungCap nhaCungCap = donNhapHang.getNhaCungCap();
+            NhanVien nhanVien = donNhapHang.getNhanVien();
+
+            String thongTinNCC = (nhaCungCap != null ? "Ten: " + nhaCungCap.getTenNhaCungCap() : "Ten: N/A")
+                    + (nhaCungCap != null && nhaCungCap.getSoDienThoai() != null
+                    ? "\nSDT: " + nhaCungCap.getSoDienThoai()
+                    : "")
+                    + (nhaCungCap != null && nhaCungCap.getDiaChi() != null
+                    ? "\nDia chi: " + nhaCungCap.getDiaChi()
+                    : "");
+
+            String thongTinNV = (nhanVien != null ? "Ho ten: " + nhanVien.getTenNhanVien() : "Ho ten: N/A")
+                    + (nhanVien != null && nhanVien.getSoDienThoai() != null
+                    ? "\nSDT: " + nhanVien.getSoDienThoai()
+                    : "");
+
+            infoTable.addCell(noiDungThongTinNhap(font, thongTinNCC));
+            infoTable.addCell(noiDungThongTinNhap(font, thongTinNV));
+
+            document.add(infoTable);
+            document.add(new Paragraph("\n"));
+
+            Table itemsTable = new Table(UnitValue.createPercentArray(new float[]{6, 30, 16, 12, 18, 18}))
+                    .useAllAvailableWidth();
+            String[] headerLabels = {"STT", "Ten san pham", "So lo", "SL", "Don gia", "Thanh tien"};
+            for (String label : headerLabels) {
+                itemsTable.addHeaderCell(new com.itextpdf.layout.element.Cell()
+                        .add(new Paragraph(label)
+                                .setFont(fontBold)
+                                .setFontSize(9)
+                                .setTextAlignment(TextAlignment.CENTER))
+                        .setBackgroundColor(ColorConstants.LIGHT_GRAY));
+            }
+
+            int stt = 1;
+            for (ChiTietDonNhapHang chiTiet : danhSachChiTiet) {
+                LoHang loHang = chiTiet.getLoHang();
+                SanPham sanPham = loHang != null ? loHang.getSanPham() : null;
+                String tenSP = sanPham != null ? sanPham.getTenSanPham() : "";
+                String soLo = loHang != null ? loHang.getTenLoHang() : "-";
+                String donGia = currencyFormat.format(chiTiet.getDonGia()) + " đ";
+                String thanhTien = currencyFormat.format(chiTiet.getThanhTien()) + " đ";
+
+                itemsTable.addCell(taoCellNhap(String.valueOf(stt++), font, TextAlignment.CENTER));
+                itemsTable.addCell(taoCellNhap(tenSP, font, TextAlignment.LEFT));
+                itemsTable.addCell(taoCellNhap(soLo, font, TextAlignment.CENTER));
+                itemsTable.addCell(taoCellNhap(String.valueOf(chiTiet.getSoLuong()), font, TextAlignment.CENTER));
+                itemsTable.addCell(taoCellNhap(donGia, font, TextAlignment.RIGHT));
+                itemsTable.addCell(taoCellNhap(thanhTien, font, TextAlignment.RIGHT));
+            }
+
+            document.add(itemsTable);
+            document.add(new Paragraph("\n"));
+
+            Table summaryTable = new Table(UnitValue.createPercentArray(new float[]{60, 40}))
+                    .setHorizontalAlignment(HorizontalAlignment.CENTER.CENTER)
+                    .setWidth(UnitValue.createPercentValue(80));
+
+            addSummaryRowNhap(summaryTable, "Tong tien hang:",
+                    currencyFormat.format(tongTienHang) + " đ", font, fontBold);
+            addSummaryRowNhap(summaryTable, "Thanh tien:",
+                    currencyFormat.format(donNhapHang.getThanhTien()) + " đ", fontBold, fontBold);
+
+            document.add(summaryTable);
+
+            document.add(new Paragraph("\nCam on quy doi tac da hop tac cung Pharmacity!")
+                    .setFont(font)
+                    .setFontSize(9)
+                    .setTextAlignment(TextAlignment.CENTER));
+            document.add(new Paragraph("Vui long kiem tra thong tin phieu nhap truoc khi ky xac nhan.")
+                    .setFont(font)
+                    .setFontSize(8)
+                    .setTextAlignment(TextAlignment.CENTER));
+
+            document.close();
+            return baos.toByteArray();
+        }
+    }
+
+    private com.itextpdf.layout.element.Cell tieuDeThongTinNhap(String text, PdfFont font) {
+        return new com.itextpdf.layout.element.Cell()
+                .add(new Paragraph(text).setFont(font).setFontSize(9))
+                .setBackgroundColor(ColorConstants.LIGHT_GRAY)
+                .setTextAlignment(TextAlignment.CENTER);
+    }
+
+    private com.itextpdf.layout.element.Cell noiDungThongTinNhap(PdfFont font, String text) {
+        return new com.itextpdf.layout.element.Cell()
+                .add(new Paragraph(text).setFont(font).setFontSize(9))
+                .setTextAlignment(TextAlignment.LEFT);
+    }
+
+    private com.itextpdf.layout.element.Cell taoCellNhap(String text, PdfFont font, TextAlignment alignment) {
+        return new com.itextpdf.layout.element.Cell()
+                .add(new Paragraph(text).setFont(font).setFontSize(9))
+                .setTextAlignment(alignment);
+    }
+
+    private void addSummaryRowNhap(Table table, String label, String value, PdfFont labelFont, PdfFont valueFont) {
+        table.addCell(new com.itextpdf.layout.element.Cell().setBorder(null)
+                .add(new Paragraph(label).setFont(labelFont).setFontSize(9)));
+        table.addCell(new com.itextpdf.layout.element.Cell().setBorder(null)
+                .add(new Paragraph(value).setFont(valueFont).setFontSize(9).setTextAlignment(TextAlignment.RIGHT)));
+    }
+
+    private void hienThiPdfTamThoiNhap(byte[] pdfData, DonNhapHang donNhapHang) throws IOException {
+        if (pdfData == null || pdfData.length == 0) {
+            throw new IOException("Dữ liệu PDF rỗng.");
+        }
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("ddMMyyyy");
+        LocalDate ngayLap = Optional.ofNullable(donNhapHang)
+                .map(DonNhapHang::getNgayNhap)
+                .orElse(LocalDate.now());
+        String datePart = ngayLap.format(formatter);
+
+        String maDonNhap = Optional.ofNullable(donNhapHang)
+                .map(DonNhapHang::getMaDonNhapHang)
+                .orElse("");
+        String numericCode = maDonNhap.replaceAll("\\D", "");
+        String last4 = numericCode.length() >= 4
+                ? numericCode.substring(numericCode.length() - 4)
+                : (numericCode.isEmpty() ? String.format("%04d", (int) (Math.random() * 10000)) : numericCode);
+
+        String baseFileName = String.format("phieu-nhap-%s-%s", datePart, last4);
+        Path tempDir = Path.of(System.getProperty("java.io.tmpdir"));
+        Path tempFile = tempDir.resolve(baseFileName + ".pdf");
+
+        int counter = 1;
+        while (Files.exists(tempFile)) {
+            tempFile = tempDir.resolve(baseFileName + "-" + counter++ + ".pdf");
+        }
+
+        Files.write(tempFile, pdfData, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING,
+                StandardOpenOption.WRITE);
+        tempFile.toFile().deleteOnExit();
+
+        if (!Desktop.isDesktopSupported() || !Desktop.getDesktop().isSupported(Desktop.Action.OPEN)) {
+            throw new IOException("Máy tính không hỗ trợ mở PDF tự động.");
+        }
+
+        Desktop.getDesktop().open(tempFile.toFile());
     }
 
     /**
