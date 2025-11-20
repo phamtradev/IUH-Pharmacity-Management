@@ -1,5 +1,6 @@
 package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.login;
 
+import raven.toast.Notifications;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.service.backup.BackupManifestService;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.service.backup.BackupRecord;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.service.backup.DataBackupService;
@@ -10,6 +11,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,9 +21,10 @@ import java.util.stream.Collectors;
  * Dialog để khôi phục dữ liệu từ backup bằng cách nhập key (tên file)
  */
 public class RestoreDataDialog extends JDialog {
-    private static final String ADMIN_KEY = "20092004";
+    // Hash SHA-256 của key "20092004"
+    private static final String ADMIN_KEY_HASH = "8124684675a378155feb7b4b06cacf2ba09e49def0536b757c50c12d63c7224a";
     
-    private JTextField txtKey;
+    private JPasswordField txtKey;
     private JButton btnTimKiem;
     private JButton btnKhoiPhuc;
     private JButton btnHuy;
@@ -62,8 +66,9 @@ public class RestoreDataDialog extends JDialog {
         gbc.gridwidth = 2;
         inputPanel.add(lblKey, gbc);
 
-        txtKey = new JTextField(30);
+        txtKey = new JPasswordField(30);
         txtKey.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        txtKey.setEchoChar('•'); // Ẩn ký tự khi nhập giống mật khẩu
         txtKey.addActionListener(e -> btnTimKiem.doClick());
         gbc.gridx = 0;
         gbc.gridy = 1;
@@ -133,21 +138,23 @@ public class RestoreDataDialog extends JDialog {
     }
 
     private void timKiemVaKhoiPhuc() {
-        String key = txtKey.getText().trim();
+        String key = new String(txtKey.getPassword()).trim();
         if (key.isEmpty()) {
-            JOptionPane.showMessageDialog(this,
-                "Vui lòng nhập key",
-                "Thông báo",
-                JOptionPane.WARNING_MESSAGE);
+            Notifications.getInstance().setJFrame((JFrame) SwingUtilities.getWindowAncestor(this));
+            Notifications.getInstance().show(Notifications.Type.ERROR, 
+                Notifications.Location.TOP_CENTER,
+                "Vui lòng nhập key");
             return;
         }
 
-        // Kiểm tra key đặc biệt
-        if (!key.equals(ADMIN_KEY)) {
-            JOptionPane.showMessageDialog(this,
-                "Key không hợp lệ",
-                "Thông báo",
-                JOptionPane.WARNING_MESSAGE);
+        // Kiểm tra key bằng cách so sánh hash
+        String keyHash = hashKey(key);
+        if (!keyHash.equals(ADMIN_KEY_HASH)) {
+            Notifications.getInstance().setJFrame((JFrame) SwingUtilities.getWindowAncestor(this));
+            Notifications.getInstance().show(Notifications.Type.ERROR, 
+                Notifications.Location.TOP_CENTER,
+                "Key không hợp lệ");
+            txtKey.setText(""); // Xóa key đã nhập
             return;
         }
 
@@ -245,6 +252,28 @@ public class RestoreDataDialog extends JDialog {
             }
         };
         worker.execute();
+    }
+
+    /**
+     * Mã hóa key bằng SHA-256
+     */
+    private String hashKey(String key) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(key.getBytes());
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hash) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) {
+                    hexString.append('0');
+                }
+                hexString.append(hex);
+            }
+            return hexString.toString();
+        } catch (NoSuchAlgorithmException e) {
+            // Fallback: nếu không có SHA-256, trả về key gốc (không nên xảy ra)
+            return key;
+        }
     }
 
     private void hienThiThongTin(Path file) {
