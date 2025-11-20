@@ -1,4 +1,4 @@
-/*
+    /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JPanel.java to edit this template
  */
@@ -253,6 +253,26 @@ public class LoginFormPanel extends javax.swing.JPanel {
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         contentPanel.add(lblQuenMatKhau, gridBagConstraints);
+
+        btnKhoiPhucDuLieu = new javax.swing.JButton();
+        btnKhoiPhucDuLieu.setFont(new java.awt.Font("Segoe UI", 0, 12)); // NOI18N
+        btnKhoiPhucDuLieu.setForeground(new java.awt.Color(0, 102, 204));
+        btnKhoiPhucDuLieu.setText("Khôi phục dữ liệu");
+        btnKhoiPhucDuLieu.setBorderPainted(false);
+        btnKhoiPhucDuLieu.setContentAreaFilled(false);
+        btnKhoiPhucDuLieu.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnKhoiPhucDuLieu.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnKhoiPhucDuLieuActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.insets = new java.awt.Insets(10, 0, 0, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.CENTER;
+        contentPanel.add(btnKhoiPhucDuLieu, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -534,9 +554,20 @@ public class LoginFormPanel extends javax.swing.JPanel {
         }
     }
 
+    private void btnKhoiPhucDuLieuActionPerformed(java.awt.event.ActionEvent evt) {
+        openRestoreDialog();
+    }
+
+    private void openRestoreDialog() {
+        javax.swing.JFrame parentFrame = (javax.swing.JFrame) SwingUtilities.getWindowAncestor(this);
+        RestoreDataDialog dialog = new RestoreDataDialog(parentFrame, true);
+        dialog.setVisible(true);
+    }
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnDangNhap;
+    private javax.swing.JButton btnKhoiPhucDuLieu;
     private javax.swing.JCheckBox chkHienMatKhau;
     private javax.swing.JPanel contentPanel;
     private javax.swing.JPanel jPanel1;

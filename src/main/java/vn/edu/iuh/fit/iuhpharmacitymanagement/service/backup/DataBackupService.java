@@ -108,25 +108,56 @@ public class DataBackupService {
             throw new IOException("Không tìm thấy file sao lưu: " + backupFile);
         }
 
+        if (progressCallback != null) {
+            progressCallback.accept("Đang đọc file backup...");
+        }
         List<TableDump> tablePayloads = loadBackupPayloads(backupFile, progressCallback);
 
+        if (progressCallback != null) {
+            progressCallback.accept("Đang kết nối database...");
+        }
         try (Connection connection = ConnectDB.getConnection()) {
             boolean initialAutoCommit = connection.getAutoCommit();
             connection.setAutoCommit(false);
+            List<TableDump> orderedTables = null;
             try {
-                List<TableDump> orderedTables = sortTablesForInsert(connection, tablePayloads);
+                if (progressCallback != null) {
+                    progressCallback.accept("Đang sắp xếp thứ tự bảng...");
+                }
+                orderedTables = sortTablesForInsert(connection, tablePayloads);
                 List<TableDump> deleteOrder = new ArrayList<>(orderedTables);
                 Collections.reverse(deleteOrder);
 
+                if (progressCallback != null) {
+                    progressCallback.accept("Đang tắt ràng buộc...");
+                }
                 disableConstraints(connection, orderedTables);
                 deleteExistingData(connection, deleteOrder, progressCallback);
                 insertRows(connection, orderedTables, progressCallback);
+                if (progressCallback != null) {
+                    progressCallback.accept("Đang bật lại ràng buộc...");
+                }
                 enableConstraints(connection, orderedTables);
+                if (progressCallback != null) {
+                    progressCallback.accept("Đang lưu thay đổi...");
+                }
                 connection.commit();
+                if (progressCallback != null) {
+                    progressCallback.accept("Hoàn tất!");
+                }
             } catch (Exception ex) {
                 connection.rollback();
                 throw ex;
             } finally {
+                // Đảm bảo luôn bật lại constraints, kể cả khi có lỗi
+                if (orderedTables != null) {
+                    try {
+                        enableConstraints(connection, orderedTables);
+                    } catch (SQLException e) {
+                        // Log lỗi nhưng không throw để không che giấu lỗi gốc
+                        System.err.println("Lỗi khi bật lại constraints: " + e.getMessage());
+                    }
+                }
                 connection.setAutoCommit(initialAutoCommit);
             }
         }
@@ -135,11 +166,14 @@ public class DataBackupService {
     private void deleteExistingData(Connection connection,
                                     List<TableDump> tables,
                                     Consumer<String> progressCallback) throws SQLException {
+        // Dùng DELETE FROM thay vì TRUNCATE vì TRUNCATE không hoạt động 
+        // khi có foreign key references, ngay cả khi đã disable constraints
         for (TableDump dump : tables) {
             if (progressCallback != null) {
                 progressCallback.accept("Đang xóa dữ liệu bảng " + dump.displayName());
             }
             try (Statement statement = connection.createStatement()) {
+                // Dùng DELETE FROM vì đã disable constraints nên sẽ không có lỗi foreign key
                 statement.execute("DELETE FROM " + dump.qualifiedName());
             }
         }
@@ -164,6 +198,7 @@ public class DataBackupService {
                     identityStmt.execute("SET IDENTITY_INSERT " + dump.qualifiedName() + " ON");
                 }
                 int batch = 0;
+                final int BATCH_SIZE = 1000; // Tăng batch size lên 1000 để nhanh hơn
                 for (JsonElement element : rows) {
                     JsonArray row = element.getAsJsonArray();
                     for (int i = 0; i < dump.columns().size(); i++) {
@@ -173,11 +208,14 @@ public class DataBackupService {
                     }
                     preparedStatement.addBatch();
                     batch++;
-                    if (batch % 500 == 0) {
+                    if (batch % BATCH_SIZE == 0) {
                         preparedStatement.executeBatch();
+                        preparedStatement.clearBatch(); // Giải phóng memory
                     }
                 }
-                preparedStatement.executeBatch();
+                if (batch % BATCH_SIZE != 0) {
+                    preparedStatement.executeBatch();
+                }
                 if (hasIdentity) {
                     identityStmt.execute("SET IDENTITY_INSERT " + dump.qualifiedName() + " OFF");
                 }
@@ -190,6 +228,7 @@ public class DataBackupService {
         // để tránh lỗi khi xóa/insert dữ liệu
         // Sử dụng sp_msforeachtable để disable tất cả constraints của tất cả tables
         try (Statement statement = connection.createStatement()) {
+            // Tắt tất cả foreign key constraints
             statement.execute("EXEC sp_msforeachtable 'ALTER TABLE ? NOCHECK CONSTRAINT ALL'");
         }
     }
@@ -198,6 +237,7 @@ public class DataBackupService {
         // Enable lại tất cả foreign key constraints
         // Sử dụng sp_msforeachtable để enable tất cả constraints của tất cả tables
         try (Statement statement = connection.createStatement()) {
+            // Bật lại tất cả foreign key constraints
             statement.execute("EXEC sp_msforeachtable 'ALTER TABLE ? CHECK CONSTRAINT ALL'");
         }
     }
