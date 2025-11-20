@@ -484,7 +484,6 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
         lblAvatar.setFont(lblAvatar.getFont().deriveFont(Font.BOLD, 48f));
         lblAvatar.putClientProperty(FlatClientProperties.STYLE, ""
                 + "foreground: #1F1F1F;"
-                + "borderWidth: 2;"
                 + "background: #F5F5F5;");
         lblAvatar.setBorder(javax.swing.BorderFactory.createLineBorder(new Color(224, 224, 224), 2));
         lblTenNV.setFont(new java.awt.Font("Segoe UI", 1, 32));

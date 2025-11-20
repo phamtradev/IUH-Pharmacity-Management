@@ -57,15 +57,17 @@ public class SplashScreen extends javax.swing.JFrame {
                 if (dbConnected) {
                     updateProgress("Đã kết nối cơ sở dữ liệu", 40);
                 } else {
-                    updateProgress("Lỗi kết nối cơ sở dữ liệu", 40);
+                    updateProgress("Không thể kết nối cơ sở dữ liệu", 40);
+                    // Không thoát ứng dụng, vẫn cho phép vào màn hình đăng nhập
+                    // Người dùng có thể khôi phục dữ liệu từ màn hình đăng nhập
                     SwingUtilities.invokeLater(() -> {
                         JOptionPane.showMessageDialog(this,
-                            "Không thể kết nối đến cơ sở dữ liệu!\nVui lòng kiểm tra lại cấu hình.",
-                            "Lỗi Kết Nối",
-                            JOptionPane.ERROR_MESSAGE);
-                        System.exit(1);
+                            "Không thể kết nối đến cơ sở dữ liệu!\n" +
+                            "Bạn có thể khôi phục dữ liệu từ màn hình đăng nhập.",
+                            "Cảnh báo",
+                            JOptionPane.WARNING_MESSAGE);
                     });
-                    return;
+                    // Tiếp tục chạy để mở màn hình đăng nhập
                 }
                 
                 // Bước 4: Chuẩn bị giao diện (preload LoginFrame)

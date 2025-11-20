@@ -114,6 +114,14 @@ public class DataBackupService {
         List<TableDump> tablePayloads = loadBackupPayloads(backupFile, progressCallback);
 
         if (progressCallback != null) {
+            progressCallback.accept("Đang kiểm tra database...");
+        }
+        // Tạo database nếu chưa tồn tại
+        if (!ConnectDB.createDatabaseIfNotExists()) {
+            throw new SQLException("Không thể tạo database. Vui lòng kiểm tra quyền truy cập SQL Server.");
+        }
+        
+        if (progressCallback != null) {
             progressCallback.accept("Đang kết nối database...");
         }
         try (Connection connection = ConnectDB.getConnection()) {
@@ -169,6 +177,11 @@ public class DataBackupService {
         // Dùng DELETE FROM thay vì TRUNCATE vì TRUNCATE không hoạt động 
         // khi có foreign key references, ngay cả khi đã disable constraints
         for (TableDump dump : tables) {
+            // Kiểm tra xem bảng có tồn tại không
+            if (!tableExists(connection, dump)) {
+                // Bảng chưa tồn tại, bỏ qua
+                continue;
+            }
             if (progressCallback != null) {
                 progressCallback.accept("Đang xóa dữ liệu bảng " + dump.displayName());
             }
@@ -190,6 +203,15 @@ public class DataBackupService {
             if (rows.isEmpty()) {
                 continue;
             }
+            
+            // Tạo bảng nếu chưa tồn tại
+            if (!tableExists(connection, dump)) {
+                if (progressCallback != null) {
+                    progressCallback.accept("Đang tạo bảng " + dump.displayName() + "...");
+                }
+                createTableIfNotExists(connection, dump);
+            }
+            
             boolean hasIdentity = hasIdentityColumn(connection, dump);
             String insertSql = buildInsertSql(dump);
             try (Statement identityStmt = hasIdentity ? connection.createStatement() : null;
@@ -227,22 +249,112 @@ public class DataBackupService {
         // Disable tất cả foreign key constraints trong database
         // để tránh lỗi khi xóa/insert dữ liệu
         // Sử dụng sp_msforeachtable để disable tất cả constraints của tất cả tables
+        // Chỉ thực hiện nếu có ít nhất một bảng tồn tại
         try (Statement statement = connection.createStatement()) {
-            // Tắt tất cả foreign key constraints
-            statement.execute("EXEC sp_msforeachtable 'ALTER TABLE ? NOCHECK CONSTRAINT ALL'");
+            // Kiểm tra xem có bảng nào trong database không
+            try (ResultSet rs = statement.executeQuery(
+                    "SELECT COUNT(*) as cnt FROM sys.tables WHERE is_ms_shipped = 0")) {
+                if (rs.next() && rs.getInt("cnt") > 0) {
+                    // Tắt tất cả foreign key constraints
+                    statement.execute("EXEC sp_msforeachtable 'ALTER TABLE ? NOCHECK CONSTRAINT ALL'");
+                }
+            }
         }
     }
 
     private void enableConstraints(Connection connection, List<TableDump> tables) throws SQLException {
         // Enable lại tất cả foreign key constraints
         // Sử dụng sp_msforeachtable để enable tất cả constraints của tất cả tables
+        // Chỉ thực hiện nếu có ít nhất một bảng tồn tại
         try (Statement statement = connection.createStatement()) {
-            // Bật lại tất cả foreign key constraints
-            statement.execute("EXEC sp_msforeachtable 'ALTER TABLE ? CHECK CONSTRAINT ALL'");
+            // Kiểm tra xem có bảng nào trong database không
+            try (ResultSet rs = statement.executeQuery(
+                    "SELECT COUNT(*) as cnt FROM sys.tables WHERE is_ms_shipped = 0")) {
+                if (rs.next() && rs.getInt("cnt") > 0) {
+                    // Bật lại tất cả foreign key constraints
+                    statement.execute("EXEC sp_msforeachtable 'ALTER TABLE ? CHECK CONSTRAINT ALL'");
+                }
+            }
         }
     }
 
+    private boolean tableExists(Connection connection, TableDump dump) throws SQLException {
+        final String sql = """
+                SELECT 1
+                FROM sys.tables t
+                JOIN sys.schemas s ON t.schema_id = s.schema_id
+                WHERE s.name = ? AND t.name = ?
+                """;
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, dump.schema());
+            ps.setString(2, dump.name());
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        }
+    }
+
+    private void createTableIfNotExists(Connection connection, TableDump dump) throws SQLException {
+        // Tạo schema nếu chưa tồn tại
+        try (Statement stmt = connection.createStatement()) {
+            String createSchemaSql = "IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = '" + 
+                escapeIdentifier(dump.schema()) + "') EXEC('CREATE SCHEMA [" + escapeIdentifier(dump.schema()) + "]')";
+            stmt.execute(createSchemaSql);
+        }
+        
+        // Tạo bảng với các cột từ metadata
+        StringBuilder createTableSql = new StringBuilder();
+        createTableSql.append("CREATE TABLE ").append(dump.qualifiedName()).append(" (");
+        
+        for (int i = 0; i < dump.columns().size(); i++) {
+            if (i > 0) {
+                createTableSql.append(", ");
+            }
+            String columnName = dump.columns().get(i);
+            int sqlType = dump.columnTypes().get(i);
+            createTableSql.append('[').append(escapeIdentifier(columnName)).append("] ");
+            createTableSql.append(getSqlTypeName(sqlType));
+        }
+        
+        createTableSql.append(")");
+        
+        try (Statement stmt = connection.createStatement()) {
+            stmt.execute(createTableSql.toString());
+        }
+    }
+
+    private String getSqlTypeName(int sqlType) {
+        // Chuyển đổi SQL type code thành tên type trong SQL Server
+        return switch (sqlType) {
+            case Types.BIT -> "BIT";
+            case Types.TINYINT -> "TINYINT";
+            case Types.SMALLINT -> "SMALLINT";
+            case Types.INTEGER -> "INT";
+            case Types.BIGINT -> "BIGINT";
+            case Types.REAL -> "REAL";
+            case Types.FLOAT, Types.DOUBLE -> "FLOAT";
+            case Types.DECIMAL, Types.NUMERIC -> "DECIMAL(18,2)";
+            case Types.CHAR -> "CHAR(255)";
+            case Types.VARCHAR -> "VARCHAR(MAX)";
+            case Types.NCHAR -> "NCHAR(255)";
+            case Types.NVARCHAR -> "NVARCHAR(MAX)";
+            case Types.DATE -> "DATE";
+            case Types.TIME -> "TIME";
+            case Types.TIMESTAMP -> "DATETIME2";
+            case Types.BINARY -> "BINARY(MAX)";
+            case Types.VARBINARY -> "VARBINARY(MAX)";
+            case Types.BLOB -> "VARBINARY(MAX)";
+            case Types.CLOB -> "NVARCHAR(MAX)";
+            case Types.NCLOB -> "NVARCHAR(MAX)";
+            default -> "NVARCHAR(MAX)"; // Default fallback
+        };
+    }
+
     private boolean hasIdentityColumn(Connection connection, TableDump dump) throws SQLException {
+        // Kiểm tra xem bảng có tồn tại không trước
+        if (!tableExists(connection, dump)) {
+            return false;
+        }
         final String sql = """
                 SELECT 1
                 FROM sys.identity_columns ic
