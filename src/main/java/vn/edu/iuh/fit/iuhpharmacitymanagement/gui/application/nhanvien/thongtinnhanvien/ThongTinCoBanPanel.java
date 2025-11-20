@@ -50,6 +50,13 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
         btnDoiMatKhau.setVisible(true);
         resetChangePasswordFields();
         styleChangePasswordDialog();
+
+        lblQuayLai.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jdiaDoiPass.dispose();
+            }
+        });
     }
 
 //    private void styleReadOnlyTextField(javax.swing.JTextField textField) {
@@ -84,6 +91,7 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
         lblTenNV = new javax.swing.JLabel();
         lblMa = new javax.swing.JLabel();
         jSeparator1 = new javax.swing.JSeparator();
+        pnlThongTin = new javax.swing.JPanel();
         lblIconPhone = new javax.swing.JLabel();
         lblPhoneTitle = new javax.swing.JLabel();
         txtPhone = new javax.swing.JTextField();
@@ -193,7 +201,10 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
         pnlNut.setLayout(new java.awt.BorderLayout(50, 0));
 
         lblQuayLai.setText("Quay lại");
+        lblQuayLai.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         pnlNut.add(lblQuayLai, java.awt.BorderLayout.LINE_START);
+        lblQuayLai.setText("<html><u>&lt; Quay lại</u></html>");
+        lblQuayLai.setForeground(new java.awt.Color(0, 102, 204));
 
         btnXNDoiMatKhau.setText("Xác nhận đổi mật khẩu");
         btnXNDoiMatKhau.addActionListener(new java.awt.event.ActionListener() {
@@ -264,7 +275,6 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 15, 0);
         add(jSeparator1, gridBagConstraints);
 
-        pnlThongTin = new javax.swing.JPanel();
         pnlThongTin.setOpaque(false);
         pnlThongTin.setLayout(new java.awt.GridBagLayout());
 
@@ -291,6 +301,7 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 6, 0);
         pnlThongTin.add(txtPhone, gridBagConstraints);
@@ -318,6 +329,7 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 6, 0);
         pnlThongTin.add(txtEmail, gridBagConstraints);
@@ -351,6 +363,7 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         pnlThongTin.add(scrAddress, gridBagConstraints);
@@ -378,6 +391,7 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 4, 0);
         pnlThongTin.add(txtCccd, gridBagConstraints);
@@ -405,6 +419,7 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 6, 0);
         pnlThongTin.add(lblGenderValue, gridBagConstraints);
@@ -415,7 +430,6 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 0);
         add(pnlThongTin, gridBagConstraints);
 
         btnDoiMatKhau.setText("Đổi mật khẩu");
@@ -839,13 +853,13 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
     private void btnXNDoiMatKhauActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnXNDoiMatKhauActionPerformed
         NhanVien nv = SessionManager.getInstance().getCurrentUser();
         if (!validateChangePasswordInputs(nv)) {
-                return;
-            }
+            return;
+        }
 
         String newPassword = String.valueOf(txtMkMoi.getPassword());
         if (new TaiKhoanDAO().resetMatKhau(nv.getMaNhanVien().toLowerCase(), newPassword)) {
             showDialogNotification(Notifications.Type.SUCCESS, "Cập nhật mật khẩu thành công!");
-                jdiaDoiPass.dispose();
+            jdiaDoiPass.dispose();
         } else {
             showDialogNotification(Notifications.Type.ERROR, "Không thể cập nhật mật khẩu. Vui lòng thử lại!");
         }
@@ -891,8 +905,8 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
     private javax.swing.JLabel lblGenderTitle;
     private javax.swing.JLabel lblGenderValue;
     private javax.swing.JLabel lblIconAddress;
-    private javax.swing.JLabel lblIconEmail;
     private javax.swing.JLabel lblIconCccd;
+    private javax.swing.JLabel lblIconEmail;
     private javax.swing.JLabel lblIconPhone;
     private javax.swing.JLabel lblMa;
     private javax.swing.JLabel lblNewPassTitle;
@@ -905,8 +919,8 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
     private javax.swing.JPanel pnlThongTin;
     private javax.swing.JScrollPane scrAddress;
     private javax.swing.JTextArea txtAddress;
-    private javax.swing.JTextField txtEmail;
     private javax.swing.JTextField txtCccd;
+    private javax.swing.JTextField txtEmail;
     private javax.swing.JPasswordField txtMkCu;
     private javax.swing.JPasswordField txtMkMoi;
     private javax.swing.JTextField txtPhone;
