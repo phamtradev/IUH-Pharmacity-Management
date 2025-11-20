@@ -33,6 +33,7 @@ public class Menu extends JPanel {
         {"Quản lý xuất hủy"},
         {"Quản lý đơn hàng"},
         {"Quản lý khuyến mãi"},
+        {"Quản lý dữ liệu"},
         {"Thông tin cá nhân"},
         {"Chat Bot"},
         {"Trợ giúp"},

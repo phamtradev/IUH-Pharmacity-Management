@@ -44,4 +44,37 @@ public class ConnectDB {
             return false;
         }
     }
+
+    /**
+     * Tạo database nếu chưa tồn tại
+     * @return true nếu database đã tồn tại hoặc được tạo thành công, false nếu có lỗi
+     */
+    public static boolean createDatabaseIfNotExists() {
+        String databaseName = "IUHPharmacityManagement";
+        String masterUrl = "jdbc:sqlserver://localhost:1433;databaseName=master;encrypt=false;trustServerCertificate=true;integratedSecurity=false";
+        
+        try (Connection masterConn = DriverManager.getConnection(masterUrl, USER, PASSWORD)) {
+            // Kiểm tra xem database đã tồn tại chưa
+            String checkDbSql = "SELECT COUNT(*) FROM sys.databases WHERE name = ?";
+            try (java.sql.PreparedStatement checkStmt = masterConn.prepareStatement(checkDbSql)) {
+                checkStmt.setString(1, databaseName);
+                try (java.sql.ResultSet rs = checkStmt.executeQuery()) {
+                    if (rs.next() && rs.getInt(1) > 0) {
+                        // Database đã tồn tại
+                        return true;
+                    }
+                }
+            }
+            
+            // Database chưa tồn tại, tạo mới
+            String createDbSql = "CREATE DATABASE [" + databaseName + "]";
+            try (java.sql.Statement stmt = masterConn.createStatement()) {
+                stmt.executeUpdate(createDbSql);
+                return true;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

@@ -1,4 +1,4 @@
-/*
+    /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JPanel.java to edit this template
  */
@@ -10,6 +10,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Image;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Optional;
 import javax.swing.ImageIcon;
@@ -254,6 +255,26 @@ public class LoginFormPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         contentPanel.add(lblQuenMatKhau, gridBagConstraints);
 
+        btnKhoiPhucDuLieu = new javax.swing.JButton();
+        btnKhoiPhucDuLieu.setFont(new java.awt.Font("Segoe UI", 0, 12)); // NOI18N
+        btnKhoiPhucDuLieu.setForeground(new java.awt.Color(0, 102, 204));
+        btnKhoiPhucDuLieu.setText("Khôi phục dữ liệu");
+        btnKhoiPhucDuLieu.setBorderPainted(false);
+        btnKhoiPhucDuLieu.setContentAreaFilled(false);
+        btnKhoiPhucDuLieu.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnKhoiPhucDuLieu.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnKhoiPhucDuLieuActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.insets = new java.awt.Insets(10, 0, 0, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.CENTER;
+        contentPanel.add(btnKhoiPhucDuLieu, gridBagConstraints);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -390,9 +411,44 @@ public class LoginFormPanel extends javax.swing.JPanel {
             return;
         }
 
+        //Kiểm tra kết nối database và dữ liệu có bị mất không
+        try (Connection con = ConnectDB.getConnection()) {
+            //Kiểm tra xem bảng TaiKhoan có tồn tại và có thể truy vấn được không
+            String checkTableSql = "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'TaiKhoan'";
+            try (java.sql.Statement stmt = con.createStatement();
+                 java.sql.ResultSet rs = stmt.executeQuery(checkTableSql)) {
+                if (!rs.next() || rs.getInt(1) == 0) {
+                    //Bảng TaiKhoan không tồn tại - dữ liệu bị mất
+                    throw new SQLException("Bảng TaiKhoan không tồn tại");
+                }
+            }
+        } catch (SQLException e) {
+            //Lỗi kết nối database hoặc dữ liệu bị mất
+            Notifications.getInstance().setJFrame(parentFrame);
+            Notifications.getInstance().show(Notifications.Type.ERROR, 
+                Notifications.Location.TOP_CENTER,
+                "Ôi không dữ liệu của bạn đã mất hãy liên hệ với quản lý !");
+            return;
+        }
+
         //Gọi BUS để xác thực và lấy về đối tượng NhanVien
         NhanVienBUS nhanVienBUS = new NhanVienBUS();
-        NhanVien nguoiDung = nhanVienBUS.xacThucNguoiDung(tenDangNhap, matKhau);
+        NhanVien nguoiDung;
+        
+        try {
+            nguoiDung = nhanVienBUS.xacThucNguoiDung(tenDangNhap, matKhau);
+        } catch (Exception e) {
+            //Lỗi khi xác thực - có thể dữ liệu bị mất
+            if (e instanceof SQLException || (e.getCause() != null && e.getCause() instanceof SQLException)) {
+                Notifications.getInstance().setJFrame(parentFrame);
+                Notifications.getInstance().show(Notifications.Type.ERROR, 
+                    Notifications.Location.TOP_CENTER,
+                    "Ôi không dữ liệu của bạn đã mất hãy liên hệ với quản lý !");
+                return;
+            }
+            //Nếu không phải SQLException, xử lý như đăng nhập sai
+            nguoiDung = null;
+        }
 
         if (nguoiDung == null) {
             //đăng nhập k thành công
@@ -534,9 +590,20 @@ public class LoginFormPanel extends javax.swing.JPanel {
         }
     }
 
+    private void btnKhoiPhucDuLieuActionPerformed(java.awt.event.ActionEvent evt) {
+        openRestoreDialog();
+    }
+
+    private void openRestoreDialog() {
+        javax.swing.JFrame parentFrame = (javax.swing.JFrame) SwingUtilities.getWindowAncestor(this);
+        RestoreDataDialog dialog = new RestoreDataDialog(parentFrame, true);
+        dialog.setVisible(true);
+    }
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnDangNhap;
+    private javax.swing.JButton btnKhoiPhucDuLieu;
     private javax.swing.JCheckBox chkHienMatKhau;
     private javax.swing.JPanel contentPanel;
     private javax.swing.JPanel jPanel1;
