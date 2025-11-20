@@ -62,10 +62,19 @@ public class SplashScreen extends javax.swing.JFrame {
                     // Người dùng có thể khôi phục dữ liệu từ màn hình đăng nhập
                     SwingUtilities.invokeLater(() -> {
                         JOptionPane.showMessageDialog(this,
-                            "Không thể kết nối đến cơ sở dữ liệu!\n" +
+                            "Không thể kết nối đến cơ sở dữ liệu!\n\n" +
+                            "Nguyên nhân có thể:\n" +
+                            "• Database chưa được tạo\n" +
+                            "• SQL Server chưa khởi động\n" +
+                            "• Thông tin đăng nhập (username/password) sai\n" +
+                            "• SQL Server không chạy trên cổng 1433\n\n" +
+                            "Vui lòng kiểm tra:\n" +
+                            "1. SQL Server đã được khởi động chưa?\n" +
+                            "2. Thông tin kết nối trong ConnectDB.java có đúng không?\n" +
+                            "3. Database 'IUHPharmacityManagement' đã được tạo chưa?\n\n" +
                             "Bạn có thể khôi phục dữ liệu từ màn hình đăng nhập.",
-                            "Cảnh báo",
-                            JOptionPane.WARNING_MESSAGE);
+                            "Lỗi kết nối Database",
+                            JOptionPane.ERROR_MESSAGE);
                     });
                     // Tiếp tục chạy để mở màn hình đăng nhập
                 }
@@ -221,7 +230,15 @@ public class SplashScreen extends javax.swing.JFrame {
     //các task thực tế
     private boolean connectDatabase() {
         try {
+            // Trước tiên, đảm bảo database tồn tại
+            updateProgress("Đang kiểm tra database...", 25);
+            if (!ConnectDB.createDatabaseIfNotExists()) {
+                logger.log(java.util.logging.Level.WARNING, "Không thể tạo database hoặc database đã tồn tại");
+                // Tiếp tục thử kết nối dù có lỗi tạo database (có thể database đã tồn tại)
+            }
+            
             // Test kết nối thực sự
+            updateProgress("Đang kết nối database...", 30);
             Connection conn = ConnectDB.getConnection();
             if (conn != null && !conn.isClosed()) {
                 conn.close(); // Đóng connection test
@@ -230,6 +247,8 @@ public class SplashScreen extends javax.swing.JFrame {
             return false;
         } catch (SQLException e) {
             logger.log(java.util.logging.Level.SEVERE, "Lỗi kết nối database", e);
+            // Log chi tiết lỗi để debug
+            logger.log(java.util.logging.Level.SEVERE, "Chi tiết lỗi: " + e.getMessage(), e);
             return false;
         }
     }
