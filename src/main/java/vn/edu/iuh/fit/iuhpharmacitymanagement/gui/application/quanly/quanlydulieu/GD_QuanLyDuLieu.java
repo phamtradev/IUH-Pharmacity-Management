@@ -4,6 +4,7 @@ import com.formdev.flatlaf.FlatClientProperties;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.service.backup.BackupManifestService;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.service.backup.BackupRecord;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.service.backup.DataBackupService;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.util.BackupPreferences;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -38,6 +39,7 @@ public class GD_QuanLyDuLieu extends JPanel {
     private JButton btnOpenFolder;
     private JLabel lblStatus;
     private JProgressBar progressBar;
+    private JCheckBox chkAutoBackup;
 
     private static final DateTimeFormatter DISPLAY_TIME_FORMAT =
             DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss").withZone(ZoneId.systemDefault());
@@ -125,6 +127,15 @@ public class GD_QuanLyDuLieu extends JPanel {
         btnBackupNow = new JButton("Sao lưu ngay");
         btnBackupNow.addActionListener(e -> performBackup());
         center.add(btnBackupNow, gbc);
+
+        gbc.gridy = 2;
+        gbc.anchor = GridBagConstraints.WEST;
+        chkAutoBackup = new JCheckBox("Tự động sao lưu khi tắt ứng dụng");
+        chkAutoBackup.setSelected(BackupPreferences.isAutoBackupEnabled());
+        chkAutoBackup.addActionListener(e -> {
+            BackupPreferences.setAutoBackupEnabled(chkAutoBackup.isSelected());
+        });
+        center.add(chkAutoBackup, gbc);
 
         card.add(center, BorderLayout.CENTER);
         return card;

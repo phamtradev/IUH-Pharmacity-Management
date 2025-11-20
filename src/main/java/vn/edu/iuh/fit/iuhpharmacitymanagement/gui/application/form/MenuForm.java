@@ -5,7 +5,16 @@
 package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.form;
 
 import com.formdev.flatlaf.FlatLightLaf;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.service.backup.BackupManifestService;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.service.backup.BackupRecord;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.service.backup.DataBackupService;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.util.BackupPreferences;
+
 import java.awt.Color;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
@@ -52,6 +61,75 @@ public class MenuForm extends javax.swing.JFrame {
         // Thiết lập full màn hình
         setExtendedState(javax.swing.JFrame.MAXIMIZED_BOTH);
         setLocationRelativeTo(null);
+        
+        // Thêm window listener để tự động sao lưu khi tắt app
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                if (BackupPreferences.isAutoBackupEnabled()) {
+                    // Cho phép đóng app ngay, backup chạy background
+                    performAutoBackupInBackground();
+                } else {
+                    // Không có auto backup, đóng app ngay
+                    System.exit(0);
+                }
+            }
+        });
+    }
+    
+    private void performAutoBackupInBackground() {
+        // Hiển thị thông báo ngắn gọn rồi đóng app
+        javax.swing.JOptionPane.showMessageDialog(
+            this,
+            "Ứng dụng sẽ đóng ngay. Sao lưu tự động đang chạy trong background.",
+            "Thông báo",
+            javax.swing.JOptionPane.INFORMATION_MESSAGE
+        );
+        
+        // Đóng cửa sổ ngay, không chờ backup
+        dispose();
+        
+        // Tạo thread backup chạy background
+        Thread backupThread = new Thread(() -> {
+            try {
+                System.out.println("Bắt đầu sao lưu tự động trong background...");
+                
+                DataBackupService backupService = new DataBackupService();
+                Path backupDir = backupService.getDefaultBackupDirectory();
+                
+                // Đảm bảo thư mục tồn tại
+                if (!Files.exists(backupDir)) {
+                    Files.createDirectories(backupDir);
+                }
+                
+                // Thực hiện backup (không có progress callback vì app đã đóng)
+                DataBackupService.BackupResult result = backupService.backup(backupDir, null);
+                
+                // Lưu vào manifest
+                BackupManifestService manifestService = new BackupManifestService(backupDir);
+                BackupRecord record = new BackupRecord(
+                    result.file().getFileName().toString(),
+                    result.file().toAbsolutePath().toString(),
+                    Files.size(result.file()),
+                    manifestService.nowIso(),
+                    result.databaseName()
+                );
+                manifestService.append(record);
+                
+                System.out.println("Sao lưu tự động hoàn thành: " + result.file());
+            } catch (Exception ex) {
+                System.err.println("Lỗi khi tự động sao lưu: " + ex.getMessage());
+                ex.printStackTrace();
+            } finally {
+                // Đóng app sau khi backup xong (hoặc lỗi)
+                System.exit(0);
+            }
+        });
+        
+        // Thread không phải daemon để đảm bảo JVM đợi nó hoàn thành trước khi tắt
+        backupThread.setDaemon(false);
+        backupThread.setName("AutoBackupThread");
+        backupThread.start();
     }
 
     private void setupMainForm() {
@@ -110,7 +188,7 @@ public class MenuForm extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
 
         // Configure title bar before creating layout
         getRootPane().putClientProperty("JRootPane.titleBarBackground", WHITE);
