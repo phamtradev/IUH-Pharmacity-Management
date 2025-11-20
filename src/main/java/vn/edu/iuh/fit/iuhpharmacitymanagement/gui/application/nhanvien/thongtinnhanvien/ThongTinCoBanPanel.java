@@ -484,9 +484,9 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
         lblAvatar.setFont(lblAvatar.getFont().deriveFont(Font.BOLD, 48f));
         lblAvatar.putClientProperty(FlatClientProperties.STYLE, ""
                 + "foreground: #1F1F1F;"
-                + "borderColor: #E0E0E0;"
                 + "borderWidth: 2;"
                 + "background: #F5F5F5;");
+        lblAvatar.setBorder(javax.swing.BorderFactory.createLineBorder(new Color(224, 224, 224), 2));
         lblTenNV.setFont(new java.awt.Font("Segoe UI", 1, 32));
         lblTenNV.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 
@@ -694,8 +694,7 @@ public class ThongTinCoBanPanel extends javax.swing.JPanel {
                 + "background:$Component.accentColor;"
                 + "foreground:#FFFFFF;"
                 + "borderWidth:0;"
-                + "focusWidth:0;"
-                + "padding:8,20,8,20;");
+                + "focusWidth:0;");
 
         pnlNut.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 0, 0, 0));
     }

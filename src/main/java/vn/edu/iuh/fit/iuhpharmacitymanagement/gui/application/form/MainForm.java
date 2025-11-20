@@ -37,6 +37,7 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlydonha
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlykhuyenmai.GD_QuanLyKhuyenMai;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlylohang.GD_QuanLyLoHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlythuchi.GD_BaoCaoThuChi;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlydulieu.GD_QuanLyDuLieu;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.chatbot.GD_ChatBot;
 
 /**
@@ -232,12 +233,15 @@ public class MainForm extends JLayeredPane {
                         // Quản lý khuyến mãi
                         showForm(new GD_QuanLyKhuyenMai());
                     } else if (index == 13) {
+                        // Quản lý dữ liệu
+                        showForm(new GD_QuanLyDuLieu());
+                    } else if (index == 14) {
                         // Thông tin cá nhân
                         showForm(new GD_ThongTinCaNhan(true));
-                    } else if (index == 14) {
+                    } else if (index == 15) {
                         // Chat Bot
                         showForm(new GD_ChatBot());
-                    } else if (index == 15) {
+                    } else if (index == 16) {
                         // Trợ giúp
                         javax.swing.JOptionPane.showMessageDialog(
                             this,
@@ -245,7 +249,7 @@ public class MainForm extends JLayeredPane {
                             "Trợ giúp",
                             javax.swing.JOptionPane.INFORMATION_MESSAGE
                         );
-                    } else if (index == 16) {
+                    } else if (index == 17) {
                         // Phiên bản
                         javax.swing.JOptionPane.showMessageDialog(
                             this,
@@ -262,7 +266,7 @@ public class MainForm extends JLayeredPane {
                             "Thông tin Phiên bản",
                             javax.swing.JOptionPane.INFORMATION_MESSAGE
                         );
-                    } else if (index == 17) {
+                    } else if (index == 18) {
                         // Đăng xuất quản lý
                         handleLogout();
                     } else {
