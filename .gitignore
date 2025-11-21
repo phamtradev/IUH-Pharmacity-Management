@@ -14,3 +14,9 @@ src/main/resources/email.properties
 
 # PDF hóa đơn (chứa thông tin khách hàng)
 src/main/resources/img/hoadonbanhang/*.pdf 
+
+# IDE/project metadata và file tạm không commit
+temp_prev.java
+temp_prev_snippet.txt
+iuhpharmacitymanagement.iml
+nbactions.xml
