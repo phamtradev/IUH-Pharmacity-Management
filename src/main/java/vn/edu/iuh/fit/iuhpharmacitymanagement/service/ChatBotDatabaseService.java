@@ -289,16 +289,16 @@ public class ChatBotDatabaseService {
                 return "Hôm nay (" + homNay.format(DATE_FORMAT) + ") chưa phát sinh hóa đơn nào.";
             }
 
-            List<String> maHoaDon = new ArrayList<>();
-            for (DonHang dh : hoaDonHomNay) {
-                maHoaDon.add(dh.getMaDonHang());
-            }
-
             StringBuilder result = new StringBuilder();
             result.append("📅 Kết quả bán hàng hôm nay (").append(homNay.format(DATE_FORMAT)).append("):\n\n");
             result.append("🔹 Số đơn đã bán: ").append(soDon).append("\n");
             result.append("🔹 Doanh thu: ").append(formatCurrency(doanhThu)).append("\n");
-            result.append("🔹 Danh sách mã hóa đơn: ").append(String.join(", ", maHoaDon));
+            result.append("🔹 Danh sách hóa đơn:\n");
+            for (DonHang dh : hoaDonHomNay) {
+                result.append("   • ").append(dh.getMaDonHang())
+                        .append(": ").append(formatCurrency(dh.getThanhTien()))
+                        .append("\n");
+            }
 
             return result.toString();
         } catch (Exception e) {

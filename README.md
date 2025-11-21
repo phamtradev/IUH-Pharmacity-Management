@@ -58,6 +58,7 @@ Before setting up and running the application, ensure you have the following ins
 - PDF & Excel Support: Generate professional reports and import/export data efficiently.
 - Role-based Access Control: Separate interfaces and permissions for Managers and Staff.
 - Modern UI: Clean, intuitive interface with FlatLaf Look & Feel.
+- Database Backup & Restore: Secure and efficient backup of system data with easy restoration options in case of data loss or system failure.
 
 ## Getting Started
 
