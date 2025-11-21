@@ -16,6 +16,8 @@ src/main/resources/email.properties
 src/main/resources/img/hoadonbanhang/*.pdf 
 
 # IDE/project metadata và file tạm không commit
+.idea/
+.vscode/
 temp_prev.java
 temp_prev_snippet.txt
 iuhpharmacitymanagement.iml
