@@ -46,65 +46,6 @@ public class GD_QuanLyKhuyenMai extends javax.swing.JPanel {
         fillTable();
     }
 
-    private void setUIManager() {
-        txtMaKhuyenMai.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Mã khuyến mãi");
-        UIManager.put("Button.arc", 10);
-        
-        ButtonStyles.apply(btnThem, ButtonStyles.Type.SUCCESS);
-        ButtonStyles.apply(btnSua, ButtonStyles.Type.WARNING);
-        ButtonStyles.apply(btnXoa, ButtonStyles.Type.DANGER);
-        ButtonStyles.apply(btnXemChiTiet, ButtonStyles.Type.INFO);
-        ButtonStyles.apply(btnTimKiem, ButtonStyles.Type.INFO);
-        ButtonStyles.apply(btnLamMoi, ButtonStyles.Type.PRIMARY);
-        
-        // Đảm bảo style được áp dụng
-        SwingUtilities.invokeLater(() -> {
-            btnThem.repaint();
-            btnSua.repaint();
-            btnXoa.repaint();
-            btnXemChiTiet.repaint();
-            btnTimKiem.repaint();
-            btnLamMoi.repaint();
-        });
-    }
-
-    private void fillTable() {
-        String[] headers = {"Mã khuyến mãi", "Tên khuyến mãi", "Ngày bắt đầu",
-            "Ngày kết thúc", "Giảm giá", "Loại khuyến mãi", "Trạng thái"};
-        List<Integer> tableWidths = Arrays.asList(120, 200, 120, 120, 100, 120, 100);
-        tableDesign = new TableDesign(headers, tableWidths);
-        scrollTable.setViewportView(tableDesign.getTable());
-        scrollTable.setBorder(BorderFactory.createEmptyBorder(15, 20, 20, 20));
-        List<KhuyenMai> danhSach = khuyenMaiBUS.getAllKhuyenMai();
-        fillContent(danhSach);
-    }
-
-    private void fillContent(List<KhuyenMai> danhSach) {
-        tableDesign.getModelTable().setRowCount(0);
-        for (KhuyenMai km : danhSach) {
-            String loaiKM = km.getLoaiKhuyenMai() == LoaiKhuyenMai.SAN_PHAM ? "Sản phẩm" : "Đơn hàng";
-            String trangThai = km.isTrangThai() ? "Còn hạn" : "Hết hạn";
-            
-            tableDesign.getModelTable().addRow(new Object[]{
-                km.getMaKhuyenMai(),
-                km.getTenKhuyenMai(),
-                formatDate(km.getNgayBatDau()),
-                formatDate(km.getNgayKetThuc()),
-                percentFormat.format(km.getGiamGia()),
-                loaiKM,
-                trangThai
-            });
-        }
-    }
-
-    private String formatDate(LocalDate date) {
-        if (date == null) {
-            return "";
-        }
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        return date.format(formatter);
-    }
-
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -261,6 +202,67 @@ public class GD_QuanLyKhuyenMai extends javax.swing.JPanel {
         add(pnAll);
     }// </editor-fold>//GEN-END:initComponents
 
+     private void setUIManager() {
+        txtMaKhuyenMai.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Mã khuyến mãi");
+        UIManager.put("Button.arc", 10);
+        
+        ButtonStyles.apply(btnThem, ButtonStyles.Type.SUCCESS);
+        ButtonStyles.apply(btnSua, ButtonStyles.Type.WARNING);
+        ButtonStyles.apply(btnXoa, ButtonStyles.Type.DANGER);
+        ButtonStyles.apply(btnXemChiTiet, ButtonStyles.Type.INFO);
+        ButtonStyles.apply(btnTimKiem, ButtonStyles.Type.INFO);
+        ButtonStyles.apply(btnLamMoi, ButtonStyles.Type.PRIMARY);
+        
+        // Đảm bảo style được áp dụng
+        SwingUtilities.invokeLater(() -> {
+            btnThem.repaint();
+            btnSua.repaint();
+            btnXoa.repaint();
+            btnXemChiTiet.repaint();
+            btnTimKiem.repaint();
+            btnLamMoi.repaint();
+        });
+    }
+
+    private void fillTable() {
+        String[] headers = {"Mã khuyến mãi", "Tên khuyến mãi", "Ngày bắt đầu",
+            "Ngày kết thúc", "Giảm giá", "Loại khuyến mãi", "Trạng thái"};
+        List<Integer> tableWidths = Arrays.asList(120, 200, 120, 120, 100, 120, 100);
+        tableDesign = new TableDesign(headers, tableWidths);
+        scrollTable.setViewportView(tableDesign.getTable());
+        scrollTable.setBorder(BorderFactory.createEmptyBorder(15, 20, 20, 20));
+        List<KhuyenMai> danhSach = khuyenMaiBUS.getAllKhuyenMai();
+        fillContent(danhSach);
+    }
+
+    // phần logic
+    
+    private void fillContent(List<KhuyenMai> danhSach) {
+        tableDesign.getModelTable().setRowCount(0);
+        for (KhuyenMai km : danhSach) {
+            String loaiKM = km.getLoaiKhuyenMai() == LoaiKhuyenMai.SAN_PHAM ? "Sản phẩm" : "Đơn hàng";
+            String trangThai = km.isTrangThai() ? "Còn hạn" : "Hết hạn";
+            
+            tableDesign.getModelTable().addRow(new Object[]{
+                km.getMaKhuyenMai(),
+                km.getTenKhuyenMai(),
+                formatDate(km.getNgayBatDau()),
+                formatDate(km.getNgayKetThuc()),
+                percentFormat.format(km.getGiamGia()),
+                loaiKM,
+                trangThai
+            });
+        }
+    }
+
+    private String formatDate(LocalDate date) {
+        if (date == null) {
+            return "";
+        }
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        return date.format(formatter);
+    }
+    
     private void btnThemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnThemActionPerformed
         // Mở dialog thêm khuyến mãi
         ThemKhuyenMaiDialog dialog = new ThemKhuyenMaiDialog((java.awt.Frame) SwingUtilities.getWindowAncestor(this), true);
