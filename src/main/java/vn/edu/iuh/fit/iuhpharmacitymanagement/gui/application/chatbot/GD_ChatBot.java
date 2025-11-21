@@ -15,6 +15,12 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import raven.toast.Notifications;
@@ -35,6 +41,17 @@ public class GD_ChatBot extends javax.swing.JPanel {
     private DateTimeFormatter timeFormatter;
     private boolean isPlaceholder = true; // Trạng thái placeholder
     private ChatBotDatabaseService dbService; // Service truy vấn database
+    private final List<ChatMessage> conversationHistory;
+    private static final Set<String> PRODUCT_STOPWORDS = new HashSet<>(Arrays.asList(
+            "thuoc", "thuốc", "san", "sản", "pham", "phẩm", "sp",
+            "tim", "tìm", "kiem", "kiếm", "kiemtra", "kiểm", "tra",
+            "thong", "thông", "tin", "ton", "tồn", "kho",
+            "con", "còn", "bao", "nhieu", "nhiêu", "so", "số", "luong", "lượng",
+            "lo", "lô", "hang", "hàng", "may", "mấy", "gi", "gì",
+            "cho", "xin", "hoi", "hỏi", "toi", "tôi", "ban", "bán",
+            "duoc", "được", "la", "là", "ve", "về"
+    ));
+    private static final String NON_TEXT_PATTERN = "[^a-z0-9áàảãạăắằẳẵặâấầẩẫậđéèẻẽẹêếềểễệíìỉĩịóòỏõọôốồổỗộơớờởỡợúùủũụưứừửữựýỳỷỹỵ\\s]";
 
     // Cấu hình API - OpenAI
     private static final String OPENAI_API_KEY = "AIzaSyBz23hMSqXdIi7uw9NGlETOXX8DbN3PL1I";
@@ -47,6 +64,7 @@ public class GD_ChatBot extends javax.swing.JPanel {
     public GD_ChatBot() {
         timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
         dbService = new ChatBotDatabaseService(); // Khởi tạo service
+        conversationHistory = Collections.synchronizedList(new ArrayList<>());
         initComponents();
         customUI();
         addWelcomeMessage();
@@ -254,6 +272,7 @@ public class GD_ChatBot extends javax.swing.JPanel {
 
         // Thêm tin nhắn người dùng
         addUserMessage(message);
+        addMessageToHistory("user", message);
 
         // Xóa ô nhập và giữ sẵn sàng cho tin nhắn tiếp theo
         txtInput.setText("");
@@ -331,18 +350,8 @@ public class GD_ChatBot extends javax.swing.JPanel {
                     + "các chức năng của hệ thống, hoặc các vấn đề liên quan đến quản lý nhà thuốc. "
                     + "Trả lời ngắn gọn, rõ ràng và hữu ích bằng tiếng Việt.";
 
-            // Nếu có dữ liệu từ database, thêm vào context
-            String userMessageWithContext = message;
-            if (databaseContext != null && !databaseContext.isEmpty()) {
-                userMessageWithContext = message + "\n\n[Dữ liệu từ hệ thống]:\n" + databaseContext;
-            }
-
-            String jsonInputString = String.format(
-                    "{\"model\":\"%s\",\"messages\":[{\"role\":\"system\",\"content\":\"%s\"},{\"role\":\"user\",\"content\":\"%s\"}]}",
-                    MODEL,
-                    escapeJson(systemMessage),
-                    escapeJson(userMessageWithContext)
-            );
+            List<ChatMessage> historySnapshot = getHistorySnapshot();
+            String jsonInputString = buildRequestPayload(systemMessage, historySnapshot, message, databaseContext);
 
             // Gửi yêu cầu
             try (OutputStream os = conn.getOutputStream()) {
@@ -363,7 +372,9 @@ public class GD_ChatBot extends javax.swing.JPanel {
                     }
 
                     // Phân tích phản hồi theo định dạng OpenAI
-                    return parseOpenAIResponse(response.toString());
+                    String parsedResponse = parseOpenAIResponse(response.toString());
+                    addMessageToHistory("assistant", parsedResponse);
+                    return parsedResponse;
                 }
             } else {
                 // Đọc thông báo lỗi
@@ -389,9 +400,13 @@ public class GD_ChatBot extends javax.swing.JPanel {
      */
     private String checkAndQueryDatabase(String message) {
         String lowerMessage = message.toLowerCase();
+        String productName = extractProductName(message);
+
+        if (isSalesTodayQuestion(lowerMessage)) {
+            return dbService.layThongTinBanHangHomNay();
+        }
 
         // Phát hiện câu hỏi về số lô hàng (ưu tiên cao - kiểm tra trước)
-        // Kiểm tra các cụm từ đặc trưng cho lô hàng
         if (lowerMessage.contains("bao nhiêu lô") || lowerMessage.contains("bao nhieu lo")
                 || lowerMessage.contains("mấy lô") || lowerMessage.contains("may lo")
                 || lowerMessage.contains("số lô") || lowerMessage.contains("so lo")
@@ -400,9 +415,8 @@ public class GD_ChatBot extends javax.swing.JPanel {
                 || (lowerMessage.contains("lô") && (lowerMessage.contains("bao nhiêu") || lowerMessage.contains("bao nhieu") || lowerMessage.contains("mấy") || lowerMessage.contains("may")))
                 || (lowerMessage.contains("lo") && (lowerMessage.contains("bao nhiêu") || lowerMessage.contains("bao nhieu") || lowerMessage.contains("mấy") || lowerMessage.contains("may")))) {
 
-            String tenSanPham = extractProductName(message);
-            if (tenSanPham != null && !tenSanPham.isEmpty()) {
-                return dbService.demSoLoHang(tenSanPham);
+            if (productName != null && !productName.isEmpty()) {
+                return dbService.demSoLoHang(productName);
             }
         }
 
@@ -413,11 +427,14 @@ public class GD_ChatBot extends javax.swing.JPanel {
                 || lowerMessage.contains("còn lại") || lowerMessage.contains("con lai")
                 || lowerMessage.contains("số lượng") || lowerMessage.contains("so luong"))) {
 
-            // Trích xuất tên sản phẩm từ câu hỏi
-            String tenSanPham = extractProductName(message);
-            if (tenSanPham != null && !tenSanPham.isEmpty()) {
-                return dbService.kiemTraTonKho(tenSanPham);
+            if (productName != null && !productName.isEmpty()) {
+                return dbService.kiemTraTonKho(productName);
             }
+        }
+
+        // Phát hiện yêu cầu xem thông tin thuốc/sản phẩm
+        if (isProductInfoQuestion(lowerMessage) && productName != null && !productName.isEmpty()) {
+            return dbService.layThongTinSanPhamTheoTen(productName);
         }
 
         // Phát hiện câu hỏi tìm kiếm sản phẩm
@@ -426,9 +443,8 @@ public class GD_ChatBot extends javax.swing.JPanel {
                 || lowerMessage.contains("có thuốc") || lowerMessage.contains("co thuoc")
                 || lowerMessage.contains("có sản phẩm") || lowerMessage.contains("co san pham")) {
 
-            String tenSanPham = extractProductName(message);
-            if (tenSanPham != null && !tenSanPham.isEmpty()) {
-                return dbService.timKiemSanPham(tenSanPham);
+            if (productName != null && !productName.isEmpty()) {
+                return dbService.timKiemSanPham(productName);
             }
         }
 
@@ -446,6 +462,11 @@ public class GD_ChatBot extends javax.swing.JPanel {
             return dbService.layThongKeTongQuan();
         }
 
+        // Nếu người dùng chỉ nhập tên sản phẩm
+        if (isOnlyProductName(message, productName)) {
+            return dbService.layThongTinSanPhamTheoTen(productName);
+        }
+
         return null; // Không phải câu hỏi về database
     }
 
@@ -454,17 +475,59 @@ public class GD_ChatBot extends javax.swing.JPanel {
      */
     //nó xóa những câu hỏi của mình và chừa cái tên để thực hiện query
     private String extractProductName(String message) {
-        // Loại bỏ các từ khóa phổ biến để lấy tên sản phẩm
-        String cleaned = message.toLowerCase()
-                .replaceAll("(thuốc|sản phẩm|san pham|sp|có|co|tìm|tim|kiếm|kiem|tồn kho|ton kho|còn|con|bao nhiêu|bao nhieu|lại|lai|số lượng|so luong|lô hàng|lo hang|lô|lo|mấy|may)", "")
-                .trim();
-
-        // Nếu còn lại ít nhất 2 ký tự thì coi đó là tên sản phẩm
-        if (cleaned.length() >= 2) {
-            return cleaned;
+        if (message == null || message.trim().isEmpty()) {
+            return null;
         }
+        String sanitized = message.toLowerCase().replaceAll(NON_TEXT_PATTERN, " ");
+        String[] tokens = sanitized.trim().split("\\s+");
+        StringBuilder builder = new StringBuilder();
+        for (String token : tokens) {
+            if (token.isEmpty() || PRODUCT_STOPWORDS.contains(token)) {
+                continue;
+            }
+            if (builder.length() > 0) {
+                builder.append(" ");
+            }
+            builder.append(token);
+        }
+        String cleaned = builder.toString().trim();
+        return cleaned.length() >= 2 ? cleaned : null;
+    }
 
-        return null;
+    private boolean isSalesTodayQuestion(String lowerMessage) {
+        boolean mentionToday = lowerMessage.contains("hôm nay") || lowerMessage.contains("hom nay");
+        boolean mentionOrder = lowerMessage.contains("đơn") || lowerMessage.contains("don")
+                || lowerMessage.contains("hóa đơn") || lowerMessage.contains("hoa don");
+        boolean mentionSales = lowerMessage.contains("bán") || lowerMessage.contains("ban")
+                || lowerMessage.contains("doanh thu") || lowerMessage.contains("ban duoc")
+                || lowerMessage.contains("bán được");
+        return mentionToday && mentionOrder && mentionSales;
+    }
+
+    private boolean isProductInfoQuestion(String lowerMessage) {
+        boolean mentionInfo = lowerMessage.contains("thông tin") || lowerMessage.contains("thong tin")
+                || lowerMessage.contains("chi tiết") || lowerMessage.contains("chi tiet");
+        boolean mentionProduct = lowerMessage.contains("thuốc") || lowerMessage.contains("thuoc")
+                || lowerMessage.contains("sản phẩm") || lowerMessage.contains("san pham");
+        return mentionInfo && mentionProduct;
+    }
+
+    private boolean isOnlyProductName(String originalMessage, String extractedName) {
+        if (originalMessage == null || extractedName == null) {
+            return false;
+        }
+        String normalizedOriginal = normalizeForComparison(originalMessage);
+        return !normalizedOriginal.isEmpty() && normalizedOriginal.equals(extractedName);
+    }
+
+    private String normalizeForComparison(String input) {
+        if (input == null) {
+            return "";
+        }
+        return input.toLowerCase()
+                .replaceAll(NON_TEXT_PATTERN, " ")
+                .replaceAll("\\s+", " ")
+                .trim();
     }
 
     /**
@@ -703,6 +766,7 @@ public class GD_ChatBot extends javax.swing.JPanel {
             addWelcomeMessage();
             chatContainer.revalidate();
             chatContainer.repaint();
+            resetConversationHistory();
 
             // Reset input field to placeholder
             txtInput.setText(PLACEHOLDER_TEXT);
@@ -740,5 +804,89 @@ public class GD_ChatBot extends javax.swing.JPanel {
      */
     public void showError(String errorMessage) {
         addBotMessage("❌ Đã xảy ra lỗi: " + errorMessage + "\n\nVui lòng thử lại sau.");
+    }
+
+    // ====== Conversation history helpers ======
+    private static final int MAX_HISTORY_MESSAGES = 12;
+
+    private void addMessageToHistory(String role, String content) {
+        synchronized (conversationHistory) {
+            conversationHistory.add(new ChatMessage(role, content));
+            while (conversationHistory.size() > MAX_HISTORY_MESSAGES) {
+                conversationHistory.remove(0);
+            }
+        }
+    }
+
+    private List<ChatMessage> getHistorySnapshot() {
+        synchronized (conversationHistory) {
+            return new ArrayList<>(conversationHistory);
+        }
+    }
+
+    private void resetConversationHistory() {
+        synchronized (conversationHistory) {
+            conversationHistory.clear();
+        }
+    }
+
+    private String buildRequestPayload(String systemMessage,
+            List<ChatMessage> historySnapshot,
+            String latestUserMessage,
+            String databaseContext) {
+
+        StringBuilder messagesBuilder = new StringBuilder();
+        messagesBuilder.append(String.format("{\"role\":\"system\",\"content\":\"%s\"}", escapeJson(systemMessage)));
+
+        boolean hasLatestUser = false;
+        for (int i = 0; i < historySnapshot.size(); i++) {
+            ChatMessage msg = historySnapshot.get(i);
+            boolean isLatestEntry = (i == historySnapshot.size() - 1);
+            boolean isLatestUser = isLatestEntry && "user".equals(msg.getRole());
+
+            String content = msg.getContent();
+            if (isLatestUser && databaseContext != null && !databaseContext.isEmpty()) {
+                content = content + "\n\n[Dữ liệu từ hệ thống]:\n" + databaseContext;
+            }
+
+            messagesBuilder.append(",");
+            messagesBuilder.append(String.format("{\"role\":\"%s\",\"content\":\"%s\"}",
+                    msg.getRole(),
+                    escapeJson(content)));
+
+            if (isLatestUser) {
+                hasLatestUser = true;
+            }
+        }
+
+        if (!hasLatestUser) {
+            String content = latestUserMessage;
+            if (databaseContext != null && !databaseContext.isEmpty()) {
+                content = content + "\n\n[Dữ liệu từ hệ thống]:\n" + databaseContext;
+            }
+            messagesBuilder.append(",");
+            messagesBuilder.append(String.format("{\"role\":\"user\",\"content\":\"%s\"}", escapeJson(content)));
+        }
+
+        return String.format("{\"model\":\"%s\",\"messages\":[%s]}", MODEL, messagesBuilder);
+    }
+
+    private static class ChatMessage {
+
+        private final String role;
+        private final String content;
+
+        ChatMessage(String role, String content) {
+            this.role = role;
+            this.content = content;
+        }
+
+        public String getRole() {
+            return role;
+        }
+
+        public String getContent() {
+            return content;
+        }
     }
 }

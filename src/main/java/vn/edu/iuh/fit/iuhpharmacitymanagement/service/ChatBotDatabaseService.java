@@ -2,10 +2,17 @@ package vn.edu.iuh.fit.iuhpharmacitymanagement.service;
 
 import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.SanPhamDAO;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.LoHangDAO;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.DonHangDAO;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.LoHang;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonHang;
 
+import java.text.NumberFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 /**
@@ -16,10 +23,15 @@ public class ChatBotDatabaseService {
     
     private final SanPhamDAO sanPhamDAO;
     private final LoHangDAO loHangDAO;
+    private final DonHangDAO donHangDAO;
+    private final NumberFormat currencyFormat;
+    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     
     public ChatBotDatabaseService() {
         this.sanPhamDAO = new SanPhamDAO();
         this.loHangDAO = new LoHangDAO();
+        this.donHangDAO = new DonHangDAO();
+        this.currencyFormat = NumberFormat.getCurrencyInstance(new Locale("vi", "VN"));
     }
     
     /**
@@ -228,17 +240,124 @@ public class ChatBotDatabaseService {
         try {
             int tongSanPham = sanPhamDAO.findAll().size();
             int tongLoHang = loHangDAO.count();
+            int tongDonHang = donHangDAO.count();
+            double tongDoanhThu = donHangDAO.sumThanhTien();
+
+            LocalDate homNay = LocalDate.now();
+            int donHangHomNay = donHangDAO.countByDate(homNay);
+            double doanhThuHomNay = donHangDAO.sumThanhTienByDate(homNay);
+            List<DonHang> hoaDonHomNay = donHangDAO.findByDate(homNay);
             List<LoHang> sapHetHan = loHangDAO.timSanPhamHetHan();
-            
+
             StringBuilder result = new StringBuilder();
             result.append("📊 Thống kê tổng quan:\n\n");
             result.append("🔹 Tổng số sản phẩm: ").append(tongSanPham).append("\n");
             result.append("🔹 Tổng số lô hàng: ").append(tongLoHang).append("\n");
-            result.append("🔹 Lô hàng sắp hết hạn: ").append(sapHetHan.size()).append("\n");
-            
+            result.append("🔹 Tổng số đơn hàng: ").append(tongDonHang).append("\n");
+            result.append("🔹 Tổng doanh thu: ").append(formatCurrency(tongDoanhThu)).append("\n\n");
+
+            result.append("📅 Hôm nay (").append(homNay.format(DATE_FORMAT)).append("):\n");
+            result.append("   • Số đơn đã bán: ").append(donHangHomNay).append("\n");
+            result.append("   • Doanh thu hôm nay: ").append(formatCurrency(doanhThuHomNay)).append("\n");
+            if (hoaDonHomNay.isEmpty()) {
+                result.append("   • Chưa có hóa đơn nào.\n");
+            } else {
+                result.append("   • Danh sách mã hóa đơn: ");
+                List<String> maDon = new ArrayList<>();
+                for (DonHang dh : hoaDonHomNay) {
+                    maDon.add(dh.getMaDonHang());
+                }
+                result.append(String.join(", ", maDon));
+                result.append("\n");
+            }
+
+            result.append("\n⚠️ Lô hàng sắp hết hạn: ").append(sapHetHan.size()).append(" lô.");
             return result.toString();
         } catch (Exception e) {
             return "Lỗi khi lấy thống kê: " + e.getMessage();
+        }
+    }
+
+    public String layThongTinBanHangHomNay() {
+        LocalDate homNay = LocalDate.now();
+        try {
+            List<DonHang> hoaDonHomNay = donHangDAO.findByDate(homNay);
+            int soDon = hoaDonHomNay.size();
+            double doanhThu = donHangDAO.sumThanhTienByDate(homNay);
+
+            if (hoaDonHomNay.isEmpty()) {
+                return "Hôm nay (" + homNay.format(DATE_FORMAT) + ") chưa phát sinh hóa đơn nào.";
+            }
+
+            List<String> maHoaDon = new ArrayList<>();
+            for (DonHang dh : hoaDonHomNay) {
+                maHoaDon.add(dh.getMaDonHang());
+            }
+
+            StringBuilder result = new StringBuilder();
+            result.append("📅 Kết quả bán hàng hôm nay (").append(homNay.format(DATE_FORMAT)).append("):\n\n");
+            result.append("🔹 Số đơn đã bán: ").append(soDon).append("\n");
+            result.append("🔹 Doanh thu: ").append(formatCurrency(doanhThu)).append("\n");
+            result.append("🔹 Danh sách mã hóa đơn: ").append(String.join(", ", maHoaDon));
+
+            return result.toString();
+        } catch (Exception e) {
+            return "Lỗi khi lấy dữ liệu bán hàng hôm nay: " + e.getMessage();
+        }
+    }
+
+    public String layThongTinSanPhamTheoTen(String tenSanPham) {
+        try {
+            List<SanPham> danhSach = sanPhamDAO.findByName(tenSanPham);
+
+            if (danhSach.isEmpty()) {
+                return "Không tìm thấy sản phẩm nào với tên: " + tenSanPham;
+            }
+
+            StringBuilder result = new StringBuilder();
+            result.append("📘 Thông tin thuốc tìm được:\n\n");
+
+            for (SanPham sp : danhSach) {
+                List<LoHang> danhSachLo = loHangDAO.findByMaSanPham(sp.getMaSanPham());
+                int soLo = danhSachLo.size();
+                int tongSoLuong = 0;
+                for (LoHang lo : danhSachLo) {
+                    tongSoLuong += lo.getTonKho();
+                }
+
+                result.append("🔹 ").append(sp.getTenSanPham()).append("\n");
+                result.append("   - Mã SP: ").append(sp.getMaSanPham()).append("\n");
+                result.append("   - Giá bán: ").append(formatCurrency(sp.getGiaBan())).append("\n");
+                result.append("   - Hoạt chất: ").append(sp.getHoatChat()).append("\n");
+                result.append("   - Nhà sản xuất: ").append(sp.getNhaSanXuat()).append("\n");
+                result.append("   - Số lô hiện có: ").append(soLo).append("\n");
+                result.append("   - Tồn kho: ").append(tongSoLuong);
+                if (sp.getDonViTinh() != null) {
+                    result.append(" ").append(sp.getDonViTinh().getTenDonVi());
+                }
+                result.append("\n");
+
+                if (!danhSachLo.isEmpty()) {
+                    result.append("   - Chi tiết lô hàng:\n");
+                    for (LoHang lo : danhSachLo) {
+                        result.append("     • ").append(lo.getTenLoHang())
+                                .append(": ").append(lo.getTonKho())
+                                .append(" (HSD: ").append(lo.getHanSuDung()).append(")\n");
+                    }
+                }
+                result.append("\n");
+            }
+
+            return result.toString();
+        } catch (Exception e) {
+            return "Lỗi khi lấy thông tin sản phẩm: " + e.getMessage();
+        }
+    }
+
+    private String formatCurrency(double value) {
+        synchronized (currencyFormat) {
+            currencyFormat.setMaximumFractionDigits(0);
+            return currencyFormat.format(value);
         }
     }
 }

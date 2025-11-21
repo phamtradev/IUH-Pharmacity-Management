@@ -29,17 +29,24 @@ public class DonHangDAO implements DAOInterface<DonHang, String> {
             = "UPDATE DonHang SET ngayDatHang = ?, thanhTien = ?, phuongThucThanhToan = ?, maNhanVien = ?, maKhachHang = ?, maKhuyenMai = ? WHERE maDonHang = ?";
 
     private final String SQL_TIM_THEO_MA
-            = "SELECT dh.*, nv.tenNhanVien, kh.tenKhachHang, kh.soDienThoai " +
-              "FROM DonHang dh " +
-              "LEFT JOIN NhanVien nv ON dh.maNhanVien = nv.maNhanVien " +
-              "LEFT JOIN KhachHang kh ON dh.maKhachHang = kh.maKhachHang " +
-              "WHERE dh.maDonHang = ?";
+            = "SELECT dh.*, nv.tenNhanVien, kh.tenKhachHang, kh.soDienThoai "
+            + "FROM DonHang dh "
+            + "LEFT JOIN NhanVien nv ON dh.maNhanVien = nv.maNhanVien "
+            + "LEFT JOIN KhachHang kh ON dh.maKhachHang = kh.maKhachHang "
+            + "WHERE dh.maDonHang = ?";
 
     private final String SQL_TIM_TAT_CA
-            = "SELECT dh.*, nv.tenNhanVien, kh.tenKhachHang, kh.soDienThoai " +
-              "FROM DonHang dh " +
-              "LEFT JOIN NhanVien nv ON dh.maNhanVien = nv.maNhanVien " +
-              "LEFT JOIN KhachHang kh ON dh.maKhachHang = kh.maKhachHang";
+            = "SELECT dh.*, nv.tenNhanVien, kh.tenKhachHang, kh.soDienThoai "
+            + "FROM DonHang dh "
+            + "LEFT JOIN NhanVien nv ON dh.maNhanVien = nv.maNhanVien "
+            + "LEFT JOIN KhachHang kh ON dh.maKhachHang = kh.maKhachHang";
+
+    private final String SQL_TIM_THEO_NGAY
+            = "SELECT dh.*, nv.tenNhanVien, kh.tenKhachHang, kh.soDienThoai "
+            + "FROM DonHang dh "
+            + "LEFT JOIN NhanVien nv ON dh.maNhanVien = nv.maNhanVien "
+            + "LEFT JOIN KhachHang kh ON dh.maKhachHang = kh.maKhachHang "
+            + "WHERE dh.ngayDatHang = ?";
 
     private final String SQL_LAY_MA_CUOI
             = "SELECT TOP 1 maDonHang FROM DonHang ORDER BY maDonHang DESC";
@@ -266,6 +273,62 @@ public class DonHangDAO implements DAOInterface<DonHang, String> {
             e.printStackTrace();
         }
         return 0;
+    }
+
+    public int countByDate(LocalDate date) {
+        String sql = "SELECT COUNT(*) AS total FROM DonHang WHERE ngayDatHang = ?";
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(sql)) {
+            stmt.setDate(1, Date.valueOf(date));
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("total");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    public double sumThanhTien() {
+        String sql = "SELECT COALESCE(SUM(thanhTien), 0) AS totalRevenue FROM DonHang";
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
+            if (rs.next()) {
+                return rs.getDouble("totalRevenue");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0D;
+    }
+
+    public double sumThanhTienByDate(LocalDate date) {
+        String sql = "SELECT COALESCE(SUM(thanhTien), 0) AS totalRevenue FROM DonHang WHERE ngayDatHang = ?";
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(sql)) {
+            stmt.setDate(1, Date.valueOf(date));
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getDouble("totalRevenue");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0D;
+    }
+
+    public List<DonHang> findByDate(LocalDate date) {
+        List<DonHang> danhSachDonHang = new ArrayList<>();
+        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(SQL_TIM_THEO_NGAY)) {
+            stmt.setDate(1, Date.valueOf(date));
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                danhSachDonHang.add(mapResultSetToDonHang(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (Exception ex) {
+            System.getLogger(DonHangDAO.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        }
+        return danhSachDonHang;
     }
 
     // Đếm số lượng khách hàng theo hóa đơn
