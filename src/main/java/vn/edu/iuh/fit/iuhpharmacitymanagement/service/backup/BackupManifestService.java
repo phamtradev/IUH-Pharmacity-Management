@@ -16,9 +16,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Quản lý manifest ghi lại lịch sử các bản sao lưu đã tạo.
- */
+// Ghi nhận lịch sử các file backup đã tạo vào file manifest
 public class BackupManifestService {
 
     private static final String MANIFEST_FILE_NAME = "backup_manifest.json";

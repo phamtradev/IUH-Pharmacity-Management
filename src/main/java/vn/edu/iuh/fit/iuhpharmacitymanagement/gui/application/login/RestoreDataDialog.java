@@ -17,9 +17,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Dialog để khôi phục dữ liệu từ backup bằng cách nhập key (tên file)
- */
+// Dialog ẩn cho admin nhập key để khôi phục dữ liệu nhanh từ bản backup mới nhất
 public class RestoreDataDialog extends JDialog {
     // Hash SHA-256 của key "20092004"
     private static final String ADMIN_KEY_HASH = "8124684675a378155feb7b4b06cacf2ba09e49def0536b757c50c12d63c7224a";

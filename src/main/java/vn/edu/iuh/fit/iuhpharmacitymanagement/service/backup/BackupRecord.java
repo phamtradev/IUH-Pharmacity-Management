@@ -1,8 +1,6 @@
 package vn.edu.iuh.fit.iuhpharmacitymanagement.service.backup;
 
-/**
- * Thông tin một bản sao lưu đã được tạo.
- */
+// Mô tả metadata của một file backup trong lịch sử
 public record BackupRecord(
         String fileName,
         String absolutePath,

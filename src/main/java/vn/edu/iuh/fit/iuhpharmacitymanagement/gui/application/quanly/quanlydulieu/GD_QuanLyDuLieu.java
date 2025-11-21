@@ -20,9 +20,7 @@ import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Locale;
 
-/**
- * Giao diện quản lý sao lưu và khôi phục dữ liệu cho quản lý.
- */
+// Màn hình cho quản lý thực hiện backup/restore dữ liệu và xem lịch sử
 public class GD_QuanLyDuLieu extends JPanel {
 
     private final DataBackupService backupService = new DataBackupService();

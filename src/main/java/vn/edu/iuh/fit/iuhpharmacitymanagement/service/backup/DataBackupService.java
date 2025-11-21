@@ -40,9 +40,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-/**
- * Cung cấp chức năng sao lưu/khôi phục dữ liệu ở mức bảng.
- */
+// Thực hiện sao lưu/khôi phục toàn bộ dữ liệu SQL Server sang file zip
 public class DataBackupService {
 
     private static final DateTimeFormatter FILE_TIME_FORMATTER =
@@ -53,10 +51,13 @@ public class DataBackupService {
             .create();
     private static final String METADATA_ENTRY = "metadata.json";
 
+    // Thư mục mặc định trên máy người dùng để lưu file backup (*.zip)
     public Path getDefaultBackupDirectory() {
         return Path.of(System.getProperty("user.home"), "IUH-Pharmacity-Backups");
     }
 
+    // Tạo 1 file backup mới (.zip), quét toàn bộ bảng và ghi dữ liệu sang JSON
+    // progressCallback dùng để cập nhật trạng thái lên UI (label/loading)
     public BackupResult backup(Path targetDirectory, Consumer<String> progressCallback) throws IOException, SQLException {
         Objects.requireNonNull(targetDirectory, "targetDirectory");
         Files.createDirectories(targetDirectory);
@@ -102,6 +103,8 @@ public class DataBackupService {
         }
     }
 
+    // Khôi phục dữ liệu từ file backup (.zip) đã chọn
+    // Hỗ trợ tự tạo database, tự sắp xếp lại thứ tự insert theo ràng buộc khóa ngoại
     public void restore(Path backupFile, Consumer<String> progressCallback) throws IOException, SQLException {
         Objects.requireNonNull(backupFile, "backupFile");
         if (!Files.exists(backupFile)) {

@@ -18,10 +18,7 @@ import java.nio.file.Path;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
-/**
- * Main application window that contains the menu and main content
- * @author PhamTra
- */
+// Frame chính, đồng thời điều khiển auto backup khi tắt ứng dụng
 public class MenuForm extends javax.swing.JFrame {
     private static final Color WHITE = Color.WHITE;
     private static final Color BLACK = Color.BLACK;

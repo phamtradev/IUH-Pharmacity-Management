@@ -2,9 +2,7 @@ package vn.edu.iuh.fit.iuhpharmacitymanagement.util;
 
 import java.util.prefs.Preferences;
 
-/**
- * Utility class để quản lý preferences cho tính năng tự động sao lưu
- */
+// Lưu trạng thái bật/tắt auto backup của ứng dụng
 public class BackupPreferences {
     private static final String PREF_NODE = "vn/edu/iuh/fit/iuhpharmacitymanagement/backup";
     private static final String KEY_AUTO_BACKUP_ENABLED = "autoBackupEnabled";
