@@ -1,6 +1,7 @@
 package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlydulieu;
 
 import com.formdev.flatlaf.FlatClientProperties;
+import raven.toast.Notifications;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.service.backup.BackupManifestService;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.service.backup.BackupRecord;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.service.backup.DataBackupService;
@@ -33,6 +34,7 @@ public class GD_QuanLyDuLieu extends JPanel {
     private JButton btnBackupNow;
     private JButton btnRestoreSelected;
     private JButton btnRestoreFromFile;
+    private JButton btnDeleteSelected;
     private JButton btnChooseFolder;
     private JButton btnOpenFolder;
     private JLabel lblStatus;
@@ -162,13 +164,16 @@ public class GD_QuanLyDuLieu extends JPanel {
 
         JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         actionPanel.setOpaque(false);
-        btnRestoreSelected = new JButton("Khôi phục bản đã chọn");
-        btnRestoreSelected.addActionListener(e -> restoreSelected());
-        btnRestoreFromFile = new JButton("Khôi phục từ file...");
-        btnRestoreFromFile.addActionListener(e -> restoreFromFile());
         JButton btnRefresh = new JButton("Làm mới");
         btnRefresh.addActionListener(e -> reloadHistory());
+        btnDeleteSelected = new JButton("Xóa bản đã chọn");
+        btnDeleteSelected.addActionListener(e -> deleteSelectedBackup());
+        btnRestoreFromFile = new JButton("Khôi phục từ file...");
+        btnRestoreFromFile.addActionListener(e -> restoreFromFile());
+        btnRestoreSelected = new JButton("Khôi phục bản đã chọn");
+        btnRestoreSelected.addActionListener(e -> restoreSelected());
         actionPanel.add(btnRefresh);
+        actionPanel.add(btnDeleteSelected);
         actionPanel.add(btnRestoreFromFile);
         actionPanel.add(btnRestoreSelected);
         card.add(actionPanel, BorderLayout.SOUTH);
@@ -224,6 +229,12 @@ public class GD_QuanLyDuLieu extends JPanel {
         }
     }
 
+    /**
+     * Xử lý nút "Sao lưu ngay":
+     * - Đảm bảo thư mục tồn tại
+     * - Gọi {@link DataBackupService#backup} trên luồng nền
+     * - Cập nhật lịch sử (manifest) và status/progress trên UI.
+     */
     private void performBackup() {
         Path directory = Path.of(txtFolder.getText());
         if (!Files.exists(directory)) {
@@ -262,12 +273,8 @@ public class GD_QuanLyDuLieu extends JPanel {
                     );
                     manifestService.append(record);
                     reloadHistory();
-                    JOptionPane.showMessageDialog(
-                            GD_QuanLyDuLieu.this,
-                            "Sao lưu thành công vào:\n" + result.file(),
-                            "Hoàn tất",
-                            JOptionPane.INFORMATION_MESSAGE
-                    );
+            showNotification(Notifications.Type.SUCCESS,
+                    "Sao lưu thành công vào:\n" + result.file());
                 } catch (Exception ex) {
                     showError("Sao lưu thất bại: " + ex.getMessage());
                 }
@@ -276,16 +283,53 @@ public class GD_QuanLyDuLieu extends JPanel {
         worker.execute();
     }
 
+    /**
+     * Khôi phục từ bản backup được chọn trong bảng lịch sử.
+     * Lấy đường dẫn từ cột "Đường dẫn" rồi gọi {@link #confirmAndRestore(Path)}.
+     */
     private void restoreSelected() {
         int row = tblHistory.getSelectedRow();
         if (row < 0) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn một bản sao lưu.", "Thông báo", JOptionPane.WARNING_MESSAGE);
+            showNotification(Notifications.Type.WARNING, "Vui lòng chọn một bản sao lưu.");
             return;
         }
         String path = (String) historyModel.getValueAt(row, 3);
         confirmAndRestore(Path.of(path));
     }
 
+    private void deleteSelectedBackup() {
+        int row = tblHistory.getSelectedRow();
+        if (row < 0) {
+            showNotification(Notifications.Type.WARNING, "Vui lòng chọn một bản sao lưu để xóa.");
+            return;
+        }
+        String fileName = (String) historyModel.getValueAt(row, 0);
+        String absolutePath = (String) historyModel.getValueAt(row, 3);
+        int choice = JOptionPane.showConfirmDialog(
+                this,
+                "Xóa bản sao lưu \"" + fileName + "\"?\nFile sẽ bị xóa khỏi máy tính.",
+                "Xác nhận xóa",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE
+        );
+        if (choice != JOptionPane.YES_OPTION) {
+            return;
+        }
+        try {
+            Files.deleteIfExists(Path.of(absolutePath));
+        } catch (Exception ex) {
+            showError("Không thể xóa file: " + ex.getMessage());
+            return;
+        }
+        manifestService.removeByAbsolutePath(absolutePath);
+        reloadHistory();
+        showNotification(Notifications.Type.SUCCESS, "Đã xóa bản sao lưu \"" + fileName + "\".");
+    }
+
+    /**
+     * Cho phép người dùng chọn một file .zip bất kỳ trên máy
+     * (không nhất thiết nằm trong thư mục mặc định) rồi thực hiện khôi phục.
+     */
     private void restoreFromFile() {
         JFileChooser chooser = new JFileChooser(currentDirectory.toFile());
         chooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("Gói sao lưu (*.zip)", "zip"));
@@ -294,6 +338,12 @@ public class GD_QuanLyDuLieu extends JPanel {
         }
     }
 
+    /**
+     * Hiện hộp thoại xác nhận, sau đó chạy quá trình khôi phục trên luồng nền:
+     * - Gọi {@link DataBackupService#restore(Path, java.util.function.Consumer)}
+     * - Cập nhật status trên thanh trạng thái
+     * - Hiển thị thông báo thành công/thất bại bằng toast.
+     */
     private void confirmAndRestore(Path backupFile) {
         if (!Files.exists(backupFile)) {
             showError("Không tìm thấy file: " + backupFile);
@@ -329,12 +379,8 @@ public class GD_QuanLyDuLieu extends JPanel {
                 setBusy(false, "Sẵn sàng");
                 try {
                     get();
-                    JOptionPane.showMessageDialog(
-                            GD_QuanLyDuLieu.this,
-                            "Khôi phục hoàn tất.\nVui lòng khởi động lại ứng dụng để áp dụng dữ liệu.",
-                            "Thành công",
-                            JOptionPane.INFORMATION_MESSAGE
-                    );
+                    showNotification(Notifications.Type.SUCCESS,
+                            "Khôi phục hoàn tất.\nVui lòng khởi động lại ứng dụng để áp dụng dữ liệu.");
                 } catch (Exception ex) {
                     showError("Khôi phục thất bại: " + ex.getMessage());
                 }
@@ -343,6 +389,11 @@ public class GD_QuanLyDuLieu extends JPanel {
         worker.execute();
     }
 
+    /**
+     * Đọc file manifest để hiển thị danh sách các bản sao lưu đã tạo:
+     * - Xóa các bản ghi trỏ tới file không còn tồn tại
+     * - Đưa dữ liệu lên bảng lịch sử (tên file, ngày tạo, dung lượng, đường dẫn).
+     */
     private void reloadHistory() {
         manifestService.pruneMissingFiles();
         List<BackupRecord> records = manifestService.readAll();
@@ -357,10 +408,17 @@ public class GD_QuanLyDuLieu extends JPanel {
         }
     }
 
+    /**
+     * Khóa/mở các nút thao tác trong lúc đang thực hiện backup/restore
+     * và đồng thời hiển thị tiến trình + dòng trạng thái ở cuối màn hình.
+     */
     private void setBusy(boolean busy, String message) {
         btnBackupNow.setEnabled(!busy);
         btnRestoreSelected.setEnabled(!busy);
         btnRestoreFromFile.setEnabled(!busy);
+        if (btnDeleteSelected != null) {
+            btnDeleteSelected.setEnabled(!busy);
+        }
         btnChooseFolder.setEnabled(!busy);
         btnOpenFolder.setEnabled(!busy);
         progressBar.setVisible(busy);
@@ -373,8 +431,16 @@ public class GD_QuanLyDuLieu extends JPanel {
     }
 
     private void showError(String message) {
-        JOptionPane.showMessageDialog(this, message, "Lỗi", JOptionPane.ERROR_MESSAGE);
+        showNotification(Notifications.Type.ERROR, message);
         updateStatus(message);
+    }
+
+    private void showNotification(Notifications.Type type, String message) {
+        java.awt.Window window = SwingUtilities.getWindowAncestor(this);
+        if (window instanceof JFrame frame) {
+            Notifications.getInstance().setJFrame(frame);
+        }
+        Notifications.getInstance().show(type, message);
     }
 
     private String formatTimestamp(String iso) {

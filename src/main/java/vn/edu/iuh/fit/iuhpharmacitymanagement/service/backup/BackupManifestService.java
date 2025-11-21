@@ -62,6 +62,15 @@ public class BackupManifestService {
         }
     }
 
+    public synchronized boolean removeByAbsolutePath(String absolutePath) {
+        List<BackupRecord> records = readAll();
+        boolean removed = records.removeIf(record -> record.absolutePath().equals(absolutePath));
+        if (removed) {
+            write(records);
+        }
+        return removed;
+    }
+
     public void ensureManifestDirectory() throws IOException {
         Files.createDirectories(manifestPath.getParent());
     }

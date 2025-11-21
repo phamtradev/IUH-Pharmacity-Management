@@ -174,6 +174,10 @@ public class DataBackupService {
         }
     }
 
+    /**
+     * Xóa toàn bộ dữ liệu hiện có trong các bảng trước khi insert dữ liệu mới từ file backup.
+     * Được gọi trong quá trình {@link #restore(Path, Consumer)} sau khi đã tắt ràng buộc khóa ngoại.
+     */
     private void deleteExistingData(Connection connection,
                                     List<TableDump> tables,
                                     Consumer<String> progressCallback) throws SQLException {
@@ -195,6 +199,10 @@ public class DataBackupService {
         }
     }
 
+    /**
+     * Insert lại toàn bộ các dòng dữ liệu đã đọc từ file backup vào database hiện tại.
+     * Nếu bảng chưa tồn tại, hàm sẽ tự tạo bảng dựa trên metadata (tên cột, kiểu cột).
+     */
     private void insertRows(Connection connection,
                             List<TableDump> tables,
                             Consumer<String> progressCallback) throws SQLException {
@@ -248,6 +256,10 @@ public class DataBackupService {
         }
     }
 
+    /**
+     * Tạm thời tắt toàn bộ foreign key constraints trong database
+     * để tránh lỗi khi xóa/ghi dữ liệu theo thứ tự mới.
+     */
     private void disableConstraints(Connection connection, List<TableDump> tables) throws SQLException {
         // Disable tất cả foreign key constraints trong database
         // để tránh lỗi khi xóa/insert dữ liệu
@@ -265,6 +277,9 @@ public class DataBackupService {
         }
     }
 
+    /**
+     * Bật lại toàn bộ foreign key constraints sau khi đã khôi phục dữ liệu xong.
+     */
     private void enableConstraints(Connection connection, List<TableDump> tables) throws SQLException {
         // Enable lại tất cả foreign key constraints
         // Sử dụng sp_msforeachtable để enable tất cả constraints của tất cả tables
@@ -281,6 +296,9 @@ public class DataBackupService {
         }
     }
 
+    /**
+     * Kiểm tra bảng (schema + tên bảng) có tồn tại trong database hiện tại hay không.
+     */
     private boolean tableExists(Connection connection, TableDump dump) throws SQLException {
         final String sql = """
                 SELECT 1
@@ -297,6 +315,10 @@ public class DataBackupService {
         }
     }
 
+    /**
+     * Tạo schema/bảng tương ứng với dữ liệu trong file backup nếu nó chưa tồn tại trong database.
+     * Bảng được tạo dựa trên danh sách cột và kiểu dữ liệu đã lưu trong JSON.
+     */
     private void createTableIfNotExists(Connection connection, TableDump dump) throws SQLException {
         // Tạo schema nếu chưa tồn tại
         try (Statement stmt = connection.createStatement()) {
@@ -326,6 +348,9 @@ public class DataBackupService {
         }
     }
 
+    /**
+     * Chuyển mã kiểu dữ liệu JDBC (java.sql.Types) sang tên kiểu dữ liệu tương ứng trong SQL Server.
+     */
     private String getSqlTypeName(int sqlType) {
         // Chuyển đổi SQL type code thành tên type trong SQL Server
         return switch (sqlType) {
@@ -353,6 +378,9 @@ public class DataBackupService {
         };
     }
 
+    /**
+     * Kiểm tra xem bảng có cột IDENTITY hay không để bật/tắt IDENTITY_INSERT khi insert dữ liệu.
+     */
     private boolean hasIdentityColumn(Connection connection, TableDump dump) throws SQLException {
         // Kiểm tra xem bảng có tồn tại không trước
         if (!tableExists(connection, dump)) {
@@ -374,6 +402,10 @@ public class DataBackupService {
         }
     }
 
+    /**
+     * Sinh câu lệnh INSERT theo danh sách cột của bảng cần khôi phục.
+     * Ví dụ: INSERT INTO [dbo].[NhanVien] ([id], [ten], ...) VALUES (?, ?, ...)
+     */
     private String buildInsertSql(TableDump dump) {
         StringBuilder builder = new StringBuilder();
         builder.append("INSERT INTO ")
@@ -396,6 +428,10 @@ public class DataBackupService {
         return builder.toString();
     }
 
+    /**
+     * Đọc metadata từ SQL Server để lấy danh sách tất cả các bảng người dùng
+     * (bỏ qua schema hệ thống như sys, INFORMATION_SCHEMA) phục vụ cho việc backup.
+     */
     private List<TableInfo> loadTables(Connection connection) throws SQLException {
         List<TableInfo> tables = new ArrayList<>();
         DatabaseMetaData metaData = connection.getMetaData();
@@ -416,6 +452,10 @@ public class DataBackupService {
         return tables;
     }
 
+    /**
+     * Đọc toàn bộ dữ liệu của một bảng và chuyển thành JSON (metadata + danh sách dòng)
+     * để ghi vào file backup (.json trong file .zip).
+     */
     private JsonObject exportTable(Connection connection, TableInfo tableInfo) throws SQLException {
         JsonObject payload = new JsonObject();
         payload.addProperty("schema", tableInfo.schema());
@@ -449,6 +489,12 @@ public class DataBackupService {
         return payload;
     }
 
+    /**
+     * Chuẩn hóa giá trị đọc từ ResultSet sang JSON:
+     * - Kiểu thời gian → chuỗi ISO
+     * - Nhị phân → base64 kèm _type = "binary"
+     * - Clob/Blob → đọc toàn bộ nội dung.
+     */
     private JsonElement serializeValue(Object value) throws SQLException {
         if (value == null) {
             return JsonNull.INSTANCE;
@@ -489,6 +535,10 @@ public class DataBackupService {
         return GSON.toJsonTree(value);
     }
 
+    /**
+     * Đọc file backup (.zip), duyệt từng entry JSON của bảng (bỏ qua metadata.json)
+     * và build thành danh sách {@link TableDump} để phục vụ việc khôi phục.
+     */
     private List<TableDump> loadBackupPayloads(Path backupFile, Consumer<String> progressCallback) throws IOException {
         List<TableDump> dumps = new ArrayList<>();
         try (ZipInputStream zis = new ZipInputStream(Files.newInputStream(backupFile))) {
@@ -515,12 +565,19 @@ public class DataBackupService {
         return dumps;
     }
 
+    /**
+     * Đọc toàn bộ dữ liệu từ InputStream thành chuỗi UTF-8.
+     */
     private static String readAll(InputStream inputStream) throws IOException {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         inputStream.transferTo(buffer);
         return buffer.toString(StandardCharsets.UTF_8);
     }
 
+    /**
+     * Gán giá trị JSON tương ứng vào PreparedStatement theo đúng kiểu JDBC.
+     * Hàm này là "cầu nối" giữa dữ liệu JSON trong file backup và câu lệnh INSERT thực tế.
+     */
     private void setStatementValue(PreparedStatement ps, int index, JsonElement value, int sqlType) throws SQLException {
         if (value == null || value.isJsonNull()) {
             ps.setNull(index, sqlType);
@@ -557,10 +614,17 @@ public class DataBackupService {
         }
     }
 
+    /**
+     * Escape tên schema/bảng/cột để an toàn khi đưa vào câu lệnh SQL Server.
+     */
     private static String escapeIdentifier(String identifier) {
         return identifier.replace("]", "]]");
     }
 
+    /**
+     * Sắp xếp lại danh sách bảng theo thứ tự phụ thuộc khóa ngoại (topological sort)
+     * để đảm bảo insert bảng cha trước rồi mới insert bảng con.
+     */
     private List<TableDump> sortTablesForInsert(Connection connection, List<TableDump> dumps) throws SQLException {
         Map<String, TableDump> tableMap = new LinkedHashMap<>();
         for (TableDump dump : dumps) {
@@ -628,6 +692,9 @@ public class DataBackupService {
         return ordered;
     }
 
+    /**
+     * Tạo key duy nhất cho một bảng theo dạng "schema.name" (viết thường) để lưu map phụ thuộc.
+     */
     private static String tableKey(String schema, String name) {
         return (schema + "." + name).toLowerCase(Locale.ROOT);
     }
@@ -635,6 +702,9 @@ public class DataBackupService {
     public record BackupResult(Path file, String databaseName, int tableCount, long rowCount) {
     }
 
+    /**
+     * Thông tin rút gọn về một bảng trong database dùng cho quá trình backup.
+     */
     private record TableInfo(String schema, String name) {
         String qualifiedName() {
             return "[" + escapeIdentifier(schema) + "].[" + escapeIdentifier(name) + "]";
@@ -649,6 +719,10 @@ public class DataBackupService {
         }
     }
 
+    /**
+     * Đại diện cho dữ liệu đầy đủ của một bảng được đọc từ/ghi ra file JSON trong gói backup.
+     * Bao gồm: schema, tên bảng, danh sách cột, kiểu cột và toàn bộ các dòng dữ liệu.
+     */
     private static class TableDump {
         private final String schema;
         private final String name;
