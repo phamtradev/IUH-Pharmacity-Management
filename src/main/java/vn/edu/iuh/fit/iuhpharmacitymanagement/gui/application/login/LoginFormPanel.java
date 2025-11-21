@@ -244,17 +244,6 @@ public class LoginFormPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         contentPanel.add(pnlDangNhap, gridBagConstraints);
 
-        lblQuenMatKhau.setFont(new java.awt.Font("Segoe UI", 2, 12)); // NOI18N
-        lblQuenMatKhau.setForeground(new java.awt.Color(255, 51, 51));
-        lblQuenMatKhau.setText("Quên mật khẩu");
-        lblQuenMatKhau.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        contentPanel.add(lblQuenMatKhau, gridBagConstraints);
-
         btnKhoiPhucDuLieu = new javax.swing.JButton();
         btnKhoiPhucDuLieu.setFont(new java.awt.Font("Segoe UI", 0, 12)); // NOI18N
         btnKhoiPhucDuLieu.setForeground(new java.awt.Color(0, 102, 204));
@@ -269,11 +258,19 @@ public class LoginFormPanel extends javax.swing.JPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.insets = new java.awt.Insets(10, 0, 0, 0);
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.CENTER;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         contentPanel.add(btnKhoiPhucDuLieu, gridBagConstraints);
+
+        lblQuenMatKhau.setFont(new java.awt.Font("Segoe UI", 2, 12)); // NOI18N
+        lblQuenMatKhau.setForeground(new java.awt.Color(255, 51, 51));
+        lblQuenMatKhau.setText("Quên mật khẩu");
+        lblQuenMatKhau.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        contentPanel.add(lblQuenMatKhau, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
