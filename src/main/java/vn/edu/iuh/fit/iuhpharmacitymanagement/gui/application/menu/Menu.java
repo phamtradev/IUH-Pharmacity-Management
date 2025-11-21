@@ -272,7 +272,11 @@ public class Menu extends JPanel {
         }
         if (!menuAction.isCancel()) {
             setSelected(index, subIndex);
-            hideMenuItem();
+            // Giữ submenu mở khi menu đang hiển thị đầy đủ
+            // để tránh trường hợp người dùng chọn menu con thì hiệu ứng bị ẩn
+            if (!menuFull) {
+                hideMenuItem();
+            }
         }
     }
 
