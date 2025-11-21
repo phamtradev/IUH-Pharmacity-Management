@@ -19,24 +19,38 @@ import javax.swing.*;
  */
 public class Menu extends JPanel {
 
+    // Menu dành cho Quản lý
+    // Các mục được nhóm lại theo yêu cầu:
+    // - Quản lý đơn hàng, Quản lý trả hàng, Quản lý xuất hủy, Quản lý nhập hàng, Quản lý khuyến mãi -> Quản lý bán hàng
+    // - Quản lý sản phẩm, Quản lý đơn vị tính, Quản lý lô hàng, Quản lý nhà cung cấp, Quản lý khách hàng, Quản lý nhân viên -> Quản lý danh mục
+    // Các mục Dashboard, Báo cáo thu chi, Quản lý dữ liệu, Thông tin cá nhân, Hỗ trợ người dùng, Phiên bản, Đăng xuất giữ nguyên, không gom
     private final String[][] menuItemsManager = {
         {"Dashboard"},
         {"Báo cáo thu chi"},
-        {"Quản lý sản phẩm"},
-        {"Quản lý đơn vị tính"},
-        {"Quản lý lô hàng"},
-        {"Quản lý nhân viên"},
-        {"Quản lý khách hàng"},
-        {"Quản lý nhà cung cấp"},
-        {"Quản lý nhập hàng"},
-        {"Quản lý trả hàng"},
-        {"Quản lý xuất hủy"},
-        {"Quản lý đơn hàng"},
-        {"Quản lý khuyến mãi"},
+        {
+            "Quản lý bán hàng",
+            "Quản lý đơn hàng",
+            "Quản lý trả hàng",
+            "Quản lý xuất hủy",
+            "Quản lý nhập hàng",
+            "Quản lý khuyến mãi"
+        },
+        {
+            "Quản lý danh mục",
+            "Quản lý sản phẩm",
+            "Quản lý đơn vị tính",
+            "Quản lý lô hàng",
+            "Quản lý nhà cung cấp",
+            "Quản lý khách hàng",
+            "Quản lý nhân viên"
+        },
         {"Quản lý dữ liệu"},
         {"Thông tin cá nhân"},
-        {"Chat Bot"},
-        {"Trợ giúp"},
+        {
+            "Hỗ trợ người dùng",
+            "AI trợ giúp",
+            "Trợ giúp"
+        },
         {"Phiên bản"},
         {"Đăng xuất"}
     };
@@ -51,8 +65,11 @@ public class Menu extends JPanel {
         {"Phiếu trả hàng"},
         {"Phiếu xuất hủy"},
         {"Thông tin cá nhân"},
-        {"Chat Bot"},
-        {"Trợ giúp"},
+        {
+            "Hỗ trợ người dùng",
+            "AI trợ giúp",
+            "Trợ giúp"
+        },
         {"Phiên bản"},
         {"Đăng xuất"}
     };
