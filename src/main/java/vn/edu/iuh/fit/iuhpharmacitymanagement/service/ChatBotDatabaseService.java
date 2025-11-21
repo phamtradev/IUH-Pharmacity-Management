@@ -3,9 +3,12 @@ package vn.edu.iuh.fit.iuhpharmacitymanagement.service;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.SanPhamDAO;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.LoHangDAO;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.DonHangDAO;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.constant.PhuongThucThanhToan;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.LoHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonHang;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhachHang;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhanVien;
 
 import java.text.NumberFormat;
 import java.time.LocalDate;
@@ -295,9 +298,32 @@ public class ChatBotDatabaseService {
             result.append("🔹 Doanh thu: ").append(formatCurrency(doanhThu)).append("\n");
             result.append("🔹 Danh sách hóa đơn:\n");
             for (DonHang dh : hoaDonHomNay) {
-                result.append("   • ").append(dh.getMaDonHang())
-                        .append(": ").append(formatCurrency(dh.getThanhTien()))
-                        .append("\n");
+                result.append("   • ").append(dh.getMaDonHang());
+
+                KhachHang kh = dh.getKhachHang();
+                if (kh != null) {
+                    String thongTinKh = kh.getTenKhachHang();
+                    if (thongTinKh == null || thongTinKh.isBlank()) {
+                        thongTinKh = kh.getMaKhachHang();
+                    }
+                    if (thongTinKh != null && !thongTinKh.isBlank()) {
+                        result.append(" | KH: ").append(thongTinKh);
+                    }
+                }
+
+                NhanVien nv = dh.getNhanVien();
+                if (nv != null) {
+                    String thongTinNv = nv.getTenNhanVien();
+                    if ((thongTinNv == null || thongTinNv.isBlank()) && nv.getMaNhanVien() != null) {
+                        thongTinNv = nv.getMaNhanVien();
+                    }
+                    if (thongTinNv != null && !thongTinNv.isBlank()) {
+                        result.append(" | NV: ").append(thongTinNv);
+                    }
+                }
+
+                result.append(" | ").append(formatPaymentMethod(dh.getPhuongThucThanhToan()));
+                result.append(" | Giá trị: ").append(formatCurrency(dh.getThanhTien())).append("\n");
             }
 
             return result.toString();
@@ -358,6 +384,20 @@ public class ChatBotDatabaseService {
         synchronized (currencyFormat) {
             currencyFormat.setMaximumFractionDigits(0);
             return currencyFormat.format(value);
+        }
+    }
+
+    private String formatPaymentMethod(PhuongThucThanhToan method) {
+        if (method == null) {
+            return "PTTT: Chưa xác định";
+        }
+        switch (method) {
+            case TIEN_MAT:
+                return "PTTT: Tiền mặt";
+            case CHUYEN_KHOAN_NGAN_HANG:
+                return "PTTT: Chuyển khoản NH";
+            default:
+                return "PTTT: " + method.name();
         }
     }
 }
