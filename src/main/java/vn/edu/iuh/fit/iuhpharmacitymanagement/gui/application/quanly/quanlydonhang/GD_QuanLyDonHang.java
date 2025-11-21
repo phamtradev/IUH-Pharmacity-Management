@@ -231,7 +231,25 @@ public class GD_QuanLyDonHang extends javax.swing.JPanel {
         add(pnAll);
     }// </editor-fold>//GEN-END:initComponents
 
-    //Phaanan Logic code
+        /**
+     * Helper method để thêm field thông tin
+     */
+    private void addInfoField(javax.swing.JPanel panel, String label, String value) {
+        javax.swing.JPanel fieldPanel = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 5, 0));
+        fieldPanel.setBackground(java.awt.Color.WHITE);
+        
+        javax.swing.JLabel lblLabel = new javax.swing.JLabel(label);
+        lblLabel.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 13));
+        lblLabel.setPreferredSize(new java.awt.Dimension(120, 25));
+        
+        javax.swing.JLabel lblValue = new javax.swing.JLabel(value);
+        lblValue.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 13));
+        
+        fieldPanel.add(lblLabel);
+        fieldPanel.add(lblValue);
+        
+        panel.add(fieldPanel);
+    }
     
     //setUI cho toàn bộ các phần tử trong file
     private void setUIManager() {
@@ -243,8 +261,8 @@ public class GD_QuanLyDonHang extends javax.swing.JPanel {
         // Style cho button Xem chi tiết - màu xanh nước biển, kích thước nhỏ
         ButtonStyles.apply(btnView, ButtonStyles.Type.INFO);
     }
-
-    private void fillTable() {
+    
+      private void fillTable() {
         String[] headers = {"Mã hóa đơn", "Ngày tạo", "Khuyến mãi", "Tổng tiền", "Thanh toán", "Khách hàng", "Nhân viên"};
         List<Integer> tableWidths = Arrays.asList(200, 200, 200, 200, 200, 200, 200);
         tableDesign = new TableDesign(headers, tableWidths);
@@ -253,7 +271,8 @@ public class GD_QuanLyDonHang extends javax.swing.JPanel {
         List<DonHang> donHangs = donHangBUS.layDonHangTheoKhoangThoiGian(LocalDate.now(), LocalDate.now());
         fillContent(donHangs);
     }
-
+    //Phaanan Logic code
+    
     private void fillContent(List<DonHang> donHangs) {
         tableDesign.getModelTable().setRowCount(0);
         for (DonHang donHang : donHangs) {
@@ -499,25 +518,6 @@ public class GD_QuanLyDonHang extends javax.swing.JPanel {
         dialog.setVisible(true);
     }
     
-    /**
-     * Helper method để thêm field thông tin
-     */
-    private void addInfoField(javax.swing.JPanel panel, String label, String value) {
-        javax.swing.JPanel fieldPanel = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 5, 0));
-        fieldPanel.setBackground(java.awt.Color.WHITE);
-        
-        javax.swing.JLabel lblLabel = new javax.swing.JLabel(label);
-        lblLabel.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 13));
-        lblLabel.setPreferredSize(new java.awt.Dimension(120, 25));
-        
-        javax.swing.JLabel lblValue = new javax.swing.JLabel(value);
-        lblValue.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 13));
-        
-        fieldPanel.add(lblLabel);
-        fieldPanel.add(lblValue);
-        
-        panel.add(fieldPanel);
-    }
     
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
