@@ -362,7 +362,7 @@ public class ChatBotDatabaseService {
                     result.append(" ").append(sp.getDonViTinh().getTenDonVi());
                 }
                 result.append("\n");
-
+                //kiem tra empty
                 if (!danhSachLo.isEmpty()) {
                     result.append("   - Chi tiết lô hàng:\n");
                     for (LoHang lo : danhSachLo) {
