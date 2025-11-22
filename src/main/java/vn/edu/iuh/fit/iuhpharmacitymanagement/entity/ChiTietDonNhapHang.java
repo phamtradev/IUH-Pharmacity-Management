@@ -22,6 +22,7 @@ public class ChiTietDonNhapHang {
     public ChiTietDonNhapHang() {
     }
 
+    //ok
     public ChiTietDonNhapHang(int soLuong, double donGia, double thanhTien, DonNhapHang donNhapHang, LoHang loHang) {
        // this.maChiTietDonNhapHang = maChiTietDonNhapHang;
         this.soLuong = soLuong;
