@@ -350,7 +350,7 @@ public class ChatBotDatabaseService {
                 for (LoHang lo : danhSachLo) {
                     tongSoLuong += lo.getTonKho();
                 }
-
+                //append
                 result.append("🔹 ").append(sp.getTenSanPham()).append("\n");
                 result.append("   - Mã SP: ").append(sp.getMaSanPham()).append("\n");
                 result.append("   - Giá bán: ").append(formatCurrency(sp.getGiaBan())).append("\n");
