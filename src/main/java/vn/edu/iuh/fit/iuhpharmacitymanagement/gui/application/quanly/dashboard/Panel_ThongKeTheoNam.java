@@ -399,7 +399,6 @@ public class Panel_ThongKeTheoNam extends javax.swing.JPanel {
         filteredOrders = applySelectionFilters(filteredOrders);
 
         // Hiển thị dữ liệu theo từng năm
-        // Hiển thị dữ liệu theo từng năm test
         for (int year = yearStart; year <= yearEnd; year++) {
             int currentYear = year;
 
