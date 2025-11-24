@@ -58,14 +58,17 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.NhanVienBUS;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.SanPhamBUS;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.DonNhapHangBUS;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.ChiTietDonNhapHangBUS;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.DonViTinhBUS;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.SanPhamDAO;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.LoHangDAO;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.DonViTinhDAO;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.LoHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhaCungCap;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonNhapHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonNhapHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhanVien;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonViTinh;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.util.BarcodeUtil;
 import java.nio.file.Files;
@@ -83,6 +86,7 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
     private NhaCungCapBUS nhaCungCapBUS;
     private DonNhapHangBUS donNhapHangBUS;
     private ChiTietDonNhapHangBUS chiTietDonNhapHangBUS;
+    private DonViTinhBUS donViTinhBUS;
     private DecimalFormat currencyFormat;
     private SimpleDateFormat dateFormat;
     private NhanVien nhanVienHienTai; // Nhân viên đang đăng nhập
@@ -93,6 +97,7 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
         sanPhamBUS = new SanPhamBUS(sanPhamDAO);
         donNhapHangBUS = new DonNhapHangBUS();
         chiTietDonNhapHangBUS = new ChiTietDonNhapHangBUS();
+        donViTinhBUS = new DonViTinhBUS(new DonViTinhDAO());
         currencyFormat = new DecimalFormat("#,###");
         dateFormat = new SimpleDateFormat("dd/MM/yyyy");
 
@@ -615,7 +620,7 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
     }
 
     private void themSanPhamVaoPanelNhap(SanPham sanPham, int soLuong, double donGiaNhap, Date hanDung, String loHang,
-            Double tyLeChietKhauExcel, Double thueGTGTExcel) throws Exception {
+            Double tyLeChietKhauExcel, Double thueGTGTExcel, DonViTinh donViTinhTuExcel) throws Exception {
 
         if (kiemTraSanPhamDaTonTai(sanPham.getMaSanPham())) {
             throw new Exception("Sản phẩm '" + sanPham.getTenSanPham() + "' đã có trong danh sách nhập");
@@ -632,7 +637,8 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
                 loHang,
                 soDienThoaiNCC,
                 tyLeChietKhauExcel,
-                thueGTGTExcel);
+                thueGTGTExcel,
+                donViTinhTuExcel);
 
         // Listener để cập nhật tổng tiền
         panelSP.addPropertyChangeListener("tongTien", new PropertyChangeListener() {
@@ -709,7 +715,7 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
                 return;
             }
 
-            int colMaSP = -1, colSoLuong = -1, colDonGia = -1,
+            int colMaSP = -1, colSoLuong = -1, colDonViTinh = -1, colDonGia = -1,
                     colHanDung = -1, colLoHang = -1, colChietKhau = -1, colThueGTGT = -1;
             int colMaNCC = -1, colTenNCC = -1, colDiaChi = -1,
                     colSDT = -1, colEmail = -1, colMaSoThue = -1;
@@ -726,6 +732,8 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
                     colMaSP = i;
                 } else if (header.contains("số lượng") || header.contains("so luong")) {
                     colSoLuong = i;
+                } else if (header.contains("đơn vị") || header.contains("don vi") || header.contains("dvt")) {
+                    colDonViTinh = i;
                 } else if (header.contains("đơn giá") || header.contains("don gia")) {
                     colDonGia = i;
                 } else if (header.contains("hạn") && (header.contains("dùng") || header.contains("sử dụng") || header.contains("su dung"))) {
@@ -818,6 +826,13 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
                     }
 
                     int soLuong = (int) getCellValueAsNumber(row.getCell(colSoLuong));
+                    String tenDonViTinhExcel = null;
+                    if (colDonViTinh != -1) {
+                        tenDonViTinhExcel = getCellValueAsString(row.getCell(colDonViTinh));
+                        if (tenDonViTinhExcel != null) {
+                            tenDonViTinhExcel = tenDonViTinhExcel.trim();
+                        }
+                    }
                     double donGiaNhap = getCellValueAsNumber(row.getCell(colDonGia));
 
                     Date hanDung = null;
@@ -862,10 +877,31 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
                         }
                     }
 
+                    DonViTinh donViTinhExcel = null;
+                    if (tenDonViTinhExcel != null && !tenDonViTinhExcel.isEmpty()) {
+                        if (donViTinhBUS == null) {
+                            donViTinhBUS = new DonViTinhBUS(new DonViTinhDAO());
+                        }
+                        try {
+                            Optional<DonViTinh> optionalDonViTinh = donViTinhBUS.timDonViTinhTheoTen(tenDonViTinhExcel);
+                            if (optionalDonViTinh.isPresent()) {
+                                donViTinhExcel = optionalDonViTinh.get();
+                            } else {
+                                throw new Exception("Không tìm thấy đơn vị tính '" + tenDonViTinhExcel + "'");
+                            }
+                        } catch (Exception ex) {
+                            throw new Exception("Không tìm thấy đơn vị tính '" + tenDonViTinhExcel + "'");
+                        }
+                    }
+
                     if (sanPham == null) {
                         errors.append("Dòng ").append(i + 1).append(": Không tìm thấy sản phẩm ").append(maSP).append("\n");
                         errorCount++;
                         continue;
+                    }
+
+                    if (donViTinhExcel != null) {
+                        sanPham.setDonViTinh(donViTinhExcel);
                     }
 
                     if (nhaCungCap != null && nhaCungCap.getMaNhaCungCap() != null) {
@@ -920,7 +956,7 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
                     // Thêm sản phẩm vào panel
                     // Truyền tên lô từ Excel (nếu có) để tự động điền vào form tạo lô mới
                     themSanPhamVaoPanelNhap(sanPham, soLuong, donGiaNhap, hanDung, tenLoHang,
-                            tyLeChietKhauExcel, thueGTGTExcel);
+                            tyLeChietKhauExcel, thueGTGTExcel, donViTinhExcel);
                     successCount++;
 
                 } catch (Exception e) {

@@ -80,6 +80,8 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
 
     private DonViTinhBUS donViTinhBUS;
     private List<DonViTinh> danhSachDonViTinh;
+    private DonViTinh donViTinhTuExcel;
+    private boolean dangDongBoDonViTinh = false;
 
     private javax.swing.JLabel lblTyLeChietKhau;
     private javax.swing.JLabel lblTienChietKhau;
@@ -97,6 +99,7 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
         this.thueGTGT = sanPham != null ? sanPham.getThueVAT() * 100 : 0;
         this.donViTinhBUS = new DonViTinhBUS(new DonViTinhDAO());
         this.danhSachDonViTinh = new ArrayList<>();
+        this.donViTinhTuExcel = null;
         initComponents();
         loadDanhSachDonViTinh();
     }
@@ -394,6 +397,7 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
         this.thueGTGT = sanPham != null ? sanPham.getThueVAT() * 100 : 0;
         this.donViTinhBUS = new DonViTinhBUS(new DonViTinhDAO());
         this.danhSachDonViTinh = new ArrayList<>();
+        this.donViTinhTuExcel = null;
         initComponents();
         loadDanhSachDonViTinh();
         loadSanPhamData();
@@ -405,7 +409,7 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
      * ĐK + HSD + SĐT NCC khớp, nếu không → báo lỗi
      */
     public Panel_ChiTietSanPhamNhap(SanPham sanPham, int soLuong, double donGiaNhap, Date hanDung, String tenLoHang,
-            String soDienThoaiNCC, Double tyLeChietKhauExcel, Double thueGTGTExcel) throws Exception {
+            String soDienThoaiNCC, Double tyLeChietKhauExcel, Double thueGTGTExcel, DonViTinh donViTinhTuExcel) throws Exception {
         this.sanPham = sanPham;
         this.currencyFormat = initCurrencyFormat();
         this.dateFormat = new SimpleDateFormat("dd/MM/yyyy");
@@ -416,6 +420,7 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
         this.thueGTGT = sanPham != null ? sanPham.getThueVAT() * 100 : 0;
         this.donViTinhBUS = new DonViTinhBUS(new DonViTinhDAO());
         this.danhSachDonViTinh = new ArrayList<>();
+        this.donViTinhTuExcel = donViTinhTuExcel;
 
         if (tyLeChietKhauExcel != null) {
             this.tyLeChietKhau = tyLeChietKhauExcel;
@@ -427,6 +432,9 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
         this.hsdTuExcel = hanDung;
         this.soLuongTuExcel = soLuong;
         this.donGiaTuExcel = donGiaNhap;
+        if (donViTinhTuExcel != null && this.sanPham != null) {
+            this.sanPham.setDonViTinh(donViTinhTuExcel);
+        }
 
         try {
             initComponents();
@@ -744,13 +752,16 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
         if (cboDonViTinh == null) {
             return;
         }
-        DonViTinh donViHienTai = sanPham != null ? sanPham.getDonViTinh() : null;
-        if (donViHienTai == null) {
+        DonViTinh donViUuTien = donViTinhTuExcel != null
+                ? donViTinhTuExcel
+                : (sanPham != null ? sanPham.getDonViTinh() : null);
+        boolean giuLaiGiaTriExcel = donViTinhTuExcel != null;
+        if (donViUuTien == null) {
             if (cboDonViTinh.getItemCount() > 0) {
                 if (cboDonViTinh.getSelectedIndex() != 0) {
-                    cboDonViTinh.setSelectedIndex(0);
+                    chonDonViTinhKhongPhatSuKien(0);
                 }
-                onDonViTinhChanged();
+                apDungDonViTinhDangChon(giuLaiGiaTriExcel);
             } else {
                 cboDonViTinh.setSelectedIndex(-1);
             }
@@ -759,16 +770,18 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
 
         for (int i = 0; i < cboDonViTinh.getItemCount(); i++) {
             DonViTinh item = cboDonViTinh.getItemAt(i);
-            if (item != null && isSameDonVi(item, donViHienTai)) {
+            if (item != null && isSameDonVi(item, donViUuTien)) {
                 if (cboDonViTinh.getSelectedIndex() != i) {
-                    cboDonViTinh.setSelectedIndex(i);
+                    chonDonViTinhKhongPhatSuKien(i);
                 }
+                apDungDonViTinhDangChon(giuLaiGiaTriExcel);
                 return;
             }
         }
 
-        cboDonViTinh.addItem(donViHienTai);
-        cboDonViTinh.setSelectedItem(donViHienTai);
+        cboDonViTinh.addItem(donViUuTien);
+        chonDonViTinhKhongPhatSuKien(donViUuTien);
+        apDungDonViTinhDangChon(giuLaiGiaTriExcel);
     }
 
     private boolean isSameDonVi(DonViTinh first, DonViTinh second) {
@@ -786,11 +799,42 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
     }
 
     private void onDonViTinhChanged() {
+        apDungDonViTinhDangChon(dangDongBoDonViTinh);
+    }
+
+    private void apDungDonViTinhDangChon(boolean giuLaiGiaTriExcel) {
         if (sanPham == null || cboDonViTinh == null) {
             return;
         }
         DonViTinh donViTinh = (DonViTinh) cboDonViTinh.getSelectedItem();
         sanPham.setDonViTinh(donViTinh);
+        if (!giuLaiGiaTriExcel) {
+            donViTinhTuExcel = null;
+        }
+    }
+
+    private void chonDonViTinhKhongPhatSuKien(int index) {
+        if (cboDonViTinh == null) {
+            return;
+        }
+        dangDongBoDonViTinh = true;
+        try {
+            cboDonViTinh.setSelectedIndex(index);
+        } finally {
+            dangDongBoDonViTinh = false;
+        }
+    }
+
+    private void chonDonViTinhKhongPhatSuKien(DonViTinh item) {
+        if (cboDonViTinh == null) {
+            return;
+        }
+        dangDongBoDonViTinh = true;
+        try {
+            cboDonViTinh.setSelectedItem(item);
+        } finally {
+            dangDongBoDonViTinh = false;
+        }
     }
 
     public DonViTinh getDonViTinhDaChon() {
