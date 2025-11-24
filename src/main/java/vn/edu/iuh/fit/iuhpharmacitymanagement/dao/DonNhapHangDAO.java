@@ -129,6 +129,10 @@ public class DonNhapHangDAO implements DAOInterface<DonNhapHang, String> {
         return dnh;
     }
 
+    public String duKienMaDonNhapHangTiepTheo() {
+        return taoMaDonNhapHangMoi();
+    }
+
     private String taoMaDonNhapHangMoi() {
         LocalDate ngayHienTai = LocalDate.now();
         String ngayThangNam = String.format("%02d%02d%04d", 

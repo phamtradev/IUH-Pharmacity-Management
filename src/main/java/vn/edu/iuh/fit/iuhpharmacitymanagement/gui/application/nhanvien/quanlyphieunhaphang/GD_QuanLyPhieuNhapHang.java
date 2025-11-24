@@ -68,14 +68,9 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonNhapHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhanVien;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.util.BarcodeUtil;
-import vn.edu.iuh.fit.iuhpharmacitymanagement.connectDB.ConnectDB;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 
 /**
  *
@@ -1371,38 +1366,17 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
      * @return Mã đơn nhập hàng tạm
      */
     private String taoMaDonNhapHangTam() {
-        LocalDate ngayHienTai = LocalDate.now();
-        String ngayThangNam = String.format("%02d%02d%04d", 
-                ngayHienTai.getDayOfMonth(), 
-                ngayHienTai.getMonthValue(), 
-                ngayHienTai.getYear());
-        
-        String prefixHienTai = "DNH" + ngayThangNam;
-        
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement stmt = con.prepareStatement(
-                     "SELECT TOP 1 maDonNhapHang FROM DonNhapHang WHERE maDonNhapHang LIKE ? ORDER BY maDonNhapHang DESC")) {
-            
-            stmt.setString(1, prefixHienTai + "%");
-            ResultSet rs = stmt.executeQuery();
-
-            if (rs.next()) {
-                String maCuoi = rs.getString("maDonNhapHang");
-                try {
-                    // Lấy 4 số cuối: DNHddmmyyyyxxxx -> xxxx
-                    String soSTT = maCuoi.substring(13);
-                    int so = Integer.parseInt(soSTT) + 1;
-                    return prefixHienTai + String.format("%04d", so);
-                } catch (NumberFormatException | StringIndexOutOfBoundsException e) {
-                    System.err.println("Mã đơn nhập hàng không hợp lệ: " + maCuoi + ". Tạo mã mới.");
-                }
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
+        try {
+            return donNhapHangBUS.duKienMaDonNhapHangTiepTheo();
+        } catch (Exception ex) {
+            System.err.println("Không thể lấy mã đơn nhập từ BUS, fallback cục bộ: " + ex.getMessage());
+            LocalDate ngayHienTai = LocalDate.now();
+            String ngayThangNam = String.format("%02d%02d%04d",
+                    ngayHienTai.getDayOfMonth(),
+                    ngayHienTai.getMonthValue(),
+                    ngayHienTai.getYear());
+            return "DNH" + ngayThangNam + "0001";
         }
-        // Nếu chưa có đơn nào trong ngày, tạo mã đầu tiên
-        return prefixHienTai + "0001";
     }
 
     /**

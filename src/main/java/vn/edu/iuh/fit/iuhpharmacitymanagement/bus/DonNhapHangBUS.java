@@ -39,6 +39,10 @@ public class DonNhapHangBUS {
         return donNhapHangDAO.findAll();
     }
 
+    public String duKienMaDonNhapHangTiepTheo() {
+        return donNhapHangDAO.duKienMaDonNhapHangTiepTheo();
+    }
+
     public boolean xoaDonNhapHang(String maDonNhap) {
         try {
             return donNhapHangDAO.delete(maDonNhap);
