@@ -301,7 +301,7 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(btnConfirmPurchase, javax.swing.GroupLayout.PREFERRED_SIZE, 165, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(btnConfirmPurchase, javax.swing.GroupLayout.PREFERRED_SIZE, 165, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(24, Short.MAX_VALUE))
         );
         pnLeftLayout.setVerticalGroup(
@@ -580,7 +580,7 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
         gbc.weighty = 1.0;
 
         // Headers phù hợp với từng cột hiển thị trên Panel_ChiTietSanPhamNhap
-        String[] headers = {"Hình", "Tên sản phẩm", "Lô hàng / HSD", "Số lượng",
+        String[] headers = {"Hình", "Tên sản phẩm", "Lô hàng / HSD", "Số lượng", "Đơn vị tính",
             "Đơn giá nhập", "Tạm tính", "CK (%)", "CK (đ)", "Thuế (%)", "Thuế (đ)", "Thành tiền", ""};
         double[] widths = Panel_ChiTietSanPhamNhap.COLUMN_WEIGHTS;
         int[] minWidths = Panel_ChiTietSanPhamNhap.COLUMN_MIN_WIDTHS;
@@ -1422,7 +1422,7 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
         } else {
             dialog = new javax.swing.JDialog();
             dialog.setTitle("Phiếu nhập hàng");
-            dialog.setModal(true);
+        dialog.setModal(true);
         }
 
         dialog.setSize(680, 900);

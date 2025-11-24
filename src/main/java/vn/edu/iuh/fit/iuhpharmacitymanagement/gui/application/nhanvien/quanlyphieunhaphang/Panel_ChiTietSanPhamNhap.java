@@ -5,19 +5,25 @@
 package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlyphieunhaphang;
 
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonViTinh;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.LoHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.LoHangBUS;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.DonViTinhBUS;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.SanPhamDAO;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.DonViTinhDAO;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Optional;
 import javax.swing.ImageIcon;
 import javax.swing.JToggleButton;
 import javax.swing.ButtonGroup;
 import java.awt.Component;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
 
 /**
@@ -26,8 +32,8 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
  */
 public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
 
-    public static final int[] COLUMN_MIN_WIDTHS = {110, 260, 200, 160, 140, 140, 90, 120, 90, 120, 150, 90};
-    public static final double[] COLUMN_WEIGHTS = {0.06, 0.24, 0.1, 0.08, 0.08, 0.08, 0.05, 0.08, 0.05, 0.08, 0.08, 0.02};
+    public static final int[] COLUMN_MIN_WIDTHS = {110, 260, 200, 160, 120, 140, 140, 90, 120, 90, 120, 150, 90};
+    public static final double[] COLUMN_WEIGHTS = {0.06, 0.22, 0.09, 0.07, 0.04, 0.08, 0.08, 0.05, 0.08, 0.05, 0.08, 0.08, 0.02};
 
     private SanPham sanPham;
     private DecimalFormat currencyFormat;
@@ -69,12 +75,16 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
     private Integer soLuongTuExcel = null;
     private Double donGiaTuExcel = null; // Lưu đơn giá từ Excel
 
+    private DonViTinhBUS donViTinhBUS;
+    private List<DonViTinh> danhSachDonViTinh;
+
     private javax.swing.JLabel lblTyLeChietKhau;
     private javax.swing.JLabel lblTienChietKhau;
     private javax.swing.JLabel lblThueSuat;
     private javax.swing.JLabel lblTienThue;
     private javax.swing.JLabel lblThanhTienSauThue;
     private javax.swing.JTextField txtSoLuong;
+    private javax.swing.JComboBox<DonViTinh> cboDonViTinh;
 
     public Panel_ChiTietSanPhamNhap() {
         this.currencyFormat = new DecimalFormat("#,###");
@@ -82,7 +92,10 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
         this.loHangBUS = new LoHangBUS();
         this.sanPhamDAO = new SanPhamDAO();
         this.thueGTGT = sanPham != null ? sanPham.getThueVAT() * 100 : 0;
+        this.donViTinhBUS = new DonViTinhBUS(new DonViTinhDAO());
+        this.danhSachDonViTinh = new ArrayList<>();
         initComponents();
+        loadDanhSachDonViTinh();
     }
 
     private void initComponents() {
@@ -206,13 +219,45 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
         gbc.weightx = COLUMN_WEIGHTS[3];
         add(pnSoLuong, gbc);
 
-        // 5. Đơn giá nhập (có thể chỉnh sửa)
+        // 5. Đơn vị tính
+        javax.swing.JPanel pnDonViTinh = new javax.swing.JPanel();
+        pnDonViTinh.setBackground(java.awt.Color.WHITE);
+        pnDonViTinh.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 28));
+
+        cboDonViTinh = new javax.swing.JComboBox<>();
+        cboDonViTinh.setFont(new java.awt.Font("Segoe UI", 0, 14));
+        cboDonViTinh.setPreferredSize(new java.awt.Dimension(110, 36));
+        cboDonViTinh.setFocusable(false);
+        cboDonViTinh.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(javax.swing.JList<?> list, Object value, int index,
+                    boolean isSelected, boolean cellHasFocus) {
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                if (value instanceof DonViTinh) {
+                    DonViTinh donViTinh = (DonViTinh) value;
+                    setText(donViTinh.getTenDonVi());
+                } else if (value == null) {
+                    setText("Không có");
+                }
+                return this;
+            }
+        });
+        cboDonViTinh.addActionListener(evt -> onDonViTinhChanged());
+
+        pnDonViTinh.add(cboDonViTinh);
+        pnDonViTinh.setPreferredSize(new java.awt.Dimension(COLUMN_MIN_WIDTHS[4], 100));
+        pnDonViTinh.setMinimumSize(new java.awt.Dimension(COLUMN_MIN_WIDTHS[4], 100));
+        gbc.gridx = 4;
+        gbc.weightx = COLUMN_WEIGHTS[4];
+        add(pnDonViTinh, gbc);
+
+        // 6. Đơn giá nhập (có thể chỉnh sửa)
         txtDonGia = new javax.swing.JLabel();
         txtDonGia.setFont(new java.awt.Font("Segoe UI", 0, 14));
         txtDonGia.setText("0 đ");
-        txtDonGia.setPreferredSize(new java.awt.Dimension(COLUMN_MIN_WIDTHS[4], 100));
-        txtDonGia.setMinimumSize(new java.awt.Dimension(COLUMN_MIN_WIDTHS[4], 100));
-        txtDonGia.setMaximumSize(new java.awt.Dimension(COLUMN_MIN_WIDTHS[4], 100));
+        txtDonGia.setPreferredSize(new java.awt.Dimension(COLUMN_MIN_WIDTHS[5], 100));
+        txtDonGia.setMinimumSize(new java.awt.Dimension(COLUMN_MIN_WIDTHS[5], 100));
+        txtDonGia.setMaximumSize(new java.awt.Dimension(COLUMN_MIN_WIDTHS[5], 100));
         txtDonGia.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         txtDonGia.setVerticalAlignment(javax.swing.SwingConstants.CENTER);
         txtDonGia.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
@@ -222,26 +267,26 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
                 txtDonGiaMouseClicked(evt);
             }
         });
-        gbc.gridx = 4;
-        gbc.weightx = COLUMN_WEIGHTS[4];
+        gbc.gridx = 5;
+        gbc.weightx = COLUMN_WEIGHTS[5];
         add(txtDonGia, gbc);
 
-        // 6. Tổng tiền
+        // 7. Tổng tiền
         txtTongTien = new javax.swing.JLabel();
         txtTongTien.setFont(new java.awt.Font("Segoe UI", 1, 16));
         txtTongTien.setForeground(new java.awt.Color(0, 120, 215));
         txtTongTien.setText("0 đ");
-        txtTongTien.setPreferredSize(new java.awt.Dimension(COLUMN_MIN_WIDTHS[5], 100));
-        txtTongTien.setMinimumSize(new java.awt.Dimension(COLUMN_MIN_WIDTHS[5], 100));
-        txtTongTien.setMaximumSize(new java.awt.Dimension(COLUMN_MIN_WIDTHS[5], 100));
+        txtTongTien.setPreferredSize(new java.awt.Dimension(COLUMN_MIN_WIDTHS[6], 100));
+        txtTongTien.setMinimumSize(new java.awt.Dimension(COLUMN_MIN_WIDTHS[6], 100));
+        txtTongTien.setMaximumSize(new java.awt.Dimension(COLUMN_MIN_WIDTHS[6], 100));
         txtTongTien.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         txtTongTien.setVerticalAlignment(javax.swing.SwingConstants.CENTER);
         txtTongTien.setToolTipText("Tổng tiền trước chiết khấu");
-        gbc.gridx = 5;
-        gbc.weightx = COLUMN_WEIGHTS[5];
+        gbc.gridx = 6;
+        gbc.weightx = COLUMN_WEIGHTS[6];
         add(txtTongTien, gbc);
 
-        // 7. Chiết khấu (%)
+        // 8. Chiết khấu (%)
         lblTyLeChietKhau.setFont(new java.awt.Font("Segoe UI", 0, 14));
         lblTyLeChietKhau.setForeground(new java.awt.Color(220, 53, 69));
         lblTyLeChietKhau.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -253,22 +298,22 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
                 capNhatTyLeChietKhau();
             }
         });
-        lblTyLeChietKhau.setPreferredSize(new java.awt.Dimension(COLUMN_MIN_WIDTHS[6], 100));
-        gbc.gridx = 6;
-        gbc.weightx = COLUMN_WEIGHTS[6];
+        lblTyLeChietKhau.setPreferredSize(new java.awt.Dimension(COLUMN_MIN_WIDTHS[7], 100));
+        gbc.gridx = 7;
+        gbc.weightx = COLUMN_WEIGHTS[7];
         add(lblTyLeChietKhau, gbc);
 
-        // 8. Chiết khấu (đ)
+        // 9. Chiết khấu (đ)
         lblTienChietKhau.setFont(new java.awt.Font("Segoe UI", 0, 14));
         lblTienChietKhau.setForeground(new java.awt.Color(220, 53, 69));
         lblTienChietKhau.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         lblTienChietKhau.setText("-0 đ");
-        lblTienChietKhau.setPreferredSize(new java.awt.Dimension(COLUMN_MIN_WIDTHS[7], 100));
-        gbc.gridx = 7;
-        gbc.weightx = COLUMN_WEIGHTS[7];
+        lblTienChietKhau.setPreferredSize(new java.awt.Dimension(COLUMN_MIN_WIDTHS[8], 100));
+        gbc.gridx = 8;
+        gbc.weightx = COLUMN_WEIGHTS[8];
         add(lblTienChietKhau, gbc);
 
-        // 9. Thuế (%)
+        // 10. Thuế (%)
         lblThueSuat.setFont(new java.awt.Font("Segoe UI", 0, 14));
         lblThueSuat.setForeground(new java.awt.Color(0, 123, 255));
         lblThueSuat.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -280,32 +325,32 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
                 capNhatThueGTGT();
             }
         });
-        lblThueSuat.setPreferredSize(new java.awt.Dimension(COLUMN_MIN_WIDTHS[8], 100));
-        gbc.gridx = 8;
-        gbc.weightx = COLUMN_WEIGHTS[8];
+        lblThueSuat.setPreferredSize(new java.awt.Dimension(COLUMN_MIN_WIDTHS[9], 100));
+        gbc.gridx = 9;
+        gbc.weightx = COLUMN_WEIGHTS[9];
         add(lblThueSuat, gbc);
 
-        // 10. Thuế (đ)
+        // 11. Thuế (đ)
         lblTienThue.setFont(new java.awt.Font("Segoe UI", 0, 14));
         lblTienThue.setForeground(new java.awt.Color(0, 123, 255));
         lblTienThue.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         lblTienThue.setText("+0 đ");
-        lblTienThue.setPreferredSize(new java.awt.Dimension(COLUMN_MIN_WIDTHS[9], 100));
-        gbc.gridx = 9;
-        gbc.weightx = COLUMN_WEIGHTS[9];
+        lblTienThue.setPreferredSize(new java.awt.Dimension(COLUMN_MIN_WIDTHS[10], 100));
+        gbc.gridx = 10;
+        gbc.weightx = COLUMN_WEIGHTS[10];
         add(lblTienThue, gbc);
 
-        // 11. Thành tiền
+        // 12. Thành tiền
         lblThanhTienSauThue.setFont(new java.awt.Font("Segoe UI", 1, 15));
         lblThanhTienSauThue.setForeground(new java.awt.Color(34, 139, 34));
         lblThanhTienSauThue.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         lblThanhTienSauThue.setText("0 đ");
-        lblThanhTienSauThue.setPreferredSize(new java.awt.Dimension(COLUMN_MIN_WIDTHS[10], 100));
-        gbc.gridx = 10;
-        gbc.weightx = COLUMN_WEIGHTS[10];
+        lblThanhTienSauThue.setPreferredSize(new java.awt.Dimension(COLUMN_MIN_WIDTHS[11], 100));
+        gbc.gridx = 11;
+        gbc.weightx = COLUMN_WEIGHTS[11];
         add(lblThanhTienSauThue, gbc);
 
-        // 12. Nút Xóa
+        // 13. Nút Xóa
         javax.swing.JPanel pnXoa = new javax.swing.JPanel();
         pnXoa.setBackground(java.awt.Color.WHITE);
         pnXoa.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 32));
@@ -323,10 +368,10 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
             }
         });
         pnXoa.add(btnXoa);
-        pnXoa.setPreferredSize(new java.awt.Dimension(COLUMN_MIN_WIDTHS[11], 100));
-        pnXoa.setMinimumSize(new java.awt.Dimension(COLUMN_MIN_WIDTHS[11], 100));
-        gbc.gridx = 11;
-        gbc.weightx = COLUMN_WEIGHTS[11];
+        pnXoa.setPreferredSize(new java.awt.Dimension(COLUMN_MIN_WIDTHS[12], 100));
+        pnXoa.setMinimumSize(new java.awt.Dimension(COLUMN_MIN_WIDTHS[12], 100));
+        gbc.gridx = 12;
+        gbc.weightx = COLUMN_WEIGHTS[12];
         add(pnXoa, gbc);
     }// </editor-fold>//GEN-END:initComponents
 
@@ -344,7 +389,10 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
         this.sanPhamDAO = new SanPhamDAO();
         this.tenLoHangTuExcel = null; // Không có lô từ Excel
         this.thueGTGT = sanPham != null ? sanPham.getThueVAT() * 100 : 0;
+        this.donViTinhBUS = new DonViTinhBUS(new DonViTinhDAO());
+        this.danhSachDonViTinh = new ArrayList<>();
         initComponents();
+        loadDanhSachDonViTinh();
         loadSanPhamData();
         loadLoHangData();
     }
@@ -363,6 +411,8 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
         this.tenLoHangTuExcel = tenLoHang;
         this.soDienThoaiNCCTuExcel = soDienThoaiNCC;
         this.thueGTGT = sanPham != null ? sanPham.getThueVAT() * 100 : 0;
+        this.donViTinhBUS = new DonViTinhBUS(new DonViTinhDAO());
+        this.danhSachDonViTinh = new ArrayList<>();
 
         if (tyLeChietKhauExcel != null) {
             this.tyLeChietKhau = tyLeChietKhauExcel;
@@ -377,6 +427,7 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
 
         try {
             initComponents();
+            loadDanhSachDonViTinh();
             loadSanPhamData();
             loadLoHangData();
 
@@ -415,6 +466,7 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
             }
 
             updateTongTien();
+            syncDonViTinhSelection();
         } catch (Exception e) {
             throw e;
         }
@@ -663,6 +715,97 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
         if (sanPham != null) {
             danhSachLoHang = loHangBUS.getLoHangBySanPham(sanPham);
         }
+    }
+
+    private void loadDanhSachDonViTinh() {
+        if (donViTinhBUS == null) {
+            donViTinhBUS = new DonViTinhBUS(new DonViTinhDAO());
+        }
+        try {
+            danhSachDonViTinh = donViTinhBUS.layTatCaDonViTinh();
+        } catch (Exception ex) {
+            danhSachDonViTinh = new ArrayList<>();
+        }
+        capNhatComboDonViTinh();
+    }
+
+    private void capNhatComboDonViTinh() {
+        if (cboDonViTinh == null) {
+            return;
+        }
+        DefaultComboBoxModel<DonViTinh> model = new DefaultComboBoxModel<>();
+        if (danhSachDonViTinh != null) {
+            for (DonViTinh donVi : danhSachDonViTinh) {
+                model.addElement(donVi);
+            }
+        }
+        cboDonViTinh.setModel(model);
+        cboDonViTinh.setEnabled(model.getSize() > 0);
+        syncDonViTinhSelection();
+    }
+
+    private void syncDonViTinhSelection() {
+        if (cboDonViTinh == null) {
+            return;
+        }
+        DonViTinh donViHienTai = sanPham != null ? sanPham.getDonViTinh() : null;
+        if (donViHienTai == null) {
+            if (cboDonViTinh.getItemCount() > 0) {
+                if (cboDonViTinh.getSelectedIndex() != 0) {
+                    cboDonViTinh.setSelectedIndex(0);
+                }
+                onDonViTinhChanged();
+            } else {
+                cboDonViTinh.setSelectedIndex(-1);
+            }
+            return;
+        }
+
+        for (int i = 0; i < cboDonViTinh.getItemCount(); i++) {
+            DonViTinh item = cboDonViTinh.getItemAt(i);
+            if (item != null && isSameDonVi(item, donViHienTai)) {
+                if (cboDonViTinh.getSelectedIndex() != i) {
+                    cboDonViTinh.setSelectedIndex(i);
+                }
+                return;
+            }
+        }
+
+        cboDonViTinh.addItem(donViHienTai);
+        cboDonViTinh.setSelectedItem(donViHienTai);
+    }
+
+    private boolean isSameDonVi(DonViTinh first, DonViTinh second) {
+        if (first == null || second == null) {
+            return false;
+        }
+        String maFirst = first.getMaDonVi();
+        String maSecond = second.getMaDonVi();
+        if (maFirst != null && maSecond != null) {
+            return maFirst.equals(maSecond);
+        }
+        String tenFirst = first.getTenDonVi();
+        String tenSecond = second.getTenDonVi();
+        return tenFirst != null && tenSecond != null && tenFirst.equalsIgnoreCase(tenSecond);
+    }
+
+    private void onDonViTinhChanged() {
+        if (sanPham == null || cboDonViTinh == null) {
+            return;
+        }
+        DonViTinh donViTinh = (DonViTinh) cboDonViTinh.getSelectedItem();
+        sanPham.setDonViTinh(donViTinh);
+    }
+
+    public DonViTinh getDonViTinhDaChon() {
+        return cboDonViTinh != null ? (DonViTinh) cboDonViTinh.getSelectedItem() : null;
+    }
+
+    /**
+     * Cho phép các màn hình khác (ví dụ Quản lý Đơn vị tính) báo Panel reload dữ liệu.
+     */
+    public void refreshDonViTinhTuQuanLy() {
+        loadDanhSachDonViTinh();
     }
 
     public List<LoHang> getDanhSachLoHang() {
