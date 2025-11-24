@@ -1399,7 +1399,7 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
         dialog.setModal(true);
         }
 
-        dialog.setSize(680, 900);
+        dialog.setSize(1300, 900);//dialog.setSize(680, 900);
         dialog.setLocationRelativeTo(parentWindow);
         dialog.setModalityType(java.awt.Dialog.ModalityType.APPLICATION_MODAL);
         dialog.setAlwaysOnTop(true);
@@ -1520,8 +1520,8 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
         table.getTableHeader().setBackground(new Color(245, 245, 245));
         table.setGridColor(new Color(220, 220, 220));
         table.getColumnModel().getColumn(0).setPreferredWidth(40);
-        table.getColumnModel().getColumn(1).setPreferredWidth(180);
-        table.getColumnModel().getColumn(2).setPreferredWidth(90);
+        table.getColumnModel().getColumn(1).setPreferredWidth(200);//180
+        table.getColumnModel().getColumn(2).setPreferredWidth(70);//90
         table.getColumnModel().getColumn(3).setPreferredWidth(80);
         table.getColumnModel().getColumn(4).setPreferredWidth(70);
         table.getColumnModel().getColumn(5).setPreferredWidth(110);
@@ -1578,8 +1578,9 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
             tableModel.addRow(new Object[]{
                 stt++,
                 sanPham.getTenSanPham(),
-                sanPham.getDonViTinh() != null ? sanPham.getDonViTinh() : "Hộp",
-                loHang.getTenLoHang(),
+                sanPham.getDonViTinh() != null ? sanPham.getDonViTinh().getTenDonVi() : "Hộp",
+                //loHang.getTenLoHang(),
+                loHang.getMaLoHang(),
                 chiTiet.getSoLuong(),
                 currencyFormat.format(chiTiet.getDonGia()) + " đ",
                 currencyFormat.format(tamTinh) + " đ",
@@ -1693,7 +1694,7 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
         mainPanel.add(Box.createVerticalStrut(10));
 
         mainScrollPane.setViewportView(mainPanel);
-        dialog.add(mainScrollPane);
+        dialog.add(mainScrollPane);        
         dialog.setVisible(true);
 
         return isDonHangCancelled[0];

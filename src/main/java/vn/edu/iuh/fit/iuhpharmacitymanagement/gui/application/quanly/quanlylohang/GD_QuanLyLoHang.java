@@ -70,9 +70,10 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
     }
 
     private void setUIManager() {
+        //dùng playholder của thư viện
         txtBarcodeAdd.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Quét mã vạch sản phẩm (Số đăng ký)");
         txtBarcodeEdit.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Quét mã vạch sản phẩm (Số đăng ký)");
-            txtBatchNameAdd.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Tên lô hàng");
+        txtBatchNameAdd.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Tên lô hàng");
         txtBatchNameEdit.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Tên lô hàng");
         txtStockAdd.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Số lượng tồn kho");
         txtStockEdit.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Số lượng tồn kho");
