@@ -104,18 +104,18 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         javax.swing.GroupLayout pnMidLayout = new javax.swing.GroupLayout(pnMid);
         pnMid.setLayout(pnMidLayout);
         pnMidLayout.setHorizontalGroup(
-                pnMidLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            pnMidLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 884, Short.MAX_VALUE)
         );
         pnMidLayout.setVerticalGroup(
-                pnMidLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            pnMidLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 750, Short.MAX_VALUE)
         );
 
         add(pnMid, java.awt.BorderLayout.CENTER);
 
         pnLeft.setBackground(new java.awt.Color(255, 255, 255));
-        pnLeft.setPreferredSize(new java.awt.Dimension(10, 96));
+        pnLeft.setPreferredSize(new java.awt.Dimension(485, 650));
 
         btnTaoPhieu.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
         btnTaoPhieu.setText("Tạo phiếu");
@@ -138,19 +138,19 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         javax.swing.GroupLayout jPanel6Layout = new javax.swing.GroupLayout(jPanel6);
         jPanel6.setLayout(jPanel6Layout);
         jPanel6Layout.setHorizontalGroup(
-                jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(jPanel6Layout.createSequentialGroup()
-                                .addGap(0, 0, 0)
+            jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel6Layout.createSequentialGroup()
+                .addGap(0, 0, 0)
                 .addComponent(jLabel11, javax.swing.GroupLayout.PREFERRED_SIZE, 157, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 66, Short.MAX_VALUE)
                 .addComponent(txtTongTien, javax.swing.GroupLayout.PREFERRED_SIZE, 162, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
         jPanel6Layout.setVerticalGroup(
-                jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel6Layout.createSequentialGroup()
-                                .addGap(0, 0, 0)
-                                .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+            jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel6Layout.createSequentialGroup()
+                .addGap(0, 0, 0)
+                .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel11, javax.swing.GroupLayout.DEFAULT_SIZE, 57, Short.MAX_VALUE)
                     .addComponent(txtTongTien, javax.swing.GroupLayout.DEFAULT_SIZE, 45, Short.MAX_VALUE))
                 .addGap(0, 0, 0))
@@ -178,19 +178,19 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         javax.swing.GroupLayout jPanel8Layout = new javax.swing.GroupLayout(jPanel8);
         jPanel8.setLayout(jPanel8Layout);
         jPanel8Layout.setHorizontalGroup(
-                jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(jPanel8Layout.createSequentialGroup()
-                                .addGap(0, 0, 0)
+            jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel8Layout.createSequentialGroup()
+                .addGap(0, 0, 0)
                 .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 157, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(txtEmpName, javax.swing.GroupLayout.PREFERRED_SIZE, 162, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
         jPanel8Layout.setVerticalGroup(
-                jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel8Layout.createSequentialGroup()
-                                .addGap(0, 0, 0)
-                                .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+            jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel8Layout.createSequentialGroup()
+                .addGap(0, 0, 0)
+                .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel5, javax.swing.GroupLayout.DEFAULT_SIZE, 57, Short.MAX_VALUE)
                     .addComponent(txtEmpName, javax.swing.GroupLayout.DEFAULT_SIZE, 45, Short.MAX_VALUE))
                 .addGap(0, 0, 0))
@@ -199,21 +199,25 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         javax.swing.GroupLayout pnLeftLayout = new javax.swing.GroupLayout(pnLeft);
         pnLeft.setLayout(pnLeftLayout);
         pnLeftLayout.setHorizontalGroup(
-                pnLeftLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(pnLeftLayout.createSequentialGroup()
-                .addGap(24, 24, 24)
-                .addComponent(jPanel8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(24, 24, 24)
-                .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 24, Short.MAX_VALUE)
-                .addComponent(btnTaoPhieu, javax.swing.GroupLayout.PREFERRED_SIZE, 165, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(24, 24, 24))
+            pnLeftLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pnLeftLayout.createSequentialGroup()
+                .addContainerGap(49, Short.MAX_VALUE)
+                .addGroup(pnLeftLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(btnTaoPhieu, javax.swing.GroupLayout.PREFERRED_SIZE, 165, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jPanel6, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel8, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(45, Short.MAX_VALUE))
         );
         pnLeftLayout.setVerticalGroup(
-            pnLeftLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-            .addComponent(jPanel8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addComponent(btnTaoPhieu, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
+            pnLeftLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pnLeftLayout.createSequentialGroup()
+                .addGap(36, 36, 36)
+                .addComponent(jPanel8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 517, Short.MAX_VALUE)
+                .addComponent(btnTaoPhieu, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(39, 39, 39))
         );
 
         add(pnLeft, java.awt.BorderLayout.EAST);
@@ -688,7 +692,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
                     mapTonKhoBanDau.put(maLoHang, loHang.getTonKho());
                 }
             }
-            
+
             // Giảm tồn kho
             for (ChiTietHangHong chiTiet : danhSachChiTiet) {
                 LoHang loHang = chiTiet.getLoHang();
@@ -710,16 +714,16 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
             for (ChiTietHangHong chiTiet : danhSachChiTiet) {
                 LoHang loHang = chiTiet.getLoHang();
                 String maLoHang = loHang.getMaLoHang();
-                
+
                 // Bỏ qua nếu đã cập nhật trạng thái cho lô này rồi
                 if (daCapNhatTrangThai.contains(maLoHang)) {
                     continue;
                 }
-                
+
                 int soLuongXuatHuy = chiTiet.getSoLuong();
                 String lyDoXuatHuy = chiTiet.getLyDoXuatHuy();
                 int tonKhoBanDau = mapTonKhoBanDau.get(maLoHang);
-                
+
                 // Tính tồn kho mới
                 int tonKhoMoi;
                 if (lyDoXuatHuy != null && lyDoXuatHuy.contains("Hết hạn")) {
@@ -732,7 +736,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
                             .sum();
                     tonKhoMoi = tonKhoBanDau - tongSoLuongXuatHuy;
                 }
-                
+
                 // Nếu tồn kho <= 0, set trạng thái = false
                 if (tonKhoMoi <= 0) {
                     loHang.setTrangThai(false);
@@ -784,8 +788,8 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
     }
 
     /**
-     * Tạo mã phiếu xuất hủy tạm để hiển thị trong preview
-     * Mã này sẽ được tạo lại chính xác khi lưu vào database
+     * Tạo mã phiếu xuất hủy tạm để hiển thị trong preview Mã này sẽ được tạo
+     * lại chính xác khi lưu vào database
      *
      * @return Mã phiếu xuất hủy tạm
      */
@@ -798,9 +802,8 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
 
         String prefixHienTai = "HH" + ngayThangNam;
 
-        try (java.sql.Connection con = vn.edu.iuh.fit.iuhpharmacitymanagement.connectDB.ConnectDB.getConnection();
-             java.sql.PreparedStatement stmt = con.prepareStatement(
-                     "SELECT TOP 1 maHangHong FROM HangHong WHERE maHangHong LIKE ? ORDER BY maHangHong DESC")) {
+        try (java.sql.Connection con = vn.edu.iuh.fit.iuhpharmacitymanagement.connectDB.ConnectDB.getConnection(); java.sql.PreparedStatement stmt = con.prepareStatement(
+                "SELECT TOP 1 maHangHong FROM HangHong WHERE maHangHong LIKE ? ORDER BY maHangHong DESC")) {
 
             stmt.setString(1, prefixHienTai + "%");
             java.sql.ResultSet rs = stmt.executeQuery();
@@ -825,8 +828,8 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
     }
 
     /**
-     * Hiển thị preview phiếu xuất hủy (chưa lưu vào DB)
-     * Chỉ lưu vào DB khi bấm "In"
+     * Hiển thị preview phiếu xuất hủy (chưa lưu vào DB) Chỉ lưu vào DB khi bấm
+     * "In"
      */
     private void hienThiPhieuXuatHuy(HangHong hangHong, java.util.List<ChiTietHangHong> danhSachChiTiet,
             java.util.Set<String> danhSachDonTraDaXuLy,
@@ -843,7 +846,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         } else {
             dialog = new javax.swing.JDialog();
             dialog.setTitle(dialogTitle);
-        dialog.setModal(true);
+            dialog.setModal(true);
         }
         dialog.setModalityType(java.awt.Dialog.ModalityType.APPLICATION_MODAL);
         dialog.setAlwaysOnTop(true);
@@ -914,15 +917,15 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
             }
 
             modelDetail.addRow(new Object[]{
-                    stt++,
-                    sp.getTenSanPham(),
-                    loHang.getTenLoHang() != null ? loHang.getTenLoHang() : loHang.getMaLoHang(),
-                    hsd,
-                    sp.getDonViTinh() != null ? sp.getDonViTinh().getTenDonVi() : "",
-                    chiTiet.getSoLuong(),
-                    currencyFormat.format(chiTiet.getDonGia()) + " ₫",
-                    currencyFormat.format(chiTiet.getThanhTien()) + " ₫",
-                    lyDo
+                stt++,
+                sp.getTenSanPham(),
+                loHang.getTenLoHang() != null ? loHang.getTenLoHang() : loHang.getMaLoHang(),
+                hsd,
+                sp.getDonViTinh() != null ? sp.getDonViTinh().getTenDonVi() : "",
+                chiTiet.getSoLuong(),
+                currencyFormat.format(chiTiet.getDonGia()) + " ₫",
+                currencyFormat.format(chiTiet.getThanhTien()) + " ₫",
+                lyDo
             });
         }
 
@@ -974,7 +977,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
             try {
                 // Lưu vào DB trước khi xuất PDF
                 boolean luuThanhCong = luuPhieuXuatHuyVaoDB(hangHong, danhSachChiTiet, danhSachDonTraDaXuLy, danhSachChiTietDonTraDaXuatHuy);
-                
+
                 if (!luuThanhCong) {
                     Notifications.getInstance().show(
                             Notifications.Type.ERROR,
@@ -994,8 +997,8 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
 
                 // Xóa trắng danh sách sản phẩm sau khi lưu thành công
                 xoaTrangDanhSachSanPham();
-                
-            dialog.dispose();
+
+                dialog.dispose();
             } catch (Exception ex) {
                 ex.printStackTrace();
                 Notifications.getInstance().show(
@@ -1089,8 +1092,8 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
             dialog = new javax.swing.JDialog((java.awt.Dialog) parentWindow, "Hóa Đơn Xuất Hủy", true);
         } else {
             dialog = new javax.swing.JDialog();
-        dialog.setTitle("Hóa Đơn Xuất Hủy");
-        dialog.setModal(true);
+            dialog.setTitle("Hóa Đơn Xuất Hủy");
+            dialog.setModal(true);
         }
         dialog.setModalityType(java.awt.Dialog.ModalityType.APPLICATION_MODAL);
         dialog.setAlwaysOnTop(true);
@@ -1142,17 +1145,17 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         // ========== BARCODE MÃ PHIẾU XUẤT HỦY ==========
         // Chỉ hiển thị barcode nếu đã có mã phiếu (sau khi lưu vào DB)
         if (hangHong.getMaHangHong() != null && !hangHong.getMaHangHong().isEmpty()) {
-        try {
-            java.awt.image.BufferedImage barcodeImage = vn.edu.iuh.fit.iuhpharmacitymanagement.util.BarcodeUtil
-                    .taoBarcode(hangHong.getMaHangHong());
-            java.awt.image.BufferedImage barcodeWithText = vn.edu.iuh.fit.iuhpharmacitymanagement.util.BarcodeUtil
-                    .addTextBelow(barcodeImage, hangHong.getMaHangHong());
+            try {
+                java.awt.image.BufferedImage barcodeImage = vn.edu.iuh.fit.iuhpharmacitymanagement.util.BarcodeUtil
+                        .taoBarcode(hangHong.getMaHangHong());
+                java.awt.image.BufferedImage barcodeWithText = vn.edu.iuh.fit.iuhpharmacitymanagement.util.BarcodeUtil
+                        .addTextBelow(barcodeImage, hangHong.getMaHangHong());
 
-            javax.swing.JLabel lblBarcode = new javax.swing.JLabel(new javax.swing.ImageIcon(barcodeWithText));
-            lblBarcode.setAlignmentX(java.awt.Component.CENTER_ALIGNMENT);
-            mainPanel.add(lblBarcode);
-        } catch (Exception ex) {
-            System.err.println("Lỗi tạo barcode: " + ex.getMessage());
+                javax.swing.JLabel lblBarcode = new javax.swing.JLabel(new javax.swing.ImageIcon(barcodeWithText));
+                lblBarcode.setAlignmentX(java.awt.Component.CENTER_ALIGNMENT);
+                mainPanel.add(lblBarcode);
+            } catch (Exception ex) {
+                System.err.println("Lỗi tạo barcode: " + ex.getMessage());
             }
         }
         mainPanel.add(javax.swing.Box.createVerticalStrut(2));
@@ -1253,13 +1256,13 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
             }
 
             tableModel.addRow(new Object[]{
-                    stt++,
-                    sp.getTenSanPham(),
-                    tenLo,
-                    chiTiet.getSoLuong(),
-                    currencyFormat.format(chiTiet.getDonGia()) + " đ",
-                    currencyFormat.format(chiTiet.getThanhTien()) + " đ",
-                    lyDo
+                stt++,
+                sp.getTenSanPham(),
+                tenLo,
+                chiTiet.getSoLuong(),
+                currencyFormat.format(chiTiet.getDonGia()) + " đ",
+                currencyFormat.format(chiTiet.getThanhTien()) + " đ",
+                lyDo
             });
         }
 
@@ -1375,10 +1378,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         java.text.DecimalFormat currencyFormat = new java.text.DecimalFormat("#,###");
         java.time.format.DateTimeFormatter dateFormatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
-             PdfWriter writer = new PdfWriter(baos); 
-             PdfDocument pdfDoc = new PdfDocument(writer); 
-             Document document = new Document(pdfDoc, PageSize.A5)) {
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream(); PdfWriter writer = new PdfWriter(baos); PdfDocument pdfDoc = new PdfDocument(writer); Document document = new Document(pdfDoc, PageSize.A5)) {
 
             document.setMargins(24, 24, 24, 24);
             PdfFont font = PdfFontFactory.createFont(StandardFonts.HELVETICA);
