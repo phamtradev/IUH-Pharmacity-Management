@@ -40,7 +40,13 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
     private javax.swing.JLabel lblTheLo_HSD;
     private javax.swing.JLabel lblTheLo_TonKho;
 
-    private double cachedTongTien = 0; // Cache giá trị tổng tiền để detect thay đổi
+    private double cachedTongTien = 0; // Tổng sau thuế
+    private double cachedTongTienGoc = 0; // Tổng trước chiết khấu
+    private double cachedTienChietKhau = 0;
+    private double cachedThanhTienTinhThue = 0;
+    private double cachedTienThue = 0;
+    private double tyLeChietKhau = 0;
+    private double thueGTGT = 0;
     private LoHangBUS loHangBUS;
     private SanPhamDAO sanPhamDAO;
     private List<LoHang> danhSachLoHang;
@@ -60,11 +66,17 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
     private Integer soLuongTuExcel = null;
     private Double donGiaTuExcel = null; // Lưu đơn giá từ Excel
 
+    private javax.swing.JLabel lblThongTinChietKhau;
+    private javax.swing.JLabel lblThanhTienTinhThue;
+    private javax.swing.JLabel lblThongTinThue;
+    private javax.swing.JLabel lblThanhTienSauThue;
+
     public Panel_ChiTietSanPhamNhap() {
         this.currencyFormat = new DecimalFormat("#,###");
         this.dateFormat = new SimpleDateFormat("dd/MM/yyyy");
         this.loHangBUS = new LoHangBUS();
         this.sanPhamDAO = new SanPhamDAO();
+        this.thueGTGT = sanPham != null ? sanPham.getThueVAT() * 100 : 0;
         initComponents();
     }
 
@@ -73,6 +85,10 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
         spinnerSoLuong = new javax.swing.JSpinner();
         txtDonGia = new javax.swing.JLabel();
         txtTongTien = new javax.swing.JLabel();
+        lblThongTinChietKhau = new javax.swing.JLabel();
+        lblThanhTienTinhThue = new javax.swing.JLabel();
+        lblThongTinThue = new javax.swing.JLabel();
+        lblThanhTienSauThue = new javax.swing.JLabel();
 
         setBackground(new java.awt.Color(255, 255, 255));
         setBorder(javax.swing.BorderFactory.createMatteBorder(0, 0, 1, 0, new java.awt.Color(232, 232, 232)));
@@ -225,11 +241,56 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
         txtTongTien.setMaximumSize(new java.awt.Dimension(130, 100));
         txtTongTien.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
         txtTongTien.setVerticalAlignment(javax.swing.SwingConstants.CENTER);
+        txtTongTien.setToolTipText("Tổng tiền trước chiết khấu");
         gbc.gridx = 5;
         gbc.weightx = 0.0;
         add(txtTongTien, gbc);
 
-        // 7. Nút Xóa
+        // 7. Panel chiết khấu & thuế
+        javax.swing.JPanel pnThueVaChietKhau = new javax.swing.JPanel();
+        pnThueVaChietKhau.setBackground(java.awt.Color.WHITE);
+        pnThueVaChietKhau.setLayout(new javax.swing.BoxLayout(pnThueVaChietKhau, javax.swing.BoxLayout.Y_AXIS));
+        pnThueVaChietKhau.setPreferredSize(new java.awt.Dimension(200, 100));
+        pnThueVaChietKhau.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
+
+        lblThongTinChietKhau.setFont(new java.awt.Font("Segoe UI", 0, 12));
+        lblThongTinChietKhau.setForeground(new java.awt.Color(220, 53, 69));
+        lblThongTinChietKhau.setText("CK (0%): -0 đ");
+        lblThongTinChietKhau.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        lblThongTinChietKhau.setToolTipText("Click để chỉnh phần trăm chiết khấu");
+        lblThongTinChietKhau.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                capNhatTyLeChietKhau();
+            }
+        });
+
+        lblThanhTienTinhThue.setFont(new java.awt.Font("Segoe UI", 0, 12));
+        lblThanhTienTinhThue.setText("Sau CK: 0 đ");
+
+        lblThongTinThue.setFont(new java.awt.Font("Segoe UI", 0, 12));
+        lblThongTinThue.setForeground(new java.awt.Color(0, 123, 255));
+        lblThongTinThue.setText("Thuế GTGT (0%): +0 đ");
+        lblThongTinThue.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        lblThongTinThue.setToolTipText("Click để chỉnh thuế GTGT");
+        lblThongTinThue.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                capNhatThueGTGT();
+            }
+        });
+
+        lblThanhTienSauThue.setFont(new java.awt.Font("Segoe UI", 1, 13));
+        lblThanhTienSauThue.setForeground(new java.awt.Color(34, 139, 34));
+        lblThanhTienSauThue.setText("Thanh toán: 0 đ");
+
+        pnThueVaChietKhau.add(lblThongTinChietKhau);
+        pnThueVaChietKhau.add(lblThanhTienTinhThue);
+        pnThueVaChietKhau.add(lblThongTinThue);
+        pnThueVaChietKhau.add(lblThanhTienSauThue);
+
+        gbc.gridx = 6;
+        add(pnThueVaChietKhau, gbc);
+
+        // 8. Nút Xóa
         javax.swing.JPanel pnXoa = new javax.swing.JPanel();
         pnXoa.setBackground(java.awt.Color.WHITE);
         pnXoa.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 32));
@@ -249,7 +310,7 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
         pnXoa.add(btnXoa);
         pnXoa.setPreferredSize(new java.awt.Dimension(90, 100));
         pnXoa.setMinimumSize(new java.awt.Dimension(90, 100));
-        gbc.gridx = 6;
+        gbc.gridx = 7;
         gbc.weightx = 0.0;
         add(pnXoa, gbc);
     }// </editor-fold>//GEN-END:initComponents
@@ -267,6 +328,7 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
         this.loHangBUS = new LoHangBUS();
         this.sanPhamDAO = new SanPhamDAO();
         this.tenLoHangTuExcel = null; // Không có lô từ Excel
+        this.thueGTGT = sanPham != null ? sanPham.getThueVAT() * 100 : 0;
         initComponents();
         loadSanPhamData();
         loadLoHangData();
@@ -285,6 +347,7 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
         this.sanPhamDAO = new SanPhamDAO();
         this.tenLoHangTuExcel = tenLoHang;
         this.soDienThoaiNCCTuExcel = soDienThoaiNCC;
+        this.thueGTGT = sanPham != null ? sanPham.getThueVAT() * 100 : 0;
 
         this.hsdTuExcel = hanDung;
         this.soLuongTuExcel = soLuong;
@@ -482,13 +545,26 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
             }
 
             double tongTien = donGia * soLuong;
+            double tienChietKhau = tongTien * (tyLeChietKhau / 100.0);
+            double thanhTienTinhThue = tongTien - tienChietKhau;
+            double tienThue = thanhTienTinhThue * (thueGTGT / 100.0);
+            double tongSauThue = thanhTienTinhThue + tienThue;
+
             txtTongTien.setText(currencyFormat.format(tongTien) + " đ");
+            lblThongTinChietKhau.setText(String.format("CK (%.1f%%): -%s đ", tyLeChietKhau, currencyFormat.format(tienChietKhau)));
+            lblThanhTienTinhThue.setText("Sau CK: " + currencyFormat.format(thanhTienTinhThue) + " đ");
+            lblThongTinThue.setText(String.format("Thuế GTGT (%.1f%%): +%s đ", thueGTGT, currencyFormat.format(tienThue)));
+            lblThanhTienSauThue.setText("Thanh toán: " + currencyFormat.format(tongSauThue) + " đ");
 
             // Cập nhật cache
-            cachedTongTien = tongTien;
+            cachedTongTienGoc = tongTien;
+            cachedTienChietKhau = tienChietKhau;
+            cachedThanhTienTinhThue = thanhTienTinhThue;
+            cachedTienThue = tienThue;
+            cachedTongTien = tongSauThue;
 
             // Fire property change để notify parent
-            firePropertyChange("tongTien", oldTongTien, tongTien);
+            firePropertyChange("tongTien", oldTongTien, tongSauThue);
         }
     }
 
@@ -508,6 +584,34 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
 
     public double getTongTien() {
         return cachedTongTien;
+    }
+
+    public double getTongTienTruocChietKhau() {
+        return cachedTongTienGoc;
+    }
+
+    public double getTienChietKhau() {
+        return cachedTienChietKhau;
+    }
+
+    public double getThanhTienTinhThue() {
+        return cachedThanhTienTinhThue;
+    }
+
+    public double getTienThue() {
+        return cachedTienThue;
+    }
+
+    public double getThanhTienSauThue() {
+        return cachedTongTien;
+    }
+
+    public double getTyLeChietKhau() {
+        return tyLeChietKhau;
+    }
+
+    public double getThueGTGT() {
+        return thueGTGT;
     }
 
     public double getDonGiaNhap() {
@@ -965,6 +1069,58 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
             }
         }
     }// GEN-LAST:event_txtDonGiaMouseClicked
+
+    private void capNhatTyLeChietKhau() {
+        String input = javax.swing.JOptionPane.showInputDialog(this,
+                "Nhập % chiết khấu (0 - 100):",
+                tyLeChietKhau);
+        if (input == null) {
+            return;
+        }
+        try {
+            double value = Double.parseDouble(input.trim());
+            if (value < 0 || value > 100) {
+                javax.swing.JOptionPane.showMessageDialog(this,
+                        "Phần trăm chiết khấu phải nằm trong khoảng 0 - 100!",
+                        "Lỗi",
+                        javax.swing.JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            tyLeChietKhau = value;
+            updateTongTien();
+        } catch (NumberFormatException ex) {
+            javax.swing.JOptionPane.showMessageDialog(this,
+                    "Vui lòng nhập số hợp lệ!",
+                    "Lỗi",
+                    javax.swing.JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void capNhatThueGTGT() {
+        String input = javax.swing.JOptionPane.showInputDialog(this,
+                "Nhập % thuế GTGT (0 - 100):",
+                thueGTGT);
+        if (input == null) {
+            return;
+        }
+        try {
+            double value = Double.parseDouble(input.trim());
+            if (value < 0 || value > 100) {
+                javax.swing.JOptionPane.showMessageDialog(this,
+                        "Phần trăm thuế phải nằm trong khoảng 0 - 100!",
+                        "Lỗi",
+                        javax.swing.JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            thueGTGT = value;
+            updateTongTien();
+        } catch (NumberFormatException ex) {
+            javax.swing.JOptionPane.showMessageDialog(this,
+                    "Vui lòng nhập số hợp lệ!",
+                    "Lỗi",
+                    javax.swing.JOptionPane.ERROR_MESSAGE);
+        }
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JSpinner spinnerSoLuong;
