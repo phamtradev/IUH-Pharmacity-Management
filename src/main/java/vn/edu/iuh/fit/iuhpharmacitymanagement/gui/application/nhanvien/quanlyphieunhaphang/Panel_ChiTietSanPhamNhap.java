@@ -11,7 +11,9 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.LoHangBUS;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.DonViTinhBUS;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.SanPhamDAO;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.DonViTinhDAO;
+import java.math.BigDecimal;
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.Date;
@@ -74,6 +76,7 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
     private Date hsdTuExcel = null;
     private Integer soLuongTuExcel = null;
     private Double donGiaTuExcel = null; // Lưu đơn giá từ Excel
+    private String donGiaRawValue = "0";
 
     private DonViTinhBUS donViTinhBUS;
     private List<DonViTinh> danhSachDonViTinh;
@@ -87,7 +90,7 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
     private javax.swing.JComboBox<DonViTinh> cboDonViTinh;
 
     public Panel_ChiTietSanPhamNhap() {
-        this.currencyFormat = new DecimalFormat("#,###");
+        this.currencyFormat = initCurrencyFormat();
         this.dateFormat = new SimpleDateFormat("dd/MM/yyyy");
         this.loHangBUS = new LoHangBUS();
         this.sanPhamDAO = new SanPhamDAO();
@@ -254,7 +257,7 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
         // 6. Đơn giá nhập (có thể chỉnh sửa)
         txtDonGia = new javax.swing.JLabel();
         txtDonGia.setFont(new java.awt.Font("Segoe UI", 0, 14));
-        txtDonGia.setText("0 đ");
+        txtDonGia.setText(formatDonGiaDisplay(donGiaRawValue) + " đ");
         txtDonGia.setPreferredSize(new java.awt.Dimension(COLUMN_MIN_WIDTHS[5], 100));
         txtDonGia.setMinimumSize(new java.awt.Dimension(COLUMN_MIN_WIDTHS[5], 100));
         txtDonGia.setMaximumSize(new java.awt.Dimension(COLUMN_MIN_WIDTHS[5], 100));
@@ -383,7 +386,7 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
      */
     public Panel_ChiTietSanPhamNhap(SanPham sanPham) {
         this.sanPham = sanPham;
-        this.currencyFormat = new DecimalFormat("#,###");
+        this.currencyFormat = initCurrencyFormat();
         this.dateFormat = new SimpleDateFormat("dd/MM/yyyy");
         this.loHangBUS = new LoHangBUS();
         this.sanPhamDAO = new SanPhamDAO();
@@ -404,7 +407,7 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
     public Panel_ChiTietSanPhamNhap(SanPham sanPham, int soLuong, double donGiaNhap, Date hanDung, String tenLoHang,
             String soDienThoaiNCC, Double tyLeChietKhauExcel, Double thueGTGTExcel) throws Exception {
         this.sanPham = sanPham;
-        this.currencyFormat = new DecimalFormat("#,###");
+        this.currencyFormat = initCurrencyFormat();
         this.dateFormat = new SimpleDateFormat("dd/MM/yyyy");
         this.loHangBUS = new LoHangBUS();
         this.sanPhamDAO = new SanPhamDAO();
@@ -432,7 +435,7 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
             loadLoHangData();
 
             spinnerSoLuong.setValue(soLuong);
-            txtDonGia.setText(currencyFormat.format(donGiaNhap) + " đ");
+            setDonGiaFromDouble(donGiaNhap);
 
             LocalDate hsd = hanDung.toInstant()
                     .atZone(java.time.ZoneId.systemDefault())
@@ -543,9 +546,9 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
             lblTenSP.setText(sanPham.getTenSanPham());
 
             if (donGiaTuExcel != null && donGiaTuExcel > 0) {
-                txtDonGia.setText(currencyFormat.format(donGiaTuExcel) + " đ");
+                setDonGiaFromDouble(donGiaTuExcel);
             } else {
-                txtDonGia.setText("0 đ");
+                setDonGiaRawValue("0");
             }
 
             updateTongTien();
@@ -610,13 +613,7 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
             double oldTongTien = cachedTongTien;
 
             // Lấy đơn giá nhập từ txtDonGia
-            double donGia = 0;
-            try {
-                String donGiaStr = txtDonGia.getText().replace(" đ", "").replace(",", "");
-                donGia = Double.parseDouble(donGiaStr);
-            } catch (Exception e) {
-                donGia = 0;
-            }
+            double donGia = getDonGiaNhap();
 
             double tongTien = donGia * soLuong;
             double tienChietKhau = tongTien * (tyLeChietKhau / 100.0);
@@ -691,8 +688,7 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
 
     public double getDonGiaNhap() {
         try {
-            String donGiaStr = txtDonGia.getText().replace(" đ", "").replace(",", "");
-            return Double.parseDouble(donGiaStr);
+            return Double.parseDouble(donGiaRawValue);
         } catch (Exception e) {
             return 0;
         }
@@ -1217,9 +1213,13 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
 
         if (input != null && !input.trim().isEmpty()) {
             try {
-                double donGia = Double.parseDouble(input.trim());
+                String sanitized = sanitizeCurrencyText(input);
+                if (sanitized.isEmpty()) {
+                    throw new NumberFormatException("empty");
+                }
+                double donGia = Double.parseDouble(sanitized);
                 if (donGia >= 0) {
-                    txtDonGia.setText(currencyFormat.format(donGia) + " đ");
+                    setDonGiaRawValue(sanitized);
                     updateTongTien();
                 } else {
                     javax.swing.JOptionPane.showMessageDialog(this,
@@ -1316,6 +1316,150 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
         if (txtSoLuong != null && spinnerSoLuong != null) {
             txtSoLuong.setText(String.valueOf(spinnerSoLuong.getValue()));
         }
+    }
+
+    private DecimalFormat initCurrencyFormat() {
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols();
+        symbols.setGroupingSeparator('.');
+        symbols.setDecimalSeparator(',');
+        DecimalFormat format = new DecimalFormat("#,##0.############", symbols);
+        format.setGroupingUsed(true);
+        format.setMinimumFractionDigits(0);
+        format.setMaximumFractionDigits(12);
+        return format;
+    }
+
+    private String sanitizeCurrencyText(String raw) {
+        if (raw == null) {
+            return "";
+        }
+        String cleaned = raw.trim()
+                .replace("đ", "")
+                .replace("Đ", "")
+                .replace("\u00A0", "")
+                .replace(" ", "");
+        if (cleaned.isEmpty()) {
+            return "";
+        }
+
+        boolean hasComma = cleaned.indexOf(',') >= 0;
+        int firstDot = cleaned.indexOf('.');
+        boolean allowDotAsDecimal = !hasComma && firstDot >= 0 && firstDot == cleaned.lastIndexOf('.')
+                && cleaned.length() - firstDot - 1 <= 2;
+        if (!allowDotAsDecimal) {
+            cleaned = cleaned.replace(".", "");
+        }
+
+        StringBuilder digits = new StringBuilder();
+        boolean decimalAdded = false;
+        for (char c : cleaned.toCharArray()) {
+            if (Character.isDigit(c)) {
+                digits.append(c);
+            } else if (c == ',' && !decimalAdded) {
+                digits.append('.');
+                decimalAdded = true;
+            } else if (allowDotAsDecimal && c == '.' && !decimalAdded) {
+                digits.append('.');
+                decimalAdded = true;
+            }
+        }
+        if (digits.length() == 0) {
+            return "";
+        }
+
+        String result = digits.toString();
+        if (result.charAt(0) == '.') {
+            result = "0" + result;
+        }
+        if (result.endsWith(".")) {
+            result = result.substring(0, result.length() - 1);
+        }
+        return result;
+    }
+
+    private void setDonGiaFromDouble(double value) {
+        setDonGiaRawValue(BigDecimal.valueOf(value).toPlainString());
+    }
+
+    private void setDonGiaRawValue(String numericValue) {
+        String normalized = normalizeNumericString(numericValue);
+        this.donGiaRawValue = normalized;
+        if (txtDonGia != null) {
+            txtDonGia.setText(formatDonGiaDisplay(normalized) + " đ");
+        }
+    }
+
+    private String normalizeNumericString(String numericValue) {
+        if (numericValue == null) {
+            return "0";
+        }
+        String trimmed = numericValue.trim();
+        if (trimmed.isEmpty()) {
+            return "0";
+        }
+        StringBuilder builder = new StringBuilder();
+        boolean decimalAdded = false;
+        for (char c : trimmed.toCharArray()) {
+            if (Character.isDigit(c)) {
+                builder.append(c);
+            } else if (c == '.' && !decimalAdded) {
+                builder.append('.');
+                decimalAdded = true;
+            }
+        }
+        if (builder.length() == 0) {
+            return "0";
+        }
+        if (builder.charAt(0) == '.') {
+            builder.insert(0, '0');
+        }
+        if (builder.charAt(builder.length() - 1) == '.') {
+            builder.deleteCharAt(builder.length() - 1);
+        }
+        return builder.toString();
+    }
+
+    private String formatDonGiaDisplay(String numericValue) {
+        if (numericValue == null || numericValue.isEmpty()) {
+            return "0";
+        }
+        String working = numericValue.startsWith("-") ? numericValue.substring(1) : numericValue;
+        String integerPart = working;
+        String fractionalPart = "";
+        int dotIndex = working.indexOf('.');
+        if (dotIndex >= 0) {
+            integerPart = working.substring(0, dotIndex);
+            fractionalPart = working.substring(dotIndex + 1);
+        }
+        if (integerPart.isEmpty()) {
+            integerPart = "0";
+        }
+        String groupedInteger = formatIntegerWithGrouping(integerPart);
+        StringBuilder builder = new StringBuilder();
+        if (numericValue.startsWith("-")) {
+            builder.append("-");
+        }
+        builder.append(groupedInteger);
+        if (!fractionalPart.isEmpty()) {
+            builder.append(',');
+            builder.append(fractionalPart);
+        }
+        return builder.toString();
+    }
+
+    private String formatIntegerWithGrouping(String digits) {
+        if (digits == null || digits.isEmpty()) {
+            return "0";
+        }
+        String normalized = digits.replaceFirst("^0+(?!$)", "");
+        if (normalized.isEmpty()) {
+            normalized = "0";
+        }
+        StringBuilder builder = new StringBuilder(normalized);
+        for (int i = builder.length() - 3; i > 0; i -= 3) {
+            builder.insert(i, '.');
+        }
+        return builder.toString();
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
