@@ -565,6 +565,9 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
     private javax.swing.JPanel createHeaderPanel() {
         javax.swing.JPanel panel = new javax.swing.JPanel();
         panel.setLayout(new java.awt.GridBagLayout());
+        java.awt.GridBagLayout headerLayout = (java.awt.GridBagLayout) panel.getLayout();
+        headerLayout.columnWidths = Panel_ChiTietSanPhamNhap.COLUMN_MIN_WIDTHS.clone();
+        headerLayout.columnWeights = Panel_ChiTietSanPhamNhap.COLUMN_WEIGHTS.clone();
         panel.setBackground(new Color(240, 240, 240));
         panel.setMaximumSize(new java.awt.Dimension(32767, 40));
         panel.setPreferredSize(new java.awt.Dimension(1000, 40));
@@ -579,8 +582,8 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
         // Headers phù hợp với từng cột hiển thị trên Panel_ChiTietSanPhamNhap
         String[] headers = {"Hình", "Tên sản phẩm", "Lô hàng / HSD", "Số lượng",
             "Đơn giá nhập", "Tạm tính", "CK (%)", "CK (đ)", "Thuế (%)", "Thuế (đ)", "Thành tiền", ""};
-        double[] widths = {0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-        int[] minWidths = {80, 220, 190, 130, 140, 120, 90, 120, 90, 120, 140, 90};
+        double[] widths = Panel_ChiTietSanPhamNhap.COLUMN_WEIGHTS;
+        int[] minWidths = Panel_ChiTietSanPhamNhap.COLUMN_MIN_WIDTHS;
 
         for (int i = 0; i < headers.length; i++) {
             javax.swing.JLabel label = new javax.swing.JLabel(headers[i]);

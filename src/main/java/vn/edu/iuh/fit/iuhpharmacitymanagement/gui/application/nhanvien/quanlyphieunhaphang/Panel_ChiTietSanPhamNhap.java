@@ -26,6 +26,9 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
  */
 public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
 
+    public static final int[] COLUMN_MIN_WIDTHS = {110, 260, 200, 160, 140, 140, 90, 120, 90, 120, 150, 90};
+    public static final double[] COLUMN_WEIGHTS = {0.06, 0.24, 0.1, 0.08, 0.08, 0.08, 0.05, 0.08, 0.05, 0.08, 0.08, 0.02};
+
     private SanPham sanPham;
     private DecimalFormat currencyFormat;
     private SimpleDateFormat dateFormat;
@@ -71,6 +74,7 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
     private javax.swing.JLabel lblThueSuat;
     private javax.swing.JLabel lblTienThue;
     private javax.swing.JLabel lblThanhTienSauThue;
+    private javax.swing.JTextField txtSoLuong;
 
     public Panel_ChiTietSanPhamNhap() {
         this.currencyFormat = new DecimalFormat("#,###");
@@ -101,18 +105,22 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
 
         // Sử dụng GridBagLayout để các cột thẳng hàng
         setLayout(new java.awt.GridBagLayout());
+        java.awt.GridBagLayout gridBagLayout = (java.awt.GridBagLayout) getLayout();
+        gridBagLayout.columnWidths = COLUMN_MIN_WIDTHS.clone();
+        gridBagLayout.columnWeights = COLUMN_WEIGHTS.clone();
+
         java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
         gbc.fill = java.awt.GridBagConstraints.BOTH;
         gbc.anchor = java.awt.GridBagConstraints.CENTER;
-        gbc.insets = new java.awt.Insets(15, 10, 15, 10);
+        gbc.insets = new java.awt.Insets(12, 6, 12, 6);
         gbc.gridy = 0;
         gbc.weighty = 1.0;
 
         // 1. Hình ảnh sản phẩm
         lblHinh = new javax.swing.JLabel();
-        lblHinh.setPreferredSize(new java.awt.Dimension(100, 100));
-        lblHinh.setMinimumSize(new java.awt.Dimension(100, 100));
-        lblHinh.setMaximumSize(new java.awt.Dimension(100, 100));
+        lblHinh.setPreferredSize(new java.awt.Dimension(COLUMN_MIN_WIDTHS[0], 100));
+        lblHinh.setMinimumSize(new java.awt.Dimension(COLUMN_MIN_WIDTHS[0], 100));
+        lblHinh.setMaximumSize(new java.awt.Dimension(COLUMN_MIN_WIDTHS[0], 100));
         lblHinh.setBackground(new java.awt.Color(240, 240, 240));
         lblHinh.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(200, 200, 200)));
         lblHinh.setOpaque(true);
@@ -120,26 +128,27 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
         lblHinh.setVerticalAlignment(javax.swing.SwingConstants.CENTER);
         lblHinh.setText("");
         gbc.gridx = 0;
-        gbc.weightx = 0.0;
+        gbc.weightx = COLUMN_WEIGHTS[0];
         add(lblHinh, gbc);
 
         // 2. Tên sản phẩm
         lblTenSP = new javax.swing.JLabel();
         lblTenSP.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         lblTenSP.setText("");
-        lblTenSP.setPreferredSize(new java.awt.Dimension(250, 100));
+        lblTenSP.setPreferredSize(new java.awt.Dimension(COLUMN_MIN_WIDTHS[1], 100));
         lblTenSP.setMinimumSize(new java.awt.Dimension(200, 100));
         lblTenSP.setVerticalAlignment(javax.swing.SwingConstants.CENTER);
+        lblTenSP.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 12, 0, 12));
         gbc.gridx = 1;
-        gbc.weightx = 1.0;
+        gbc.weightx = COLUMN_WEIGHTS[1];
         add(lblTenSP, gbc);
 
         // 3. Cột "Lô hàng" - Ban đầu hiển thị nút "Chọn lô"
         pnLo = new javax.swing.JPanel();
         pnLo.setBackground(java.awt.Color.WHITE);
         pnLo.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 5, 30));
-        pnLo.setPreferredSize(new java.awt.Dimension(180, 100));
-        pnLo.setMinimumSize(new java.awt.Dimension(180, 100));
+        pnLo.setPreferredSize(new java.awt.Dimension(COLUMN_MIN_WIDTHS[2], 100));
+        pnLo.setMinimumSize(new java.awt.Dimension(COLUMN_MIN_WIDTHS[2], 100));
 
         // Luôn tạo nút "Chọn lô" ban đầu
         btnChonLo = new javax.swing.JButton("Chọn lô");
@@ -152,75 +161,59 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
         pnLo.add(btnChonLo);
 
         gbc.gridx = 2;
-        gbc.weightx = 0.0;
+        gbc.weightx = COLUMN_WEIGHTS[2];
         add(pnLo, gbc);
 
-        // 4. Số lượng với nút +/-
-        javax.swing.JPanel pnSpinner = new javax.swing.JPanel();
-        pnSpinner.setBackground(java.awt.Color.WHITE);
-        pnSpinner.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 5, 32));
+        // 4. Số lượng (nhập trực tiếp)
+        javax.swing.JPanel pnSoLuong = new javax.swing.JPanel();
+        pnSoLuong.setBackground(java.awt.Color.WHITE);
+        pnSoLuong.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 28));
 
-        // Nút giảm
-        javax.swing.JButton btnGiam = new javax.swing.JButton("-");
-        btnGiam.setFont(new java.awt.Font("Segoe UI", 1, 18));
-        btnGiam.setPreferredSize(new java.awt.Dimension(45, 45));
-        ButtonStyles.apply(btnGiam, ButtonStyles.Type.DANGER);
-        btnGiam.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        btnGiam.addActionListener(evt -> {
-            int currentValue = (int) spinnerSoLuong.getValue();
-            if (currentValue > 1) {
-                spinnerSoLuong.setValue(currentValue - 1);
-                spinnerSoLuongStateChanged(null);
+        txtSoLuong = new javax.swing.JTextField("1");
+        txtSoLuong.setFont(new java.awt.Font("Segoe UI", 1, 18));
+        txtSoLuong.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        txtSoLuong.setPreferredSize(new java.awt.Dimension(90, 44));
+        txtSoLuong.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(200, 200, 200), 1));
+        txtSoLuong.setToolTipText("Nhập số lượng (1 - 10.000)");
+        txtSoLuong.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                char c = evt.getKeyChar();
+                if (!Character.isDigit(c) && !Character.isISOControl(c)) {
+                    evt.consume();
+                }
             }
         });
-
-        // Label hiển thị số lượng
-        javax.swing.JLabel lblSoLuong = new javax.swing.JLabel("1");
-        lblSoLuong.setFont(new java.awt.Font("Segoe UI", 1, 18));
-        lblSoLuong.setPreferredSize(new java.awt.Dimension(70, 45));
-        lblSoLuong.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        lblSoLuong.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(200, 200, 200), 1));
+        txtSoLuong.addActionListener(evt -> commitSoLuongTextInput());
+        txtSoLuong.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                commitSoLuongTextInput();
+            }
+        });
 
         // Cập nhật spinner để đồng bộ với label (ẩn spinner)
         spinnerSoLuong.setModel(new javax.swing.SpinnerNumberModel(1, 1, 10000, 1));
         spinnerSoLuong.setVisible(false); // Ẩn spinner, chỉ dùng để lưu giá trị
 
-        // Listener để cập nhật label khi spinner thay đổi
-        spinnerSoLuong.addChangeListener(evt -> {
-            lblSoLuong.setText(String.valueOf(spinnerSoLuong.getValue()));
-        });
+        // Listener để cập nhật textfield khi spinner thay đổi
+        spinnerSoLuong.addChangeListener(evt -> updateSoLuongDisplay());
 
-        // Nút tăng
-        javax.swing.JButton btnTang = new javax.swing.JButton("+");
-        btnTang.setFont(new java.awt.Font("Segoe UI", 1, 18));
-        btnTang.setPreferredSize(new java.awt.Dimension(45, 45));
-        ButtonStyles.apply(btnTang, ButtonStyles.Type.SUCCESS);
-        btnTang.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        btnTang.addActionListener(evt -> {
-            int currentValue = (int) spinnerSoLuong.getValue();
-            if (currentValue < 10000) {
-                spinnerSoLuong.setValue(currentValue + 1);
-                spinnerSoLuongStateChanged(null);
-            }
-        });
-
-        pnSpinner.add(btnGiam);
-        pnSpinner.add(lblSoLuong);
-        pnSpinner.add(btnTang);
-        pnSpinner.setPreferredSize(new java.awt.Dimension(180, 100));
-        pnSpinner.setMinimumSize(new java.awt.Dimension(180, 100));
+        pnSoLuong.add(txtSoLuong);
+        pnSoLuong.setPreferredSize(new java.awt.Dimension(COLUMN_MIN_WIDTHS[3], 100));
+        pnSoLuong.setMinimumSize(new java.awt.Dimension(COLUMN_MIN_WIDTHS[3], 100));
         gbc.gridx = 3;
-        gbc.weightx = 0.0;
-        add(pnSpinner, gbc);
+        gbc.weightx = COLUMN_WEIGHTS[3];
+        add(pnSoLuong, gbc);
 
         // 5. Đơn giá nhập (có thể chỉnh sửa)
         txtDonGia = new javax.swing.JLabel();
         txtDonGia.setFont(new java.awt.Font("Segoe UI", 0, 14));
         txtDonGia.setText("0 đ");
-        txtDonGia.setPreferredSize(new java.awt.Dimension(120, 100));
-        txtDonGia.setMinimumSize(new java.awt.Dimension(120, 100));
-        txtDonGia.setMaximumSize(new java.awt.Dimension(120, 100));
-        txtDonGia.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
+        txtDonGia.setPreferredSize(new java.awt.Dimension(COLUMN_MIN_WIDTHS[4], 100));
+        txtDonGia.setMinimumSize(new java.awt.Dimension(COLUMN_MIN_WIDTHS[4], 100));
+        txtDonGia.setMaximumSize(new java.awt.Dimension(COLUMN_MIN_WIDTHS[4], 100));
+        txtDonGia.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         txtDonGia.setVerticalAlignment(javax.swing.SwingConstants.CENTER);
         txtDonGia.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         txtDonGia.setToolTipText("Click để chỉnh sửa đơn giá");
@@ -230,7 +223,7 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
             }
         });
         gbc.gridx = 4;
-        gbc.weightx = 0.0;
+        gbc.weightx = COLUMN_WEIGHTS[4];
         add(txtDonGia, gbc);
 
         // 6. Tổng tiền
@@ -238,14 +231,14 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
         txtTongTien.setFont(new java.awt.Font("Segoe UI", 1, 16));
         txtTongTien.setForeground(new java.awt.Color(0, 120, 215));
         txtTongTien.setText("0 đ");
-        txtTongTien.setPreferredSize(new java.awt.Dimension(130, 100));
-        txtTongTien.setMinimumSize(new java.awt.Dimension(130, 100));
-        txtTongTien.setMaximumSize(new java.awt.Dimension(130, 100));
-        txtTongTien.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
+        txtTongTien.setPreferredSize(new java.awt.Dimension(COLUMN_MIN_WIDTHS[5], 100));
+        txtTongTien.setMinimumSize(new java.awt.Dimension(COLUMN_MIN_WIDTHS[5], 100));
+        txtTongTien.setMaximumSize(new java.awt.Dimension(COLUMN_MIN_WIDTHS[5], 100));
+        txtTongTien.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         txtTongTien.setVerticalAlignment(javax.swing.SwingConstants.CENTER);
         txtTongTien.setToolTipText("Tổng tiền trước chiết khấu");
         gbc.gridx = 5;
-        gbc.weightx = 0.0;
+        gbc.weightx = COLUMN_WEIGHTS[5];
         add(txtTongTien, gbc);
 
         // 7. Chiết khấu (%)
@@ -260,17 +253,19 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
                 capNhatTyLeChietKhau();
             }
         });
-        lblTyLeChietKhau.setPreferredSize(new java.awt.Dimension(80, 100));
+        lblTyLeChietKhau.setPreferredSize(new java.awt.Dimension(COLUMN_MIN_WIDTHS[6], 100));
         gbc.gridx = 6;
+        gbc.weightx = COLUMN_WEIGHTS[6];
         add(lblTyLeChietKhau, gbc);
 
         // 8. Chiết khấu (đ)
         lblTienChietKhau.setFont(new java.awt.Font("Segoe UI", 0, 14));
         lblTienChietKhau.setForeground(new java.awt.Color(220, 53, 69));
-        lblTienChietKhau.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
+        lblTienChietKhau.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         lblTienChietKhau.setText("-0 đ");
-        lblTienChietKhau.setPreferredSize(new java.awt.Dimension(110, 100));
+        lblTienChietKhau.setPreferredSize(new java.awt.Dimension(COLUMN_MIN_WIDTHS[7], 100));
         gbc.gridx = 7;
+        gbc.weightx = COLUMN_WEIGHTS[7];
         add(lblTienChietKhau, gbc);
 
         // 9. Thuế (%)
@@ -285,26 +280,29 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
                 capNhatThueGTGT();
             }
         });
-        lblThueSuat.setPreferredSize(new java.awt.Dimension(80, 100));
+        lblThueSuat.setPreferredSize(new java.awt.Dimension(COLUMN_MIN_WIDTHS[8], 100));
         gbc.gridx = 8;
+        gbc.weightx = COLUMN_WEIGHTS[8];
         add(lblThueSuat, gbc);
 
         // 10. Thuế (đ)
         lblTienThue.setFont(new java.awt.Font("Segoe UI", 0, 14));
         lblTienThue.setForeground(new java.awt.Color(0, 123, 255));
-        lblTienThue.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
+        lblTienThue.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         lblTienThue.setText("+0 đ");
-        lblTienThue.setPreferredSize(new java.awt.Dimension(110, 100));
+        lblTienThue.setPreferredSize(new java.awt.Dimension(COLUMN_MIN_WIDTHS[9], 100));
         gbc.gridx = 9;
+        gbc.weightx = COLUMN_WEIGHTS[9];
         add(lblTienThue, gbc);
 
         // 11. Thành tiền
         lblThanhTienSauThue.setFont(new java.awt.Font("Segoe UI", 1, 15));
         lblThanhTienSauThue.setForeground(new java.awt.Color(34, 139, 34));
-        lblThanhTienSauThue.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
+        lblThanhTienSauThue.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         lblThanhTienSauThue.setText("0 đ");
-        lblThanhTienSauThue.setPreferredSize(new java.awt.Dimension(130, 100));
+        lblThanhTienSauThue.setPreferredSize(new java.awt.Dimension(COLUMN_MIN_WIDTHS[10], 100));
         gbc.gridx = 10;
+        gbc.weightx = COLUMN_WEIGHTS[10];
         add(lblThanhTienSauThue, gbc);
 
         // 12. Nút Xóa
@@ -325,10 +323,10 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
             }
         });
         pnXoa.add(btnXoa);
-        pnXoa.setPreferredSize(new java.awt.Dimension(90, 100));
-        pnXoa.setMinimumSize(new java.awt.Dimension(90, 100));
+        pnXoa.setPreferredSize(new java.awt.Dimension(COLUMN_MIN_WIDTHS[11], 100));
+        pnXoa.setMinimumSize(new java.awt.Dimension(COLUMN_MIN_WIDTHS[11], 100));
         gbc.gridx = 11;
-        gbc.weightx = 0.0;
+        gbc.weightx = COLUMN_WEIGHTS[11];
         add(pnXoa, gbc);
     }// </editor-fold>//GEN-END:initComponents
 
@@ -1144,6 +1142,36 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
                     "Vui lòng nhập số hợp lệ!",
                     "Lỗi",
                     javax.swing.JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void commitSoLuongTextInput() {
+        if (txtSoLuong == null || spinnerSoLuong == null) {
+            return;
+        }
+        String raw = txtSoLuong.getText() != null ? txtSoLuong.getText().trim() : "";
+        if (raw.isEmpty()) {
+            raw = "1";
+        }
+        int value;
+        try {
+            value = Integer.parseInt(raw);
+        } catch (NumberFormatException ex) {
+            value = (int) spinnerSoLuong.getValue();
+        }
+        value = Math.max(1, Math.min(10000, value));
+        if (!String.valueOf(value).equals(raw)) {
+            txtSoLuong.setText(String.valueOf(value));
+        }
+        if (!spinnerSoLuong.getValue().equals(value)) {
+            spinnerSoLuong.setValue(value);
+        }
+        spinnerSoLuongStateChanged(null);
+    }
+
+    private void updateSoLuongDisplay() {
+        if (txtSoLuong != null && spinnerSoLuong != null) {
+            txtSoLuong.setText(String.valueOf(spinnerSoLuong.getValue()));
         }
     }
 
