@@ -14,7 +14,7 @@ import java.text.DecimalFormat;
 /**
  * Dialog hiển thị QR Code thanh toán ngân hàng
  *
- * @author YourName
+ * @author PhamTra
  */
 public class Dialog_QRBanking extends JDialog {
 

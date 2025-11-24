@@ -31,6 +31,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -74,6 +75,7 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.util.BarcodeUtil;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.Arrays;
 
 /**
  *
@@ -462,7 +464,7 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_btnImportExcelActionPerformed
 
-        private void applyButtonStyles() {
+    private void applyButtonStyles() {
         ButtonStyles.apply(btnMa, ButtonStyles.Type.SUCCESS);
         ButtonStyles.apply(btnImportExcel, ButtonStyles.Type.INFO);
         ButtonStyles.apply(btnConfirmPurchase, ButtonStyles.Type.PRIMARY);
@@ -697,7 +699,7 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
         UIManager.put("ToggleButton.selectedBackground", new Color(81, 154, 244));
         UIManager.put("ToggleButton.selectedForeground", Color.WHITE);
     }
-    
+
     private void importFromExcel(File file) {
         try (FileInputStream fis = new FileInputStream(file); Workbook workbook = new XSSFWorkbook(fis)) {
 
@@ -1091,16 +1093,14 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
                 return ncc;
             }
 
-        }
-        else if (tenNCC != null && !tenNCC.trim().isEmpty()) {
+        } else if (tenNCC != null && !tenNCC.trim().isEmpty()) {
             ncc = nhaCungCapBUS.layNhaCungCapTheoTen(tenNCC.trim());
 
             if (ncc != null) {
                 return ncc;
             }
 
-        }
-        else {
+        } else {
             throw new Exception("Phải có ít nhất TÊN hoặc SĐT nhà cung cấp!");
         }
 
@@ -1239,7 +1239,7 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
             donNhapHang.setNgayNhap(java.time.LocalDate.now());
             donNhapHang.setNhanVien(nhanVienHienTai);
             donNhapHang.setNhaCungCap(nhaCungCapHienTai);
-            
+
             // Tạo mã đơn nhập hàng tạm để hiển thị trong preview
             String maDonNhapTam = taoMaDonNhapHangTam();
             donNhapHang.setMaDonNhapHang(maDonNhapTam);
@@ -1397,8 +1397,9 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
     }
 
     /**
-     * Tạo mã đơn nhập hàng tạm để hiển thị trong preview
-     * Mã này sẽ được tạo lại chính xác khi lưu vào database
+     * Tạo mã đơn nhập hàng tạm để hiển thị trong preview Mã này sẽ được tạo lại
+     * chính xác khi lưu vào database
+     *
      * @return Mã đơn nhập hàng tạm
      */
     private String taoMaDonNhapHangTam() {
@@ -1417,6 +1418,7 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
 
     /**
      * Hiển thị hóa đơn nhập hàng
+     *
      * @param donNhapHang Đơn nhập hàng (tạm, chưa lưu DB)
      * @param danhSachChiTiet Danh sách chi tiết (tạm, chưa lưu DB)
      * @param danhSachPanel Danh sách panel sản phẩm để lưu sau
@@ -1432,7 +1434,7 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
         } else {
             dialog = new javax.swing.JDialog();
             dialog.setTitle("Phiếu nhập hàng");
-        dialog.setModal(true);
+            dialog.setModal(true);
         }
 
         dialog.setSize(1300, 900);//dialog.setSize(680, 900);
@@ -1730,7 +1732,7 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
         mainPanel.add(Box.createVerticalStrut(10));
 
         mainScrollPane.setViewportView(mainPanel);
-        dialog.add(mainScrollPane);        
+        dialog.add(mainScrollPane);
         dialog.setVisible(true);
 
         return isDonHangCancelled[0];
@@ -1738,6 +1740,7 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
 
     /**
      * Lưu đơn nhập hàng và chi tiết vào database, đồng thời tăng tồn kho
+     *
      * @param donNhapHang Đơn nhập hàng cần lưu
      * @param danhSachChiTiet Danh sách chi tiết cần lưu
      * @return true nếu lưu thành công, false nếu thất bại
@@ -1763,8 +1766,8 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
                     allDetailsSaved = false;
                     Notifications.getInstance().show(Notifications.Type.ERROR,
                             Notifications.Location.TOP_CENTER,
-                            "Lỗi khi lưu chi tiết đơn nhập hàng cho lô: " + 
-                            (chiTiet.getLoHang() != null ? chiTiet.getLoHang().getTenLoHang() : "N/A"));
+                            "Lỗi khi lưu chi tiết đơn nhập hàng cho lô: "
+                            + (chiTiet.getLoHang() != null ? chiTiet.getLoHang().getTenLoHang() : "N/A"));
                 }
             }
 
@@ -1809,6 +1812,7 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
 
     private byte[] taoHoaDonNhapPdf(DonNhapHang donNhapHang, List<ChiTietDonNhapHang> danhSachChiTiet) throws IOException {
         DecimalFormat currencyFormat = new DecimalFormat("#,###");
+        currencyFormat.setRoundingMode(RoundingMode.DOWN);//k làm tròn như đã bàn
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
         double tongTamTinh = 0;
@@ -1817,12 +1821,13 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
         double tongTienThue = 0;
         double tongThanhToan = 0;
 
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                PdfWriter writer = new PdfWriter(baos);
-                PdfDocument pdfDoc = new PdfDocument(writer);
-                Document document = new Document(pdfDoc, PageSize.A5)) {
+//        try (ByteArrayOutputStream baos = new ByteArrayOutputStream(); PdfWriter writer = new PdfWriter(baos); PdfDocument pdfDoc = new PdfDocument(writer); Document document = new Document(pdfDoc, PageSize.A5)) {
+//
+//            document.setMargins(24, 24, 24, 24);
+//theo như ks thì phiếu nhập nằm ngang với lại v cho đủ table 
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream(); PdfWriter writer = new PdfWriter(baos); PdfDocument pdfDoc = new PdfDocument(writer); Document document = new Document(pdfDoc, PageSize.A4.rotate())) {
 
-            document.setMargins(24, 24, 24, 24);
+            document.setMargins(20, 20, 20, 20);
             PdfFont font = PdfFontFactory.createFont(StandardFonts.HELVETICA);
             PdfFont fontBold = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
 
@@ -1898,49 +1903,60 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
             document.add(infoTable);
             document.add(new Paragraph("\n"));
 
-            Table itemsTable = new Table(UnitValue.createPercentArray(new float[]{6, 30, 16, 10, 16, 22}))
-                    .useAllAvailableWidth();
-            String[] headerLabels = {"STT", "Ten san pham", "So lo", "SL", "Don gia", "Thanh toan"};
+//            Table itemsTable = new Table(UnitValue.createPercentArray(new float[]{6, 30, 16, 10, 16, 22}))
+//                    .useAllAvailableWidth();
+            //String[] headerLabels = {"STT", "Ten san pham", "So lo", "SL", "Don gia", "Thanh toan"};
+            Table itemsTable = new Table(UnitValue.createPercentArray(new float[]{4, 7, 26, 8, 9, 5, 10, 15, 5, 15, 17, 4, 12, 17})).useAllAvailableWidth();                        
+            String[] headerLabels = {"STT", "Mã hàng", "Tên hàng hóa", "Số\nlô", "Hạn\ndùng", "DVT", "Số\nlượng", "Đơn\ngiá", "% CK", "Thành tiền\nchiết khấu", "Thành tiền\ntính thuế", "% TS", "Thuế\nGTGT", "Thành tiền\nsau thuế"};
             for (String label : headerLabels) {
-                itemsTable.addHeaderCell(new com.itextpdf.layout.element.Cell()
-                        .add(new Paragraph(label)
-                                .setFont(fontBold)
-                                .setFontSize(9)
-                                .setTextAlignment(TextAlignment.CENTER))
-                        .setBackgroundColor(ColorConstants.LIGHT_GRAY));
+                itemsTable.addHeaderCell(
+                        new com.itextpdf.layout.element.Cell()
+                                .add(new Paragraph(label)
+                                        .setFont(fontBold)
+                                        .setFontSize(9)
+                                        .setTextAlignment(TextAlignment.CENTER))
+                                .setBackgroundColor(ColorConstants.LIGHT_GRAY)
+                                .setPadding(3)
+                                .setKeepTogether(false) // tự căn chỉ xuống dòng
+                );
             }
 
             int stt = 1;
+            //thêm trước cách tính toán ra sau cho ng dùng bt
+            for (int i = 1; i <= 9; i++) {
+                itemsTable.addCell(taoCellNhap(String.valueOf(i), font, TextAlignment.CENTER));
+            }
+            itemsTable.addCell(taoCellNhap("10 = 7 x 8 x 9", font, TextAlignment.CENTER));
+            itemsTable.addCell(taoCellNhap("11 = 7 x 8 - 10", font, TextAlignment.CENTER));
+            itemsTable.addCell(taoCellNhap("12", font, TextAlignment.CENTER));
+            itemsTable.addCell(taoCellNhap("13 = 11 x 12", font, TextAlignment.CENTER));
+            itemsTable.addCell(taoCellNhap("14 = 11 + 13", font, TextAlignment.CENTER));
             for (ChiTietDonNhapHang chiTiet : danhSachChiTiet) {
                 LoHang loHang = chiTiet.getLoHang();
                 SanPham sanPham = loHang != null ? loHang.getSanPham() : null;
+                String maSP = sanPham != null ? sanPham.getMaSanPham() : "";
                 String tenSP = sanPham != null ? sanPham.getTenSanPham() : "";
-                String soLo = loHang != null ? loHang.getTenLoHang() : "-";
+                String soLo = loHang != null ? loHang.getMaLoHang() : "-";
+                String hsd = loHang.getHanSuDung().toString();
+                String dvt = sanPham.getDonViTinh().getTenDonVi();
+                String soLuong = chiTiet.getSoLuong() + "";
                 String donGia = currencyFormat.format(chiTiet.getDonGia()) + " đ";
-
-                double tamTinh = chiTiet.getDonGia() * chiTiet.getSoLuong();
-                double tienCK = chiTiet.getTienChietKhau();
-                double sauCK = chiTiet.getThanhTienTinhThue() > 0
-                        ? chiTiet.getThanhTienTinhThue()
-                        : Math.max(tamTinh - tienCK, 0);
-                double tienThue = chiTiet.getTienThue();
-                double thanhToanThucTe = chiTiet.getThanhTienSauThue() > 0
-                        ? chiTiet.getThanhTienSauThue()
-                        : chiTiet.getThanhTien();
-                String thanhTien = currencyFormat.format(thanhToanThucTe) + " đ";
-
-                tongTamTinh += tamTinh;
-                tongTienChietKhau += tienCK;
-                tongSauChietKhau += sauCK;
-                tongTienThue += tienThue;
-                tongThanhToan += thanhToanThucTe;
+                String chietKhau = chiTiet.getTyLeChietKhau() + "";
 
                 itemsTable.addCell(taoCellNhap(String.valueOf(stt++), font, TextAlignment.CENTER));
+                itemsTable.addCell(taoCellNhap(maSP, font, TextAlignment.LEFT));
                 itemsTable.addCell(taoCellNhap(tenSP, font, TextAlignment.LEFT));
                 itemsTable.addCell(taoCellNhap(soLo, font, TextAlignment.CENTER));
-                itemsTable.addCell(taoCellNhap(String.valueOf(chiTiet.getSoLuong()), font, TextAlignment.CENTER));
-                itemsTable.addCell(taoCellNhap(donGia, font, TextAlignment.RIGHT));
-                itemsTable.addCell(taoCellNhap(thanhTien, font, TextAlignment.RIGHT));
+                itemsTable.addCell(taoCellNhap(hsd, font, TextAlignment.CENTER));
+                itemsTable.addCell(taoCellNhap(dvt, font, TextAlignment.CENTER));
+                itemsTable.addCell(taoCellNhap(soLuong, font, TextAlignment.CENTER));
+                itemsTable.addCell(taoCellNhap(donGia, font, TextAlignment.CENTER));
+                itemsTable.addCell(taoCellNhap(currencyFormat.format(chiTiet.getTyLeChietKhau()), font, TextAlignment.CENTER));
+                itemsTable.addCell(taoCellNhap(currencyFormat.format(chiTiet.getTienChietKhau()), font, TextAlignment.CENTER));
+                itemsTable.addCell(taoCellNhap(currencyFormat.format(chiTiet.getThanhTienTinhThue()), font, TextAlignment.CENTER));
+                itemsTable.addCell(taoCellNhap(currencyFormat.format(chiTiet.getThueSuat()), font, TextAlignment.CENTER));
+                itemsTable.addCell(taoCellNhap(currencyFormat.format(chiTiet.getTienThue()), font, TextAlignment.CENTER));
+                itemsTable.addCell(taoCellNhap(currencyFormat.format(chiTiet.getThanhTienSauThue()), font, TextAlignment.CENTER));
             }
 
             document.add(itemsTable);
@@ -2043,7 +2059,8 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
     }
 
     /**
-     * Tạo panel hiển thị nhóm thông tin (tiêu đề + nhiều dòng) theo chuẩn hóa đơn
+     * Tạo panel hiển thị nhóm thông tin (tiêu đề + nhiều dòng) theo chuẩn hóa
+     * đơn
      */
     private javax.swing.JPanel createInfoSectionPanel(String title, String... lines) {
         javax.swing.JPanel panel = new javax.swing.JPanel();
