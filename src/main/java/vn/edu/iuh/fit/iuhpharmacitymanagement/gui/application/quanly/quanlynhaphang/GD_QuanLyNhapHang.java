@@ -25,6 +25,12 @@ import raven.toast.Notifications;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.util.DinhDangSo;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.util.DinhDangNgay;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
+import javax.swing.table.DefaultTableCellRenderer;
+import java.awt.Image;
+import java.io.File;
+import java.net.URL;
 
 /**
  *
@@ -379,8 +385,9 @@ public class GD_QuanLyNhapHang extends javax.swing.JPanel {
             // Tạo dialog mới
             javax.swing.JDialog dialog = new javax.swing.JDialog();
             dialog.setTitle("Chi tiết đơn nhập hàng - " + maDonNhap);
-            dialog.setSize(1200, 700);
-            dialog.setLocationRelativeTo(null);
+            java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
+            dialog.setSize(screenSize);
+            dialog.setLocation(0, 0);
             dialog.setModal(true);
             
             // Main panel
@@ -427,9 +434,26 @@ public class GD_QuanLyNhapHang extends javax.swing.JPanel {
             mainPanel.add(headerPanel, java.awt.BorderLayout.NORTH);
             
             // ===================== TABLE CHI TIẾT =====================
-            String[] headers = {"STT", "Mã lô hàng", "Tên sản phẩm", "Số lượng", "Đơn giá", "Thành tiền"};
-            List<Integer> tableWidths = Arrays.asList(50, 150, 300, 100, 150, 150);
+            String[] headers = {
+                "STT",
+                "Hình ảnh",
+                "Mã lô hàng",
+                "Tên sản phẩm",
+                "Số lượng",
+                "Đơn giá",
+                "Tỷ lệ CK",
+                "Tiền CK",
+                "Thành tiền",
+                "TT tính thuế",
+                "Thuế suất",
+                "Tiền thuế",
+                "Thành tiền sau thuế"
+            };
+            List<Integer> tableWidths = Arrays.asList(50, 120, 140, 260, 90, 120, 110, 130, 140, 150, 110, 130, 160);
             TableDesign tableDetail = new TableDesign(headers, tableWidths);
+            JTable chiTietTable = tableDetail.getTable();
+            chiTietTable.setRowHeight(90);
+            chiTietTable.getColumnModel().getColumn(1).setCellRenderer(new ImageCellRenderer());
             
             // Thêm dữ liệu vào bảng
             int stt = 1;
@@ -437,23 +461,32 @@ public class GD_QuanLyNhapHang extends javax.swing.JPanel {
                 for (ChiTietDonNhapHang ct : chiTietList) {
                     String maLoHang = ct.getLoHang() != null ? ct.getLoHang().getMaLoHang() : "N/A";
                     String tenSanPham = "N/A";
+                    SanPham sanPham = null;
                     
                     if (ct.getLoHang() != null && ct.getLoHang().getSanPham() != null) {
-                        tenSanPham = ct.getLoHang().getSanPham().getTenSanPham();
+                        sanPham = ct.getLoHang().getSanPham();
+                        tenSanPham = sanPham.getTenSanPham();
                     }
                     
                     tableDetail.getModelTable().addRow(new Object[]{
                         stt++,
+                        loadProductImageIcon(sanPham),
                         maLoHang,
                         tenSanPham,
                         ct.getSoLuong(),
                         DinhDangSo.dinhDangTien(ct.getDonGia()),
-                        DinhDangSo.dinhDangTien(ct.getThanhTien())
+                        formatPercent(ct.getTyLeChietKhau()),
+                        DinhDangSo.dinhDangTien(ct.getTienChietKhau()),
+                        DinhDangSo.dinhDangTien(ct.getThanhTien()),
+                        DinhDangSo.dinhDangTien(ct.getThanhTienTinhThue()),
+                        formatPercent(ct.getThueSuat()),
+                        DinhDangSo.dinhDangTien(ct.getTienThue()),
+                        DinhDangSo.dinhDangTien(ct.getThanhTienSauThue())
                     });
                 }
             }
 
-            javax.swing.JScrollPane scrollPane = new javax.swing.JScrollPane(tableDetail.getTable());
+            javax.swing.JScrollPane scrollPane = new javax.swing.JScrollPane(chiTietTable);
             scrollPane.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 0, 10, 0));
             mainPanel.add(scrollPane, java.awt.BorderLayout.CENTER);
             
@@ -529,6 +562,88 @@ public class GD_QuanLyNhapHang extends javax.swing.JPanel {
         fieldPanel.add(lblValue);
         
         panel.add(fieldPanel);
+    }
+
+    private String formatPercent(double value) {
+        if (value <= 0) {
+            return "0%";
+        }
+        return DinhDangSo.dinhDangPhanTramTrucTiep(value);
+    }
+
+    private ImageIcon loadProductImageIcon(SanPham sanPham) {
+        if (sanPham == null || sanPham.getHinhAnh() == null || sanPham.getHinhAnh().isBlank()) {
+            return null;
+        }
+
+        String hinhAnh = sanPham.getHinhAnh().trim();
+        ImageIcon icon = null;
+
+        File directFile = new File(hinhAnh);
+        if (directFile.exists() && directFile.isFile()) {
+            icon = new ImageIcon(hinhAnh);
+        }
+
+        if (icon == null) {
+            URL resource = getClass().getResource("/img/" + hinhAnh);
+            if (resource != null) {
+                icon = new ImageIcon(resource);
+            }
+        }
+
+        if (icon == null) {
+            String projectRoot = System.getProperty("user.dir");
+            String[] fallbackPaths = {
+                "src/main/resources/img/" + hinhAnh,
+                projectRoot + File.separator + "src" + File.separator + "main" + File.separator + "resources"
+                        + File.separator + "img" + File.separator + hinhAnh,
+                projectRoot + File.separator + "target" + File.separator + "classes" + File.separator + "img"
+                        + File.separator + hinhAnh
+            };
+
+            for (String path : fallbackPaths) {
+                File file = new File(path);
+                if (file.exists() && file.isFile()) {
+                    icon = new ImageIcon(path);
+                    break;
+                }
+            }
+        }
+
+        if (icon == null || icon.getIconWidth() <= 0) {
+            return null;
+        }
+
+        Image scaled = icon.getImage().getScaledInstance(70, 70, Image.SCALE_SMOOTH);
+        return new ImageIcon(scaled);
+    }
+
+    private static class ImageCellRenderer extends DefaultTableCellRenderer {
+
+        @Override
+        public java.awt.Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+                boolean hasFocus, int row, int column) {
+            JLabel label = new JLabel();
+            label.setOpaque(true);
+            label.setHorizontalAlignment(JLabel.CENTER);
+            label.setVerticalAlignment(JLabel.CENTER);
+
+            if (isSelected) {
+                label.setBackground(table.getSelectionBackground());
+                label.setForeground(table.getSelectionForeground());
+            } else {
+                label.setBackground(table.getBackground());
+                label.setForeground(table.getForeground());
+            }
+
+            if (value instanceof ImageIcon icon) {
+                label.setIcon(icon);
+            } else {
+                label.setText("N/A");
+            }
+
+            return label;
+        }
     }
 
 

@@ -1370,11 +1370,11 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
             return donNhapHangBUS.duKienMaDonNhapHangTiepTheo();
         } catch (Exception ex) {
             System.err.println("Không thể lấy mã đơn nhập từ BUS, fallback cục bộ: " + ex.getMessage());
-            LocalDate ngayHienTai = LocalDate.now();
-            String ngayThangNam = String.format("%02d%02d%04d",
-                    ngayHienTai.getDayOfMonth(),
-                    ngayHienTai.getMonthValue(),
-                    ngayHienTai.getYear());
+        LocalDate ngayHienTai = LocalDate.now();
+        String ngayThangNam = String.format("%02d%02d%04d", 
+                ngayHienTai.getDayOfMonth(), 
+                ngayHienTai.getMonthValue(), 
+                ngayHienTai.getYear());
             return "DNH" + ngayThangNam + "0001";
         }
     }

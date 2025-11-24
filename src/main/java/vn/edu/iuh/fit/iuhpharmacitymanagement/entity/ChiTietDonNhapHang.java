@@ -18,7 +18,7 @@ public class ChiTietDonNhapHang {
     private double thanhTienTinhThue; //dẫn xuất
     private double thueSuat;
     private double tienThue; //dẫn xuất
-    private double thanhTienSauThue;
+    private double thanhTienSauThue; //dẫn xuất
 
     public static final String MA_CHI_TIET_DON_NHAP_HANG_RONG = "Mã chi tiết đơn nhập hàng không được rỗng";
     public static final String SO_LUONG_SAI = "Số lượng không hợp lệ phải lớn hơn 0, không được rỗng";
