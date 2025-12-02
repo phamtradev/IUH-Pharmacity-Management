@@ -154,6 +154,8 @@ public class GD_QuanLyGiaBan extends JPanel {
                         Notifications.Location.TOP_CENTER,
                         "Đã lưu cấu hình lãi chuẩn.");
                 loadData();
+                // Tự động áp dụng giá đề xuất cho tất cả sản phẩm sau khi tính xong
+                applySuggestedPriceForAll();
             } else {
                 Notifications.getInstance().show(Notifications.Type.WARNING,
                         Notifications.Location.TOP_CENTER,
@@ -206,6 +208,45 @@ public class GD_QuanLyGiaBan extends JPanel {
         }
     }
 
+    /**
+     * Tự động áp dụng giá đề xuất cho TẤT CẢ sản phẩm (dùng khi lưu cấu hình lãi chuẩn mới)
+     */
+    private void applySuggestedPriceForAll() {
+        int updated = 0;
+        try {
+            List<SanPham> danhSach = sanPhamBUS.layTatCaSanPham();
+            for (SanPham sp : danhSach) {
+                double giaNhapFIFO = layGiaNhapFIFO(sp);
+                if (giaNhapFIFO <= 0) continue; // Bỏ qua sản phẩm chưa có giá nhập FIFO
+                
+                double giaBanDeXuat = tinhGiaBanTheoLaiChuan(giaNhapFIFO);
+                if (giaBanDeXuat <= 0) continue; // Bỏ qua nếu không tính được giá đề xuất
+                
+                // Chỉ cập nhật nếu giá đề xuất khác giá hiện tại
+                if (Math.abs(sp.getGiaBan() - giaBanDeXuat) > 0.01) {
+                    sp.setGiaBan(giaBanDeXuat);
+                    if (sanPhamBUS.capNhatSanPham(sp)) {
+                        updated++;
+                    }
+                }
+            }
+            
+            // Reload lại bảng để hiển thị giá mới
+            loadData();
+            
+            if (updated > 0) {
+                Notifications.getInstance().show(Notifications.Type.SUCCESS,
+                        Notifications.Location.TOP_CENTER,
+                        "Đã tự động cập nhật giá bán cho " + updated + " sản phẩm theo lãi chuẩn mới.");
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            Notifications.getInstance().show(Notifications.Type.ERROR,
+                    Notifications.Location.TOP_CENTER,
+                    "Lỗi khi tự động áp dụng giá đề xuất: " + ex.getMessage());
+        }
+    }
+
     private void applySuggestedPriceForSelected() {
         int[] selectedRows = table.getSelectedRows();
         if (selectedRows == null || selectedRows.length == 0) {
@@ -228,8 +269,9 @@ public class GD_QuanLyGiaBan extends JPanel {
             for (int viewRow : selectedRows) {
                 int row = table.convertRowIndexToModel(viewRow);
                 String maSp = (String) model.getValueAt(row, 0);
-                // Cột 6: Giá bán đề xuất
-                String giaBanDeXuatStr = ((String) model.getValueAt(row, 6)).replace(".", "").replace(",", "");
+                // Cột 6: Giá bán đề xuất (có thể đã được chỉnh sửa)
+                Object cellValue = model.getValueAt(row, 6);
+                String giaBanDeXuatStr = cellValue.toString().replace(".", "").replace(",", "");
                 double giaBanDeXuat = Double.parseDouble(giaBanDeXuatStr);
 
                 // Lấy sản phẩm theo mã
