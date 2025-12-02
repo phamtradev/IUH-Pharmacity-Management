@@ -40,8 +40,8 @@ public class SanPham {
     public static final String DONG_GOI_RONG = "Cách đóng gói không được rỗng";
     public static final String QUOC_GIA_RONG = "Quốc gia sản xuất không được rỗng";
     public static final String NHA_SAN_XUAT_RONG = "Nhà sản xuất không được rỗng";
-    public static final String GIA_NHAP_SAI = "Giá nhập phải là số nguyên dương lớn hơn 0";
-    public static final String GIA_BAN_SAI = "Giá bán phải là số nguyên dương lớn hơn 0 và phải lớn hơn giá nhập";
+    public static final String GIA_NHAP_SAI = "Giá nhập phải là số không âm (có thể để 0 nếu lấy giá từ lô)";
+    public static final String GIA_BAN_SAI = "Giá bán phải là số nguyên dương lớn hơn 0";
     public static final String LOAI_SAN_PHAM_RONG = "Loại sản phẩm không được để trống";
     public static final String HINH_ANH_RONG = "Hình ảnh không được để trống";
     public static final String MA_SAN_PHAM_REGEX = "^SP\\d{5}$";
@@ -165,7 +165,8 @@ public class SanPham {
     }
 
     public void setGiaNhap(double giaNhap) throws Exception {
-        if (giaNhap <= 0) {
+        // Cho phép giá nhập = 0 trong trường hợp giá thực tế được lấy từ lô (FIFO)
+        if (giaNhap < 0) {
             throw new Exception(GIA_NHAP_SAI);
         }
         this.giaNhap = giaNhap;
@@ -176,7 +177,8 @@ public class SanPham {
     }
 
     public void setGiaBan(double giaBan) throws Exception {
-        if (giaBan <= 0 || giaBan <= this.giaNhap) {
+        // Giá bán chỉ cần > 0, không bắt buộc phải lớn hơn trường giaNhap nữa
+        if (giaBan <= 0) {
             throw new Exception(GIA_BAN_SAI);
         }
         this.giaBan = giaBan;

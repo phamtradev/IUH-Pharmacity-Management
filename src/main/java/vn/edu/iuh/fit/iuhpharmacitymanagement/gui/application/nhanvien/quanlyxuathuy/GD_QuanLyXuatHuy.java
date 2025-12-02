@@ -566,7 +566,9 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
                     panel.setLoHangObject(loHang);
 
                     panel.setDonVi(sanPham.getDonViTinh().getTenDonVi());
-                    panel.setDonGia(sanPham.getGiaNhap());
+                    // Đơn giá xuất hủy lấy theo giá nhập của lô (ưu tiên giaNhapLo), fallback về giá nhập sản phẩm
+                    double donGiaHuy = loHang.getGiaNhapLo() > 0 ? loHang.getGiaNhapLo() : sanPham.getGiaNhap();
+                    panel.setDonGia(donGiaHuy);
                     panel.setSoLuongHuy(loHang.getTonKho());
                     panel.setLyDoXuatHuy("Hết hạn sử dụng (còn <= 6 tháng)");
                     panel.setSoLuongEditable(false); // KHÔNG thể chỉnh số lượng

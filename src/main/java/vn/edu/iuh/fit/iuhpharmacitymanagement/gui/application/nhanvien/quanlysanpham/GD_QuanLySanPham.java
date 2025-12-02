@@ -2161,34 +2161,6 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
                 return;
             }
 
-            // Validate giá
-            String giaNhapStr = txtProductPurchasePrice.getText().trim();
-            if (giaNhapStr.isEmpty()) {
-                Notifications.getInstance().show(Notifications.Type.WARNING,
-                        Notifications.Location.TOP_CENTER,
-                        "Vui lòng nhập giá nhập");
-                txtProductPurchasePrice.requestFocus();
-                return;
-            }
-
-            double giaNhap;
-            try {
-                giaNhap = Double.parseDouble(giaNhapStr);
-                if (giaNhap <= 0) {
-                    Notifications.getInstance().show(Notifications.Type.WARNING,
-                            Notifications.Location.TOP_CENTER,
-                            "Giá nhập phải lớn hơn 0");
-                    txtProductPurchasePrice.requestFocus();
-                    return;
-                }
-            } catch (NumberFormatException e) {
-                Notifications.getInstance().show(Notifications.Type.WARNING,
-                        Notifications.Location.TOP_CENTER,
-                        "Giá nhập không hợp lệ");
-                txtProductPurchasePrice.requestFocus();
-                return;
-            }
-
             String giaBanStr = txtProductSellingPrice.getText().trim();
             if (giaBanStr.isEmpty()) {
                 Notifications.getInstance().show(Notifications.Type.WARNING,
@@ -2201,10 +2173,10 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
             double giaBan;
             try {
                 giaBan = Double.parseDouble(giaBanStr);
-                if (giaBan <= giaNhap) {
+                if (giaBan <= 0) {
                     Notifications.getInstance().show(Notifications.Type.WARNING,
                             Notifications.Location.TOP_CENTER,
-                            "Giá bán phải lớn hơn giá nhập");
+                            "Giá bán phải lớn hơn 0");
                     txtProductSellingPrice.requestFocus();
                     return;
                 }
@@ -2289,7 +2261,8 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
             sanPham.setCachDongGoi(cachDongGoi);
             sanPham.setNhaSanXuat(nhaSanXuat);
             sanPham.setQuocGiaSanXuat(quocGia);
-            sanPham.setGiaNhap(giaNhap);
+                // Giá nhập sẽ được lấy từ lô (FIFO), ở đây chỉ lưu 0 làm giá mặc định
+                sanPham.setGiaNhap(0);
             sanPham.setGiaBan(giaBan);
             sanPham.setLoaiSanPham(loaiSP);
             sanPham.setDonViTinh(donViTinh);
@@ -2474,34 +2447,6 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
                 return;
             }
 
-            // Validate giá
-            String giaNhapStr = txtProductPurchasePrice1.getText().trim().replace(",", "");
-            if (giaNhapStr.isEmpty()) {
-                Notifications.getInstance().show(Notifications.Type.WARNING,
-                        Notifications.Location.TOP_CENTER,
-                        "Vui lòng nhập giá nhập");
-                txtProductPurchasePrice1.requestFocus();
-                return;
-            }
-
-            double giaNhap;
-            try {
-                giaNhap = Double.parseDouble(giaNhapStr);
-                if (giaNhap <= 0) {
-                    Notifications.getInstance().show(Notifications.Type.WARNING,
-                            Notifications.Location.TOP_CENTER,
-                            "Giá nhập phải lớn hơn 0");
-                    txtProductPurchasePrice1.requestFocus();
-                    return;
-                }
-            } catch (NumberFormatException e) {
-                Notifications.getInstance().show(Notifications.Type.WARNING,
-                        Notifications.Location.TOP_CENTER,
-                        "Giá nhập không hợp lệ");
-                txtProductPurchasePrice1.requestFocus();
-                return;
-            }
-
             String giaBanStr = txtProductSellingPrice1.getText().trim().replace(",", "");
             if (giaBanStr.isEmpty()) {
                 Notifications.getInstance().show(Notifications.Type.WARNING,
@@ -2514,10 +2459,10 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
             double giaBan;
             try {
                 giaBan = Double.parseDouble(giaBanStr);
-                if (giaBan <= giaNhap) {
+                if (giaBan <= 0) {
                     Notifications.getInstance().show(Notifications.Type.WARNING,
                             Notifications.Location.TOP_CENTER,
-                            "Giá bán phải lớn hơn giá nhập");
+                            "Giá bán phải lớn hơn 0");
                     txtProductSellingPrice1.requestFocus();
                     return;
                 }
@@ -2608,7 +2553,8 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
             sanPham.setCachDongGoi(cachDongGoi);
             sanPham.setNhaSanXuat(nhaSanXuat);
             sanPham.setQuocGiaSanXuat(quocGia);
-            sanPham.setGiaNhap(giaNhap);
+            // Giá nhập thực tế sẽ lấy từ lô (FIFO), ở đây chỉ lưu 0 làm giá mặc định
+            sanPham.setGiaNhap(0);
             sanPham.setGiaBan(giaBan);
             sanPham.setLoaiSanPham(loaiSP);
             sanPham.setDonViTinh(donViTinh);

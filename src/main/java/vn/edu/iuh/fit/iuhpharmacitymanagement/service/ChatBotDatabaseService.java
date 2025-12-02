@@ -193,7 +193,21 @@ public class ChatBotDatabaseService {
             result.append("🔹 Đóng gói: ").append(sp.getCachDongGoi()).append("\n");
             result.append("🔹 Nhà sản xuất: ").append(sp.getNhaSanXuat()).append("\n");
             result.append("🔹 Quốc gia: ").append(sp.getQuocGiaSanXuat()).append("\n");
-            result.append("🔹 Giá nhập: ").append(String.format("%,.0f", sp.getGiaNhap())).append(" VNĐ\n");
+            // Giá nhập hiển thị theo FIFO từ lô hàng (nếu có), fallback về trường giaNhap của sản phẩm
+            double giaNhapHienThi = sp.getGiaNhap();
+            try {
+                List<LoHang> dsLo = loHangDAO.findByMaSanPham(sp.getMaSanPham());
+                LocalDate today = LocalDate.now();
+                giaNhapHienThi = dsLo.stream()
+                        .filter(lh -> lh.getTonKho() > 0 && lh.getHanSuDung() != null && !lh.getHanSuDung().isBefore(today))
+                        .sorted(Comparator.comparing(LoHang::getHanSuDung).thenComparing(LoHang::getMaLoHang))
+                        .map(lh -> lh.getGiaNhapLo() > 0 ? lh.getGiaNhapLo() : sp.getGiaNhap())
+                        .findFirst()
+                        .orElse(sp.getGiaNhap());
+            } catch (Exception ignored) {
+                // Nếu có lỗi, giữ nguyên giá nhập từ sản phẩm
+            }
+            result.append("🔹 Giá nhập (FIFO): ").append(String.format("%,.0f", giaNhapHienThi)).append(" VNĐ\n");
             result.append("🔹 Giá bán: ").append(String.format("%,.0f", sp.getGiaBan())).append(" VNĐ\n");
             result.append("🔹 Loại: ").append(sp.getLoaiSanPham()).append("\n");
             result.append("🔹 Trạng thái: ").append(sp.isHoatDong() ? "Đang hoạt động" : "Ngừng hoạt động").append("\n");
