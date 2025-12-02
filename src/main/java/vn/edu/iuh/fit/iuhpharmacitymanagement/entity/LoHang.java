@@ -11,6 +11,8 @@ public class LoHang {
     private int tonKho;
     private boolean trangThai;
     private SanPham sanPham;
+    // giá nhập chuẩn cho lô này (theo nghiệp vụ: 1 lô chỉ có 1 giá nhập)
+    private double giaNhapLo; //[them cai nay]
 
     public static final String MA_LO_HANG_SAI = "Mã lô hàng phải có dạng LHxxxxx (xxxxx là 5 chữ số)";
     public static final String TEN_LO_HANG_RONG = "Tên lô hàng không được rỗng";
@@ -125,6 +127,14 @@ public class LoHang {
         this.sanPham = sanPham;
     }
 
+    public double getGiaNhapLo() {
+        return giaNhapLo;
+    }
+
+    public void setGiaNhapLo(double giaNhapLo) {
+        this.giaNhapLo = giaNhapLo;
+    }
+
     @Override
     public String toString() {
         return "LoHang{"
@@ -135,6 +145,7 @@ public class LoHang {
                 + ", tonKho=" + tonKho
                 + ", trangThai=" + (trangThai ? "Đang bán" : "Ngưng bán")
                 + ", sanPham=" + (sanPham != null ? sanPham.getMaSanPham() : "null")
+                + ", giaNhapLo=" + giaNhapLo
                 + '}';
     }
 }

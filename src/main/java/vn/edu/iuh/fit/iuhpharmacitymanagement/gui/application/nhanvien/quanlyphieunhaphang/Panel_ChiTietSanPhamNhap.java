@@ -464,45 +464,64 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
                 }
             }
 
-            Optional<LoHang> loTrung = loHangBUS.timLoHangTheoSoDangKyVaHanSuDung(
-                    sanPham.getSoDangKy(),
-                    hsd);
+            // Tìm lô phù hợp theo 3 điều kiện: SĐK + HSD + Giá nhập (KHÔNG phụ thuộc tên lô từ Excel)
+            LoHang loPhuHop = null;
+            try {
+                vn.edu.iuh.fit.iuhpharmacitymanagement.dao.LoHangDAO loHangDAO = new vn.edu.iuh.fit.iuhpharmacitymanagement.dao.LoHangDAO();
+                List<LoHang> dsLo = loHangDAO.findByMaSanPham(sanPham.getMaSanPham());
+                String soDangKy = sanPham.getSoDangKy();
 
-            if (loTrung.isPresent()) {
-                LoHang loCandidate = loTrung.get();
+                System.out.println("===== DEBUG MATCH LÔ (Excel import) =====");
+                System.out.println("Excel -> SDK=" + soDangKy + ", HSD=" + hsd + ", DonGia=" + donGiaNhap);
 
-                // 1) Kiểm tra đơn giá trước (mỗi lô chỉ 1 giá nhập)
-                if (!isDonGiaHopLeChoLo(loCandidate, donGiaNhap)) {
-                    loHangDaChon = null;
-                    System.out.println("⚠ [Panel_ChiTietSanPhamNhap] Đơn giá từ Excel (" + donGiaNhap
-                            + ") khác với đơn giá của lô " + loCandidate.getMaLoHang()
-                            + ". Sẽ tạo lô mới khi người dùng chọn.");
-                } else {
-                    // 2) Nếu giá hợp lệ, duyệt thêm theo tên lô + hạn sử dụng
-                    //    (HSD đã trùng từ truy vấn; so sánh thêm tên lô)
-                    boolean tenLoTrungKhop = (tenLoHangTuExcel != null
-                            && loCandidate.getTenLoHang() != null
-                            && tenLoHangTuExcel.trim().equalsIgnoreCase(loCandidate.getTenLoHang().trim()));
-
-                    if (tenLoTrungKhop) {
-                        // Cùng giá nhập + cùng tên lô + cùng HSD -> cộng dồn vào lô này
-                        loHangDaChon = loCandidate;
-                        if (loHangDaChon.getSanPham() != null) {
-                            this.sanPham = loHangDaChon.getSanPham();
-                            loadSanPhamData();
-                        }
-                        updateLoInfo(); // Hiển thị thẻ lô
-                    } else {
-                        // Giá trùng nhưng tên lô khác -> không auto ghép, để tạo lô mới
-                        loHangDaChon = null;
-                        System.out.println("ℹ [Panel_ChiTietSanPhamNhap] Giá trùng nhưng tên lô Excel ('"
-                                + tenLoHangTuExcel + "') khác với tên lô trong DB ('"
-                                + loCandidate.getTenLoHang()
-                                + "'). Sẽ tạo lô mới khi người dùng chọn.");
+                for (LoHang lo : dsLo) {
+                    if (lo.getSanPham() == null) {
+                        continue;
                     }
+                    // 1. Số đăng ký
+                    if (soDangKy != null && !soDangKy.equalsIgnoreCase(lo.getSanPham().getSoDangKy())) {
+                        continue;
+                    }
+                    // 2. Hạn sử dụng
+                    if (lo.getHanSuDung() == null || !lo.getHanSuDung().equals(hsd)) {
+                        continue;
+                    }
+                    // 3. Giá nhập (mỗi lô một giá)
+                    boolean giaHopLe = isDonGiaHopLeChoLo(lo, donGiaNhap);
+                    System.out.println("  >> Lô DB: " + lo.getMaLoHang()
+                            + " | SDK=" + lo.getSanPham().getSoDangKy()
+                            + " | HSD=" + lo.getHanSuDung()
+                            + " | giaNhapLo=" + lo.getGiaNhapLo()
+                            + " | giaExcel=" + donGiaNhap
+                            + " | giaHopLe=" + giaHopLe);
+                    if (!giaHopLe) {
+                        continue; // Giá khác → không ghép
+                    }
+
+                    loPhuHop = lo;
+                    break;
                 }
+
+                if (loPhuHop == null) {
+                    System.out.println(">>> KHÔNG TÌM THẤY LÔ PHÙ HỢP (SDK + HSD + GIÁ)");
+                } else {
+                    System.out.println(">>> CHỌN LÔ: " + loPhuHop.getMaLoHang());
+                }
+                System.out.println("============================================");
+            } catch (Exception ex) {
+                System.err.println("[Panel_ChiTietSanPhamNhap] Lỗi khi tìm lô phù hợp: " + ex.getMessage());
+            }
+
+            if (loPhuHop != null) {
+                loHangDaChon = loPhuHop;
+                if (loHangDaChon.getSanPham() != null) {
+                    this.sanPham = loHangDaChon.getSanPham();
+                    loadSanPhamData();
+                }
+                updateLoInfo(); // Hiển thị thẻ lô
             } else {
-                // Không tìm thấy lô trùng: dữ liệu Excel sẽ được điền sẵn khi chọn "Tạo lô mới"
+                // Không tìm thấy lô trùng đủ 4 điều kiện: dữ liệu Excel sẽ được điền sẵn khi chọn "Tạo lô mới"
+                loHangDaChon = null;
             }
 
             updateTongTien();
@@ -650,16 +669,16 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
      * - Nếu lô đã có chi tiết nhập → tất cả chi tiết phải dùng cùng một đơn giá.
      */
     private boolean isDonGiaHopLeChoLo(LoHang loHang, double donGiaNhapMoi) {
-        if (loHang == null || loHang.getMaLoHang() == null || chiTietDonNhapHangDAO == null) {
+        if (loHang == null) {
             return true;
         }
-        java.util.Optional<Double> donGiaDaNhapOpt = chiTietDonNhapHangDAO.findDonGiaByMaLoHang(loHang.getMaLoHang());
-        if (!donGiaDaNhapOpt.isPresent()) {
-            // Lô chưa có chi tiết nhập → giá đầu tiên sẽ là chuẩn cho lô này
-            return true;
+        // Chỉ dùng những lô đã có giá nhập chuẩn trên cột giaNhapLo
+        // Các lô cũ (giaNhapLo = 0 hoặc NULL) sẽ không được auto-ghép theo giá
+        double giaNhapLo = loHang.getGiaNhapLo();
+        if (giaNhapLo <= 0) {
+            return false;
         }
-        double donGiaCu = donGiaDaNhapOpt.get();
-        return Math.abs(donGiaCu - donGiaNhapMoi) < 0.0001;
+        return Math.abs(giaNhapLo - donGiaNhapMoi) < 0.0001;
     }
 
     private void updateTongTien() {
@@ -940,7 +959,12 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
         ButtonGroup bgLoCu = new ButtonGroup();
 
         if (danhSachLoHang != null && !danhSachLoHang.isEmpty()) {
+            java.time.LocalDate today = java.time.LocalDate.now();
             for (LoHang loHang : danhSachLoHang) {
+                // Chỉ hiển thị các lô còn hạn (HSD >= hôm nay)
+                if (loHang.getHanSuDung() != null && loHang.getHanSuDung().isBefore(today)) {
+                    continue;
+                }
                 javax.swing.JPanel pnLoItem = new javax.swing.JPanel();
                 pnLoItem.setBackground(java.awt.Color.WHITE);
                 pnLoItem.setLayout(new java.awt.BorderLayout());
@@ -965,7 +989,7 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
                 pnChuaLoCu.add(pnLoItem);
             }
         } else {
-            javax.swing.JLabel lblEmpty = new javax.swing.JLabel("Chưa có lô hàng nào cho sản phẩm này");
+            javax.swing.JLabel lblEmpty = new javax.swing.JLabel("Chưa có lô hàng CÒN HẠN nào cho sản phẩm này");
             lblEmpty.setFont(new java.awt.Font("Segoe UI", 2, 14));
             lblEmpty.setForeground(java.awt.Color.GRAY);
             lblEmpty.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -1248,6 +1272,9 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
                             true, // Trạng thái: đang bán
                             sanPham // Gắn sản phẩm
                     );
+                    // Gán giá nhập chuẩn cho lô theo nghiệp vụ (mỗi lô 1 giá nhập)
+                    double donGiaNhapMoi = getDonGiaNhap();
+                    loMoi.setGiaNhapLo(donGiaNhapMoi);
 
                     // Lưu lô mới vào DB
                     boolean themThanhCong = loHangBUS.themLoHang(loMoi);

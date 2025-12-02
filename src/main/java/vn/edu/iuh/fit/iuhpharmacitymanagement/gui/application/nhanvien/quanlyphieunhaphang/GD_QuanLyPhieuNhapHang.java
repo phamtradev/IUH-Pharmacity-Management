@@ -94,6 +94,48 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
     private NhanVien nhanVienHienTai; // Nhân viên đang đăng nhập
     private NhaCungCap nhaCungCapHienTai; // Nhà cung cấp được chọn/load từ Excel
 
+    // Key gom nhóm dòng Excel: 1 lô = 1 (SĐK, HSD, Giá nhập) - KHÔNG phụ thuộc tên lô trong Excel
+    private static class LoKey {
+        private final String soDangKy;
+        private final LocalDate hanSuDung;
+        private final double donGia;
+
+        public LoKey(String soDangKy, LocalDate hanSuDung, double donGia) {
+            this.soDangKy = soDangKy != null ? soDangKy.trim() : "";
+            this.hanSuDung = hanSuDung;
+            this.donGia = donGia;
+        }
+
+        public String getSoDangKy() {
+            return soDangKy;
+        }
+
+        public LocalDate getHanSuDung() {
+            return hanSuDung;
+        }
+
+        public double getDonGia() {
+            return donGia;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o)
+                return true;
+            if (!(o instanceof LoKey))
+                return false;
+            LoKey other = (LoKey) o;
+            return Double.compare(other.donGia, donGia) == 0
+                    && java.util.Objects.equals(soDangKy, other.soDangKy)
+                    && java.util.Objects.equals(hanSuDung, other.hanSuDung);
+        }
+
+        @Override
+        public int hashCode() {
+            return java.util.Objects.hash(soDangKy, hanSuDung, donGia);
+        }
+    }
+
     public GD_QuanLyPhieuNhapHang() {
         sanPhamDAO = new SanPhamDAO();
         sanPhamBUS = new SanPhamBUS(sanPhamDAO);
@@ -814,7 +856,15 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
                 }
             }
 
-            // Đọc dữ liệu sản phẩm từ dòng 1 trở đi
+            // Gom nhóm các dòng Excel theo key (SĐK, HSD, Giá nhập) - KHÔNG phụ thuộc tên lô
+            Map<LoKey, Integer> gopSoLuong = new HashMap<>();
+            Map<LoKey, SanPham> sanPhamTheoKey = new HashMap<>();
+            Map<LoKey, DonViTinh> donViTheoKey = new HashMap<>();
+            Map<LoKey, String> tenLoTheoKey = new HashMap<>();
+            Map<LoKey, Double> ckTheoKey = new HashMap<>();
+            Map<LoKey, Double> thueTheoKey = new HashMap<>();
+
+            // Đọc dữ liệu sản phẩm từ dòng 1 trở đi, validate và gom nhóm
             for (int i = 1; i <= sheet.getLastRowNum(); i++) {
                 Row row = sheet.getRow(i);
                 if (row == null) {
@@ -926,39 +976,26 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
                         }
                     }
 
-                    try {
-                        LoHangDAO loHangDAO = new LoHangDAO();
-                        List<LoHang> dsLoHang = loHangDAO.findByMaSanPham(sanPham.getMaSanPham());
+                    // Gom nhóm theo key: SĐK + HSD + Giá nhập
+                    String soDangKy = sanPham.getSoDangKy() != null ? sanPham.getSoDangKy() : maSP;
+                    LocalDate hsdLocal = new java.sql.Date(hanDung.getTime()).toLocalDate();
+                    LoKey key = new LoKey(soDangKy, hsdLocal, donGiaNhap);
 
-                        // Tìm lô hàng có cùng số đăng ký và cùng hạn sử dụng
-                        List<LoHang> loTrungKhop = new ArrayList<>();
-                        for (LoHang lo : dsLoHang) {
-                            boolean trungSDK = maSP.equalsIgnoreCase(lo.getSanPham().getSoDangKy());
-
-                            boolean trungHSD = false;
-                            if (hanDung != null && lo.getHanSuDung() != null) {
-                                LocalDate hsdExcel = new java.sql.Date(hanDung.getTime()).toLocalDate();
-                                LocalDate hsdLoHang = lo.getHanSuDung();
-                                trungHSD = hsdExcel.equals(hsdLoHang);
-                            }
-
-                            if (trungSDK && trungHSD) {
-                                loTrungKhop.add(lo);
-                            }
-                        }
-
-                        if (loTrungKhop.size() == 1) {
-                        } else if (loTrungKhop.size() > 1) {
-                        } else if (!dsLoHang.isEmpty()) {
-                        }
-
-                    } catch (Exception ex) {
+                    gopSoLuong.merge(key, soLuong, Integer::sum);
+                    sanPhamTheoKey.putIfAbsent(key, sanPham);
+                    if (donViTinhExcel != null) {
+                        donViTheoKey.putIfAbsent(key, donViTinhExcel);
+                    }
+                    if (tenLoHang != null && !tenLoHang.trim().isEmpty()) {
+                        tenLoTheoKey.putIfAbsent(key, tenLoHang.trim());
+                    }
+                    if (tyLeChietKhauExcel != null) {
+                        ckTheoKey.putIfAbsent(key, tyLeChietKhauExcel);
+                    }
+                    if (thueGTGTExcel != null) {
+                        thueTheoKey.putIfAbsent(key, thueGTGTExcel);
                     }
 
-                    // Thêm sản phẩm vào panel
-                    // Truyền tên lô từ Excel (nếu có) để tự động điền vào form tạo lô mới
-                    themSanPhamVaoPanelNhap(sanPham, soLuong, donGiaNhap, hanDung, tenLoHang,
-                            tyLeChietKhauExcel, thueGTGTExcel, donViTinhExcel);
                     successCount++;
 
                 } catch (Exception e) {
@@ -967,7 +1004,33 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
                 }
             }
 
-            String message = "Import thành công " + successCount + " sản phẩm";
+            // Sau khi gom nhóm xong, tạo panel theo từng key
+            for (Map.Entry<LoKey, Integer> entry : gopSoLuong.entrySet()) {
+                LoKey key = entry.getKey();
+                int tongSoLuong = entry.getValue();
+                SanPham sp = sanPhamTheoKey.get(key);
+                if (sp == null) {
+                    continue;
+                }
+                DonViTinh dvt = donViTheoKey.get(key);
+                String tenLo = tenLoTheoKey.getOrDefault(key, null);
+                Double ck = ckTheoKey.get(key);
+                Double thue = thueTheoKey.get(key);
+
+                Date hanDungGop = Date.from(
+                        key.getHanSuDung().atStartOfDay(java.time.ZoneId.systemDefault()).toInstant());
+
+                try {
+                    themSanPhamVaoPanelNhap(sp, tongSoLuong, key.getDonGia(), hanDungGop, tenLo, ck, thue, dvt);
+                } catch (Exception ex) {
+                    errors.append("Lỗi khi thêm sản phẩm vào danh sách (SDK ")
+                            .append(key.getSoDangKy()).append("): ")
+                            .append(ex.getMessage()).append("\n");
+                    errorCount++;
+                }
+            }
+
+            String message = "Import thành công " + successCount + " dòng sản phẩm";
             if (nhaCungCapDaTao && nhaCungCap != null) {
                 message += "\nĐã tải thông tin nhà cung cấp: " + nhaCungCap.getTenNhaCungCap();
                 if (nhaCungCap.getMaNhaCungCap() == null) {

@@ -159,8 +159,8 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
     private javax.swing.JComboBox<String> cboFilterStatus;
 
     private void fillTable() {
-        String[] headers = {"Mã lô hàng", "Tên lô hàng", "Hạn sử dụng", "Tồn kho", "Trạng thái"};
-        List<Integer> tableWidths = Arrays.asList(150, 300, 200, 150, 150);
+        String[] headers = {"Mã lô hàng", "Tên lô hàng", "Hạn sử dụng", "Tồn kho", "Giá nhập", "Trạng thái"};
+        List<Integer> tableWidths = Arrays.asList(150, 260, 180, 100, 120, 120);
         tableDesign = new TableDesign(headers, tableWidths);
         scrollTable.setViewportView(tableDesign.getTable());
         scrollTable.setBorder(BorderFactory.createEmptyBorder(15, 20, 20, 20));
@@ -195,11 +195,16 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
                     }
                 }
                 
+                // Định dạng giá nhập lô (nếu chưa có thì hiển thị 0)
+                double giaNhapLo = lh.getGiaNhapLo();
+                String giaNhapDisplay = String.format("%,.0f", giaNhapLo);
+
                 tableDesign.getModelTable().addRow(new Object[]{
                     lh.getMaLoHang(),
                     lh.getTenLoHang(),
                     lh.getHanSuDung(),
                     lh.getTonKho(),
+                    giaNhapDisplay,
                     trangThai
                 });
             }

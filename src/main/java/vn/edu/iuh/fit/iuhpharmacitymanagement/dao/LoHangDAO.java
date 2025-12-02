@@ -16,10 +16,10 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonViTinh;
 public class LoHangDAO implements DAOInterface<LoHang, String> {
 
     private final String SQL_THEM
-            = "INSERT INTO LoHang (maLoHang, tenLoHang, hanSuDung, tonKho, trangThai, maSanPham) VALUES (?, ?, ?, ?, ?, ?)";
+            = "INSERT INTO LoHang (maLoHang, tenLoHang, hanSuDung, tonKho, trangThai, maSanPham, giaNhapLo) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
     private final String SQL_CAP_NHAT
-            = "UPDATE LoHang SET tenLoHang = ?, hanSuDung = ?, tonKho = ?, trangThai = ?, maSanPham = ? WHERE maLoHang = ?";
+            = "UPDATE LoHang SET tenLoHang = ?, hanSuDung = ?, tonKho = ?, trangThai = ?, maSanPham = ?, giaNhapLo = ? WHERE maLoHang = ?";
 
     private final String SQL_TIM_THEO_MA
             = "SELECT * FROM LoHang WHERE maLoHang = ?";
@@ -50,6 +50,7 @@ public class LoHangDAO implements DAOInterface<LoHang, String> {
             stmt.setInt(4, loHang.getTonKho());
             stmt.setBoolean(5, loHang.isTrangThai());
             stmt.setString(6, loHang.getSanPham().getMaSanPham());
+            stmt.setDouble(7, loHang.getGiaNhapLo());
 
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -70,7 +71,8 @@ public class LoHangDAO implements DAOInterface<LoHang, String> {
             stmt.setInt(3, loHang.getTonKho());
             stmt.setBoolean(4, loHang.isTrangThai());
             stmt.setString(5, loHang.getSanPham().getMaSanPham());
-            stmt.setString(6, loHang.getMaLoHang());
+            stmt.setDouble(6, loHang.getGiaNhapLo());
+            stmt.setString(7, loHang.getMaLoHang());
 
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -164,11 +166,20 @@ public class LoHangDAO implements DAOInterface<LoHang, String> {
         Optional<SanPham> sanPhamOpt = sanPhamDAO.findById(maSanPham);
 
         if (!sanPhamOpt.isPresent()) {
-            System.err.println("⚠️ Không tìm thấy sản phẩm " + maSanPham + " cho lô hàng " + loHang.getMaLoHang() + " - BỎ QUA");
+            System.err.println("Không tìm thấy sản phẩm " + maSanPham + " cho lô hàng " + loHang.getMaLoHang() + " - BỎ QUA");
             return null; // Return null để skip lô hàng này
         }
 
         loHang.setSanPham(sanPhamOpt.get()); // Chỉ set khi tìm thấy sản phẩm
+
+        // Đọc giá nhập lô (nếu cột tồn tại)
+        try {
+            double giaNhapLo = rs.getDouble("giaNhapLo");
+            loHang.setGiaNhapLo(giaNhapLo);
+        } catch (SQLException ex) {
+            // Nếu cột chưa tồn tại (schema cũ) thì giữ mặc định 0
+            System.err.println("[LoHangDAO] Cột 'giaNhapLo' chưa tồn tại, sử dụng giá trị mặc định 0");
+        }
 
         return loHang;
     }
