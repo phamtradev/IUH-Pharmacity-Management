@@ -63,8 +63,9 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
             
             lblTenSP.setText(htmlText);
             
-            // Set đơn giá
-            txtDonGia.setText(currencyFormat.format(sanPham.getGiaBan()) + " đ");
+            // Set đơn giá (đã bao gồm VAT)
+            double giaBanCoVAT = sanPham.getGiaBan() * (1 + sanPham.getThueVAT());
+            txtDonGia.setText(currencyFormat.format(giaBanCoVAT) + " đ");
             
             // Set giảm giá mặc định là 0%
             txtDiscount.setText("0%");
@@ -110,7 +111,8 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
         if (sanPham != null) {
             int soLuong = (int) spinnerSoLuong.getValue();
             double oldTongTien = cachedTongTien; // Sử dụng giá trị cached
-            double tongTien = sanPham.getGiaBan() * soLuong;
+            double giaBanCoVAT = sanPham.getGiaBan() * (1 + sanPham.getThueVAT());
+            double tongTien = giaBanCoVAT * soLuong;
             txtTongTien.setText(currencyFormat.format(tongTien) + " đ");
             
             // Cập nhật cache
@@ -148,7 +150,8 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
     
     public double getTongTien() {
         if (sanPham != null) {
-            return sanPham.getGiaBan() * getSoLuong();
+            double giaBanCoVAT = sanPham.getGiaBan() * (1 + sanPham.getThueVAT());
+            return giaBanCoVAT * getSoLuong();
         }
         return 0;
     }

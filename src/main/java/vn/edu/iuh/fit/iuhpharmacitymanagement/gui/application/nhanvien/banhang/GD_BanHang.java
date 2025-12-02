@@ -531,7 +531,9 @@ public class GD_BanHang extends javax.swing.JPanel {
                             int soLuongApDung;
                             if (soLuongToiDa > 0) {
                                 soLuongApDung = Math.min(soLuongMua, soLuongToiDa);
-                                tongTienApDung = panel.getSanPham().getGiaBan() * soLuongApDung;
+                                // Khuyến mãi áp dụng trên đơn giá đã bao gồm VAT
+                                double giaBanCoVAT = panel.getSanPham().getGiaBan() * (1 + panel.getSanPham().getThueVAT());
+                                tongTienApDung = giaBanCoVAT * soLuongApDung;
                             } else {
                                 soLuongApDung = soLuongMua;
                                 tongTienApDung = panel.getTongTien();

@@ -231,7 +231,8 @@ public class Panel_ThanhToan extends javax.swing.JPanel {
         jPanel5.setBackground(new java.awt.Color(255, 255, 255));
 
         jLabel9.setFont(jLabel9.getFont().deriveFont(jLabel9.getFont().getStyle() | java.awt.Font.BOLD, jLabel9.getFont().getSize() + 2));
-        jLabel9.setText("Tổng hóa đơn:");
+        // Hiển thị 2 dòng: "Tổng hóa đơn" và ghi chú "đã bao gồm VAT" bên dưới
+        jLabel9.setText("<html>Tổng hóa đơn<br/><span style='font-size:11px;font-weight:normal;'>(đã bao gồm VAT)</span></html>");
 
         txtTongHoaDon.setEditable(false);
         txtTongHoaDon.setFont(txtTongHoaDon.getFont().deriveFont(txtTongHoaDon.getFont().getSize() + 3f));

@@ -13,6 +13,7 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import javax.swing.*;
@@ -200,7 +201,9 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
     }
 
     private void fillTable() {
-        String[] headers = {"Mã sản phẩm", "Tên sản phẩm", "Đơn vị tính", "Số đăng kí", "Xuất xứ", "Loại sản phẩm", "Giá nhập (đã VAT)", "Thuế VAT (%)", "Giá bán (đã VAT)", "Trạng thái"};
+        // Hiển thị giá nhập theo FIFO CHƯA bao gồm VAT trên bảng
+        // (VAT sẽ hiển thị riêng ở cột Thuế VAT (%) và dùng cho tính toán khác)
+        String[] headers = {"Mã sản phẩm", "Tên sản phẩm", "Đơn vị tính", "Số đăng kí", "Xuất xứ", "Loại sản phẩm", "Giá nhập", "Thuế VAT (%)", "Giá bán (đã VAT)", "Trạng thái"};
         List<Integer> tableWidths = Arrays.asList(120, 280, 110, 120, 110, 130, 130, 110, 140, 110);
         tableDesign = new TableDesign(headers, tableWidths);
         ProductScrollPane.setViewportView(tableDesign.getTable());
@@ -217,7 +220,7 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         for (SanPham sp : danhSachSanPham) {
             double vat = sp.getThueVAT();
 
-            // Lấy giá nhập theo FIFO từ lô hàng còn tồn (SĐK này, lô còn hạn, còn tồn)
+            // Lấy giá nhập theo FIFO từ lô hàng còn tồn (SĐK này, lô còn hạn, còn tồn) - CHƯA VAT
             double giaNhapFIFO = layGiaNhapFIFO(sp);
             double giaNhapDaVAT = giaNhapFIFO * (1 + vat);
             double giaBanDaVAT = sp.getGiaBan() * (1 + vat);
@@ -228,7 +231,8 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
                 sp.getSoDangKy(),
                 sp.getQuocGiaSanXuat(),
                 getLoaiSanPhamDisplay(sp.getLoaiSanPham()),
-                formatCurrency(giaNhapDaVAT),
+                // Cột giá nhập chỉ hiển thị GIÁ NHẬP CHƯA VAT (giá lô FIFO)
+                formatCurrency(giaNhapFIFO),
                 percentFormat.format(vat * 100) + " %",
                 formatCurrency(giaBanDaVAT),
                 sp.isHoatDong() ? "Đang bán" : "Ngưng bán"
@@ -255,10 +259,18 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
 
             LocalDate today = LocalDate.now();
             return dsLo.stream()
-                    .filter(lh -> lh.getTonKho() > 0 && (lh.getHanSuDung() == null || !lh.getHanSuDung().isBefore(today)))
-                    .sorted(java.util.Comparator.comparing(LoHang::getHanSuDung)
+                    // Chỉ lấy những lô:
+                    // - Còn tồn kho > 0
+                    // - Còn hoạt động (trangThai = true)
+                    // - Còn hạn (HSD >= hôm nay hoặc HSD null)
+                    // - ĐÃ CÓ giá nhập chuẩn trên cột giaNhapLo (> 0)
+                    .filter(lh -> lh.getTonKho() > 0
+                            && lh.isTrangThai()
+                            && lh.getGiaNhapLo() > 0
+                            && (lh.getHanSuDung() == null || !lh.getHanSuDung().isBefore(today)))
+                    .sorted(Comparator.comparing(LoHang::getHanSuDung)
                             .thenComparing(LoHang::getMaLoHang))
-                    .mapToDouble(lh -> lh.getGiaNhapLo() > 0 ? lh.getGiaNhapLo() : sp.getGiaNhap())
+                    .mapToDouble(LoHang::getGiaNhapLo)
                     .findFirst()
                     .orElse(sp.getGiaNhap());
         } catch (Exception ex) {

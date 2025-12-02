@@ -353,7 +353,8 @@ public class Panel_DonHang extends javax.swing.JPanel {
 
         jLabel9.setFont(jLabel9.getFont().deriveFont(jLabel9.getFont().getStyle() | java.awt.Font.BOLD,
                 jLabel9.getFont().getSize() + 2));
-        jLabel9.setText("Tổng hóa đơn:");
+        // Hiển thị 2 dòng: "Tổng hóa đơn" và ghi chú "đã bao gồm VAT" bên dưới
+        jLabel9.setText("<html>Tổng hóa đơn<br/><span style='font-size:11px;font-weight:normal;'>(đã bao gồm VAT)</span></html>");
 
         txtTongHoaDon.setEditable(false);
         txtTongHoaDon.setFont(txtTongHoaDon.getFont().deriveFont(txtTongHoaDon.getFont().getSize() + 3f));
@@ -913,7 +914,10 @@ public class Panel_DonHang extends javax.swing.JPanel {
                 chiTiet.setDonHang(donHang);
                 chiTiet.setLoHang(panel.getLoHangDaChon());
                 chiTiet.setSoLuong(panel.getSoLuong());
-                chiTiet.setDonGia(panel.getSanPham().getGiaBan());
+                // Đơn giá lưu trong chi tiết đơn hàng là GIÁ BÁN ĐÃ BAO GỒM VAT
+                SanPham sp = panel.getSanPham();
+                double giaBanCoVAT = sp.getGiaBan() * (1 + sp.getThueVAT());
+                chiTiet.setDonGia(giaBanCoVAT);
 
                 // Lấy số tiền giảm giá sản phẩm từ panel
                 double tongTienGoc = panel.getTongTien(); // Giá gốc = đơn giá × số lượng
@@ -1750,7 +1754,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
         lblChiTiet.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
         bodyPanel.add(lblChiTiet, BorderLayout.NORTH);
 
-        String[] columnNames = {"STT", "Tên sản phẩm", "Đơn vị", "Số lượng", "Đơn giá", "Giảm giá", "Thành tiền"};
+        String[] columnNames = {"STT", "Tên sản phẩm", "Đơn vị", "Số lượng", "Đơn giá", "% VAT", "Giảm giá", "Thành tiền"};
         javax.swing.table.DefaultTableModel tableModel = new javax.swing.table.DefaultTableModel(columnNames, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -1769,14 +1773,16 @@ public class Panel_DonHang extends javax.swing.JPanel {
         table.getColumnModel().getColumn(1).setPreferredWidth(250); // Tên SP
         table.getColumnModel().getColumn(2).setPreferredWidth(70); // Đơn vị
         table.getColumnModel().getColumn(3).setPreferredWidth(70); // Số lượng
-        table.getColumnModel().getColumn(4).setPreferredWidth(100); // Đơn giá
-        table.getColumnModel().getColumn(5).setPreferredWidth(200); // Giảm giá (NEW)
-        table.getColumnModel().getColumn(6).setPreferredWidth(120); // Thành tiền
+        table.getColumnModel().getColumn(4).setPreferredWidth(90); // Đơn giá
+        table.getColumnModel().getColumn(5).setPreferredWidth(70); // % VAT
+        table.getColumnModel().getColumn(6).setPreferredWidth(180); // Giảm giá
+        table.getColumnModel().getColumn(7).setPreferredWidth(120); // Thành tiền
 
         // Tính tổng tiền hàng và tổng giảm giá sản phẩm
         double tongTienHangTruocGiamGia = 0;
         double tongGiamGiaSanPham = 0;
         for (ChiTietDonHang ct : danhSachChiTiet) {
+            // DonGia trong chi tiết đã là GIÁ BÁN ĐÃ BAO GỒM VAT
             tongTienHangTruocGiamGia += ct.getDonGia() * ct.getSoLuong();
             tongGiamGiaSanPham += ct.getGiamGiaSanPham();
         }
@@ -1814,14 +1820,17 @@ public class Panel_DonHang extends javax.swing.JPanel {
                 giamGia = "0 đ";
             }
 
+            String vatStr = String.format("%.0f%%", sanPham.getThueVAT() * 100);
+
             tableModel.addRow(new Object[]{
-                    stt++,
-                    sanPham.getTenSanPham(),
-                    sanPham.getDonViTinh() != null ? sanPham.getDonViTinh().getTenDonVi() : "Tuýp",
-                    chiTiet.getSoLuong(),
-                    currencyFormat.format(chiTiet.getDonGia()) + " đ",
-                    giamGia, // Tổng giảm giá (sản phẩm + hóa đơn phân bổ)
-                    currencyFormat.format(chiTiet.getThanhTien()) + " đ"
+                stt++,
+                sanPham.getTenSanPham(),
+                sanPham.getDonViTinh() != null ? sanPham.getDonViTinh().getTenDonVi() : "Tuýp",
+                chiTiet.getSoLuong(),
+                currencyFormat.format(chiTiet.getDonGia()) + " đ",
+                vatStr,
+                giamGia, // Tổng giảm giá (sản phẩm + hóa đơn phân bổ)
+                currencyFormat.format(chiTiet.getThanhTien()) + " đ"
             });
         }
 
@@ -2272,30 +2281,32 @@ public class Panel_DonHang extends javax.swing.JPanel {
             document.add(infoTable);
             document.add(new Paragraph("\n"));
 
-            Table itemsTable = new Table(UnitValue.createPercentArray(new float[]{6, 32, 10, 15, 15, 22}))
+            Table itemsTable = new Table(UnitValue.createPercentArray(new float[]{6, 28, 8, 10, 12, 14, 22}))
                     .useAllAvailableWidth();
-            String[] headerLabels = {"STT", "Ten san pham", "SL", "Don gia", "Giam gia", "Thanh tien"};
+            String[] headerLabels = {"STT", "Ten san pham", "SL", "Don gia", "% VAT", "Giam gia", "Thanh tien"};
             for (String label : headerLabels) {
                 itemsTable.addHeaderCell(new Cell()
                         .add(new Paragraph(label).setFont(fontBold).setFontSize(9).setTextAlignment(TextAlignment.CENTER))
                         .setBackgroundColor(ColorConstants.LIGHT_GRAY));
             }
 
-        int stt = 1;
-        for (ChiTietDonHang chiTiet : danhSachChiTiet) {
-            LoHang loHang = chiTiet.getLoHang();
-            SanPham sanPham = loHang != null ? loHang.getSanPham() : null;
-            String tenSP = sanPham != null ? sanPham.getTenSanPham() : "";
+            int stt = 1;
+            for (ChiTietDonHang chiTiet : danhSachChiTiet) {
+                LoHang loHang = chiTiet.getLoHang();
+                SanPham sanPham = loHang != null ? loHang.getSanPham() : null;
+                String tenSP = sanPham != null ? sanPham.getTenSanPham() : "";
                 String donGia = currencyFormat.format(chiTiet.getDonGia()) + " đ";
                 String giamGia = chiTiet.getGiamGiaSanPham() > 0
                         ? "-" + currencyFormat.format(chiTiet.getGiamGiaSanPham()) + " đ"
                         : "0 đ";
                 String thanhTien = currencyFormat.format(chiTiet.getThanhTien()) + " đ";
+                String vatStr = sanPham != null ? String.format("%.0f%%", sanPham.getThueVAT() * 100) : "";
 
                 itemsTable.addCell(taoCell(String.valueOf(stt++), font, TextAlignment.CENTER));
                 itemsTable.addCell(taoCell(tenSP, font, TextAlignment.LEFT));
                 itemsTable.addCell(taoCell(String.valueOf(chiTiet.getSoLuong()), font, TextAlignment.CENTER));
                 itemsTable.addCell(taoCell(donGia, font, TextAlignment.RIGHT));
+                itemsTable.addCell(taoCell(vatStr, font, TextAlignment.CENTER));
                 itemsTable.addCell(taoCell(giamGia, font, TextAlignment.RIGHT));
                 itemsTable.addCell(taoCell(thanhTien, font, TextAlignment.RIGHT));
             }
@@ -2320,7 +2331,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
                         "-" + currencyFormat.format(tongGiamGia) + " đ", fontBold, fontBold);
             }
 
-            addSummaryRow(summaryTable, "THANH TIEN:",
+            addSummaryRow(summaryTable, "THANH TIEN (da bao gom VAT):",
                     currencyFormat.format(donHang.getThanhTien()) + " đ", fontBold, fontBold);
             addSummaryRow(summaryTable, "Phuong thuc:",
                     (donHang.getPhuongThucThanhToan() != null
