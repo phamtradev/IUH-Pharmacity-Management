@@ -199,7 +199,13 @@ public class SanPham {
     }
 
     public void setThueVAT(double thueVAT) {
-        this.thueVAT = 0.1; // thuế sp là 10%
+        if (thueVAT < 0) {
+            this.thueVAT = 0;
+        } else if (thueVAT > 1) {
+            this.thueVAT = 1;
+        } else {
+            this.thueVAT = thueVAT; //nhap sao nhap nhung trong khoang 0 - 1 thi lay nhu vay
+        }
     }
 
     public String getHinhAnh() {

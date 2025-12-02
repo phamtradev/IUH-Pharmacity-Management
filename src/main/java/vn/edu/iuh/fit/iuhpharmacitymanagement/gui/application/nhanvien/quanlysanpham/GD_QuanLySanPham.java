@@ -50,6 +50,7 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
     private DonViTinhDAO donViTinhDAO;
     private LoHangDAO loHangDAO;
     private DecimalFormat currencyFormat;
+    private DecimalFormat percentFormat;
     private SimpleDateFormat dateFormat;
 
     public GD_QuanLySanPham() {
@@ -65,6 +66,7 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         loHangDAO = new LoHangDAO();
         sanPhamBUS = new SanPhamBUS(sanPhamDAO);
         currencyFormat = new DecimalFormat("#,###");
+        percentFormat = new DecimalFormat("#0.##");
         dateFormat = new SimpleDateFormat("dd/MM/yyyy");
 
         initComponents();
@@ -80,10 +82,19 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         fillTable();
         addIconFeature();
 
-        // Hiển thị button xóa chỉ khi là quản lý
+        // Quyền theo vai trò
         if (isManager) {
             btnDelete.setVisible(true);
+            btnUpdate.setVisible(true);
+        } else {
+            // Nhân viên không được sửa sản phẩm
+            btnUpdate.setVisible(false);
+            btnDelete.setVisible(false);
         }
+    }
+
+    private String formatCurrency(double value) {
+        return currencyFormat.format(Math.round(value));
     }
 
     private void applyStyles() {
@@ -167,6 +178,9 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         txtProductPurchasePrice.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập giá nhập vào");
         txtProductRegisNumber.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập số đăng kí");
         txtProductSellingPrice.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập giá bán");
+        if (txtProductVAT != null) {
+            txtProductVAT.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập % VAT (ví dụ 10)");
+        }
 
         // Placeholder cho modal SỬA sản phẩm
         txtCountryOfOrigin1.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập xuất xứ");
@@ -178,13 +192,16 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         txtProductPurchasePrice1.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập giá nhập vào");
         txtProductRegisNumber1.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập số đăng kí");
         txtProductSellingPrice1.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập giá bán");
+        if (txtProductVAT1 != null) {
+            txtProductVAT1.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập % VAT (ví dụ 10)");
+        }
 
         UIManager.put("Button.arc", 10);
     }
 
     private void fillTable() {
-        String[] headers = {"Mã sản phẩm", "Tên sản phẩm", "Đơn vị tính", "Số đăng kí", "Xuất xứ", "Loại sản phẩm", "Giá mua", "Giá bán", "Trạng thái"};
-        List<Integer> tableWidths = Arrays.asList(120, 300, 100, 120, 100, 110, 80, 80, 120);
+        String[] headers = {"Mã sản phẩm", "Tên sản phẩm", "Đơn vị tính", "Số đăng kí", "Xuất xứ", "Loại sản phẩm", "Giá nhập (đã VAT)", "Thuế VAT (%)", "Giá bán (đã VAT)", "Trạng thái"};
+        List<Integer> tableWidths = Arrays.asList(120, 280, 110, 120, 110, 130, 130, 110, 140, 110);
         tableDesign = new TableDesign(headers, tableWidths);
         ProductScrollPane.setViewportView(tableDesign.getTable());
         ProductScrollPane.setBorder(BorderFactory.createEmptyBorder(15, 20, 20, 20));
@@ -198,6 +215,9 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         model.setRowCount(0); // Xóa dữ liệu cũ
 
         for (SanPham sp : danhSachSanPham) {
+            double vat = sp.getThueVAT();
+            double giaNhapDaVAT = sp.getGiaNhap() * (1 + vat);
+            double giaBanDaVAT = sp.getGiaBan() * (1 + vat);
             Object[] row = {
                 sp.getMaSanPham(),
                 sp.getTenSanPham(),
@@ -205,8 +225,9 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
                 sp.getSoDangKy(),
                 sp.getQuocGiaSanXuat(),
                 getLoaiSanPhamDisplay(sp.getLoaiSanPham()),
-                currencyFormat.format(sp.getGiaNhap()),
-                currencyFormat.format(sp.getGiaBan()),
+                formatCurrency(giaNhapDaVAT),
+                percentFormat.format(vat * 100) + " %",
+                formatCurrency(giaBanDaVAT),
                 sp.isHoatDong() ? "Đang bán" : "Ngưng bán"
             };
             model.addRow(row);
@@ -677,22 +698,7 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
     }
 
     private void updateProductTotalQuantityInTable(String maSanPham) {
-        // Tính tổng tồn kho (CHỈ TÍNH LÔ CÒN HẠN - HSD > hôm nay + 6 tháng)
-        List<LoHang> danhSachLoHang = loHangDAO.findByMaSanPham(maSanPham);
-        LocalDate ngayGioiHan = LocalDate.now().plusMonths(6);
-        int tongTonKho = danhSachLoHang.stream()
-                .filter(lh -> lh.getHanSuDung().isAfter(ngayGioiHan)) // Lọc lô còn hạn (HSD > ngày giới hạn)
-                .mapToInt(LoHang::getTonKho)
-                .sum();
-
-        // Cập nhật vào bảng
-        DefaultTableModel model = (DefaultTableModel) tableDesign.getTable().getModel();
-        for (int i = 0; i < model.getRowCount(); i++) {
-            if (model.getValueAt(i, 0).toString().equals(maSanPham)) {
-                model.setValueAt(tongTonKho, i, 6); // Cột số 6 là cột tồn kho
-                break;
-            }
-        }
+        // Bảng không còn hiển thị tồn kho nên bỏ qua việc cập nhật trực tiếp.
     }
 
     private void addIconFeature() {
@@ -736,6 +742,8 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         cbbProductTypeEdit = new javax.swing.JComboBox<>();
         jLabel25 = new javax.swing.JLabel();
         comboUnitEdit = new javax.swing.JComboBox<>();
+        jLabelVatEdit = new javax.swing.JLabel();
+        txtProductVAT1 = new javax.swing.JTextField();
         jPanel11 = new javax.swing.JPanel();
         ScrollPaneTab3 = new javax.swing.JScrollPane();
         modelProductAdd = new javax.swing.JDialog();
@@ -766,6 +774,8 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         cbbProductTypeAdd = new javax.swing.JComboBox<>();
         jLabel14 = new javax.swing.JLabel();
         comboUnitAdd = new javax.swing.JComboBox<>();
+        jLabelVatAdd = new javax.swing.JLabel();
+        txtProductVAT = new javax.swing.JTextField();
         pnAll = new javax.swing.JPanel();
         headerPanel = new javax.swing.JPanel();
         jPanel5 = new javax.swing.JPanel();
@@ -783,7 +793,7 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         ProductScrollPane = new javax.swing.JScrollPane();
 
         modelEditProduct.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        modelEditProduct.setMinimumSize(new java.awt.Dimension(1350, 850));
+        modelEditProduct.setMinimumSize(new java.awt.Dimension(1350, 900));
         modelEditProduct.setModal(true);
 
         tabEdit.setBackground(new java.awt.Color(255, 255, 255));
@@ -871,6 +881,11 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
                 txtProductSellingPrice1ActionPerformed(evt);
             }
         });
+
+        jLabelVatEdit.setFont(new java.awt.Font("Segoe UI", 1, 16)); // NOI18N
+        jLabelVatEdit.setText("Thuế VAT (%)");
+
+        txtProductVAT1.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
 
         txtProductDosage1.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
         txtProductDosage1.addActionListener(new java.awt.event.ActionListener() {
@@ -965,6 +980,8 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
                             .addComponent(txtProductPurchasePrice1)
                             .addComponent(jLabel20, javax.swing.GroupLayout.PREFERRED_SIZE, 171, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(txtProductSellingPrice1)
+                            .addComponent(jLabelVatEdit, javax.swing.GroupLayout.PREFERRED_SIZE, 171, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(txtProductVAT1)
                             .addComponent(jLabel23, javax.swing.GroupLayout.PREFERRED_SIZE, 171, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(txtProductPakaging1)
                             .addComponent(jLabel22, javax.swing.GroupLayout.PREFERRED_SIZE, 171, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1005,6 +1022,10 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
                             .addComponent(txtProductActiveIngre1, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(txtProductSellingPrice1, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(10, 10, 10)
+                        .addComponent(jLabelVatEdit, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(txtProductVAT1, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(10, 10, 10)
                         .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel23, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel16, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -1024,7 +1045,7 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
                         .addComponent(jLabel24, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(txtCountryOfOrigin1, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(68, 68, 68)
+                        .addGap(30, 30, 30)
                         .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(btnExitProductADD1, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(btnEditProduct, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)))
@@ -1066,7 +1087,7 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
 
         modelProductAdd.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         modelProductAdd.setTitle("Thêm sản phẩm");
-        modelProductAdd.setMinimumSize(new java.awt.Dimension(1350, 820));
+        modelProductAdd.setMinimumSize(new java.awt.Dimension(1350, 900));
         modelProductAdd.setModal(true);
         modelProductAdd.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -1158,6 +1179,11 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
                 txtProductSellingPriceActionPerformed(evt);
             }
         });
+
+        jLabelVatAdd.setFont(new java.awt.Font("Segoe UI", 1, 16)); // NOI18N
+        jLabelVatAdd.setText("Thuế VAT (%)");
+
+        txtProductVAT.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
 
         txtProductDosage.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
         txtProductDosage.addActionListener(new java.awt.event.ActionListener() {
@@ -1252,6 +1278,8 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
                             .addComponent(txtProductPurchasePrice)
                             .addComponent(jLabel9, javax.swing.GroupLayout.PREFERRED_SIZE, 171, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(txtProductSellingPrice)
+                            .addComponent(jLabelVatAdd, javax.swing.GroupLayout.PREFERRED_SIZE, 171, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(txtProductVAT)
                             .addComponent(jLabel13, javax.swing.GroupLayout.PREFERRED_SIZE, 171, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(txtProductPakaging)
                             .addComponent(jLabel12, javax.swing.GroupLayout.PREFERRED_SIZE, 171, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1292,6 +1320,10 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
                             .addComponent(txtProductActiveIngre, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(txtProductSellingPrice, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(10, 10, 10)
+                        .addComponent(jLabelVatAdd, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(txtProductVAT, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(10, 10, 10)
                         .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel13, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -1311,7 +1343,7 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
                         .addComponent(jLabel15, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(txtCountryOfOrigin, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(68, 68, 68)
+                        .addGap(30, 30, 30)
                         .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(btnExitProductADD, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(btnAddProduct, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)))
@@ -1603,6 +1635,9 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         txtCountryOfOrigin1.setText(sp.getQuocGiaSanXuat());
         txtProductPurchasePrice1.setText(String.valueOf((int) sp.getGiaNhap()));
         txtProductSellingPrice1.setText(String.valueOf((int) sp.getGiaBan()));
+        if (txtProductVAT1 != null) {
+            txtProductVAT1.setText(percentFormat.format(sp.getThueVAT() * 100));
+        }
 
         // Set loại sản phẩm
         if (sp.getLoaiSanPham() != null) {
@@ -1712,8 +1747,13 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         addDetailRow(infoPanel, "Cách đóng gói:", sp.getCachDongGoi());
         addDetailRow(infoPanel, "Nhà sản xuất:", sp.getNhaSanXuat());
         addDetailRow(infoPanel, "Quốc gia sản xuất:", sp.getQuocGiaSanXuat());
-        addDetailRow(infoPanel, "Giá nhập:", String.format("%,d VNĐ", (int) sp.getGiaNhap()));
-        addDetailRow(infoPanel, "Giá bán:", String.format("%,d VNĐ", (int) sp.getGiaBan()));
+        addDetailRow(infoPanel, "Giá nhập (chưa VAT):", String.format("%,d VNĐ", (int) sp.getGiaNhap()));
+        addDetailRow(infoPanel, "Giá bán (chưa VAT):", String.format("%,d VNĐ", (int) sp.getGiaBan()));
+        addDetailRow(infoPanel, "Thuế VAT:", percentFormat.format(sp.getThueVAT() * 100) + " %");
+        double giaNhapDaVAT = sp.getGiaNhap() * (1 + sp.getThueVAT());
+        double giaBanDaVAT = sp.getGiaBan() * (1 + sp.getThueVAT());
+        addDetailRow(infoPanel, "Giá nhập (đã VAT):", String.format("%,d VNĐ", (int) Math.round(giaNhapDaVAT)));
+        addDetailRow(infoPanel, "Giá bán (đã VAT):", String.format("%,d VNĐ", (int) Math.round(giaBanDaVAT)));
         
         if (sp.getLoaiSanPham() != null) {
             addDetailRow(infoPanel, "Loại sản phẩm:", getLoaiSanPhamDisplay(sp.getLoaiSanPham()));
@@ -2144,6 +2184,29 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
                 return;
             }
 
+            // Validate VAT
+            String vatStr = txtProductVAT.getText().trim();
+            double vatPercent = 0;
+            if (!vatStr.isEmpty()) {
+                try {
+                    vatPercent = Double.parseDouble(vatStr);
+                    if (vatPercent < 0 || vatPercent > 100) {
+                        Notifications.getInstance().show(Notifications.Type.WARNING,
+                                Notifications.Location.TOP_CENTER,
+                                "Thuế VAT phải trong khoảng 0 - 100%");
+                        txtProductVAT.requestFocus();
+                        return;
+                    }
+                } catch (NumberFormatException e) {
+                    Notifications.getInstance().show(Notifications.Type.WARNING,
+                            Notifications.Location.TOP_CENTER,
+                            "Thuế VAT không hợp lệ");
+                    txtProductVAT.requestFocus();
+                    return;
+                }
+            }
+            double thueVAT = vatPercent / 100.0;
+
             // Lấy loại sản phẩm
             String loaiSPStr = (String) cbbProductTypeAdd.getSelectedItem();
             LoaiSanPham loaiSP = getLoaiSanPhamFromDisplay(loaiSPStr);
@@ -2199,7 +2262,7 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
             sanPham.setLoaiSanPham(loaiSP);
             sanPham.setDonViTinh(donViTinh);
             sanPham.setHoatDong(true); // Mặc định là đang hoạt động
-            sanPham.setThueVAT(0.0); // Mặc định thuế VAT = 0%
+            sanPham.setThueVAT(thueVAT);
 
             // Xử lý hình ảnh
             if (imageProductAdd != null) {
@@ -2260,6 +2323,9 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         txtCountryOfOrigin.setText("");
         txtProductPurchasePrice.setText("");
         txtProductSellingPrice.setText("");
+        if (txtProductVAT != null) {
+            txtProductVAT.setText("");
+        }
         cbbProductTypeAdd.setSelectedIndex(0);
         comboUnitAdd.setSelectedIndex(0);
         lblImage.setIcon(null);
@@ -2431,6 +2497,29 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
                 return;
             }
 
+            // Validate VAT
+            String vatStr = txtProductVAT1 != null ? txtProductVAT1.getText().trim() : "";
+            double vatPercent = 0;
+            if (!vatStr.isEmpty()) {
+                try {
+                    vatPercent = Double.parseDouble(vatStr);
+                    if (vatPercent < 0 || vatPercent > 100) {
+                        Notifications.getInstance().show(Notifications.Type.WARNING,
+                                Notifications.Location.TOP_CENTER,
+                                "Thuế VAT phải trong khoảng 0 - 100%");
+                        txtProductVAT1.requestFocus();
+                        return;
+                    }
+                } catch (NumberFormatException e) {
+                    Notifications.getInstance().show(Notifications.Type.WARNING,
+                            Notifications.Location.TOP_CENTER,
+                            "Thuế VAT không hợp lệ");
+                    txtProductVAT1.requestFocus();
+                    return;
+                }
+            }
+            double thueVAT = vatPercent / 100.0;
+
             // Lấy loại sản phẩm
             String loaiSPStr = (String) cbbProductTypeEdit.getSelectedItem();
             LoaiSanPham loaiSP = getLoaiSanPhamFromDisplay(loaiSPStr);
@@ -2491,6 +2580,7 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
             sanPham.setGiaBan(giaBan);
             sanPham.setLoaiSanPham(loaiSP);
             sanPham.setDonViTinh(donViTinh);
+            sanPham.setThueVAT(thueVAT);
 
             // Tự động cập nhật trạng thái dựa trên lô hàng
             List<LoHang> danhSachLoHang = loHangDAO.findByMaSanPham(productEdit);
@@ -2628,6 +2718,8 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel23;
     private javax.swing.JLabel jLabel24;
     private javax.swing.JLabel jLabel25;
+    private javax.swing.JLabel jLabelVatAdd;
+    private javax.swing.JLabel jLabelVatEdit;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
@@ -2666,6 +2758,8 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
     private javax.swing.JTextField txtProductRegisNumber1;
     private javax.swing.JTextField txtProductSellingPrice;
     private javax.swing.JTextField txtProductSellingPrice1;
+    private javax.swing.JTextField txtProductVAT;
+    private javax.swing.JTextField txtProductVAT1;
     private javax.swing.JTextField txtSearchNamePD;
     private javax.swing.JTextField txtSearchSDKPD;
     // End of variables declaration//GEN-END:variables

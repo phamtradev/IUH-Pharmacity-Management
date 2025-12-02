@@ -178,6 +178,30 @@ public class ChiTietDonNhapHangDAO implements DAOInterface<ChiTietDonNhapHang, S
         return dsCt;
     }
 
+    /**
+     * Lấy đơn giá đã sử dụng cho một lô hàng (nếu đã từng nhập).
+     * Giả định nghiệp vụ: Một lô chỉ có một đơn giá duy nhất.
+     *
+     * @param maLoHang Mã lô hàng
+     * @return Optional chứa đơn giá nếu tìm thấy, empty nếu lô chưa có chi tiết nhập
+     */
+    public Optional<Double> findDonGiaByMaLoHang(String maLoHang) {
+        String sql = "SELECT TOP 1 donGia FROM " + TABLE_NAME + " WHERE maLoHang = ?";
+        try (Connection con = ConnectDB.getConnection();
+                PreparedStatement pre = con.prepareStatement(sql)) {
+            pre.setString(1, maLoHang);
+            try (ResultSet rs = pre.executeQuery()) {
+                if (rs.next()) {
+                    return Optional.of(rs.getDouble("donGia"));
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("[ChiTietDonNhapHangDAO] Lỗi khi lấy đơn giá theo mã lô: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return Optional.empty();
+    }
+
     private ChiTietDonNhapHang mapResultSetToChiTiet(ResultSet rs) throws Exception {
         double donGia = rs.getDouble("donGia");
         int sl = rs.getInt("soLuong");

@@ -60,6 +60,7 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
     private double thueGTGT = 0;
     private LoHangBUS loHangBUS;
     private SanPhamDAO sanPhamDAO;
+    private vn.edu.iuh.fit.iuhpharmacitymanagement.dao.ChiTietDonNhapHangDAO chiTietDonNhapHangDAO;
     private List<LoHang> danhSachLoHang;
     private LoHang loHangDaChon = null;
     private String tenLoHangTuExcel = null; // Lưu tên lô từ Excel
@@ -96,6 +97,7 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
         this.dateFormat = new SimpleDateFormat("dd/MM/yyyy");
         this.loHangBUS = new LoHangBUS();
         this.sanPhamDAO = new SanPhamDAO();
+        this.chiTietDonNhapHangDAO = new vn.edu.iuh.fit.iuhpharmacitymanagement.dao.ChiTietDonNhapHangDAO();
         this.thueGTGT = sanPham != null ? sanPham.getThueVAT() * 100 : 0;
         this.donViTinhBUS = new DonViTinhBUS(new DonViTinhDAO());
         this.danhSachDonViTinh = new ArrayList<>();
@@ -393,6 +395,7 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
         this.dateFormat = new SimpleDateFormat("dd/MM/yyyy");
         this.loHangBUS = new LoHangBUS();
         this.sanPhamDAO = new SanPhamDAO();
+        this.chiTietDonNhapHangDAO = new vn.edu.iuh.fit.iuhpharmacitymanagement.dao.ChiTietDonNhapHangDAO();
         this.tenLoHangTuExcel = null; // Không có lô từ Excel
         this.thueGTGT = sanPham != null ? sanPham.getThueVAT() * 100 : 0;
         this.donViTinhBUS = new DonViTinhBUS(new DonViTinhDAO());
@@ -415,6 +418,7 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
         this.dateFormat = new SimpleDateFormat("dd/MM/yyyy");
         this.loHangBUS = new LoHangBUS();
         this.sanPhamDAO = new SanPhamDAO();
+        this.chiTietDonNhapHangDAO = new vn.edu.iuh.fit.iuhpharmacitymanagement.dao.ChiTietDonNhapHangDAO();
         this.tenLoHangTuExcel = tenLoHang;
         this.soDienThoaiNCCTuExcel = soDienThoaiNCC;
         this.thueGTGT = sanPham != null ? sanPham.getThueVAT() * 100 : 0;
@@ -465,13 +469,38 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
                     hsd);
 
             if (loTrung.isPresent()) {
-                loHangDaChon = loTrung.get();
-                if (loHangDaChon.getSanPham() != null) {
-                    this.sanPham = loHangDaChon.getSanPham();
-                    loadSanPhamData();
-                }
+                LoHang loCandidate = loTrung.get();
 
-                updateLoInfo(); // Hiển thị thẻ lô
+                // 1) Kiểm tra đơn giá trước (mỗi lô chỉ 1 giá nhập)
+                if (!isDonGiaHopLeChoLo(loCandidate, donGiaNhap)) {
+                    loHangDaChon = null;
+                    System.out.println("⚠ [Panel_ChiTietSanPhamNhap] Đơn giá từ Excel (" + donGiaNhap
+                            + ") khác với đơn giá của lô " + loCandidate.getMaLoHang()
+                            + ". Sẽ tạo lô mới khi người dùng chọn.");
+                } else {
+                    // 2) Nếu giá hợp lệ, duyệt thêm theo tên lô + hạn sử dụng
+                    //    (HSD đã trùng từ truy vấn; so sánh thêm tên lô)
+                    boolean tenLoTrungKhop = (tenLoHangTuExcel != null
+                            && loCandidate.getTenLoHang() != null
+                            && tenLoHangTuExcel.trim().equalsIgnoreCase(loCandidate.getTenLoHang().trim()));
+
+                    if (tenLoTrungKhop) {
+                        // Cùng giá nhập + cùng tên lô + cùng HSD -> cộng dồn vào lô này
+                        loHangDaChon = loCandidate;
+                        if (loHangDaChon.getSanPham() != null) {
+                            this.sanPham = loHangDaChon.getSanPham();
+                            loadSanPhamData();
+                        }
+                        updateLoInfo(); // Hiển thị thẻ lô
+                    } else {
+                        // Giá trùng nhưng tên lô khác -> không auto ghép, để tạo lô mới
+                        loHangDaChon = null;
+                        System.out.println("ℹ [Panel_ChiTietSanPhamNhap] Giá trùng nhưng tên lô Excel ('"
+                                + tenLoHangTuExcel + "') khác với tên lô trong DB ('"
+                                + loCandidate.getTenLoHang()
+                                + "'). Sẽ tạo lô mới khi người dùng chọn.");
+                    }
+                }
             } else {
                 // Không tìm thấy lô trùng: dữ liệu Excel sẽ được điền sẵn khi chọn "Tạo lô mới"
             }
@@ -613,6 +642,24 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
                 lblHinh.setText("IMG");
             }
         }
+    }
+
+    /**
+     * Kiểm tra đơn giá nhập có hợp lệ với lô hàng theo nghiệp vụ:
+     * - Nếu lô chưa có chi tiết nhập → chấp nhận bất kỳ giá nào.
+     * - Nếu lô đã có chi tiết nhập → tất cả chi tiết phải dùng cùng một đơn giá.
+     */
+    private boolean isDonGiaHopLeChoLo(LoHang loHang, double donGiaNhapMoi) {
+        if (loHang == null || loHang.getMaLoHang() == null || chiTietDonNhapHangDAO == null) {
+            return true;
+        }
+        java.util.Optional<Double> donGiaDaNhapOpt = chiTietDonNhapHangDAO.findDonGiaByMaLoHang(loHang.getMaLoHang());
+        if (!donGiaDaNhapOpt.isPresent()) {
+            // Lô chưa có chi tiết nhập → giá đầu tiên sẽ là chuẩn cho lô này
+            return true;
+        }
+        double donGiaCu = donGiaDaNhapOpt.get();
+        return Math.abs(donGiaCu - donGiaNhapMoi) < 0.0001;
     }
 
     private void updateTongTien() {
@@ -1066,7 +1113,28 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
                                 if (child instanceof JToggleButton) {
                                     JToggleButton btn = (JToggleButton) child;
                                     if (btn.isSelected()) {
-                                        loHangDaChon = (LoHang) btn.getClientProperty("loHang");
+                                        LoHang loChon = (LoHang) btn.getClientProperty("loHang");
+
+                                        // Kiểm tra đơn giá nhập hiện tại có phù hợp với lô này không
+                                        double donGiaHienTai = getDonGiaNhap();
+                                        if (!isDonGiaHopLeChoLo(loChon, donGiaHienTai)) {
+                                            java.util.Optional<Double> donGiaCuOpt = chiTietDonNhapHangDAO
+                                                    .findDonGiaByMaLoHang(loChon.getMaLoHang());
+                                            String msg = "Lô " + loChon.getMaLoHang()
+                                                    + " đang có giá nhập cố định là "
+                                                    + (donGiaCuOpt.isPresent()
+                                                            ? currencyFormat.format(donGiaCuOpt.get())
+                                                            : "không xác định")
+                                                    + " đ.\nBạn đang nhập giá " + currencyFormat.format(donGiaHienTai)
+                                                    + " đ.\nMỗi lô chỉ được phép có 1 giá nhập. Vui lòng chọn lô khác hoặc tạo lô mới.";
+                                            javax.swing.JOptionPane.showMessageDialog(dialog,
+                                                    msg,
+                                                    "Giá nhập không hợp lệ",
+                                                    javax.swing.JOptionPane.ERROR_MESSAGE);
+                                            return;
+                                        }
+
+                                        loHangDaChon = loChon;
                                         tenLoMoi = null;
                                         hsdLoMoi = null;
 
@@ -1075,7 +1143,7 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
                                             this.sanPham = loHangDaChon.getSanPham();
                                             System.out.println(
                                                     "✅ [Panel] Đã cập nhật sanPham từ loHangDaChon (chọn từ dialog), hinhAnh = "
-                                                    + this.sanPham.getHinhAnh());
+                                                            + this.sanPham.getHinhAnh());
                                             // Load lại dữ liệu sản phẩm (bao gồm hình ảnh)
                                             loadSanPhamData();
                                         }
