@@ -175,7 +175,7 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         txtProductManufacturer.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập tên nhà sản xuất");
         txtProductName.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập tên sản phẩm");
         txtProductPakaging.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập quy trình đóng gói");
-        txtProductPurchasePrice.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập giá nhập vào");
+        txtProductPurchasePrice.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Giá nhập lấy từ lô (không chỉnh được)");
         txtProductRegisNumber.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập số đăng kí");
         txtProductSellingPrice.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập giá bán");
         if (txtProductVAT != null) {
@@ -189,7 +189,7 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         txtProductManufacturer1.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập tên nhà sản xuất");
         txtProductName1.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập tên sản phẩm");
         txtProductPakaging1.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập quy trình đóng gói");
-        txtProductPurchasePrice1.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập giá nhập vào");
+        txtProductPurchasePrice1.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Giá nhập lấy từ lô (không chỉnh được)");
         txtProductRegisNumber1.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập số đăng kí");
         txtProductSellingPrice1.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập giá bán");
         if (txtProductVAT1 != null) {
@@ -216,7 +216,10 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
 
         for (SanPham sp : danhSachSanPham) {
             double vat = sp.getThueVAT();
-            double giaNhapDaVAT = sp.getGiaNhap() * (1 + vat);
+
+            // Lấy giá nhập theo FIFO từ lô hàng còn tồn (SĐK này, lô còn hạn, còn tồn)
+            double giaNhapFIFO = layGiaNhapFIFO(sp);
+            double giaNhapDaVAT = giaNhapFIFO * (1 + vat);
             double giaBanDaVAT = sp.getGiaBan() * (1 + vat);
             Object[] row = {
                 sp.getMaSanPham(),
@@ -231,6 +234,36 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
                 sp.isHoatDong() ? "Đang bán" : "Ngưng bán"
             };
             model.addRow(row);
+        }
+    }
+
+    /**
+     * Lấy giá nhập theo FIFO cho 1 sản phẩm:
+     * - Ưu tiên lô còn tồn kho & còn hạn (HSD >= hôm nay), lấy lô có HSD nhỏ nhất.
+     * - Nếu lô có giaNhapLo > 0 thì dùng giá đó, ngược lại fallback về sp.getGiaNhap().
+     * - Nếu không có lô nào phù hợp thì trả về sp.getGiaNhap().
+     */
+    private double layGiaNhapFIFO(SanPham sp) {
+        try {
+            if (loHangDAO == null || sp == null || sp.getMaSanPham() == null) {
+                return sp != null ? sp.getGiaNhap() : 0;
+            }
+            List<LoHang> dsLo = loHangDAO.findByMaSanPham(sp.getMaSanPham());
+            if (dsLo == null || dsLo.isEmpty()) {
+                return sp.getGiaNhap();
+            }
+
+            LocalDate today = LocalDate.now();
+            return dsLo.stream()
+                    .filter(lh -> lh.getTonKho() > 0 && (lh.getHanSuDung() == null || !lh.getHanSuDung().isBefore(today)))
+                    .sorted(java.util.Comparator.comparing(LoHang::getHanSuDung)
+                            .thenComparing(LoHang::getMaLoHang))
+                    .mapToDouble(lh -> lh.getGiaNhapLo() > 0 ? lh.getGiaNhapLo() : sp.getGiaNhap())
+                    .findFirst()
+                    .orElse(sp.getGiaNhap());
+        } catch (Exception ex) {
+            System.err.println("[GD_QuanLySanPham] Lỗi khi lấy giá nhập FIFO: " + ex.getMessage());
+            return sp.getGiaNhap();
         }
     }
 
@@ -856,11 +889,9 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         jLabel18.setText("Giá nhập");
 
         txtProductPurchasePrice1.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
-        txtProductPurchasePrice1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txtProductPurchasePrice1ActionPerformed(evt);
-            }
-        });
+        // Giá nhập lấy từ lô (FIFO) nên không cho chỉnh sửa tay
+        txtProductPurchasePrice1.setEditable(false);
+        txtProductPurchasePrice1.setBackground(new java.awt.Color(245, 245, 245));
 
         jLabel19.setFont(new java.awt.Font("Segoe UI", 1, 16)); // NOI18N
         jLabel19.setText("Hoạt Chất");
@@ -1154,11 +1185,9 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         jLabel7.setText("Giá nhập");
 
         txtProductPurchasePrice.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
-        txtProductPurchasePrice.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txtProductPurchasePriceActionPerformed(evt);
-            }
-        });
+        // Giá nhập lấy từ lô (FIFO) nên không cho chỉnh sửa tay
+        txtProductPurchasePrice.setEditable(false);
+        txtProductPurchasePrice.setBackground(new java.awt.Color(245, 245, 245));
 
         jLabel8.setFont(new java.awt.Font("Segoe UI", 1, 16)); // NOI18N
         jLabel8.setText("Hoạt Chất");
@@ -1633,6 +1662,7 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         txtProductPakaging1.setText(sp.getCachDongGoi());
         txtProductManufacturer1.setText(sp.getNhaSanXuat());
         txtCountryOfOrigin1.setText(sp.getQuocGiaSanXuat());
+        // Giá nhập hiển thị trong form sửa vẫn là giá cấu hình trên sản phẩm (không theo FIFO)
         txtProductPurchasePrice1.setText(String.valueOf((int) sp.getGiaNhap()));
         txtProductSellingPrice1.setText(String.valueOf((int) sp.getGiaBan()));
         if (txtProductVAT1 != null) {
@@ -1747,10 +1777,12 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         addDetailRow(infoPanel, "Cách đóng gói:", sp.getCachDongGoi());
         addDetailRow(infoPanel, "Nhà sản xuất:", sp.getNhaSanXuat());
         addDetailRow(infoPanel, "Quốc gia sản xuất:", sp.getQuocGiaSanXuat());
-        addDetailRow(infoPanel, "Giá nhập (chưa VAT):", String.format("%,d VNĐ", (int) sp.getGiaNhap()));
+        // Giá nhập hiển thị chi tiết theo FIFO từ lô còn tồn
+        double giaNhapFIFO = layGiaNhapFIFO(sp);
+        addDetailRow(infoPanel, "Giá nhập (chưa VAT) (FIFO):", String.format("%,d VNĐ", (int) giaNhapFIFO));
         addDetailRow(infoPanel, "Giá bán (chưa VAT):", String.format("%,d VNĐ", (int) sp.getGiaBan()));
         addDetailRow(infoPanel, "Thuế VAT:", percentFormat.format(sp.getThueVAT() * 100) + " %");
-        double giaNhapDaVAT = sp.getGiaNhap() * (1 + sp.getThueVAT());
+        double giaNhapDaVAT = giaNhapFIFO * (1 + sp.getThueVAT());
         double giaBanDaVAT = sp.getGiaBan() * (1 + sp.getThueVAT());
         addDetailRow(infoPanel, "Giá nhập (đã VAT):", String.format("%,d VNĐ", (int) Math.round(giaNhapDaVAT)));
         addDetailRow(infoPanel, "Giá bán (đã VAT):", String.format("%,d VNĐ", (int) Math.round(giaBanDaVAT)));
