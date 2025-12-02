@@ -33,7 +33,8 @@ public class Menu extends JPanel {
             "Quản lý trả hàng",
             "Quản lý xuất hủy",
             "Quản lý nhập hàng",
-            "Quản lý khuyến mãi"
+            "Quản lý khuyến mãi",
+            "Quản lý giá bán"
         },
         {
             "Quản lý danh mục",

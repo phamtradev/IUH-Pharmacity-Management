@@ -279,6 +279,33 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         }
     }
 
+    /**
+     * Tính giá bán đề xuất theo "lãi chuẩn" dựa trên giá nhập (chưa VAT).
+     * Các bậc lãi ví dụ:
+     * - 0  - 50.000  : lãi 30%
+     * - 50.001-100.000: lãi 25%
+     * - 100.001-300.000: lãi 20%
+     * - > 300.000     : lãi 15%
+     */
+    private double tinhGiaBanTheoLaiChuan(double giaNhapChuaVAT) {
+        if (giaNhapChuaVAT <= 0) {
+            return 0;
+        }
+
+        double tyLeLai;
+        if (giaNhapChuaVAT <= 50_000) {
+            tyLeLai = 0.30;
+        } else if (giaNhapChuaVAT <= 100_000) {
+            tyLeLai = 0.25;
+        } else if (giaNhapChuaVAT <= 300_000) {
+            tyLeLai = 0.20;
+        } else {
+            tyLeLai = 0.15;
+        }
+
+        return giaNhapChuaVAT * (1 + tyLeLai);
+    }
+
     private String getLoaiSanPhamDisplay(LoaiSanPham loai) {
         if (loai == null) {
             return "";
@@ -1674,9 +1701,18 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         txtProductPakaging1.setText(sp.getCachDongGoi());
         txtProductManufacturer1.setText(sp.getNhaSanXuat());
         txtCountryOfOrigin1.setText(sp.getQuocGiaSanXuat());
-        // Giá nhập hiển thị trong form sửa vẫn là giá cấu hình trên sản phẩm (không theo FIFO)
-        txtProductPurchasePrice1.setText(String.valueOf((int) sp.getGiaNhap()));
-        txtProductSellingPrice1.setText(String.valueOf((int) sp.getGiaBan()));
+        // Giá nhập trong form sửa là GIÁ NHẬP FIFO (chưa VAT) để người quản lý dễ căn lãi
+        double giaNhapFIFO = layGiaNhapFIFO(sp);
+        txtProductPurchasePrice1.setText(String.valueOf((int) giaNhapFIFO));
+
+        // Tính giá bán đề xuất theo lãi chuẩn nếu sản phẩm chưa có giá bán hợp lệ
+        double giaBanHienTai = sp.getGiaBan();
+        if (giaBanHienTai <= 0 && giaNhapFIFO > 0) {
+            double giaBanDeXuat = tinhGiaBanTheoLaiChuan(giaNhapFIFO);
+            txtProductSellingPrice1.setText(String.valueOf((int) Math.round(giaBanDeXuat)));
+        } else {
+            txtProductSellingPrice1.setText(String.valueOf((int) giaBanHienTai));
+        }
         if (txtProductVAT1 != null) {
             txtProductVAT1.setText(percentFormat.format(sp.getThueVAT() * 100));
         }

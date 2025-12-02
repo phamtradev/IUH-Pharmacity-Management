@@ -36,6 +36,7 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlytraha
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlydonhang.GD_QuanLyDonHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlykhuyenmai.GD_QuanLyKhuyenMai;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlylohang.GD_QuanLyLoHang;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlygiaban.GD_QuanLyGiaBan;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlythuchi.GD_BaoCaoThuChi;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlydulieu.GD_QuanLyDuLieu;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.chatbot.GD_ChatBot;
@@ -201,7 +202,7 @@ public class MainForm extends JLayeredPane {
                     // Menu đã được gom nhóm lại:
                     // 0: Dashboard
                     // 1: Báo cáo thu chi
-                    // 2: Quản lý bán hàng (subIndex 1..5)
+                    // 2: Quản lý bán hàng (subIndex 1..6)
                     // 3: Quản lý danh mục (subIndex 1..6)
                     // 4: Quản lý dữ liệu
                     // 5: Thông tin cá nhân
@@ -231,6 +232,9 @@ public class MainForm extends JLayeredPane {
                         } else if (subIndex == 5) {
                             // Quản lý khuyến mãi
                             showForm(new GD_QuanLyKhuyenMai());
+                        } else if (subIndex == 6) {
+                            // Quản lý giá bán
+                            showForm(new GD_QuanLyGiaBan());
                         } else {
                             action.cancel();
                         }
