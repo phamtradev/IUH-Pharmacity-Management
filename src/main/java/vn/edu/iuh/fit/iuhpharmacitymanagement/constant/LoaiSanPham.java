@@ -10,6 +10,7 @@ package vn.edu.iuh.fit.iuhpharmacitymanagement.constant;
  */
 public enum LoaiSanPham {
     THUOC,
+    THUOC_KE_DON, //them cai nay
     VAT_TU_Y_TE,
     THUC_PHAM_CHUC_NANG,
     CHAM_SOC_TRE_EM,

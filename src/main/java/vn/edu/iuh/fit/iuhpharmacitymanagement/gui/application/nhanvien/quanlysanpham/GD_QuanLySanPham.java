@@ -313,6 +313,8 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         switch (loai) {
             case THUOC:
                 return "Thuốc";
+            case THUOC_KE_DON:
+                return "Thuốc kê đơn";
             case VAT_TU_Y_TE:
                 return "Vật tư y tế";
             case THUC_PHAM_CHUC_NANG:
@@ -330,6 +332,8 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         switch (display) {
             case "Thuốc":
                 return LoaiSanPham.THUOC;
+            case "Thuốc kê đơn":
+                return LoaiSanPham.THUOC_KE_DON;
             case "Vật tư y tế":
                 return LoaiSanPham.VAT_TU_Y_TE;
             case "Thực phẩm chức năng":
@@ -347,6 +351,7 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         // Load loại sản phẩm cho ComboBox thêm
         cbbProductTypeAdd.removeAllItems();
         cbbProductTypeAdd.addItem("Thuốc");
+        cbbProductTypeAdd.addItem("Thuốc kê đơn");
         cbbProductTypeAdd.addItem("Vật tư y tế");
         cbbProductTypeAdd.addItem("Thực phẩm chức năng");
         cbbProductTypeAdd.addItem("Chăm sóc trẻ em");
@@ -355,6 +360,7 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         // Load loại sản phẩm cho ComboBox sửa
         cbbProductTypeEdit.removeAllItems();
         cbbProductTypeEdit.addItem("Thuốc");
+        cbbProductTypeEdit.addItem("Thuốc kê đơn");
         cbbProductTypeEdit.addItem("Vật tư y tế");
         cbbProductTypeEdit.addItem("Thực phẩm chức năng");
         cbbProductTypeEdit.addItem("Chăm sóc trẻ em");

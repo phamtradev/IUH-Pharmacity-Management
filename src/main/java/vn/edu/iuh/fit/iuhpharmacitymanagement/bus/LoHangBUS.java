@@ -8,6 +8,7 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.ChiTietDonHangDAO;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.LoHangDAO;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.LoHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.service.GiaBanTuDongService;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -22,10 +23,12 @@ public class LoHangBUS {
 
     private final LoHangDAO loHangDAO;
     private final ChiTietDonHangDAO chiTietDonHangDAO;
+    private final GiaBanTuDongService giaBanTuDongService;
 
     public LoHangBUS() {
         this.loHangDAO = new LoHangDAO();
         this.chiTietDonHangDAO = new ChiTietDonHangDAO();
+        this.giaBanTuDongService = new GiaBanTuDongService();
     }
 
     //Lấy danh sách tất cả các lô hàng và tự động cập nhật trạng thái (hết hạn)
@@ -49,13 +52,21 @@ public class LoHangBUS {
     public boolean themLoHang(LoHang loHang) throws Exception {
         // Cho phép tạo nhiều lô cùng tên nhưng HSD khác nhau
         // (Ví dụ: Lô "A" HSD 01/2025 và Lô "A" HSD 06/2025 là 2 lô khác nhau)
-        return loHangDAO.insert(loHang);
+        boolean inserted = loHangDAO.insert(loHang);
+        if (inserted) {
+            tuDongCapNhatGiaBan(loHang);
+        }
+        return inserted;
     }
 
     //Cập nhật thông tin một lô hàng
     public boolean capNhatLoHang(LoHang loHang) throws Exception {
         // Cho phép cập nhật tên lô (có thể trùng với lô khác vì HSD khác nhau)
-        return loHangDAO.update(loHang);
+        boolean updated = loHangDAO.update(loHang);
+        if (updated) {
+            tuDongCapNhatGiaBan(loHang);
+        }
+        return updated;
     }
 
     //Xóa một lô hàng, kiểm tra các quy tắc nghiệp vụ trước khi xóa
@@ -95,6 +106,13 @@ public class LoHangBUS {
             loHang.isTrangThai()) {
             loHang.setTrangThai(false);
         }
+    }
+
+    private void tuDongCapNhatGiaBan(LoHang loHang) {
+        if (loHang == null || loHang.getSanPham() == null) {
+            return;
+        }
+        giaBanTuDongService.capNhatGiaBanTuDong(loHang.getSanPham().getMaSanPham());
     }
 
     /**

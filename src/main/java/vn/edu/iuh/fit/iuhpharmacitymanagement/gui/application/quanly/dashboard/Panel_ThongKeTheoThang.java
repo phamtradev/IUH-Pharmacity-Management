@@ -133,7 +133,7 @@ public class Panel_ThongKeTheoThang extends javax.swing.JPanel {
         });
 
         comboProductType.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        comboProductType.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Tất cả", "Thuốc", "Vật tư y tế" }));
+        comboProductType.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Tất cả", "Thuốc", "Thuốc kê đơn", "Vật tư y tế", "Thực phẩm chức năng", "Chăm sóc trẻ em", "Thiết bị y tế" }));
 
         comboPaymentType.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         comboPaymentType.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Tất cả", "Tiền mặt", "Chuyển khoản" }));
@@ -500,13 +500,22 @@ public class Panel_ThongKeTheoThang extends javax.swing.JPanel {
     }
 
     private LoaiSanPham resolveProductType(String productType) {
-        if ("Thuốc".equals(productType)) {
-            return LoaiSanPham.THUOC;
+        switch (productType) {
+            case "Thuốc":
+                return LoaiSanPham.THUOC;
+            case "Thuốc kê đơn":
+                return LoaiSanPham.THUOC_KE_DON;
+            case "Vật tư y tế":
+                return LoaiSanPham.VAT_TU_Y_TE;
+            case "Thực phẩm chức năng":
+                return LoaiSanPham.THUC_PHAM_CHUC_NANG;
+            case "Chăm sóc trẻ em":
+                return LoaiSanPham.CHAM_SOC_TRE_EM;
+            case "Thiết bị y tế":
+                return LoaiSanPham.THIET_BI_Y_TE;
+            default:
+                return null;
         }
-        if ("Vật tư y tế".equals(productType)) {
-            return LoaiSanPham.VAT_TU_Y_TE;
-        }
-        return null;
     }
 
     private boolean orderContainsProductType(DonHang order, LoaiSanPham loaiSanPham) {

@@ -102,6 +102,8 @@ public class Panel_XuHuongMuaHang extends javax.swing.JPanel {
         switch (type) {
             case THUOC:
                 return "Thuốc";
+            case THUOC_KE_DON:
+                return "Thuốc kê đơn";
             case VAT_TU_Y_TE:
                 return "Vật tư y tế";
             case THUC_PHAM_CHUC_NANG:

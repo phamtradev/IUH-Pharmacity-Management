@@ -1,6 +1,7 @@
 package vn.edu.iuh.fit.iuhpharmacitymanagement.dao;
 
 import vn.edu.iuh.fit.iuhpharmacitymanagement.connectDB.ConnectDB;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.constant.LoaiSanPham;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.BangLaiChuan;
 
 import java.sql.*;
@@ -8,32 +9,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * DAO cho bảng BangLaiChuan (cấu hình lãi chuẩn theo khoảng giá nhập).
- *
- * SQL gợi ý:
- * <pre>
- * CREATE TABLE BangLaiChuan (
- *     id INT IDENTITY(1,1) PRIMARY KEY,
- *     giaNhapTu DECIMAL(18,0) NOT NULL,
- *     giaNhapDen DECIMAL(18,0) NULL,
- *     tyLeLai DECIMAL(5,4) NOT NULL -- 0.2000 = 20%
- * );
- * </pre>
- */
+
 public class BangLaiChuanDAO implements DAOInterface<BangLaiChuan, Integer> {
 
     private static final String SQL_FIND_ALL =
-            "SELECT id, giaNhapTu, giaNhapDen, tyLeLai FROM BangLaiChuan ORDER BY giaNhapTu ASC";
+            "SELECT id, giaNhapTu, giaNhapDen, tyLeLai, loaiSanPham FROM BangLaiChuan ORDER BY giaNhapTu ASC";
 
     private static final String SQL_FIND_BY_ID =
-            "SELECT id, giaNhapTu, giaNhapDen, tyLeLai FROM BangLaiChuan WHERE id = ?";
+            "SELECT id, giaNhapTu, giaNhapDen, tyLeLai, loaiSanPham FROM BangLaiChuan WHERE id = ?";
 
     private static final String SQL_INSERT =
-            "INSERT INTO BangLaiChuan (giaNhapTu, giaNhapDen, tyLeLai) VALUES (?, ?, ?)";
+            "INSERT INTO BangLaiChuan (giaNhapTu, giaNhapDen, tyLeLai, loaiSanPham) VALUES (?, ?, ?, ?)";
 
     private static final String SQL_UPDATE =
-            "UPDATE BangLaiChuan SET giaNhapTu = ?, giaNhapDen = ?, tyLeLai = ? WHERE id = ?";
+            "UPDATE BangLaiChuan SET giaNhapTu = ?, giaNhapDen = ?, tyLeLai = ?, loaiSanPham = ? WHERE id = ?";
 
     private static final String SQL_DELETE_ALL =
             "DELETE FROM BangLaiChuan";
@@ -50,6 +39,7 @@ public class BangLaiChuanDAO implements DAOInterface<BangLaiChuan, Integer> {
                 stmt.setNull(2, Types.DECIMAL);
             }
             stmt.setDouble(3, b.getTyLeLai());
+            setLoaiSanPhamParam(stmt, 4, b.getLoaiSanPham());
 
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -70,7 +60,8 @@ public class BangLaiChuanDAO implements DAOInterface<BangLaiChuan, Integer> {
                 stmt.setNull(2, Types.DECIMAL);
             }
             stmt.setDouble(3, b.getTyLeLai());
-            stmt.setInt(4, b.getId());
+            setLoaiSanPhamParam(stmt, 4, b.getLoaiSanPham());
+            stmt.setInt(5, b.getId());
 
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -133,7 +124,27 @@ public class BangLaiChuanDAO implements DAOInterface<BangLaiChuan, Integer> {
         }
         b.setGiaNhapDen(den);
         b.setTyLeLai(rs.getDouble("tyLeLai"));
+        String loai = null;
+        try {
+            loai = rs.getString("loaiSanPham");
+        } catch (SQLException ex) {
+            // Cột có thể chưa tồn tại ở các schema cũ
+        }
+        if (loai != null && !loai.isBlank()) {
+            try {
+                b.setLoaiSanPham(LoaiSanPham.valueOf(loai));
+            } catch (IllegalArgumentException ignored) {
+            }
+        }
         return b;
+    }
+
+    private void setLoaiSanPhamParam(PreparedStatement stmt, int index, LoaiSanPham loaiSanPham) throws SQLException {
+        if (loaiSanPham != null) {
+            stmt.setString(index, loaiSanPham.name());
+        } else {
+            stmt.setNull(index, Types.VARCHAR);
+        }
     }
 }
 
