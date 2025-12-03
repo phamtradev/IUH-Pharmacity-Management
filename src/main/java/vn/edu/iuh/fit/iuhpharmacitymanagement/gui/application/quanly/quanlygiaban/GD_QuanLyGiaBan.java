@@ -77,6 +77,7 @@ public class GD_QuanLyGiaBan extends JPanel {
         // Panel cấu hình lãi chuẩn (trên cùng)
         JPanel configPanel = new JPanel(new BorderLayout());
         configPanel.setBorder(BorderFactory.createTitledBorder("Cấu hình lãi chuẩn theo khoảng giá nhập"));
+        configPanel.setPreferredSize(new Dimension(0, 260));
 
         JPanel configToolbar = new JPanel(new BorderLayout());
         JPanel comboWrapper = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 8));
@@ -117,8 +118,6 @@ public class GD_QuanLyGiaBan extends JPanel {
         pnlSave.add(btnSaveLaiChuan);
         configPanel.add(pnlSave, BorderLayout.SOUTH);
 
-        add(configPanel, BorderLayout.NORTH);
-
         String[] columns = {
             "Mã SP", "Tên sản phẩm", "Giá nhập FIFO", "VAT (%)",
             "Giá bán hiện tại", "Giá bán đề xuất", "Giá bán (đã VAT)", "Biên lợi nhuận hiện tại (%)"
@@ -140,7 +139,12 @@ public class GD_QuanLyGiaBan extends JPanel {
         JPanel centerPanel = new JPanel(new BorderLayout());
         centerPanel.add(scrollPane, BorderLayout.CENTER);
         centerPanel.add(buildLegendPanel(), BorderLayout.SOUTH);
-        add(centerPanel, BorderLayout.CENTER);
+        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, configPanel, centerPanel);
+        splitPane.setResizeWeight(0.35);
+        splitPane.setDividerLocation(260);
+        splitPane.setContinuousLayout(true);
+        splitPane.setBorder(null);
+        add(splitPane, BorderLayout.CENTER);
 
         JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
         bottomPanel.setBackground(Color.WHITE);
