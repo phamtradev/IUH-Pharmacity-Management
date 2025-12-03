@@ -2338,9 +2338,11 @@ public class Panel_DonHang extends javax.swing.JPanel {
             document.add(infoTable);
             document.add(new Paragraph("\n"));
 
-            Table itemsTable = new Table(UnitValue.createPercentArray(new float[]{6, 28, 8, 10, 12, 14, 22}))
+            Table itemsTable = new Table(UnitValue.createPercentArray(new float[]{6, 28, 8, 12, 10, 14, 22}))
                     .useAllAvailableWidth();
-            String[] headerLabels = {"STT", "Ten san pham", "SL", "Don gia", "% VAT", "Giam gia", "Thanh tien"};
+            // Don gia tren hoa don in ra se la DON GIA CHUA VAT, thanh tien van giu nguyen
+            String[] headerLabels = {"STT", "Ten san pham", "SL", "Don gia (chua VAT)", "% VAT", "Giam gia",
+                    "Thanh tien"};
             for (String label : headerLabels) {
                 itemsTable.addHeaderCell(new Cell()
                         .add(new Paragraph(label).setFont(fontBold).setFontSize(9).setTextAlignment(TextAlignment.CENTER))
@@ -2352,7 +2354,15 @@ public class Panel_DonHang extends javax.swing.JPanel {
                 LoHang loHang = chiTiet.getLoHang();
                 SanPham sanPham = loHang != null ? loHang.getSanPham() : null;
                 String tenSP = sanPham != null ? sanPham.getTenSanPham() : "";
-                String donGia = currencyFormat.format(chiTiet.getDonGia()) + " đ";
+
+                // DonGia trong chi tiet la gia DA BAO GOM VAT -> doi ve gia CHUA VAT de in ra
+                double donGiaDaVAT = chiTiet.getDonGia();
+                double donGiaChuaVAT = donGiaDaVAT;
+                double thueVAT = sanPham != null ? sanPham.getThueVAT() : 0;
+                if (thueVAT > 0) {
+                    donGiaChuaVAT = donGiaDaVAT / (1 + thueVAT);
+                }
+                String donGia = currencyFormat.format(donGiaChuaVAT) + " đ";
                 String giamGia = chiTiet.getGiamGiaSanPham() > 0
                         ? "-" + currencyFormat.format(chiTiet.getGiamGiaSanPham()) + " đ"
                         : "0 đ";
