@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.RowFilter;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableRowSorter;
 
 /**
@@ -168,7 +169,7 @@ public class GD_QuanLyGiaBan extends JPanel {
 
         btnReload = new JButton("Tải lại");
         ButtonStyles.apply(btnReload, ButtonStyles.Type.PRIMARY);
-        btnReload.addActionListener(e -> loadData());
+        btnReload.addActionListener(e -> reloadFromOriginalData());
 
         btnApplySelected = new JButton("Áp dụng giá đề xuất cho dòng chọn");
         ButtonStyles.apply(btnApplySelected, ButtonStyles.Type.SUCCESS);
@@ -177,6 +178,29 @@ public class GD_QuanLyGiaBan extends JPanel {
         bottomPanel.add(btnReload);
         bottomPanel.add(btnApplySelected);
         add(bottomPanel, BorderLayout.SOUTH);
+    }
+
+    /**
+     * Hủy mọi chỉnh sửa đang dang dở trên bảng và nạp lại dữ liệu gốc từ DB.
+     * Dùng cho nút "Tải lại" để người dùng quay về trạng thái ban đầu.
+     */
+    private void reloadFromOriginalData() {
+        // Nếu người dùng đang sửa 1 ô nào đó thì hủy chỉnh sửa đó,
+        // tránh trường hợp editor commit giá trị tạm vào model.
+        if (table != null && table.isEditing()) {
+            TableCellEditor editor = table.getCellEditor();
+            if (editor != null) {
+                editor.cancelCellEditing();
+            }
+        }
+
+        // Xóa lựa chọn hiện tại để cảm giác "reset" rõ ràng hơn
+        if (table != null) {
+            table.clearSelection();
+        }
+
+        // Nạp lại toàn bộ dữ liệu giá bán từ DB với cấu hình lãi hiện hành
+        loadData(true);
     }
 
     private void registerAutoRecalculateForLaiChuanTable() {
