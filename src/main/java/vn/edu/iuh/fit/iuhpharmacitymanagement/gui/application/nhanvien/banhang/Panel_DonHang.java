@@ -1800,7 +1800,10 @@ public class Panel_DonHang extends javax.swing.JPanel {
         lblChiTiet.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
         bodyPanel.add(lblChiTiet, BorderLayout.NORTH);
 
-        String[] columnNames = {"STT", "Tên sản phẩm", "Đơn vị", "Số lượng", "Đơn giá", "% VAT", "Giảm giá", "Thành tiền"};
+        // Đơn giá trên giao diện xác nhận hóa đơn hiển thị GIÁ CHƯA VAT,
+        // Thành tiền hiển thị sau khi đã cộng VAT và trừ giảm giá
+        String[] columnNames = {"STT", "Tên sản phẩm", "Đơn vị", "Số lượng", "Đơn giá (chưa VAT)", "% VAT", "Giảm giá",
+                "Thành tiền"};
         javax.swing.table.DefaultTableModel tableModel = new javax.swing.table.DefaultTableModel(columnNames, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -1868,15 +1871,23 @@ public class Panel_DonHang extends javax.swing.JPanel {
 
             String vatStr = String.format("%.0f%%", sanPham.getThueVAT() * 100);
 
-            tableModel.addRow(new Object[]{
-                stt++,
-                sanPham.getTenSanPham(),
-                sanPham.getDonViTinh() != null ? sanPham.getDonViTinh().getTenDonVi() : "Tuýp",
-                chiTiet.getSoLuong(),
-                currencyFormat.format(chiTiet.getDonGia()) + " đ",
-                vatStr,
-                giamGia, // Tổng giảm giá (sản phẩm + hóa đơn phân bổ)
-                currencyFormat.format(chiTiet.getThanhTien()) + " đ"
+            // DonGia trong chi tiết là giá đã VAT -> chuyển về giá chưa VAT để hiển thị ở cột
+            // "Đơn giá"
+            double donGiaDaVAT = chiTiet.getDonGia();
+            double donGiaChuaVAT = donGiaDaVAT;
+            if (sanPham.getThueVAT() > 0) {
+                donGiaChuaVAT = donGiaDaVAT / (1 + sanPham.getThueVAT());
+            }
+
+            tableModel.addRow(new Object[] {
+                    stt++,
+                    sanPham.getTenSanPham(),
+                    sanPham.getDonViTinh() != null ? sanPham.getDonViTinh().getTenDonVi() : "Tuýp",
+                    chiTiet.getSoLuong(),
+                    currencyFormat.format(donGiaChuaVAT) + " đ",
+                    vatStr,
+                    giamGia, // Tổng giảm giá (sản phẩm + hóa đơn phân bổ)
+                    currencyFormat.format(chiTiet.getThanhTien()) + " đ"
             });
         }
 
