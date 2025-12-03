@@ -14,13 +14,15 @@ import raven.toast.Notifications;
 
 import javax.swing.*;
 import javax.swing.event.TableModelEvent;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableColumn;
 import java.awt.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import javax.swing.table.DefaultTableCellRenderer;
 
 /**
@@ -46,6 +48,11 @@ public class GD_QuanLyGiaBan extends JPanel {
     private JTable tblLaiChuan;
     private DefaultTableModel modelLaiChuan;
     private JButton btnSaveLaiChuan;
+    private JButton btnAddConfigRow;
+    private JButton btnRemoveConfigRow;
+    private JComboBox<String> cboLoaiConfig;
+    private final Map<String, List<BangLaiChuan>> cachedConfigs = new LinkedHashMap<>();
+    private String currentLoaiSelection = ALL_TYPES_DISPLAY;
     private boolean suppressAutoRecalc = false;
 
     public GD_QuanLyGiaBan() {
@@ -70,11 +77,35 @@ public class GD_QuanLyGiaBan extends JPanel {
         // Panel cấu hình lãi chuẩn (trên cùng)
         JPanel configPanel = new JPanel(new BorderLayout());
         configPanel.setBorder(BorderFactory.createTitledBorder("Cấu hình lãi chuẩn theo khoảng giá nhập"));
-        String[] laiColumns = {"Giá nhập từ", "Giá nhập đến (0 = không giới hạn)", "% lãi", "Loại sản phẩm"};
+
+        JPanel configToolbar = new JPanel(new BorderLayout());
+        JPanel comboWrapper = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 8));
+        JLabel lblLoai = new JLabel("Loại sản phẩm:");
+        cboLoaiConfig = new JComboBox<>();
+        cboLoaiConfig.setPrototypeDisplayValue("Chăm sóc trẻ em");
+        cboLoaiConfig.addActionListener(e -> handleLoaiSelectionChanged());
+        comboWrapper.add(lblLoai);
+        comboWrapper.add(cboLoaiConfig);
+
+        JPanel actionWrapper = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 8));
+        btnAddConfigRow = new JButton("Thêm dòng");
+        ButtonStyles.apply(btnAddConfigRow, ButtonStyles.Type.INFO);
+        btnAddConfigRow.addActionListener(e -> addConfigRow());
+
+        btnRemoveConfigRow = new JButton("Xóa dòng");
+        ButtonStyles.apply(btnRemoveConfigRow, ButtonStyles.Type.DANGER);
+        btnRemoveConfigRow.addActionListener(e -> removeSelectedConfigRows());
+
+        actionWrapper.add(btnAddConfigRow);
+        actionWrapper.add(btnRemoveConfigRow);
+        configToolbar.add(comboWrapper, BorderLayout.WEST);
+        configToolbar.add(actionWrapper, BorderLayout.EAST);
+        configPanel.add(configToolbar, BorderLayout.NORTH);
+
+        String[] laiColumns = {"Giá nhập từ", "Giá nhập đến (0 = không giới hạn)", "% lãi"};
         modelLaiChuan = new DefaultTableModel(laiColumns, 0);
         tblLaiChuan = new JTable(modelLaiChuan);
         tblLaiChuan.setRowHeight(24);
-        configureLoaiSanPhamColumn();
         registerAutoRecalculateForLaiChuanTable();
         JScrollPane spLai = new JScrollPane(tblLaiChuan);
         configPanel.add(spLai, BorderLayout.CENTER);
@@ -135,6 +166,7 @@ public class GD_QuanLyGiaBan extends JPanel {
             if (e.getFirstRow() == TableModelEvent.HEADER_ROW) {
                 return;
             }
+            persistCurrentSelection(false);
             SwingUtilities.invokeLater(() -> loadData(false));
         });
     }
@@ -142,31 +174,215 @@ public class GD_QuanLyGiaBan extends JPanel {
     private void loadBangLaiChuan() {
         suppressAutoRecalc = true;
         try {
-            java.util.List<BangLaiChuan> ds = bangLaiChuanBUS.layTatCa();
-            // Nếu chưa có dữ liệu, tạo mặc định
+            cachedConfigs.clear();
+            List<BangLaiChuan> ds = bangLaiChuanBUS.layTatCa();
             if (ds.isEmpty()) {
-                ds.add(new BangLaiChuan(0, 0, 50_000, 0.30));
-                ds.add(new BangLaiChuan(0, 50_001, 100_000, 0.25));
-                ds.add(new BangLaiChuan(0, 100_001, 300_000, 0.20));
-                ds.add(new BangLaiChuan(0, 300_001, 0, 0.15));
+                List<BangLaiChuan> template = buildDefaultTemplate();
+                cachedConfigs.put(ALL_TYPES_DISPLAY, cloneConfigList(template));
+                for (LoaiSanPham loai : LoaiSanPham.values()) {
+                    cachedConfigs.put(loaiSanPhamToDisplay(loai), cloneConfigList(template));
+                }
+            } else {
+                Map<String, List<BangLaiChuan>> grouped = new LinkedHashMap<>();
+                for (BangLaiChuan config : ds) {
+                    String key = loaiSanPhamToDisplay(config.getLoaiSanPham());
+                    grouped.computeIfAbsent(key, k -> new ArrayList<>()).add(copyOf(config));
+                }
+                List<BangLaiChuan> fallbackSource = grouped.getOrDefault(ALL_TYPES_DISPLAY, buildDefaultTemplate());
+                cachedConfigs.put(ALL_TYPES_DISPLAY, cloneConfigList(fallbackSource));
+                for (LoaiSanPham loai : LoaiSanPham.values()) {
+                    String display = loaiSanPhamToDisplay(loai);
+                    List<BangLaiChuan> configs = grouped.get(display);
+                    if (configs == null || configs.isEmpty()) {
+                        cachedConfigs.put(display, cloneConfigList(fallbackSource));
+                    } else {
+                        cachedConfigs.put(display, cloneConfigList(configs));
+                    }
+                }
             }
-            modelLaiChuan.setRowCount(0);
-            for (BangLaiChuan b : ds) {
-                modelLaiChuan.addRow(new Object[]{
-                    (long) b.getGiaNhapTu(),
-                    (long) b.getGiaNhapDen(),
-                    b.getTyLeLai() * 100,
-                    loaiSanPhamToDisplay(b.getLoaiSanPham())
-                });
-            }
+            populateLoaiSanPhamCombo();
+            currentLoaiSelection = (String) cboLoaiConfig.getSelectedItem();
+            renderConfigTableForSelection();
         } finally {
             suppressAutoRecalc = false;
         }
     }
 
+    private void handleLoaiSelectionChanged() {
+        if (suppressAutoRecalc) {
+            return;
+        }
+        String nextSelection = (String) cboLoaiConfig.getSelectedItem();
+        if (nextSelection == null || nextSelection.equals(currentLoaiSelection)) {
+            return;
+        }
+        persistCurrentSelection(false);
+        currentLoaiSelection = nextSelection;
+        renderConfigTableForSelection();
+    }
+
+    private void populateLoaiSanPhamCombo() {
+        if (cboLoaiConfig == null) {
+            return;
+        }
+        boolean previous = suppressAutoRecalc;
+        suppressAutoRecalc = true;
+        try {
+            DefaultComboBoxModel<String> comboModel = new DefaultComboBoxModel<>();
+            comboModel.addElement(ALL_TYPES_DISPLAY);
+            for (LoaiSanPham loai : LoaiSanPham.values()) {
+                comboModel.addElement(loaiSanPhamToDisplay(loai));
+            }
+            cboLoaiConfig.setModel(comboModel);
+            cboLoaiConfig.setSelectedItem(currentLoaiSelection);
+        } finally {
+            suppressAutoRecalc = previous;
+        }
+    }
+
+    private void renderConfigTableForSelection() {
+        List<BangLaiChuan> configs = cachedConfigs.getOrDefault(currentLoaiSelection, new ArrayList<>());
+        boolean previous = suppressAutoRecalc;
+        suppressAutoRecalc = true;
+        try {
+            modelLaiChuan.setRowCount(0);
+            for (BangLaiChuan config : configs) {
+                modelLaiChuan.addRow(new Object[]{
+                    (long) config.getGiaNhapTu(),
+                    (long) config.getGiaNhapDen(),
+                    config.getTyLeLai() * 100
+                });
+            }
+        } finally {
+            suppressAutoRecalc = previous;
+        }
+    }
+
+    private void addConfigRow() {
+        modelLaiChuan.addRow(new Object[]{"", "", ""});
+    }
+
+    private void removeSelectedConfigRows() {
+        int[] selected = tblLaiChuan.getSelectedRows();
+        if (selected == null || selected.length == 0) {
+            Notifications.getInstance().show(Notifications.Type.WARNING,
+                    Notifications.Location.TOP_CENTER,
+                    "Vui lòng chọn ít nhất 1 dòng để xóa.");
+            return;
+        }
+        suppressAutoRecalc = true;
+        try {
+            for (int i = selected.length - 1; i >= 0; i--) {
+                modelLaiChuan.removeRow(selected[i]);
+            }
+        } finally {
+            suppressAutoRecalc = false;
+        }
+        persistCurrentSelection(false);
+        SwingUtilities.invokeLater(() -> loadData(false));
+    }
+
+    private boolean persistCurrentSelection(boolean strict) {
+        if (currentLoaiSelection == null) {
+            return true;
+        }
+        List<BangLaiChuan> configs = buildConfigFromCurrentTable(strict);
+        if (configs == null) {
+            return false;
+        }
+        cachedConfigs.put(currentLoaiSelection, configs);
+        return true;
+    }
+
+    private List<BangLaiChuan> buildConfigFromCurrentTable(boolean strict) {
+        List<BangLaiChuan> ds = new ArrayList<>();
+        if (modelLaiChuan == null) {
+            return ds;
+        }
+        for (int i = 0; i < modelLaiChuan.getRowCount(); i++) {
+            String tuStr = valueToString(modelLaiChuan.getValueAt(i, 0));
+            String denStr = valueToString(modelLaiChuan.getValueAt(i, 1));
+            String laiStr = valueToString(modelLaiChuan.getValueAt(i, 2));
+            if (tuStr.isEmpty() && denStr.isEmpty() && laiStr.isEmpty()) {
+                continue;
+            }
+
+            Double tu = parseDoubleFlexible(tuStr);
+            Double den = denStr.isEmpty() ? 0d : parseDoubleFlexible(denStr);
+            Double lai = parseDoubleFlexible(laiStr);
+
+            boolean invalid = tu == null || lai == null || (!denStr.isEmpty() && den == null);
+            if (invalid) {
+                if (strict) {
+                    throw new NumberFormatException("Dòng " + (i + 1) + " chứa giá trị không hợp lệ.");
+                } else {
+                    continue;
+                }
+            }
+
+            BangLaiChuan b = new BangLaiChuan(0, tu, den == null ? 0 : den, lai / 100.0);
+            ds.add(b);
+        }
+        ds.sort(Comparator.comparingDouble(BangLaiChuan::getGiaNhapTu));
+        return ds;
+    }
+
+    private List<BangLaiChuan> collectAllConfigs() {
+        List<BangLaiChuan> result = new ArrayList<>();
+        for (Map.Entry<String, List<BangLaiChuan>> entry : cachedConfigs.entrySet()) {
+            LoaiSanPham loai = parseLoaiSanPham(entry.getKey());
+            List<BangLaiChuan> configs = entry.getValue();
+            if (configs == null) {
+                continue;
+            }
+            for (BangLaiChuan config : configs) {
+                result.add(new BangLaiChuan(0,
+                        config.getGiaNhapTu(),
+                        config.getGiaNhapDen(),
+                        config.getTyLeLai(),
+                        loai));
+            }
+        }
+        return result;
+    }
+
+    private List<BangLaiChuan> buildDefaultTemplate() {
+        List<BangLaiChuan> defaults = new ArrayList<>();
+        defaults.add(new BangLaiChuan(0, 0, 50_000, 0.30));
+        defaults.add(new BangLaiChuan(0, 50_001, 100_000, 0.25));
+        defaults.add(new BangLaiChuan(0, 100_001, 300_000, 0.20));
+        defaults.add(new BangLaiChuan(0, 300_001, 0, 0.15));
+        return defaults;
+    }
+
+    private List<BangLaiChuan> cloneConfigList(List<BangLaiChuan> source) {
+        List<BangLaiChuan> clone = new ArrayList<>();
+        if (source == null) {
+            return clone;
+        }
+        for (BangLaiChuan config : source) {
+            BangLaiChuan copied = copyOf(config);
+            if (copied != null) {
+                clone.add(copied);
+            }
+        }
+        clone.sort(Comparator.comparingDouble(BangLaiChuan::getGiaNhapTu));
+        return clone;
+    }
+
+    private BangLaiChuan copyOf(BangLaiChuan src) {
+        if (src == null) {
+            return null;
+        }
+        return new BangLaiChuan(0, src.getGiaNhapTu(), src.getGiaNhapDen(), src.getTyLeLai());
+    }
+
     private void saveBangLaiChuan() {
         try {
-            List<BangLaiChuan> ds = buildConfigFromTable(true);
+            if (!persistCurrentSelection(true)) {
+                return;
+            }
+            List<BangLaiChuan> ds = collectAllConfigs();
             if (ds.isEmpty()) {
                 Notifications.getInstance().show(Notifications.Type.WARNING,
                         Notifications.Location.TOP_CENTER,
@@ -256,7 +472,8 @@ public class GD_QuanLyGiaBan extends JPanel {
     }
 
     private List<BangLaiChuan> getCurrentConfigForPreview() {
-        List<BangLaiChuan> ds = buildConfigFromTable(false);
+        persistCurrentSelection(false);
+        List<BangLaiChuan> ds = collectAllConfigs();
         if (ds.isEmpty()) {
             // Nếu bảng trống (chưa cấu hình), lấy từ DB để vẫn hiển thị giá.
             ds = bangLaiChuanBUS.layTatCa();
@@ -503,17 +720,6 @@ public class GD_QuanLyGiaBan extends JPanel {
             return RowHighlight.GIA_DE_XUAT_THAP;
         }
         return RowHighlight.NONE;
-    }
-
-    private void configureLoaiSanPhamColumn() {
-        tblLaiChuan.setDefaultRenderer(Object.class, tblLaiChuan.getDefaultRenderer(Object.class));
-        JComboBox<String> combo = new JComboBox<>();
-        combo.addItem(ALL_TYPES_DISPLAY);
-        for (LoaiSanPham loai : LoaiSanPham.values()) {
-            combo.addItem(loaiSanPhamToDisplay(loai));
-        }
-        TableColumn loaiColumn = tblLaiChuan.getColumnModel().getColumn(3);
-        loaiColumn.setCellEditor(new DefaultCellEditor(combo));
     }
 
     private String loaiSanPhamToDisplay(LoaiSanPham loaiSanPham) {
