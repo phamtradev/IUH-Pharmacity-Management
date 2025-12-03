@@ -9,8 +9,10 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.LoHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.LoHangBUS;
 import java.text.DecimalFormat;
 import java.util.List;
+import java.util.Map;
 import javax.swing.ImageIcon;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.service.GiaBanTheoLoService;
 
 /**
  *
@@ -32,6 +34,7 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
     private vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhuyenMai khuyenMaiDuocApDung; // Khuyến mãi được áp dụng cho sản phẩm này (nullable)
     private double phanTramGiamGia = 0.0; // % giảm giá (dạng thập phân: 0.1 = 10%)
     private Double soTienGiamGiaThucTe = null; // Số tiền giảm giá thực tế (chỉ cho số lượng tối đa), null nếu áp dụng cho toàn bộ
+    private final GiaBanTheoLoService giaBanTheoLoService = new GiaBanTheoLoService();
 
     public Panel_ChiTietSanPham() {
         this.currencyFormat = new DecimalFormat("#,###");
@@ -63,15 +66,8 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
             
             lblTenSP.setText(htmlText);
             
-            // Set đơn giá (đã bao gồm VAT)
-            double giaBanCoVAT = sanPham.getGiaBan() * (1 + sanPham.getThueVAT());
-            txtDonGia.setText(currencyFormat.format(giaBanCoVAT) + " đ");
-            
             // Set giảm giá mặc định là 0%
             txtDiscount.setText("0%");
-            
-            // Set tổng tiền ban đầu (cachedTongTien = 0 để lần đầu fire property change)
-            updateTongTien();
             
             // Load hình ảnh nếu có
             if (sanPham.getHinhAnh() != null && !sanPham.getHinhAnh().isEmpty()) {
@@ -104,23 +100,33 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
             } else {
                 lblHinh.setText("IMG");
             }
+
+            // Cập nhật lại tổng tiền sau khi dữ liệu sản phẩm và lô sẵn sàng
+            updateTongTien();
         }
     }
     
     private void updateTongTien() {
-        if (sanPham != null) {
-            int soLuong = (int) spinnerSoLuong.getValue();
-            double oldTongTien = cachedTongTien; // Sử dụng giá trị cached
-            double giaBanCoVAT = sanPham.getGiaBan() * (1 + sanPham.getThueVAT());
-            double tongTien = giaBanCoVAT * soLuong;
-            txtTongTien.setText(currencyFormat.format(tongTien) + " đ");
-            
-            // Cập nhật cache
-            cachedTongTien = tongTien;
-            
-            // Fire property change để notify parent
-            firePropertyChange("tongTien", oldTongTien, tongTien);
+        if (sanPham == null) {
+            return;
         }
+
+        Map<LoHang, Integer> phanBo = getMapLoHangVaSoLuong();
+        PricingComputation pricing = tinhTongTienTheoPhanBo(phanBo);
+
+        double oldTongTien = cachedTongTien;
+        cachedTongTien = pricing.tongTien;
+        txtTongTien.setText(currencyFormat.format(pricing.tongTien) + " đ");
+
+        if (pricing.multiLot) {
+            txtDonGia.setText("Theo " + pricing.soLo + " lô");
+            txtDonGia.setToolTipText(pricing.tooltip);
+        } else {
+            txtDonGia.setText(currencyFormat.format(pricing.donGiaDon) + " đ");
+            txtDonGia.setToolTipText(null);
+        }
+
+        firePropertyChange("tongTien", oldTongTien, pricing.tongTien);
     }
 
     public int getSoLuong() {
@@ -149,11 +155,11 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
     }
     
     public double getTongTien() {
-        if (sanPham != null) {
-            double giaBanCoVAT = sanPham.getGiaBan() * (1 + sanPham.getThueVAT());
-            return giaBanCoVAT * getSoLuong();
+        if (sanPham == null) {
+            return 0;
         }
-        return 0;
+        Map<LoHang, Integer> phanBo = getMapLoHangVaSoLuong();
+        return tinhTongTienTheoPhanBo(phanBo).tongTien;
     }
     
     /**
@@ -180,6 +186,10 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
                 containerLoHang.add(panelChonLo);
                 containerLoHang.revalidate();
                 containerLoHang.repaint();
+
+                // Sau khi đã có danh sách lô và lô hiển thị, cập nhật lại tổng tiền
+                // để đơn giá/tổng tiền sử dụng đúng giá theo từng lô (thay vì giá fallback của sản phẩm)
+                updateTongTien();
             }
         }
     }
@@ -374,38 +384,68 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
      * @return Map<LoHang, Integer> - Map lô hàng và số lượng lấy từ lô đó
      */
     public java.util.Map<LoHang, Integer> getMapLoHangVaSoLuong() {
-        java.util.Map<LoHang, Integer> map = new java.util.LinkedHashMap<>();
-        
-        if (containerLoHang != null) {
-            for (java.awt.Component component : containerLoHang.getComponents()) {
-                if (component instanceof Panel_ChonLo) {
-                    Panel_ChonLo panel = (Panel_ChonLo) component;
-                    LoHang loHang = panel.getLoHang();
-                    
-                    if (loHang != null) {
-                        // Parse số lượng từ tooltip hoặc tính lại
-                        String tooltip = panel.getToolTipText();
-                        if (tooltip != null && tooltip.startsWith("Lấy ")) {
-                            try {
-                                // Parse "Lấy 50/100 từ lô..."
-                                String[] parts = tooltip.split(" ");
-                                String[] numbers = parts[1].split("/");
-                                int soLuongLay = Integer.parseInt(numbers[0]);
-                                map.put(loHang, soLuongLay);
-                            } catch (Exception e) {
-                                // Nếu parse lỗi, mặc định lấy tất cả từ lô này
-                                map.put(loHang, loHang.getTonKho());
-                            }
-                        } else {
-                            // Không có tooltip, nghĩa là chỉ có 1 lô
-                            map.put(loHang, getSoLuong());
-                        }
-                    }
-                }
-            }
+        return phanBoLoHang(getSoLuong());
+    }
+
+    private PricingComputation tinhTongTienTheoPhanBo(Map<LoHang, Integer> phanBo) {
+        PricingComputation result = new PricingComputation();
+        if (sanPham == null) {
+            return result;
         }
-        
-        return map;
+
+        if (phanBo == null || phanBo.isEmpty()) {
+            // Không có thông tin lô hàng (ví dụ: sản phẩm chưa có lô hoặc lỗi dữ liệu),
+            // fallback về đơn giá đã VAT lấy từ GiaBanTheoLoService để đảm bảo nhất quán.
+            double donGiaCoVAT = giaBanTheoLoService.tinhDonGiaCoVAT(null, sanPham);
+            int soLuong = getSoLuong();
+            result.tongTien = donGiaCoVAT * soLuong;
+            result.donGiaDon = donGiaCoVAT;
+            result.soLo = 1;
+            return result;
+        }
+
+        double tongTien = 0;
+        int tongSoLuong = 0;
+        StringBuilder tooltip = new StringBuilder("<html>");
+        int index = 1;
+
+        for (Map.Entry<LoHang, Integer> entry : phanBo.entrySet()) {
+            LoHang loHang = entry.getKey();
+            int soLuong = entry.getValue();
+            double donGiaCoVAT = giaBanTheoLoService.tinhDonGiaCoVAT(loHang, sanPham);
+            double thanhTien = donGiaCoVAT * soLuong;
+
+            tongTien += thanhTien;
+            tongSoLuong += soLuong;
+
+            tooltip.append("Lô ").append(index++).append(": ")
+                    .append(loHang != null ? loHang.getMaLoHang() : "N/A")
+                    .append(" • ")
+                    .append(soLuong).append(" × ")
+                    .append(currencyFormat.format(donGiaCoVAT)).append(" = ")
+                    .append(currencyFormat.format(thanhTien)).append(" đ<br>");
+        }
+        tooltip.append("</html>");
+
+        result.tongTien = tongTien;
+        result.soLo = phanBo.size();
+        result.multiLot = phanBo.size() > 1;
+        if (result.multiLot) {
+            result.tooltip = tooltip.toString();
+        } else {
+            result.donGiaDon = tongSoLuong > 0 ? tongTien / tongSoLuong : 0;
+        }
+
+        return result;
+    }
+
+    private static class PricingComputation {
+
+        double tongTien;
+        double donGiaDon;
+        boolean multiLot;
+        int soLo;
+        String tooltip;
     }
     
     /**

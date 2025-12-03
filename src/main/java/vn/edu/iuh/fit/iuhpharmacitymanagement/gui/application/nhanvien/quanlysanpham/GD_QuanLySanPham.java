@@ -2246,22 +2246,22 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
             String vatStr = txtProductVAT.getText().trim();
             double vatPercent = 0;
             if (!vatStr.isEmpty()) {
-                try {
+            try {
                     vatPercent = Double.parseDouble(vatStr);
                     if (vatPercent < 0 || vatPercent > 100) {
-                        Notifications.getInstance().show(Notifications.Type.WARNING,
-                                Notifications.Location.TOP_CENTER,
-                                "Thuế VAT phải trong khoảng 0 - 100%");
-                        txtProductVAT.requestFocus();
-                        return;
-                    }
-                } catch (NumberFormatException e) {
                     Notifications.getInstance().show(Notifications.Type.WARNING,
                             Notifications.Location.TOP_CENTER,
-                            "Thuế VAT không hợp lệ");
-                    txtProductVAT.requestFocus();
+                                "Thuế VAT phải trong khoảng 0 - 100%");
+                        txtProductVAT.requestFocus();
                     return;
                 }
+            } catch (NumberFormatException e) {
+                Notifications.getInstance().show(Notifications.Type.WARNING,
+                        Notifications.Location.TOP_CENTER,
+                            "Thuế VAT không hợp lệ");
+                    txtProductVAT.requestFocus();
+                return;
+            }
             }
             double thueVAT = vatPercent / 100.0;
 
@@ -2532,22 +2532,22 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
             String vatStr = txtProductVAT1 != null ? txtProductVAT1.getText().trim() : "";
             double vatPercent = 0;
             if (!vatStr.isEmpty()) {
-                try {
+            try {
                     vatPercent = Double.parseDouble(vatStr);
                     if (vatPercent < 0 || vatPercent > 100) {
-                        Notifications.getInstance().show(Notifications.Type.WARNING,
-                                Notifications.Location.TOP_CENTER,
-                                "Thuế VAT phải trong khoảng 0 - 100%");
-                        txtProductVAT1.requestFocus();
-                        return;
-                    }
-                } catch (NumberFormatException e) {
                     Notifications.getInstance().show(Notifications.Type.WARNING,
                             Notifications.Location.TOP_CENTER,
-                            "Thuế VAT không hợp lệ");
-                    txtProductVAT1.requestFocus();
+                                "Thuế VAT phải trong khoảng 0 - 100%");
+                        txtProductVAT1.requestFocus();
                     return;
                 }
+            } catch (NumberFormatException e) {
+                Notifications.getInstance().show(Notifications.Type.WARNING,
+                        Notifications.Location.TOP_CENTER,
+                            "Thuế VAT không hợp lệ");
+                    txtProductVAT1.requestFocus();
+                return;
+            }
             }
             double thueVAT = vatPercent / 100.0;
 

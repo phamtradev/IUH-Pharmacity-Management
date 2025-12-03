@@ -69,6 +69,7 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.util.BarcodeUtil;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.util.UserSession;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.service.GiaBanTheoLoService;
 
 /**
  *
@@ -89,6 +90,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
     private LoHangBUS loHangBUS;
     private GD_BanHang gdBanHang; // Reference đến form cha để lấy container panel
     private String maDonHangHienTai; // Mã đơn hàng đang hiển thị trên màn hình
+    private final GiaBanTheoLoService giaBanTheoLoService = new GiaBanTheoLoService();
 
     /**
      * Creates new form TabHoaDon
@@ -896,60 +898,115 @@ public class Panel_DonHang extends javax.swing.JPanel {
                 danhSachCTKM = chiTietKhuyenMaiSanPhamBUS.timTheoMaKhuyenMai(kmSanPham.getMaKhuyenMai());
             }
 
-            // ===== BƯỚC 1: Tính tổng thành tiền sau giảm giá sản phẩm (để phân bổ giảm giá
-            // hóa đơn) =====
+            // ===== BƯỚC 1: Tính tổng thành tiền sau giảm giá sản phẩm theo từng lô =====
             double tongThanhTienSauGiamGiaSP = 0;
-            for (Panel_ChiTietSanPham panel : danhSachSanPham) {
-                double tongTienGoc = panel.getTongTien(); // đơn giá × số lượng
-                double giamGiaSP = panel.getSoTienGiamGia();
-                tongThanhTienSauGiamGiaSP += (tongTienGoc - giamGiaSP);
-            }
+            List<PanelPricingInfo> pricingInfos = new ArrayList<>();
 
-            // Lấy giá trị giảm giá hóa đơn từ biến instance
-            double giamGiaHoaDon = this.discountOrder;
-
-            // ===== BƯỚC 2: Tạo chi tiết đơn hàng và phân bổ giảm giá =====
             for (Panel_ChiTietSanPham panel : danhSachSanPham) {
-                ChiTietDonHang chiTiet = new ChiTietDonHang();
-                chiTiet.setDonHang(donHang);
-                chiTiet.setLoHang(panel.getLoHangDaChon());
-                chiTiet.setSoLuong(panel.getSoLuong());
-                // Đơn giá lưu trong chi tiết đơn hàng là GIÁ BÁN ĐÃ BAO GỒM VAT
                 SanPham sp = panel.getSanPham();
-                double giaBanCoVAT = sp.getGiaBan() * (1 + sp.getThueVAT());
-                chiTiet.setDonGia(giaBanCoVAT);
-
-                // Lấy số tiền giảm giá sản phẩm từ panel
-                double tongTienGoc = panel.getTongTien(); // Giá gốc = đơn giá × số lượng
-                double giamGiaSP = panel.getSoTienGiamGia(); // Giảm giá sản phẩm
-                double thanhTienSauGiamGiaSP = tongTienGoc - giamGiaSP;
-
-                // Tính giảm giá hóa đơn phân bổ (theo tỷ lệ)
-                double giamGiaHoaDonPhanBo = 0;
-                if (tongThanhTienSauGiamGiaSP > 0 && giamGiaHoaDon > 0) {
-                    giamGiaHoaDonPhanBo = (thanhTienSauGiamGiaSP / tongThanhTienSauGiamGiaSP) * giamGiaHoaDon;
-                }
-
-                // TỔNG GIẢM GIÁ = Giảm giá sản phẩm + Giảm giá hóa đơn phân bổ
-                double tongGiamGia = giamGiaSP + giamGiaHoaDonPhanBo;
-
-                // LƯU RIÊNG 2 LOẠI GIẢM GIÁ VÀO DATABASE
-                chiTiet.setGiamGiaSanPham(giamGiaSP); // CHỈ giảm giá sản phẩm
-                chiTiet.setGiamGiaHoaDonPhanBo(giamGiaHoaDonPhanBo); // Giảm giá hóa đơn phân bổ
-
-                // Thành tiền = Giá gốc - Tổng giảm giá
-                double thanhTien = tongTienGoc - tongGiamGia;
-                chiTiet.setThanhTien(thanhTien);
-
-                // Lưu chi tiết đơn hàng
-                if (!chiTietDonHangBUS.themChiTietDonHang(chiTiet)) {
+                if (sp == null) {
                     Notifications.getInstance().show(Notifications.Type.ERROR,
                             Notifications.Location.TOP_CENTER,
-                            "Không thể lưu chi tiết đơn hàng!");
+                            "Không xác định được thông tin sản phẩm trong giỏ hàng.");
                     return;
                 }
 
-                // QUAN TRỌNG: Xử lý giảm tồn kho - tự động chuyển lô nếu cần
+                Map<LoHang, Integer> phanBo = panel.getMapLoHangVaSoLuong();
+                if (phanBo == null || phanBo.isEmpty()) {
+                    LoHang fallback = panel.getLoHangDaChon();
+                    if (fallback != null) {
+                        phanBo = new java.util.LinkedHashMap<>();
+                        phanBo.put(fallback, panel.getSoLuong());
+                    } else {
+                        Notifications.getInstance().show(Notifications.Type.ERROR,
+                                Notifications.Location.TOP_CENTER,
+                                "Không tìm thấy lô hàng cho sản phẩm " + sp.getTenSanPham());
+                        return;
+                    }
+                }
+
+                List<LotPricingInfo> lotInfos = new ArrayList<>();
+                double tongTienGocPanel = 0;
+                for (Map.Entry<LoHang, Integer> entry : phanBo.entrySet()) {
+                    LoHang loHang = entry.getKey();
+                    int soLuongLay = entry.getValue();
+                    if (loHang == null || soLuongLay <= 0) {
+                        continue;
+                    }
+                    double donGiaCoVAT = giaBanTheoLoService.tinhDonGiaCoVAT(loHang, sp);
+                    double thanhTien = donGiaCoVAT * soLuongLay;
+                    lotInfos.add(new LotPricingInfo(loHang, soLuongLay, donGiaCoVAT, thanhTien));
+                    tongTienGocPanel += thanhTien;
+                }
+
+                if (lotInfos.isEmpty()) {
+                    Notifications.getInstance().show(Notifications.Type.ERROR,
+                            Notifications.Location.TOP_CENTER,
+                            "Không thể tính giá bán cho sản phẩm " + sp.getTenSanPham());
+                    return;
+                }
+
+                double giamGiaSP = Math.max(0, Math.min(panel.getSoTienGiamGia(), tongTienGocPanel));
+                double thanhTienSauGiamGiaSP = Math.max(0, tongTienGocPanel - giamGiaSP);
+
+                PanelPricingInfo pricingInfo = new PanelPricingInfo(panel, sp, lotInfos,
+                        tongTienGocPanel, giamGiaSP, thanhTienSauGiamGiaSP);
+                pricingInfos.add(pricingInfo);
+                tongThanhTienSauGiamGiaSP += thanhTienSauGiamGiaSP;
+            }
+
+            if (pricingInfos.isEmpty()) {
+                Notifications.getInstance().show(Notifications.Type.ERROR,
+                        Notifications.Location.TOP_CENTER,
+                        "Giỏ hàng không có dữ liệu hợp lệ.");
+                return;
+            }
+
+            double giamGiaHoaDon = this.discountOrder;
+            for (PanelPricingInfo info : pricingInfos) {
+                if (giamGiaHoaDon > 0 && tongThanhTienSauGiamGiaSP > 0) {
+                    info.giamGiaHoaDonPhanBo = (info.thanhTienSauGiamGiaSP / tongThanhTienSauGiamGiaSP) * giamGiaHoaDon;
+                } else {
+                    info.giamGiaHoaDonPhanBo = 0;
+                }
+            }
+
+            // ===== BƯỚC 2: Tạo chi tiết đơn hàng và phân bổ giảm giá =====
+            for (PanelPricingInfo info : pricingInfos) {
+                Panel_ChiTietSanPham panel = info.panel;
+
+                for (LotPricingInfo lotInfo : info.lotPricings) {
+                    double tyLeGoc = info.tongTienGoc > 0 ? (lotInfo.thanhTienGoc / info.tongTienGoc) : 0;
+                    double giamGiaSPTheoLo = tyLeGoc * info.giamGiaSanPham;
+                    double thanhTienSauGiamSP = Math.max(0, lotInfo.thanhTienGoc - giamGiaSPTheoLo);
+
+                    double tyLeHoaDon = info.thanhTienSauGiamGiaSP > 0
+                            ? (thanhTienSauGiamSP / info.thanhTienSauGiamGiaSP)
+                            : 0;
+                    double giamGiaHoaDonTheoLo = tyLeHoaDon * info.giamGiaHoaDonPhanBo;
+
+                    double thanhTienThucTe = Math.max(0, lotInfo.thanhTienGoc - giamGiaSPTheoLo - giamGiaHoaDonTheoLo);
+
+                    ChiTietDonHang chiTiet = new ChiTietDonHang();
+                    chiTiet.setDonHang(donHang);
+                    chiTiet.setLoHang(lotInfo.loHang);
+                    chiTiet.setSoLuong(lotInfo.soLuong);
+                    chiTiet.setDonGia(lotInfo.donGiaCoVAT);
+                    chiTiet.setGiamGiaSanPham(giamGiaSPTheoLo);
+                    chiTiet.setGiamGiaHoaDonPhanBo(giamGiaHoaDonTheoLo);
+                    chiTiet.setThanhTien(thanhTienThucTe);
+
+                    if (!chiTietDonHangBUS.themChiTietDonHang(chiTiet)) {
+                        Notifications.getInstance().show(Notifications.Type.ERROR,
+                                Notifications.Location.TOP_CENTER,
+                                "Không thể lưu chi tiết đơn hàng!");
+                        return;
+                    }
+
+                    chiTietDonHangList.add(chiTiet);
+                }
+
+                // QUAN TRỌNG: Xử lý giảm tồn kho theo đúng lô đã phân bổ
                 int soLuongBan = panel.getSoLuong();
                 List<LoHang> danhSachLoHang = panel.getDanhSachLoHang();
 
@@ -960,7 +1017,6 @@ public class Panel_DonHang extends javax.swing.JPanel {
                     return;
                 }
 
-                // Kiểm tra tổng tồn kho của tất cả các lô còn hiệu lực
                 int tongTonKho = danhSachLoHang.stream()
                         .filter(lh -> lh.getTonKho() > 0 && lh.isTrangThai())
                         .mapToInt(LoHang::getTonKho)
@@ -978,35 +1034,27 @@ public class Panel_DonHang extends javax.swing.JPanel {
                     return;
                 }
 
-                // Giảm tồn kho từ các lô hàng (ưu tiên lô có hạn sử dụng gần nhất)
-                int soLuongConLai = soLuongBan;
-                List<LoHang> danhSachLoHopLe = danhSachLoHang.stream()
-                        .filter(lh -> lh.getTonKho() > 0 && lh.isTrangThai())
-                        .sorted((lh1, lh2) -> lh1.getHanSuDung().compareTo(lh2.getHanSuDung())) // FIFO
-                        .collect(java.util.stream.Collectors.toList());
-
-                for (LoHang loHang : danhSachLoHopLe) {
-                    if (soLuongConLai <= 0) {
-                        break;
+                for (LotPricingInfo lotInfo : info.lotPricings) {
+                    LoHang loHang = lotInfo.loHang;
+                    if (loHang == null) {
+                        continue;
                     }
-
                     int tonKhoHienTai = loHang.getTonKho();
-                    int soLuongTuLoNay = Math.min(tonKhoHienTai, soLuongConLai);
-                    int tonKhoMoi = tonKhoHienTai - soLuongTuLoNay;
-
+                    if (tonKhoHienTai < lotInfo.soLuong) {
+                        Notifications.getInstance().show(Notifications.Type.ERROR,
+                                Notifications.Location.TOP_CENTER,
+                                "Không đủ tồn kho cho lô " + loHang.getMaLoHang() + " của sản phẩm "
+                                + panel.getSanPham().getTenSanPham());
+                        return;
+                    }
                     try {
-                        loHang.setTonKho(tonKhoMoi);
-
-                        // Cập nhật vào database
+                        loHang.setTonKho(tonKhoHienTai - lotInfo.soLuong);
                         if (!loHangBUS.capNhatLoHang(loHang)) {
                             Notifications.getInstance().show(Notifications.Type.ERROR,
                                     Notifications.Location.TOP_CENTER,
                                     "Không thể cập nhật tồn kho cho lô hàng: " + loHang.getMaLoHang());
                             return;
                         }
-
-                        soLuongConLai -= soLuongTuLoNay;
-
                     } catch (Exception e) {
                         Notifications.getInstance().show(Notifications.Type.ERROR,
                                 Notifications.Location.TOP_CENTER,
@@ -1014,8 +1062,6 @@ public class Panel_DonHang extends javax.swing.JPanel {
                         return;
                     }
                 }
-
-                chiTietDonHangList.add(chiTiet);
             }
 
             // 7. Thông báo thành công
@@ -2438,6 +2484,46 @@ public class Panel_DonHang extends javax.swing.JPanel {
         panel.add(lblValue);
 
         return panel;
+    }
+
+    private static class LotPricingInfo {
+
+        final LoHang loHang;
+        final int soLuong;
+        final double donGiaCoVAT;
+        final double thanhTienGoc;
+
+        LotPricingInfo(LoHang loHang, int soLuong, double donGiaCoVAT, double thanhTienGoc) {
+            this.loHang = loHang;
+            this.soLuong = soLuong;
+            this.donGiaCoVAT = donGiaCoVAT;
+            this.thanhTienGoc = thanhTienGoc;
+        }
+    }
+
+    private static class PanelPricingInfo {
+
+        final Panel_ChiTietSanPham panel;
+        final SanPham sanPham;
+        final List<LotPricingInfo> lotPricings;
+        final double tongTienGoc;
+        final double giamGiaSanPham;
+        final double thanhTienSauGiamGiaSP;
+        double giamGiaHoaDonPhanBo;
+
+        PanelPricingInfo(Panel_ChiTietSanPham panel,
+                SanPham sanPham,
+                List<LotPricingInfo> lotPricings,
+                double tongTienGoc,
+                double giamGiaSanPham,
+                double thanhTienSauGiamGiaSP) {
+            this.panel = panel;
+            this.sanPham = sanPham;
+            this.lotPricings = lotPricings;
+            this.tongTienGoc = tongTienGoc;
+            this.giamGiaSanPham = giamGiaSanPham;
+            this.thanhTienSauGiamGiaSP = thanhTienSauGiamGiaSP;
+        }
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
