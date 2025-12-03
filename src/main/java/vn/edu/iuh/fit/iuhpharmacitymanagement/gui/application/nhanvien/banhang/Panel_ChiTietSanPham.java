@@ -118,13 +118,23 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
         cachedTongTien = pricing.tongTien;
         txtTongTien.setText(currencyFormat.format(pricing.tongTien) + " đ");
 
-        if (pricing.multiLot) {
-            txtDonGia.setText("Theo " + pricing.soLo + " lô");
-            txtDonGia.setToolTipText(pricing.tooltip);
-        } else {
-            txtDonGia.setText(currencyFormat.format(pricing.donGiaDon) + " đ");
-            txtDonGia.setToolTipText(null);
+        // Đơn giá chưa VAT
+        if (txtDonGiaChuaVAT != null) {
+            if (pricing.donGiaDonChuaVAT > 0) {
+                txtDonGiaChuaVAT.setText(currencyFormat.format(pricing.donGiaDonChuaVAT) + " đ");
+            } else {
+                txtDonGiaChuaVAT.setText("-");
+            }
+            txtDonGiaChuaVAT.setToolTipText(pricing.tooltip);
         }
+
+        // Đơn giá đã VAT
+        if (pricing.donGiaDon > 0) {
+            txtDonGia.setText(currencyFormat.format(pricing.donGiaDon) + " đ");
+        } else {
+            txtDonGia.setText("-");
+        }
+        txtDonGia.setToolTipText(pricing.tooltip);
 
         firePropertyChange("tongTien", oldTongTien, pricing.tongTien);
     }
@@ -395,16 +405,24 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
 
         if (phanBo == null || phanBo.isEmpty()) {
             // Không có thông tin lô hàng (ví dụ: sản phẩm chưa có lô hoặc lỗi dữ liệu),
-            // fallback về đơn giá đã VAT lấy từ GiaBanTheoLoService để đảm bảo nhất quán.
+            // fallback về đơn giá theo cấu hình lãi chuẩn để đảm bảo nhất quán.
+            double donGiaChuaVAT = giaBanTheoLoService.tinhDonGiaChuaVAT(null, sanPham);
             double donGiaCoVAT = giaBanTheoLoService.tinhDonGiaCoVAT(null, sanPham);
             int soLuong = getSoLuong();
+            result.tongTienChuaVAT = donGiaChuaVAT * soLuong;
             result.tongTien = donGiaCoVAT * soLuong;
+            result.donGiaDonChuaVAT = donGiaChuaVAT;
             result.donGiaDon = donGiaCoVAT;
             result.soLo = 1;
+            result.multiLot = false;
+            result.tooltip = "<html>1 lô (mặc định) • "
+                    + soLuong + " × " + currencyFormat.format(donGiaCoVAT) + " = "
+                    + currencyFormat.format(result.tongTien) + " đ</html>";
             return result;
         }
 
-        double tongTien = 0;
+        double tongTienCoVAT = 0;
+        double tongTienChuaVAT = 0;
         int tongSoLuong = 0;
         StringBuilder tooltip = new StringBuilder("<html>");
         int index = 1;
@@ -412,28 +430,33 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
         for (Map.Entry<LoHang, Integer> entry : phanBo.entrySet()) {
             LoHang loHang = entry.getKey();
             int soLuong = entry.getValue();
+            double donGiaChuaVAT = giaBanTheoLoService.tinhDonGiaChuaVAT(loHang, sanPham);
             double donGiaCoVAT = giaBanTheoLoService.tinhDonGiaCoVAT(loHang, sanPham);
-            double thanhTien = donGiaCoVAT * soLuong;
+            double thanhTienChuaVAT = donGiaChuaVAT * soLuong;
+            double thanhTienCoVAT = donGiaCoVAT * soLuong;
 
-            tongTien += thanhTien;
+            tongTienChuaVAT += thanhTienChuaVAT;
+            tongTienCoVAT += thanhTienCoVAT;
             tongSoLuong += soLuong;
 
             tooltip.append("Lô ").append(index++).append(": ")
                     .append(loHang != null ? loHang.getMaLoHang() : "N/A")
                     .append(" • ")
                     .append(soLuong).append(" × ")
+                    .append(currencyFormat.format(donGiaChuaVAT)).append(" / ")
                     .append(currencyFormat.format(donGiaCoVAT)).append(" = ")
-                    .append(currencyFormat.format(thanhTien)).append(" đ<br>");
+                    .append(currencyFormat.format(thanhTienCoVAT)).append(" đ<br>");
         }
         tooltip.append("</html>");
 
-        result.tongTien = tongTien;
+        result.tongTien = tongTienCoVAT;
+        result.tongTienChuaVAT = tongTienChuaVAT;
         result.soLo = phanBo.size();
         result.multiLot = phanBo.size() > 1;
-        if (result.multiLot) {
-            result.tooltip = tooltip.toString();
-        } else {
-            result.donGiaDon = tongSoLuong > 0 ? tongTien / tongSoLuong : 0;
+        result.tooltip = tooltip.toString();
+        if (tongSoLuong > 0) {
+            result.donGiaDon = tongTienCoVAT / tongSoLuong;
+            result.donGiaDonChuaVAT = tongTienChuaVAT / tongSoLuong;
         }
 
         return result;
@@ -442,7 +465,9 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
     private static class PricingComputation {
 
         double tongTien;
+        double tongTienChuaVAT;
         double donGiaDon;
+        double donGiaDonChuaVAT;
         boolean multiLot;
         int soLo;
         String tooltip;
@@ -802,7 +827,20 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
         gbc.weightx = 0.0;
         add(txtDiscount, gbc);
 
-        // 6. Đơn giá
+        // 6. Đơn giá (chưa VAT)
+        txtDonGiaChuaVAT = new javax.swing.JLabel();
+        txtDonGiaChuaVAT.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        txtDonGiaChuaVAT.setText("");
+        txtDonGiaChuaVAT.setPreferredSize(new java.awt.Dimension(100, 100));
+        txtDonGiaChuaVAT.setMinimumSize(new java.awt.Dimension(100, 100));
+        txtDonGiaChuaVAT.setMaximumSize(new java.awt.Dimension(100, 100));
+        txtDonGiaChuaVAT.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
+        txtDonGiaChuaVAT.setVerticalAlignment(javax.swing.SwingConstants.CENTER);
+        gbc.gridx = 5;
+        gbc.weightx = 0.0;
+        add(txtDonGiaChuaVAT, gbc);
+
+        // 7. Đơn giá (đã VAT)
         txtDonGia.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         txtDonGia.setText("");
         txtDonGia.setPreferredSize(new java.awt.Dimension(100, 100));
@@ -810,11 +848,11 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
         txtDonGia.setMaximumSize(new java.awt.Dimension(100, 100));
         txtDonGia.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
         txtDonGia.setVerticalAlignment(javax.swing.SwingConstants.CENTER);
-        gbc.gridx = 5;
+        gbc.gridx = 6;
         gbc.weightx = 0.0;
         add(txtDonGia, gbc);
 
-        // 7. Tổng tiền
+        // 8. Tổng tiền
         txtTongTien.setFont(new java.awt.Font("Segoe UI", 1, 16)); // NOI18N
         txtTongTien.setForeground(new java.awt.Color(0, 120, 215));
         txtTongTien.setText("");
@@ -823,11 +861,11 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
         txtTongTien.setMaximumSize(new java.awt.Dimension(120, 100));
         txtTongTien.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
         txtTongTien.setVerticalAlignment(javax.swing.SwingConstants.CENTER);
-        gbc.gridx = 6;
+        gbc.gridx = 7;
         gbc.weightx = 0.0;
         add(txtTongTien, gbc);
 
-        // 8. Nút Xóa (Chức năng)
+        // 9. Nút Xóa (Chức năng)
         javax.swing.JPanel pnXoa = new javax.swing.JPanel();
         pnXoa.setBackground(java.awt.Color.WHITE);
         pnXoa.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 22));
@@ -847,7 +885,7 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
         pnXoa.add(btnXoa);
         pnXoa.setPreferredSize(new java.awt.Dimension(70, 100));
         pnXoa.setMinimumSize(new java.awt.Dimension(70, 100));
-        gbc.gridx = 7;
+        gbc.gridx = 8;
         gbc.weightx = 0.0;
         add(pnXoa, gbc);
     }// </editor-fold>//GEN-END:initComponents
@@ -927,6 +965,7 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
     private javax.swing.JScrollPane scrollPane;
     private javax.swing.JSpinner spinnerSoLuong;
     private javax.swing.JLabel txtDiscount;
+    private javax.swing.JLabel txtDonGiaChuaVAT;
     private javax.swing.JLabel txtDonGia;
     private javax.swing.JLabel txtTongTien;
     // End of variables declaration//GEN-END:variables

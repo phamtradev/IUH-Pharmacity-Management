@@ -139,12 +139,21 @@ public class GD_BanHang extends javax.swing.JPanel {
         gbc.weightx = 0.0;
         headerPanel.add(lblHeaderDiscount, gbc);
 
-        javax.swing.JLabel lblHeaderPrice = new javax.swing.JLabel("Đơn giá");
+        javax.swing.JLabel lblHeaderPriceChuaVAT = new javax.swing.JLabel("Đơn giá");
+        lblHeaderPriceChuaVAT.setFont(new java.awt.Font("Segoe UI", 1, 13));
+        lblHeaderPriceChuaVAT.setPreferredSize(new java.awt.Dimension(100, 30));
+        lblHeaderPriceChuaVAT.setMinimumSize(new java.awt.Dimension(100, 30));
+        lblHeaderPriceChuaVAT.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
+        gbc.gridx = 5;
+        gbc.weightx = 0.0;
+        headerPanel.add(lblHeaderPriceChuaVAT, gbc);
+
+        javax.swing.JLabel lblHeaderPrice = new javax.swing.JLabel("Đơn giá (VAT)");
         lblHeaderPrice.setFont(new java.awt.Font("Segoe UI", 1, 13));
         lblHeaderPrice.setPreferredSize(new java.awt.Dimension(100, 30));
         lblHeaderPrice.setMinimumSize(new java.awt.Dimension(100, 30));
         lblHeaderPrice.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
-        gbc.gridx = 5;
+        gbc.gridx = 6;
         gbc.weightx = 0.0;
         headerPanel.add(lblHeaderPrice, gbc);
 
@@ -153,7 +162,7 @@ public class GD_BanHang extends javax.swing.JPanel {
         lblHeaderTotal.setPreferredSize(new java.awt.Dimension(120, 30));
         lblHeaderTotal.setMinimumSize(new java.awt.Dimension(120, 30));
         lblHeaderTotal.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
-        gbc.gridx = 6;
+        gbc.gridx = 7;
         gbc.weightx = 0.0;
         headerPanel.add(lblHeaderTotal, gbc);
 
@@ -162,7 +171,7 @@ public class GD_BanHang extends javax.swing.JPanel {
         lblHeaderAction.setPreferredSize(new java.awt.Dimension(70, 30));
         lblHeaderAction.setMinimumSize(new java.awt.Dimension(70, 30));
         lblHeaderAction.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        gbc.gridx = 7;
+        gbc.gridx = 8;
         gbc.weightx = 0.0;
         headerPanel.add(lblHeaderAction, gbc);
 
