@@ -23,7 +23,9 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import javax.swing.RowFilter;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableRowSorter;
 
 /**
  * Giao diện quản lý giá bán cho quản lý: - Hiển thị giá nhập FIFO (chưa VAT),
@@ -37,9 +39,12 @@ public class GD_QuanLyGiaBan extends JPanel {
     private final BangLaiChuanBUS bangLaiChuanBUS;
 
     private static final String ALL_TYPES_DISPLAY = "Áp dụng cho tất cả";
+    private static final String PRODUCT_SORT_ALL = "Tất cả loại sản phẩm";
 
     private JTable table;
     private DefaultTableModel model;
+    private TableRowSorter<DefaultTableModel> tableSorter;
+    private JComboBox<String> cboLoaiSort;
     private JButton btnReload;
     private JButton btnApplySelected;
     private final List<RowHighlight> rowHighlights = new ArrayList<>();
@@ -119,24 +124,36 @@ public class GD_QuanLyGiaBan extends JPanel {
         configPanel.add(pnlSave, BorderLayout.SOUTH);
 
         String[] columns = {
-            "Mã SP", "Tên sản phẩm", "Giá nhập FIFO", "VAT (%)",
+            "Mã SP", "Tên sản phẩm", "Loại sản phẩm", "Giá nhập FIFO", "VAT (%)",
             "Giá bán hiện tại", "Giá bán đề xuất", "Giá bán (đã VAT)", "Biên lợi nhuận hiện tại (%)"
         };
         model = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
                 // Cho phép chỉnh sửa cột "Giá bán đề xuất" để quản lý có thể tự sửa tay
-                return column == 5;
+                return column == 6;
             }
         };
 
         table = new JTable(model);
+        tableSorter = new TableRowSorter<>(model);
+        table.setRowSorter(tableSorter);
         table.setRowHeight(28);
         table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         table.setDefaultRenderer(Object.class, new PriceRowRenderer());
+
+        JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 8));
+        JLabel lblSort = new JLabel("Lọc theo loại:");
+        cboLoaiSort = new JComboBox<>();
+        populateLoaiSortCombo();
+        cboLoaiSort.addActionListener(e -> applyLoaiSortFilter());
+        filterPanel.add(lblSort);
+        filterPanel.add(cboLoaiSort);
+
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 10));
         JPanel centerPanel = new JPanel(new BorderLayout());
+        centerPanel.add(filterPanel, BorderLayout.NORTH);
         centerPanel.add(scrollPane, BorderLayout.CENTER);
         centerPanel.add(buildLegendPanel(), BorderLayout.SOUTH);
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, configPanel, centerPanel);
@@ -242,6 +259,48 @@ public class GD_QuanLyGiaBan extends JPanel {
         } finally {
             suppressAutoRecalc = previous;
         }
+    }
+
+    private void populateLoaiSortCombo() {
+        if (cboLoaiSort == null) {
+            return;
+        }
+        DefaultComboBoxModel<String> comboModel = new DefaultComboBoxModel<>();
+        comboModel.addElement(PRODUCT_SORT_ALL);
+        for (LoaiSanPham loai : LoaiSanPham.values()) {
+            String display = loaiSanPhamToDisplay(loai);
+            boolean exists = false;
+            for (int i = 0; i < comboModel.getSize(); i++) {
+                if (comboModel.getElementAt(i).equals(display)) {
+                    exists = true;
+                    break;
+                }
+            }
+            if (!exists) {
+                comboModel.addElement(display);
+            }
+        }
+        cboLoaiSort.setModel(comboModel);
+        cboLoaiSort.setSelectedIndex(0);
+    }
+
+    private void applyLoaiSortFilter() {
+        if (tableSorter == null || cboLoaiSort == null) {
+            return;
+        }
+        String selected = (String) cboLoaiSort.getSelectedItem();
+        if (selected == null || PRODUCT_SORT_ALL.equals(selected)) {
+            tableSorter.setRowFilter(null);
+            return;
+        }
+        RowFilter<DefaultTableModel, Integer> filter = new RowFilter<>() {
+            @Override
+            public boolean include(RowFilter.Entry<? extends DefaultTableModel, ? extends Integer> entry) {
+                Object value = entry.getValue(2);
+                return selected.equals(value);
+            }
+        };
+        tableSorter.setRowFilter(filter);
     }
 
     private void renderConfigTableForSelection() {
@@ -452,6 +511,7 @@ public class GD_QuanLyGiaBan extends JPanel {
                 Object[] row = {
                     sp.getMaSanPham(),
                     sp.getTenSanPham(),
+                    loaiSanPhamToDisplay(sp.getLoaiSanPham()),
                     formatCurrency(giaNhapFIFO),
                     String.format("%.0f", vat * 100),
                     formatCurrency(giaBan),
@@ -467,6 +527,7 @@ public class GD_QuanLyGiaBan extends JPanel {
                         Notifications.Location.TOP_CENTER,
                         "Đã tải " + danhSach.size() + " sản phẩm.");
             }
+            applyLoaiSortFilter();
         } catch (Exception ex) {
             ex.printStackTrace();
             Notifications.getInstance().show(Notifications.Type.ERROR,
@@ -604,8 +665,8 @@ public class GD_QuanLyGiaBan extends JPanel {
             for (int viewRow : selectedRows) {
                 int row = table.convertRowIndexToModel(viewRow);
                 String maSp = (String) model.getValueAt(row, 0);
-                // Cột 5: Giá bán đề xuất (có thể đã được chỉnh sửa)
-                Object cellValue = model.getValueAt(row, 5);
+                // Cột 6: Giá bán đề xuất (có thể đã được chỉnh sửa)
+                Object cellValue = model.getValueAt(row, 6);
                 String giaBanDeXuatStr = cellValue.toString().replace(".", "").replace(",", "");
                 double giaBanDeXuat = Double.parseDouble(giaBanDeXuatStr);
 
