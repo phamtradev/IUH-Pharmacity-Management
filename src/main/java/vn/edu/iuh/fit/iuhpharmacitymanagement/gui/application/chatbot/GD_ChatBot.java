@@ -46,7 +46,7 @@ public class GD_ChatBot extends javax.swing.JPanel {
             "thuoc", "thuốc", "san", "sản", "pham", "phẩm", "sp",
             "tim", "tìm", "kiem", "kiếm", "kiemtra", "kiểm", "tra",
             "thong", "thông", "tin", "ton", "tồn", "kho",
-            "con", "còn", "bao", "nhieu", "nhiêu", "so", "số", "luong", "lượng",
+            "con", "còn", "co", "có", "bao", "nhieu", "nhiêu", "so", "số", "luong", "lượng",
             "lo", "lô", "hang", "hàng", "may", "mấy", "gi", "gì",
             "cho", "xin", "hoi", "hỏi", "toi", "tôi", "ban", "bán",
             "duoc", "được", "la", "là", "ve", "về"
@@ -406,6 +406,11 @@ public class GD_ChatBot extends javax.swing.JPanel {
             return dbService.layThongTinBanHangHomNay();
         }
 
+        // Câu hỏi về xuất hủy / hàng hỏng
+        if (isDisposalQuestion(lowerMessage)) {
+            return dbService.layThongTinDonCanXuatHuy();
+        }
+
         // Phát hiện câu hỏi về số lô hàng (ưu tiên cao - kiểm tra trước)
         if (lowerMessage.contains("bao nhiêu lô") || lowerMessage.contains("bao nhieu lo")
                 || lowerMessage.contains("mấy lô") || lowerMessage.contains("may lo")
@@ -448,10 +453,17 @@ public class GD_ChatBot extends javax.swing.JPanel {
             }
         }
 
-        // Phát hiện câu hỏi về sản phẩm sắp hết hạn
+        // Phát hiện câu hỏi về sản phẩm / lô sắp hết hạn
         if (lowerMessage.contains("hết hạn") || lowerMessage.contains("het han")
                 || lowerMessage.contains("sắp hết hạn") || lowerMessage.contains("sap het han")
                 || lowerMessage.contains("hạn sử dụng") || lowerMessage.contains("han su dung")) {
+
+            // Nếu người dùng có nêu tên sản phẩm → ưu tiên kiểm tra theo từng sản phẩm
+            if (productName != null && !productName.isEmpty()) {
+                return dbService.layLoSapHetHanTheoTenSanPham(productName);
+            }
+
+            // Không nêu cụ thể sản phẩm → trả về danh sách toàn bộ sản phẩm sắp hết hạn
             return dbService.laySanPhamSapHetHan();
         }
 
@@ -510,6 +522,18 @@ public class GD_ChatBot extends javax.swing.JPanel {
         boolean mentionProduct = lowerMessage.contains("thuốc") || lowerMessage.contains("thuoc")
                 || lowerMessage.contains("sản phẩm") || lowerMessage.contains("san pham");
         return mentionInfo && mentionProduct;
+    }
+
+    private boolean isDisposalQuestion(String lowerMessage) {
+        boolean mentionDisposal = lowerMessage.contains("xuất hủy") || lowerMessage.contains("xuat huy")
+                || lowerMessage.contains("hủy hàng") || lowerMessage.contains("huy hang")
+                || lowerMessage.contains("hàng hỏng") || lowerMessage.contains("hang hong")
+                || lowerMessage.contains("hủy thuốc") || lowerMessage.contains("huy thuoc");
+        boolean mentionNeed = lowerMessage.contains("cần") || lowerMessage.contains("can")
+                || lowerMessage.contains("phải") || lowerMessage.contains("phai")
+                || lowerMessage.contains("có đơn") || lowerMessage.contains("co don")
+                || lowerMessage.contains("đơn nào") || lowerMessage.contains("don nao");
+        return mentionDisposal && (mentionNeed || lowerMessage.contains("hôm nay") || lowerMessage.contains("hom nay"));
     }
 
     private boolean isOnlyProductName(String originalMessage, String extractedName) {

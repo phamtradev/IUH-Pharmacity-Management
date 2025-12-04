@@ -18,6 +18,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.Map;
 
 /**
  * Service cung cấp dữ liệu từ database cho ChatBot Cho phép AI truy vấn thông
@@ -248,6 +249,151 @@ public class ChatBotDatabaseService {
             return result.toString();
         } catch (Exception e) {
             return "Lỗi khi lấy danh sách sản phẩm sắp hết hạn: " + e.getMessage();
+        }
+    }
+
+    /**
+     * Lấy thông tin các lô sắp hết hạn theo tên sản phẩm (tìm gần đúng)
+     * Dùng cho câu hỏi kiểu: "sản phẩm XXX có lô nào sắp hết hạn không?"
+     */
+    public String layLoSapHetHanTheoTenSanPham(String tenSanPham) {
+        try {
+            List<SanPham> danhSachSP = sanPhamDAO.findByName(tenSanPham);
+
+            if (danhSachSP.isEmpty()) {
+                return "Không tìm thấy sản phẩm nào với tên: " + tenSanPham;
+            }
+
+            LocalDate gioiHan = LocalDate.now().plusMonths(6);
+            StringBuilder result = new StringBuilder();
+            result.append("⚠️ Thông tin lô sắp hết hạn theo sản phẩm:\n\n");
+
+            boolean coItNhatMotLo = false;
+
+            for (SanPham sp : danhSachSP) {
+                List<LoHang> danhSachLo = loHangDAO.findByMaSanPham(sp.getMaSanPham());
+
+                // Lọc các lô trong vòng 6 tháng tới và còn tồn kho
+                List<LoHang> loSapHetHan = new ArrayList<>();
+                for (LoHang lh : danhSachLo) {
+                    if (lh.getHanSuDung() != null
+                            && !lh.getHanSuDung().isAfter(gioiHan) // HSD <= ngày giới hạn
+                            && lh.getTonKho() > 0) {
+                        loSapHetHan.add(lh);
+                    }
+                }
+
+                if (loSapHetHan.isEmpty()) {
+                    result.append("🔹 ").append(sp.getTenSanPham()).append(" (Mã: ")
+                            .append(sp.getMaSanPham()).append(")\n");
+                    result.append("   → Hiện chưa có lô nào sắp hết hạn trong vòng 6 tháng.\n\n");
+                    continue;
+                }
+
+                coItNhatMotLo = true;
+                result.append("🔹 ").append(sp.getTenSanPham()).append(" (Mã: ")
+                        .append(sp.getMaSanPham()).append(")\n");
+                result.append("   • Số lô sắp hết hạn: ").append(loSapHetHan.size()).append("\n");
+                result.append("   • Chi tiết các lô:\n");
+
+                for (LoHang lh : loSapHetHan) {
+                    result.append("     • Lô: ").append(lh.getTenLoHang())
+                            .append(" | HSD: ").append(lh.getHanSuDung())
+                            .append(" | Tồn kho: ").append(lh.getTonKho());
+                    if (sp.getDonViTinh() != null) {
+                        result.append(" ").append(sp.getDonViTinh().getTenDonVi());
+                    }
+                    result.append("\n");
+                }
+                result.append("\n");
+            }
+
+            if (!coItNhatMotLo) {
+                return "Không có lô nào sắp hết hạn (trong vòng 6 tháng) cho các sản phẩm khớp với: " + tenSanPham;
+            }
+
+            return result.toString();
+        } catch (Exception e) {
+            return "Lỗi khi kiểm tra lô sắp hết hạn theo sản phẩm: " + e.getMessage();
+        }
+    }
+
+    /**
+     * Thông tin các lô / sản phẩm cần xuất hủy
+     * Gồm: 
+     *  - Các lô đã hết hạn tính đến hôm nay (HSD <= hôm nay, còn tồn kho)
+     *  - Hàng từ đơn trả cần hủy.
+     */
+    public String layThongTinDonCanXuatHuy() {
+        try {
+            // Toàn bộ lô sắp hết hạn (<= 6 tháng, tồn kho > 0, trạng thái còn hoạt động)
+            List<LoHang> loSapHetHan = loHangDAO.timSanPhamHetHan();
+
+            // Lọc lại: chỉ giữ những lô đã hết hạn tính đến hôm nay (cần xuất hủy thực tế)
+            LocalDate homNay = LocalDate.now();
+            List<LoHang> loCanHuyTheoHSD = new ArrayList<>();
+            for (LoHang lh : loSapHetHan) {
+                if (lh.getHanSuDung() != null && !lh.getHanSuDung().isAfter(homNay)) {
+                    loCanHuyTheoHSD.add(lh);
+                }
+            }
+
+            // Các lô cần hủy do trả hàng
+            List<Map<String, Object>> loTuDonTra = loHangDAO.findForDisposalFromReturns();
+
+            int tongSo = loCanHuyTheoHSD.size() + loTuDonTra.size();
+            if (tongSo == 0) {
+                return "Hiện không có sản phẩm hay đơn nào cần xuất hủy.";
+            }
+
+            StringBuilder result = new StringBuilder();
+            result.append("🗑️ Thông tin sản phẩm cần xuất hủy:\n\n");
+            result.append("🔹 Tổng số mục cần xử lý: ").append(tongSo).append("\n");
+            result.append("   • Từ lô đã hết hạn (tính đến hôm nay): ").append(loCanHuyTheoHSD.size()).append("\n");
+            result.append("   • Từ đơn trả hàng: ").append(loTuDonTra.size()).append("\n\n");
+
+            if (!loCanHuyTheoHSD.isEmpty()) {
+                result.append("📦 Các lô đã hết hạn (còn tồn kho):\n");
+                for (LoHang lh : loCanHuyTheoHSD) {
+                    SanPham sp = lh.getSanPham();
+                    result.append("   • ").append(sp != null ? sp.getTenSanPham() : "Không rõ sản phẩm")
+                            .append(" | Lô: ").append(lh.getTenLoHang())
+                            .append(" | HSD: ").append(lh.getHanSuDung())
+                            .append(" | Tồn kho: ").append(lh.getTonKho());
+                    if (sp != null && sp.getDonViTinh() != null) {
+                        result.append(" ").append(sp.getDonViTinh().getTenDonVi());
+                    }
+                    result.append("\n");
+                }
+                result.append("\n");
+            }
+
+            if (!loTuDonTra.isEmpty()) {
+                result.append("📥 Sản phẩm cần hủy do khách trả hàng:\n");
+                for (Map<String, Object> item : loTuDonTra) {
+                    Object loObj = item.get("loHang");
+                    String lyDo = String.valueOf(item.get("lyDo"));
+                    if (loObj instanceof LoHang) {
+                        LoHang lh = (LoHang) loObj;
+                        SanPham sp = lh.getSanPham();
+                        result.append("   • ").append(sp != null ? sp.getTenSanPham() : "Không rõ sản phẩm")
+                                .append(" | Lô: ").append(lh.getTenLoHang())
+                                .append(" | HSD: ").append(lh.getHanSuDung())
+                                .append(" | Tồn kho: ").append(lh.getTonKho());
+                        if (sp != null && sp.getDonViTinh() != null) {
+                            result.append(" ").append(sp.getDonViTinh().getTenDonVi());
+                        }
+                        if (lyDo != null && !lyDo.trim().isEmpty() && !"null".equalsIgnoreCase(lyDo.trim())) {
+                            result.append(" | Lý do: ").append(lyDo.trim());
+                        }
+                        result.append("\n");
+                    }
+                }
+            }
+
+            return result.toString();
+        } catch (Exception e) {
+            return "Lỗi khi lấy thông tin đơn cần xuất hủy: " + e.getMessage();
         }
     }
 
