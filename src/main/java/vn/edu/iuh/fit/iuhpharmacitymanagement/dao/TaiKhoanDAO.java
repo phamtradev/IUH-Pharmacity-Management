@@ -46,7 +46,7 @@ public class TaiKhoanDAO implements DAOInterface<TaiKhoan, String> {
             + "WHERE tk.maNhanVien = ?";
 
     private final String SQL_LAY_MA_CUOI
-            = "SELECT TOP 1 tenDangNhap FROM TaiKhoan ORDER BY tenDangNhap DESC";
+            = "SELECT TOP 1 tenDangNhap FROM TaiKhoan WHERE tenDangNhap LIKE ? ORDER BY tenDangNhap DESC";
 
     @Override
     public boolean insert(TaiKhoan taiKhoan) {
@@ -54,7 +54,9 @@ public class TaiKhoanDAO implements DAOInterface<TaiKhoan, String> {
 
             if (taiKhoan.getTenDangNhap() == null || taiKhoan.getTenDangNhap().trim().isEmpty()) {
                 try {
-                    taiKhoan.setTenDangNhap(taoMaTaiKhoan());
+                    // Lấy vai trò từ nhân viên để tạo tên đăng nhập
+                    String vaiTro = taiKhoan.getNhanVien() != null ? taiKhoan.getNhanVien().getVaiTro() : null;
+                    taiKhoan.setTenDangNhap(taoMaTaiKhoan(vaiTro));
                 } catch (Exception e) {
                     e.printStackTrace();
                     return false;
@@ -90,7 +92,14 @@ public class TaiKhoanDAO implements DAOInterface<TaiKhoan, String> {
     public boolean updatePass(TaiKhoan taiKhoan, NhanVien nv, String newPass) {
         //lay pass tư ham ỏ email phat sinh
         //EmailUtil email = new EmailUtil();
-        //String newPass = email.ramdomPass(nv);        
+        //String newPass = email.ramdomPass(nv);
+        
+        // Validate mật khẩu trước khi mã hóa
+        if (newPass == null || !newPass.matches(TaiKhoan.MAT_KHAU_REGEX)) {
+            System.err.println("Mật khẩu không hợp lệ: " + TaiKhoan.MAT_KHAU_SAI);
+            return false;
+        }
+        
         System.out.println("Mật khẩu mới (plain text): " + newPass);
 
         // Hash mật khẩu trước khi lưu vào database
@@ -189,7 +198,20 @@ public class TaiKhoanDAO implements DAOInterface<TaiKhoan, String> {
                 nhanVien.setDiaChi(rs.getString("diaChi"));
                 nhanVien.setSoDienThoai(rs.getString("soDienThoai"));
                 nhanVien.setEmail(rs.getString("email"));
-                nhanVien.setVaiTro(rs.getString("vaiTro"));
+                
+                // Chuẩn hóa vai trò: trim và chuẩn hóa giá trị
+                String vaiTro = rs.getString("vaiTro");
+                if (vaiTro != null) {
+                    vaiTro = vaiTro.trim();
+                    // Chuẩn hóa: "Nhân viên" hoặc "Quản lý" (xử lý cả tiếng Việt có dấu và không dấu)
+                    if (vaiTro.equalsIgnoreCase("Nhân viên") || vaiTro.equalsIgnoreCase("Nhan vien")) {
+                        vaiTro = "Nhân viên";
+                    } else if (vaiTro.equalsIgnoreCase("Quản lý") || vaiTro.equalsIgnoreCase("Quan ly")) {
+                        vaiTro = "Quản lý";
+                    }
+                    // Set vai trò (validation sẽ được thực hiện trong setVaiTro)
+                    nhanVien.setVaiTro(vaiTro);
+                }
 
                 taiKhoan.setNhanVien(nhanVien);
             }
@@ -200,19 +222,35 @@ public class TaiKhoanDAO implements DAOInterface<TaiKhoan, String> {
         }
     }
 
-    private String taoMaTaiKhoan() {
-        try (Connection con = ConnectDB.getConnection(); PreparedStatement stmt = con.prepareStatement(SQL_LAY_MA_CUOI); ResultSet rs = stmt.executeQuery()) {
-
-            if (rs.next()) {
-                String maCuoi = rs.getString("tenDangNhap");
-                String phanSo = maCuoi.substring(3); // Bỏ "TDN"
-                int soTiepTheo = Integer.parseInt(phanSo) + 1;
-                return String.format("TDN%05d", soTiepTheo);
+    private String taoMaTaiKhoan(String vaiTro) {
+        // Xác định prefix dựa trên vai trò
+        String prefix;
+        if (vaiTro != null && vaiTro.equals("Quản lý")) {
+            prefix = "ql";
+        } else {
+            prefix = "nv"; // Mặc định là nhân viên
+        }
+        
+        try (Connection con = ConnectDB.getConnection(); 
+             PreparedStatement stmt = con.prepareStatement(SQL_LAY_MA_CUOI)) {
+            
+            // Tìm mã cuối cùng có cùng prefix
+            stmt.setString(1, prefix + "%");
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    String maCuoi = rs.getString("tenDangNhap");
+                    // Bỏ prefix (2 ký tự) và lấy phần số
+                    String phanSo = maCuoi.substring(2);
+                    int soTiepTheo = Integer.parseInt(phanSo) + 1;
+                    return String.format("%s%05d", prefix, soTiepTheo);
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return "TDN00001";
+        // Nếu chưa có tài khoản nào với prefix này, bắt đầu từ 00001
+        return String.format("%s%05d", prefix, 1);
     }
 
     public boolean tonTai(String tenDangNhap) {
@@ -289,6 +327,12 @@ public class TaiKhoanDAO implements DAOInterface<TaiKhoan, String> {
      * @return true nếu thành công
      */
     public boolean resetMatKhau(String tenDangNhap, String matKhauMoi) {
+        // Validate mật khẩu trước khi mã hóa
+        if (matKhauMoi == null || !matKhauMoi.matches(TaiKhoan.MAT_KHAU_REGEX)) {
+            System.err.println("Mật khẩu không hợp lệ: " + TaiKhoan.MAT_KHAU_SAI);
+            return false;
+        }
+        
         String sql = "UPDATE TaiKhoan SET matKhau = ? WHERE tenDangNhap = ?";
         try (Connection con = ConnectDB.getConnection(); PreparedStatement pre = con.prepareStatement(sql)) {
             // Hash mật khẩu mới
@@ -318,6 +362,42 @@ public class TaiKhoanDAO implements DAOInterface<TaiKhoan, String> {
             e.printStackTrace();
         }
         return Optional.empty();
+    }
+
+    /**
+     * Xóa tài khoản theo mã nhân viên
+     * @param maNhanVien mã nhân viên
+     * @return true nếu xóa thành công
+     */
+    public boolean deleteByMaNhanVien(String maNhanVien) {
+        String sql = "DELETE FROM TaiKhoan WHERE maNhanVien = ?";
+        try (Connection con = ConnectDB.getConnection();
+                PreparedStatement stmt = con.prepareStatement(sql)) {
+
+            stmt.setString(1, maNhanVien);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Xóa tài khoản theo tên đăng nhập
+     * @param tenDangNhap tên đăng nhập
+     * @return true nếu xóa thành công
+     */
+    public boolean delete(String tenDangNhap) {
+        String sql = "DELETE FROM TaiKhoan WHERE tenDangNhap = ?";
+        try (Connection con = ConnectDB.getConnection();
+                PreparedStatement stmt = con.prepareStatement(sql)) {
+
+            stmt.setString(1, tenDangNhap);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
 }

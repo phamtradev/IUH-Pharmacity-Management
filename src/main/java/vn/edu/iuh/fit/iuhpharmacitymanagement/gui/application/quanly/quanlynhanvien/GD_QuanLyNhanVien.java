@@ -111,8 +111,15 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
         }
 
         // Validate mật khẩu
-        if (password == null || password.trim().length() < 6) {
-            Notifications.getInstance().show(Notifications.Type.ERROR, "Mật khẩu phải có ít nhất 6 ký tự!");
+        if (password == null || password.trim().isEmpty()) {
+            Notifications.getInstance().show(Notifications.Type.ERROR, "Mật khẩu không được để trống!");
+            txtAddPassword.requestFocus();
+            return false;
+        }
+        
+        // Validate mật khẩu theo regex
+        if (!password.trim().matches(TaiKhoan.MAT_KHAU_REGEX)) {
+            Notifications.getInstance().show(Notifications.Type.ERROR, TaiKhoan.MAT_KHAU_SAI);
             txtAddPassword.requestFocus();
             return false;
         }
@@ -1130,7 +1137,7 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
         String address = txtAddEmployeeAddress.getText().trim();
         String email = txtAddEmployeeEmail.getText().trim();
         String phone = txtAddEmployeePhone.getText().trim();
-        String password = new String(txtAddPassword.getPassword());
+        String password = new String(txtAddPassword.getPassword()).trim();
         String cccd = txtAddEmployeeCccd.getText().trim();
         String role = (String) cboAddEmployeeRole.getSelectedItem();
         String gender = (String) cboAddEmployeeGender.getSelectedItem();
@@ -1160,12 +1167,18 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
             // Lưu đường dẫn ảnh (có thể là null nếu không chọn) vào nhân viên
             emp.setAnhNhanVien(addEmployeeImagePath);
 
-            String passHash = PasswordUtil.encode(password);
-            TaiKhoan acc = new TaiKhoan(null, passHash, emp);
+            // Tạo tài khoản với mật khẩu chưa mã hóa, BUS sẽ validate và mã hóa
+            // password đã được trim ở trên, không cần trim lại
+            TaiKhoan acc = new TaiKhoan(null, password, emp);
             acc.setNhanVien(emp);
 
             nhanVienBUS.taoNhanVien(emp);
-            taiKhoanBUS.taoTaiKhoan(acc);
+            boolean taoTaiKhoanThanhCong = taiKhoanBUS.taoTaiKhoan(acc);
+            
+            if (!taoTaiKhoanThanhCong) {
+                Notifications.getInstance().show(Notifications.Type.ERROR, "Lỗi khi tạo tài khoản! Vui lòng kiểm tra lại mật khẩu.");
+                return;
+            }
 
             Notifications.getInstance().show(Notifications.Type.SUCCESS, "Thêm nhân viên mới thành công.");
 
@@ -1304,8 +1317,9 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
             return;
         }
 
-        if (newPass.trim().length() < 6) {
-            Notifications.getInstance().show(Notifications.Type.ERROR, "Mật khẩu mới phải có ít nhất 6 ký tự!");
+        // Validate mật khẩu theo regex
+        if (!newPass.trim().matches(TaiKhoan.MAT_KHAU_REGEX)) {
+            Notifications.getInstance().show(Notifications.Type.ERROR, TaiKhoan.MAT_KHAU_SAI);
             txtResetPassword.requestFocus();
             return;
         }
