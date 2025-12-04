@@ -969,7 +969,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
                 } else {
                     info.giamGiaHoaDonPhanBo = 0;
                 }
-            }
+                }
 
             // ===== BƯỚC 2: Tạo chi tiết đơn hàng và phân bổ giảm giá =====
             for (PanelPricingInfo info : pricingInfos) {
@@ -996,12 +996,12 @@ public class Panel_DonHang extends javax.swing.JPanel {
                     chiTiet.setGiamGiaHoaDonPhanBo(giamGiaHoaDonTheoLo);
                     chiTiet.setThanhTien(thanhTienThucTe);
 
-                    if (!chiTietDonHangBUS.themChiTietDonHang(chiTiet)) {
-                        Notifications.getInstance().show(Notifications.Type.ERROR,
-                                Notifications.Location.TOP_CENTER,
-                                "Không thể lưu chi tiết đơn hàng!");
-                        return;
-                    }
+                if (!chiTietDonHangBUS.themChiTietDonHang(chiTiet)) {
+                    Notifications.getInstance().show(Notifications.Type.ERROR,
+                            Notifications.Location.TOP_CENTER,
+                            "Không thể lưu chi tiết đơn hàng!");
+                    return;
+                }
 
                     chiTietDonHangList.add(chiTiet);
                 }
@@ -2349,11 +2349,11 @@ public class Panel_DonHang extends javax.swing.JPanel {
                         .setBackgroundColor(ColorConstants.LIGHT_GRAY));
             }
 
-            int stt = 1;
-            for (ChiTietDonHang chiTiet : danhSachChiTiet) {
-                LoHang loHang = chiTiet.getLoHang();
-                SanPham sanPham = loHang != null ? loHang.getSanPham() : null;
-                String tenSP = sanPham != null ? sanPham.getTenSanPham() : "";
+        int stt = 1;
+        for (ChiTietDonHang chiTiet : danhSachChiTiet) {
+            LoHang loHang = chiTiet.getLoHang();
+            SanPham sanPham = loHang != null ? loHang.getSanPham() : null;
+            String tenSP = sanPham != null ? sanPham.getTenSanPham() : "";
 
                 // DonGia trong chi tiet la gia DA BAO GOM VAT -> doi ve gia CHUA VAT de in ra
                 double donGiaDaVAT = chiTiet.getDonGia();
