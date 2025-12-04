@@ -108,27 +108,39 @@ public class GiaBanTuDongService {
         return giaNhapChuaVAT * (1 + tyLe);
     }
 
+    /**
+     * Tìm tỷ lệ lãi áp dụng cho giá nhập và loại sản phẩm.
+     * Logic ưu tiên: Bảng cụ thể (theo loại sản phẩm) > Bảng tổng quát (null).
+     * 
+     * Ví dụ: Nếu có cả bảng cho tất cả (null) và bảng cho THUOC,
+     * thì sản phẩm THUOC sẽ dùng bảng THUOC, không dùng bảng tổng quát.
+     */
     private double timTyLeLaiTheoCauHinh(double giaNhap,
                                          LoaiSanPham loaiSanPham,
                                          List<BangLaiChuan> cauHinh) {
         if (cauHinh == null || cauHinh.isEmpty()) {
             return 0;
         }
-        double fallback = 0;
+        double fallback = 0; // Tỷ lệ lãi từ bảng tổng quát (null)
+        
         for (BangLaiChuan b : cauHinh) {
             double tu = b.getGiaNhapTu();
             double den = b.getGiaNhapDen();
             boolean matchTu = giaNhap >= tu;
             boolean matchDen = (den <= 0) || (giaNhap <= den);
+            
             if (matchTu && matchDen) {
+                // Ưu tiên 1: Nếu có bảng cụ thể cho loại sản phẩm này → dùng ngay
                 if (loaiSanPham != null && loaiSanPham.equals(b.getLoaiSanPham())) {
                     return b.getTyLeLai();
                 }
+                // Ưu tiên 2: Lưu bảng tổng quát (null) làm fallback
                 if (b.getLoaiSanPham() == null) {
                     fallback = b.getTyLeLai();
                 }
             }
         }
+        // Nếu không tìm thấy bảng cụ thể, dùng bảng tổng quát
         return fallback;
     }
 }
