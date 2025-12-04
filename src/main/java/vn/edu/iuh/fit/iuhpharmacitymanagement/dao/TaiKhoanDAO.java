@@ -189,20 +189,7 @@ public class TaiKhoanDAO implements DAOInterface<TaiKhoan, String> {
                 nhanVien.setDiaChi(rs.getString("diaChi"));
                 nhanVien.setSoDienThoai(rs.getString("soDienThoai"));
                 nhanVien.setEmail(rs.getString("email"));
-                
-                // Chuẩn hóa vai trò: trim và chuẩn hóa giá trị
-                String vaiTro = rs.getString("vaiTro");
-                if (vaiTro != null) {
-                    vaiTro = vaiTro.trim();
-                    // Chuẩn hóa: "Nhân viên" hoặc "Quản lý" (xử lý cả tiếng Việt có dấu và không dấu)
-                    if (vaiTro.equalsIgnoreCase("Nhân viên") || vaiTro.equalsIgnoreCase("Nhan vien")) {
-                        vaiTro = "Nhân viên";
-                    } else if (vaiTro.equalsIgnoreCase("Quản lý") || vaiTro.equalsIgnoreCase("Quan ly")) {
-                        vaiTro = "Quản lý";
-                    }
-                    // Set vai trò (validation sẽ được thực hiện trong setVaiTro)
-                    nhanVien.setVaiTro(vaiTro);
-                }
+                nhanVien.setVaiTro(rs.getString("vaiTro"));
 
                 taiKhoan.setNhanVien(nhanVien);
             }
@@ -331,42 +318,6 @@ public class TaiKhoanDAO implements DAOInterface<TaiKhoan, String> {
             e.printStackTrace();
         }
         return Optional.empty();
-    }
-
-    /**
-     * Xóa tài khoản theo mã nhân viên
-     * @param maNhanVien mã nhân viên
-     * @return true nếu xóa thành công
-     */
-    public boolean deleteByMaNhanVien(String maNhanVien) {
-        String sql = "DELETE FROM TaiKhoan WHERE maNhanVien = ?";
-        try (Connection con = ConnectDB.getConnection();
-                PreparedStatement stmt = con.prepareStatement(sql)) {
-
-            stmt.setString(1, maNhanVien);
-            return stmt.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    /**
-     * Xóa tài khoản theo tên đăng nhập
-     * @param tenDangNhap tên đăng nhập
-     * @return true nếu xóa thành công
-     */
-    public boolean delete(String tenDangNhap) {
-        String sql = "DELETE FROM TaiKhoan WHERE tenDangNhap = ?";
-        try (Connection con = ConnectDB.getConnection();
-                PreparedStatement stmt = con.prepareStatement(sql)) {
-
-            stmt.setString(1, tenDangNhap);
-            return stmt.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
     }
 
 }

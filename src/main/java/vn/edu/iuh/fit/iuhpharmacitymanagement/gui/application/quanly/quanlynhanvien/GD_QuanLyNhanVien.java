@@ -20,6 +20,7 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.TaiKhoanBUS;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.common.TableDesign;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhanVien;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.TaiKhoan;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.util.PasswordUtil;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
 import raven.toast.Notifications;
 
@@ -60,7 +61,6 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
         ButtonStyles.apply(btnCancelResetPassword, ButtonStyles.Type.DANGER);
 
         setUIManager();
-        setupPasswordValidation();
         fillTable();
         addIconFeature();
         displayImageSelection(addEmployeeImagePath, txtAddEmployeeImagePath, lblAddEmployeePreview);
@@ -71,7 +71,7 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
      * Validation chi tiết cho form thêm nhân viên
      */
     private static final String CCCD_REGEX = "^\\d{12}$";
- 
+
     private boolean validateAddEmployeeForm(String name, String address, String email, String phone, String password, String cccd) {
         // Validate tên nhân viên
         if (name == null || name.trim().isEmpty()) {
@@ -111,16 +111,8 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
         }
 
         // Validate mật khẩu
-        String passwordTrimmed = (password == null) ? "" : password.trim();
-        if (passwordTrimmed.isEmpty()) {
-            Notifications.getInstance().show(Notifications.Type.ERROR, "Mật khẩu không được để trống!");
-            txtAddPassword.requestFocus();
-            return false;
-        }
-        
-        if (!passwordTrimmed.matches(TaiKhoan.MAT_KHAU_REGEX)) {
-            Notifications.getInstance().show(Notifications.Type.ERROR, 
-                    TaiKhoan.MAT_KHAU_SAI);
+        if (password == null || password.trim().length() < 6) {
+            Notifications.getInstance().show(Notifications.Type.ERROR, "Mật khẩu phải có ít nhất 6 ký tự!");
             txtAddPassword.requestFocus();
             return false;
         }
@@ -203,44 +195,9 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
         txtEmployeePhone.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập số điện thoại mới");
         txtEmployeeCccd.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập CCCD mới");
 
-        txtResetPassword.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập mật khẩu mới (tối thiểu 6 ký tự, có số và ký tự đặc biệt @#$^*)");
+        txtResetPassword.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập mật khẩu mới");
 
         UIManager.put("Button.arc", 10);
-    }
-    
-    /**
-     * Setup validation cho password field - hiển thị notification ngay khi người dùng nhập
-     */
-    private void setupPasswordValidation() {
-        // Validate cho txtAddPassword khi focus lost
-        txtAddPassword.addFocusListener(new java.awt.event.FocusAdapter() {
-            @Override
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                String password = new String(txtAddPassword.getPassword());
-                if (password != null && !password.trim().isEmpty()) {
-                    if (!password.trim().matches(TaiKhoan.MAT_KHAU_REGEX)) {
-                        Notifications.getInstance().show(Notifications.Type.ERROR, 
-                                TaiKhoan.MAT_KHAU_SAI);
-                        txtAddPassword.requestFocus();
-                    }
-                }
-            }
-        });
-        
-        // Validate cho txtResetPassword khi focus lost
-        txtResetPassword.addFocusListener(new java.awt.event.FocusAdapter() {
-            @Override
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                String password = new String(txtResetPassword.getPassword());
-                if (password != null && !password.trim().isEmpty()) {
-                    if (!password.trim().matches(TaiKhoan.MAT_KHAU_REGEX)) {
-                        Notifications.getInstance().show(Notifications.Type.ERROR, 
-                                TaiKhoan.MAT_KHAU_SAI);
-                        txtResetPassword.requestFocus();
-                    }
-                }
-            }
-        });
     }
 
     private void fillTable() {
@@ -1139,27 +1096,9 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
 
         if (confirm == javax.swing.JOptionPane.YES_OPTION) {
             try {
-                // Kiểm tra xem nhân viên có tài khoản không
-                boolean coTaiKhoan = taiKhoanBUS.kiemTraNhanVienCoTaiKhoan(maNhanVien);
-                
-                // Xóa tài khoản của nhân viên trước (nếu có)
-                boolean taiKhoanDaXoa = true; // Mặc định là true nếu không có tài khoản
-                if (coTaiKhoan) {
-                    taiKhoanDaXoa = taiKhoanBUS.xoaTaiKhoanTheoMaNhanVien(maNhanVien);
-                    if (!taiKhoanDaXoa) {
-                        Notifications.getInstance().show(Notifications.Type.WARNING, 
-                                "Không thể xóa tài khoản của nhân viên. Tiếp tục xóa nhân viên...");
-                    }
-                }
-                
-                // Xóa nhân viên
                 boolean result = nhanVienBUS.xoaNhanVien(maNhanVien);
                 if (result) {
-                    String message = "Xóa nhân viên thành công!";
-                    if (coTaiKhoan && taiKhoanDaXoa) {
-                        message += "\nĐã xóa tài khoản đăng nhập của nhân viên.";
-                    }
-                    Notifications.getInstance().show(Notifications.Type.SUCCESS, message);
+                    Notifications.getInstance().show(Notifications.Type.SUCCESS, "Xóa nhân viên thành công!");
                     fillTable();
                 } else {
                     Notifications.getInstance().show(Notifications.Type.ERROR, "Xóa nhân viên thất bại!");
@@ -1191,7 +1130,7 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
         String address = txtAddEmployeeAddress.getText().trim();
         String email = txtAddEmployeeEmail.getText().trim();
         String phone = txtAddEmployeePhone.getText().trim();
-        String password = new String(txtAddPassword.getPassword()).trim();
+        String password = new String(txtAddPassword.getPassword());
         String cccd = txtAddEmployeeCccd.getText().trim();
         String role = (String) cboAddEmployeeRole.getSelectedItem();
         String gender = (String) cboAddEmployeeGender.getSelectedItem();
@@ -1220,118 +1159,15 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
             emp.setCccd(cccd);
             // Lưu đường dẫn ảnh (có thể là null nếu không chọn) vào nhân viên
             emp.setAnhNhanVien(addEmployeeImagePath);
- 
-            // 1. Tạo nhân viên (sinh mã NV tự động)
-            boolean createdEmployee = false;
-            try {
-                createdEmployee = nhanVienBUS.taoNhanVien(emp);
-            } catch (Exception ex) {
-                Notifications.getInstance().show(Notifications.Type.ERROR, 
-                        "Lỗi khi tạo nhân viên: " + ex.getMessage());
-                return;
-            }
-            
-            if (!createdEmployee) {
-                Notifications.getInstance().show(Notifications.Type.ERROR, "Không thể tạo nhân viên mới.");
-                return;
-            }
 
-            // 2. Lấy mã nhân viên sau khi tạo thành công
-            //    Đảm bảo mã nhân viên đã được set vào object emp
-            String maNV = emp.getMaNhanVien(); // VD: NV00001
-            
-            // Luôn lấy lại từ database để đảm bảo chắc chắn (email là unique)
-            NhanVien nvTimLai = nhanVienBUS.layTatCaNhanVien().stream()
-                    .filter(nv -> nv.getEmail().equals(email))
-                    .findFirst()
-                    .orElse(null);
-            
-            if (nvTimLai != null) {
-                maNV = nvTimLai.getMaNhanVien();
-                emp = nvTimLai; // Cập nhật lại object emp với đầy đủ thông tin từ database
-            } else {
-                Notifications.getInstance().show(Notifications.Type.ERROR, 
-                        "Không thể lấy mã nhân viên sau khi tạo. Vui lòng thử lại.");
-                return;
-            }
-            
-            if (maNV == null || maNV.trim().isEmpty()) {
-                Notifications.getInstance().show(Notifications.Type.ERROR, 
-                        "Mã nhân viên không hợp lệ. Vui lòng thử lại.");
-                return;
-            }
-            
-            // 3. Tạo tài khoản đăng nhập tự động:
-            //    Tài khoản: mã nhân viên (VD: NV00001)
-            //    Mật khẩu: lấy từ ô nhập trong dialog
-            //    Phân quyền: theo vai trò đã chọn (lưu trong NhanVien.vaiTro)
-            String username = maNV; // Dùng mã nhân viên làm tài khoản
-            String rawPassword = password.trim(); // Mật khẩu từ dialog
+            String passHash = PasswordUtil.encode(password);
+            TaiKhoan acc = new TaiKhoan(null, passHash, emp);
+            acc.setNhanVien(emp);
 
-            // Validate lại mật khẩu một lần nữa để đảm bảo chắc chắn
-            if (rawPassword == null || rawPassword.isEmpty()) {
-                Notifications.getInstance().show(Notifications.Type.ERROR, "Mật khẩu không được để trống!");
-                return;
-            }
-            if (!rawPassword.matches(TaiKhoan.MAT_KHAU_REGEX)) {
-                Notifications.getInstance().show(Notifications.Type.ERROR, 
-                        TaiKhoan.MAT_KHAU_SAI);
-                txtAddPassword.requestFocus();
-                return;
-            }
+            nhanVienBUS.taoNhanVien(emp);
+            taiKhoanBUS.taoTaiKhoan(acc);
 
-            // Kiểm tra xem tài khoản đã tồn tại chưa
-            if (taiKhoanBUS.kiemTraTonTai(username)) {
-                Notifications.getInstance().show(Notifications.Type.ERROR,
-                        "Tài khoản với mã nhân viên này đã tồn tại.");
-                return;
-            }
-
-            // Tạo tài khoản với mật khẩu đã validate
-            TaiKhoan acc = null;
-            try {
-                acc = new TaiKhoan();
-                acc.setTenDangNhap(username);
-                acc.setMatKhau(rawPassword); // Sẽ validate mật khẩu
-                acc.setNhanVien(emp);
-            } catch (Exception ex) {
-                Notifications.getInstance().show(Notifications.Type.ERROR,
-                        "Lỗi khi tạo tài khoản: " + ex.getMessage() + 
-                        "\nMật khẩu phải từ 6 ký tự trở lên, có ít nhất 1 chữ số và 1 ký tự đặc biệt (@#$^*).");
-                return;
-            }
-            
-            boolean createdAccount = false;
-            try {
-                createdAccount = taiKhoanBUS.taoTaiKhoan(acc);
-            } catch (Exception ex) {
-                Notifications.getInstance().show(Notifications.Type.ERROR,
-                        "Lỗi khi tạo tài khoản: " + ex.getMessage());
-                return;
-            }
-
-            if (!createdAccount) {
-                Notifications.getInstance().show(Notifications.Type.ERROR,
-                        "Đã tạo nhân viên nhưng không thể tạo tài khoản đăng nhập.\n"
-                        + "Vui lòng kiểm tra lại thông tin mật khẩu.\n"
-                        + "Mật khẩu phải từ 6 ký tự trở lên, có ít nhất 1 chữ số và 1 ký tự đặc biệt (@#$^*).");
-                return;
-            }
-            
-            // Kiểm tra lại tài khoản đã được tạo chưa
-            TaiKhoan taiKhoanDaTao = taiKhoanBUS.layTaiKhoanTheoTenDangNhap(username);
-            if (taiKhoanDaTao == null) {
-                Notifications.getInstance().show(Notifications.Type.ERROR,
-                        "Đã tạo nhân viên nhưng không thể xác nhận tài khoản đăng nhập.\n"
-                        + "Vui lòng kiểm tra lại.");
-                return;
-            }
-            
-            Notifications.getInstance().show(Notifications.Type.SUCCESS,
-                    "Thêm nhân viên mới thành công!\n"
-                    + "Tài khoản: " + username + "\n"
-                    + "Mật khẩu: " + rawPassword + "\n"
-                    + "Vai trò: " + role);
+            Notifications.getInstance().show(Notifications.Type.SUCCESS, "Thêm nhân viên mới thành công.");
 
             // Clear form
             txtAddEmployeeAddress.setText("");

@@ -275,12 +275,14 @@ public class ForgotPasswordPanel extends javax.swing.JPanel {
             return;
         }
 
+        Notifications.getInstance().setJFrame(parentFrame);
         if (new EmailUtil().guiEmailCapPass(new NhanVienDAO().findById(txtTenDangNhap.getText()).get())) {
-            Notifications.getInstance().setJFrame(parentFrame);
             Notifications.getInstance().show(Notifications.Type.SUCCESS, "Gửi thành công mật khẩu mới đến email " + txtEmail.getText() + '!');
+            this.setVisible(false);
+            new LoginFrame().setVisible(true);
+        } else {
+            Notifications.getInstance().show(Notifications.Type.ERROR, "Gửi email thất bại! Vui lòng kiểm tra lại thông tin email hoặc thử lại sau.");
         }
-        this.setVisible(false);
-        new LoginFrame().setVisible(true);
     }//GEN-LAST:event_btnDangNhapActionPerformed
     public void addPlayhoder(JTextField txt) {
         Font font = txt.getFont();
