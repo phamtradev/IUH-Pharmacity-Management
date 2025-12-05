@@ -5,6 +5,7 @@ import raven.toast.Notifications;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.service.backup.BackupManifestService;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.service.backup.BackupRecord;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.service.backup.DataBackupService;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.service.backup.ScheduledBackupService;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.util.BackupPreferences;
 
 import javax.swing.*;
@@ -40,6 +41,7 @@ public class GD_QuanLyDuLieu extends JPanel {
     private JLabel lblStatus;
     private JProgressBar progressBar;
     private JCheckBox chkAutoBackup;
+    private JComboBox<String> cmbScheduledBackup;
 
     private static final DateTimeFormatter DISPLAY_TIME_FORMAT =
             DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss").withZone(ZoneId.systemDefault());
@@ -136,6 +138,33 @@ public class GD_QuanLyDuLieu extends JPanel {
             BackupPreferences.setAutoBackupEnabled(chkAutoBackup.isSelected());
         });
         center.add(chkAutoBackup, gbc);
+        
+        gbc.gridy = 3;
+        gbc.gridx = 0;
+        gbc.gridwidth = 1;
+        gbc.anchor = GridBagConstraints.WEST;
+        center.add(new JLabel("Sao lưu theo lịch:"), gbc);
+        
+        gbc.gridx = 1;
+        gbc.gridwidth = 1;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.anchor = GridBagConstraints.WEST;
+        cmbScheduledBackup = new JComboBox<>(new String[]{"Tắt", "1 ngày 1 lần lúc 23h"});
+        cmbScheduledBackup.setPreferredSize(new java.awt.Dimension(200, cmbScheduledBackup.getPreferredSize().height));
+        cmbScheduledBackup.setSelectedIndex(BackupPreferences.isScheduledBackupEnabled() ? 1 : 0);
+        cmbScheduledBackup.addActionListener(e -> {
+            boolean enabled = cmbScheduledBackup.getSelectedIndex() == 1;
+            BackupPreferences.setScheduledBackupEnabled(enabled);
+            ScheduledBackupService scheduler = ScheduledBackupService.getInstance();
+            if (enabled) {
+                scheduler.start();
+                showNotification(Notifications.Type.SUCCESS, "Đã bật sao lưu tự động: 1 ngày 1 lần lúc 23h");
+            } else {
+                scheduler.stop();
+                showNotification(Notifications.Type.INFO, "Đã tắt sao lưu theo lịch");
+            }
+        });
+        center.add(cmbScheduledBackup, gbc);
 
         card.add(center, BorderLayout.CENTER);
         return card;
@@ -272,6 +301,10 @@ public class GD_QuanLyDuLieu extends JPanel {
                             result.databaseName()
                     );
                     manifestService.append(record);
+                    
+                    // Tự động xóa backup cũ, chỉ giữ 15 bản gần nhất
+                    ScheduledBackupService.getInstance().cleanupOldBackups();
+                    
                     reloadHistory();
             showNotification(Notifications.Type.SUCCESS,
                     "Sao lưu thành công vào:\n" + result.file());
