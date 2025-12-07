@@ -102,23 +102,28 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         // Buttons chính
         ButtonStyles.apply(btnAdd, ButtonStyles.Type.SUCCESS);
         FontStyles.apply(btnAdd, FontStyles.Type.BUTTON_MEDIUM);
+        FontStyles.apply(btnAdd, FontStyles.Type.TEXT_MEDIUM);
         btnAdd.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnAdd.setPreferredSize(new java.awt.Dimension(95, 40));
-        
-        ButtonStyles.apply(btnUpdate, ButtonStyles.Type.PRIMARY);
-        FontStyles.apply(btnUpdate, FontStyles.Type.BUTTON_MEDIUM);
-        btnUpdate.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        btnUpdate.setPreferredSize(new java.awt.Dimension(95, 40));
-        
-        ButtonStyles.apply(btnDelete, ButtonStyles.Type.DANGER);
-        FontStyles.apply(btnDelete, FontStyles.Type.BUTTON_MEDIUM);
-        btnDelete.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        btnDelete.setPreferredSize(new java.awt.Dimension(95, 40));
-        
+
+        ButtonStyles.apply(btnViewDetail, ButtonStyles.Type.PRIMARY);
+        FontStyles.apply(btnViewDetail, FontStyles.Type.BUTTON_MEDIUM);
+        FontStyles.apply(btnViewDetail, FontStyles.Type.TEXT_MEDIUM);
+        btnViewDetail.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnViewDetail.setPreferredSize(new java.awt.Dimension(125, 40));
+
         ButtonStyles.apply(btnOpenModalAddSup, ButtonStyles.Type.SUCCESS);
         FontStyles.apply(btnOpenModalAddSup, FontStyles.Type.BUTTON_MEDIUM);
+        FontStyles.apply(btnOpenModalAddSup, FontStyles.Type.TEXT_MEDIUM);
         btnOpenModalAddSup.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnOpenModalAddSup.setPreferredSize(new java.awt.Dimension(150, 40));
+
+        FontStyles.toUpperCase(
+                btnAdd,
+                btnViewDetail,
+                btnAddProduct,
+                btnOpenModalAddSup
+        );
     }
 
     private void styleTextField(javax.swing.JTextField textField, String hintText) {
@@ -242,10 +247,10 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
     }
 
     /**
-     * Lấy giá nhập theo FIFO cho 1 sản phẩm:
-     * - Ưu tiên lô còn tồn kho & còn hạn (HSD >= hôm nay), lấy lô có HSD nhỏ nhất.
-     * - Nếu lô có giaNhapLo > 0 thì dùng giá đó, ngược lại fallback về sp.getGiaNhap().
-     * - Nếu không có lô nào phù hợp thì trả về sp.getGiaNhap().
+     * Lấy giá nhập theo FIFO cho 1 sản phẩm: - Ưu tiên lô còn tồn kho & còn hạn
+     * (HSD >= hôm nay), lấy lô có HSD nhỏ nhất. - Nếu lô có giaNhapLo > 0 thì
+     * dùng giá đó, ngược lại fallback về sp.getGiaNhap(). - Nếu không có lô nào
+     * phù hợp thì trả về sp.getGiaNhap().
      */
     private double layGiaNhapFIFO(SanPham sp) {
         try {
@@ -265,9 +270,9 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
                     // - Còn hạn (HSD >= hôm nay hoặc HSD null)
                     // - ĐÃ CÓ giá nhập chuẩn trên cột giaNhapLo (> 0)
                     .filter(lh -> lh.getTonKho() > 0
-                            && lh.isTrangThai()
-                            && lh.getGiaNhapLo() > 0
-                            && (lh.getHanSuDung() == null || !lh.getHanSuDung().isBefore(today)))
+                    && lh.isTrangThai()
+                    && lh.getGiaNhapLo() > 0
+                    && (lh.getHanSuDung() == null || !lh.getHanSuDung().isBefore(today)))
                     .sorted(Comparator.comparing(LoHang::getHanSuDung)
                             .thenComparing(LoHang::getMaLoHang))
                     .mapToDouble(LoHang::getGiaNhapLo)
@@ -280,12 +285,9 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
     }
 
     /**
-     * Tính giá bán đề xuất theo "lãi chuẩn" dựa trên giá nhập (chưa VAT).
-     * Các bậc lãi ví dụ:
-     * - 0  - 50.000  : lãi 30%
-     * - 50.001-100.000: lãi 25%
-     * - 100.001-300.000: lãi 20%
-     * - > 300.000     : lãi 15%
+     * Tính giá bán đề xuất theo "lãi chuẩn" dựa trên giá nhập (chưa VAT). Các
+     * bậc lãi ví dụ: - 0 - 50.000 : lãi 30% - 50.001-100.000: lãi 25% -
+     * 100.001-300.000: lãi 20% - > 300.000 : lãi 15%
      */
     private double tinhGiaBanTheoLaiChuan(double giaNhapChuaVAT) {
         if (giaNhapChuaVAT <= 0) {
@@ -463,7 +465,7 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
     private JPanel createStatusPanel(boolean coLoHangConHan) {
         JPanel panel = new JPanel();
         panel.setLayout(new FlowLayout(FlowLayout.CENTER, 15, 10));
-        
+
         if (coLoHangConHan) {
             // Đang bán - màu xanh lá
             panel.setBackground(new Color(220, 255, 220)); // Light Green
@@ -471,7 +473,7 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
                     BorderFactory.createLineBorder(new Color(34, 139, 34), 2),
                     BorderFactory.createEmptyBorder(10, 20, 10, 20)
             ));
-            
+
             JLabel lblStatus = new JLabel("✓ ĐANG BÁN");
             lblStatus.setFont(new Font("Segoe UI", Font.BOLD, 16));
             lblStatus.setForeground(new Color(0, 128, 0)); // Dark Green
@@ -483,18 +485,18 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
                     BorderFactory.createLineBorder(new Color(220, 20, 60), 2),
                     BorderFactory.createEmptyBorder(10, 20, 10, 20)
             ));
-            
+
             JLabel lblStatus = new JLabel("✗ NGƯNG BÁN");
             lblStatus.setFont(new Font("Segoe UI", Font.BOLD, 16));
             lblStatus.setForeground(new Color(178, 34, 34)); // Fire Brick Red
             panel.add(lblStatus);
-            
+
             JLabel lblReason = new JLabel("(Không còn lô hàng còn hạn)");
             lblReason.setFont(new Font("Segoe UI", Font.ITALIC, 13));
             lblReason.setForeground(Color.GRAY);
             panel.add(lblReason);
         }
-        
+
         panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 60));
         return panel;
     }
@@ -593,7 +595,7 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         txtTonKho.setHorizontalAlignment(SwingConstants.CENTER);
         txtTonKho.setFont(new Font("Segoe UI", Font.BOLD, 14));
         txtTonKho.setPreferredSize(new Dimension(80, 30));
-        
+
         // Thêm listener để cập nhật khi user nhập xong (nhấn Enter hoặc mất focus)
         txtTonKho.addActionListener(e -> updateBatchQuantityFromTextField(loHang, txtTonKho));
         txtTonKho.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -602,7 +604,7 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
                 updateBatchQuantityFromTextField(loHang, txtTonKho);
             }
         });
-        
+
         batchPanel.add(txtTonKho);
 
         // Trạng thái
@@ -645,7 +647,7 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
                     return;
                 }
             }
-            
+
             int currentQuantity = loHang.getTonKho();
             int newQuantity = currentQuantity + delta;
 
@@ -685,21 +687,21 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
                     "Lỗi: " + e.getMessage());
         }
     }
-    
+
     // Method mới: Cập nhật khi user nhập trực tiếp vào TextField
     private void updateBatchQuantityFromTextField(LoHang loHang, JTextField txtTonKho) {
         try {
             String input = txtTonKho.getText().trim();
-            
+
             // Kiểm tra input rỗng
             if (input.isEmpty()) {
                 txtTonKho.setText(String.valueOf(loHang.getTonKho())); // Reset về giá trị cũ
                 return;
             }
-            
+
             // Parse số lượng mới
             int newQuantity = Integer.parseInt(input);
-            
+
             // Kiểm tra số lượng không được âm
             if (newQuantity < 0) {
                 Notifications.getInstance().show(Notifications.Type.WARNING,
@@ -708,12 +710,12 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
                 txtTonKho.setText(String.valueOf(loHang.getTonKho())); // Reset về giá trị cũ
                 return;
             }
-            
+
             // Nếu giá trị không thay đổi thì không cần cập nhật
             if (newQuantity == loHang.getTonKho()) {
                 return;
             }
-            
+
             // Kiểm tra sản phẩm có đang hoạt động không (CHỈ khi TĂNG số lượng)
             if (newQuantity > loHang.getTonKho()) {
                 SanPham sanPham = loHang.getSanPham();
@@ -725,18 +727,18 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
                     return;
                 }
             }
-            
+
             // Cập nhật vào database
             loHang.setTonKho(newQuantity);
             boolean success = loHangDAO.update(loHang);
-            
+
             if (success) {
                 // Cập nhật tổng tồn kho trong TextField
                 updateTotalQuantityTextField(loHang.getSanPham().getMaSanPham());
-                
+
                 // Cập nhật tổng tồn kho trong bảng sản phẩm
                 updateProductTotalQuantityInTable(loHang.getSanPham().getMaSanPham());
-                
+
                 Notifications.getInstance().show(Notifications.Type.SUCCESS,
                         Notifications.Location.TOP_CENTER,
                         "Cập nhật số lượng thành công: " + loHang.getTenLoHang() + " = " + newQuantity);
@@ -1633,7 +1635,7 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         if (!tuKhoaTen.isEmpty()) {
             ketQua = ketQua.stream()
                     .filter(sp -> sp.getTenSanPham().toLowerCase().contains(tuKhoaTen)
-                            || sp.getSoDangKy().toLowerCase().contains(tuKhoaTen)) // Vẫn giữ logic cũ cho ô này
+                    || sp.getSoDangKy().toLowerCase().contains(tuKhoaTen)) // Vẫn giữ logic cũ cho ô này
                     .collect(java.util.stream.Collectors.toList());
         }
 
@@ -1657,7 +1659,6 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
                     .filter(sp -> sp.isHoatDong() == hoatDong)
                     .collect(java.util.stream.Collectors.toList());
         }
-
 
         loadTableData(ketQua);
 
@@ -1788,21 +1789,21 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         }
 
         SanPham sp = spOpt.get();
-        
+
         // Tạo dialog xem chi tiết
         showProductDetailDialog(sp);
     }
-    
+
     private void showProductDetailDialog(SanPham sp) {
         // Tạo dialog
         JDialog detailDialog = new JDialog((java.awt.Frame) SwingUtilities.getWindowAncestor(this), "Chi tiết sản phẩm", true);
         detailDialog.setSize(900, 700);
         detailDialog.setLocationRelativeTo(this);
-        
+
         // Panel chính
         JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.setBackground(Color.WHITE);
-        
+
         // Header panel
         JPanel headerPanel = new JPanel();
         headerPanel.setBackground(new Color(23, 162, 184));
@@ -1811,17 +1812,17 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 20));
         lblTitle.setForeground(Color.WHITE);
         headerPanel.add(lblTitle);
-        
+
         // Body panel - chứa 2 cột: thông tin bên trái, hình ảnh bên phải
         JPanel bodyPanel = new JPanel(new BorderLayout(20, 0));
         bodyPanel.setBackground(Color.WHITE);
         bodyPanel.setBorder(BorderFactory.createEmptyBorder(20, 30, 20, 30));
-        
+
         // Panel bên trái - Thông tin chi tiết
         JPanel infoPanel = new JPanel();
         infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.Y_AXIS));
         infoPanel.setBackground(Color.WHITE);
-        
+
         // Thêm thông tin sản phẩm
         addDetailRow(infoPanel, "Mã sản phẩm:", sp.getMaSanPham());
         addDetailRow(infoPanel, "Tên sản phẩm:", sp.getTenSanPham());
@@ -1840,15 +1841,15 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         double giaBanDaVAT = sp.getGiaBan() * (1 + sp.getThueVAT());
         addDetailRow(infoPanel, "Giá nhập (đã VAT):", String.format("%,d VNĐ", (int) Math.round(giaNhapDaVAT)));
         addDetailRow(infoPanel, "Giá bán (đã VAT):", String.format("%,d VNĐ", (int) Math.round(giaBanDaVAT)));
-        
+
         if (sp.getLoaiSanPham() != null) {
             addDetailRow(infoPanel, "Loại sản phẩm:", getLoaiSanPhamDisplay(sp.getLoaiSanPham()));
         }
-        
+
         if (sp.getDonViTinh() != null) {
             addDetailRow(infoPanel, "Đơn vị tính:", sp.getDonViTinh().getTenDonVi());
         }
-        
+
         // Tính tổng tồn kho (CHỈ TÍNH LÔ CÒN HẠN - HSD > hôm nay + 6 tháng)
         List<LoHang> danhSachLoHang = loHangDAO.findByMaSanPham(sp.getMaSanPham());
         LocalDate ngayGioiHan = LocalDate.now().plusMonths(6);
@@ -1856,26 +1857,26 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
                 .filter(lh -> lh.getHanSuDung().isAfter(ngayGioiHan)) // Lọc lô còn hạn (HSD > ngày giới hạn)
                 .mapToInt(LoHang::getTonKho)
                 .sum();
-        
+
         // Đếm số lượng lô hàng CÒN HẠN
         long soLuongLoHangConHan = danhSachLoHang.stream()
                 .filter(lh -> lh.getHanSuDung().isAfter(ngayGioiHan)) // Chỉ đếm lô còn hạn (HSD > ngày giới hạn)
                 .count();
-        
+
         addDetailRow(infoPanel, "Tổng tồn kho:", String.valueOf(tongTonKho));
         addDetailRow(infoPanel, "Số lượng lô hàng:", String.valueOf(soLuongLoHangConHan));
-        
+
         // Panel bên phải - Hình ảnh sản phẩm
         JPanel imagePanel = new JPanel();
         imagePanel.setBackground(Color.WHITE);
         imagePanel.setBorder(BorderFactory.createTitledBorder("Hình ảnh sản phẩm"));
         imagePanel.setPreferredSize(new Dimension(200, 200));
-        
+
         if (sp.getHinhAnh() != null && !sp.getHinhAnh().isEmpty()) {
             try {
                 // Thử load từ resources
                 java.net.URL imageUrl = getClass().getResource("/img/" + sp.getHinhAnh());
-                
+
                 if (imageUrl != null) {
                     ImageIcon imageIcon = new ImageIcon(imageUrl);
                     Image scaledImage = imageIcon.getImage().getScaledInstance(170, 170, Image.SCALE_SMOOTH);
@@ -1913,15 +1914,15 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
             lblNoImage.setForeground(Color.GRAY);
             imagePanel.add(lblNoImage);
         }
-        
+
         // Thêm các panel vào bodyPanel
         bodyPanel.add(infoPanel, BorderLayout.CENTER);   // Thông tin bên trái
         bodyPanel.add(imagePanel, BorderLayout.EAST);    // Hình ảnh bên phải
-        
+
         JScrollPane scrollPane = new JScrollPane(bodyPanel);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         scrollPane.setBorder(null);
-        
+
         // Button panel
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         buttonPanel.setBackground(Color.WHITE);
@@ -1932,31 +1933,31 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         btnClose.setFont(new Font("Segoe UI", Font.BOLD, 14));
         btnClose.addActionListener(e -> detailDialog.dispose());
         buttonPanel.add(btnClose);
-        
+
         // Add components to main panel
         mainPanel.add(headerPanel, BorderLayout.NORTH);
         mainPanel.add(scrollPane, BorderLayout.CENTER);
         mainPanel.add(buttonPanel, BorderLayout.SOUTH);
-        
+
         detailDialog.add(mainPanel);
         detailDialog.setVisible(true);
     }
-    
+
     private void addDetailRow(JPanel panel, String label, String value) {
         JPanel rowPanel = new JPanel(new BorderLayout(10, 0));
         rowPanel.setBackground(Color.WHITE);
         rowPanel.setBorder(BorderFactory.createEmptyBorder(8, 0, 8, 0));
-        
+
         JLabel lblKey = new JLabel(label);
         lblKey.setFont(new Font("Segoe UI", Font.BOLD, 14));
         lblKey.setPreferredSize(new Dimension(180, 25));
-        
+
         JLabel lblValue = new JLabel(value != null ? value : "N/A");
         lblValue.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        
+
         rowPanel.add(lblKey, BorderLayout.WEST);
         rowPanel.add(lblValue, BorderLayout.CENTER);
-        
+
         panel.add(rowPanel);
     }
 
@@ -2246,22 +2247,22 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
             String vatStr = txtProductVAT.getText().trim();
             double vatPercent = 0;
             if (!vatStr.isEmpty()) {
-            try {
+                try {
                     vatPercent = Double.parseDouble(vatStr);
                     if (vatPercent < 0 || vatPercent > 100) {
-                    Notifications.getInstance().show(Notifications.Type.WARNING,
-                            Notifications.Location.TOP_CENTER,
+                        Notifications.getInstance().show(Notifications.Type.WARNING,
+                                Notifications.Location.TOP_CENTER,
                                 "Thuế VAT phải trong khoảng 0 - 100%");
                         txtProductVAT.requestFocus();
-                    return;
-                }
-            } catch (NumberFormatException e) {
-                Notifications.getInstance().show(Notifications.Type.WARNING,
-                        Notifications.Location.TOP_CENTER,
+                        return;
+                    }
+                } catch (NumberFormatException e) {
+                    Notifications.getInstance().show(Notifications.Type.WARNING,
+                            Notifications.Location.TOP_CENTER,
                             "Thuế VAT không hợp lệ");
                     txtProductVAT.requestFocus();
-                return;
-            }
+                    return;
+                }
             }
             double thueVAT = vatPercent / 100.0;
 
@@ -2315,8 +2316,8 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
             sanPham.setCachDongGoi(cachDongGoi);
             sanPham.setNhaSanXuat(nhaSanXuat);
             sanPham.setQuocGiaSanXuat(quocGia);
-                // Giá nhập sẽ được lấy từ lô (FIFO), ở đây chỉ lưu 0 làm giá mặc định
-                sanPham.setGiaNhap(0);
+            // Giá nhập sẽ được lấy từ lô (FIFO), ở đây chỉ lưu 0 làm giá mặc định
+            sanPham.setGiaNhap(0);
             sanPham.setGiaBan(giaBan);
             sanPham.setLoaiSanPham(loaiSP);
             sanPham.setDonViTinh(donViTinh);
@@ -2532,22 +2533,22 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
             String vatStr = txtProductVAT1 != null ? txtProductVAT1.getText().trim() : "";
             double vatPercent = 0;
             if (!vatStr.isEmpty()) {
-            try {
+                try {
                     vatPercent = Double.parseDouble(vatStr);
                     if (vatPercent < 0 || vatPercent > 100) {
-                    Notifications.getInstance().show(Notifications.Type.WARNING,
-                            Notifications.Location.TOP_CENTER,
+                        Notifications.getInstance().show(Notifications.Type.WARNING,
+                                Notifications.Location.TOP_CENTER,
                                 "Thuế VAT phải trong khoảng 0 - 100%");
                         txtProductVAT1.requestFocus();
-                    return;
-                }
-            } catch (NumberFormatException e) {
-                Notifications.getInstance().show(Notifications.Type.WARNING,
-                        Notifications.Location.TOP_CENTER,
+                        return;
+                    }
+                } catch (NumberFormatException e) {
+                    Notifications.getInstance().show(Notifications.Type.WARNING,
+                            Notifications.Location.TOP_CENTER,
                             "Thuế VAT không hợp lệ");
                     txtProductVAT1.requestFocus();
-                return;
-            }
+                    return;
+                }
             }
             double thueVAT = vatPercent / 100.0;
 

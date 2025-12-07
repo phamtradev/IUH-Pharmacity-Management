@@ -36,6 +36,7 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.LoHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.constant.LoaiKhuyenMai;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.FontStyles;
 
 /**
  *
@@ -63,6 +64,19 @@ public class GD_BanHang extends javax.swing.JPanel {
         customUI();
         addPanelThanhToan();
         addHeaderRow();
+        applyStyles();
+    }
+    
+    private void applyStyles() {
+        // Buttons chính
+        ButtonStyles.apply(btnXoa, ButtonStyles.Type.DANGER);
+        FontStyles.apply(btnXoa, FontStyles.Type.BUTTON_MEDIUM);
+        FontStyles.apply(btnXoa, FontStyles.Type.TEXT_MEDIUM);
+        
+        FontStyles.toUpperCase(
+                btnXoa,
+                btnMa
+        );
     }
 
     private void addPanelThanhToan() {

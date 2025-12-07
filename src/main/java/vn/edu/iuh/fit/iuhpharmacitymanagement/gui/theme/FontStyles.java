@@ -29,7 +29,7 @@ public final class FontStyles {
     FONT_MAP.put(Type.BUTTON_SMALL, new FontConfig(12, Font.PLAIN)); // Button nhỏ
 
     FONT_MAP.put(Type.TEXT_LARGE, new FontConfig(16, Font.PLAIN)); // Text lớn
-    FONT_MAP.put(Type.TEXT_MEDIUM, new FontConfig(14, Font.PLAIN)); // Text trung bình
+    FONT_MAP.put(Type.TEXT_MEDIUM, new FontConfig(14, Font.BOLD)); // Text trung bình
     FONT_MAP.put(Type.TEXT_SMALL, new FontConfig(12, Font.PLAIN)); // Text nhỏ
 
     FONT_MAP.put(Type.LABEL_LARGE, new FontConfig(16, Font.BOLD)); // Label lớn
@@ -49,6 +49,37 @@ public final class FontStyles {
   private FontStyles() {
 
   }
+  
+    /**
+     * Chuyển đổi văn bản của các nút (JButton, JCheckBox...) thành IN HOA.
+     * Hàm này an toàn, không lỗi nếu nút chưa có text hoặc null.
+     */
+    public static void toUpperCase(AbstractButton... buttons) {
+        for (AbstractButton btn : buttons) {
+            if (btn != null) {
+                String text = btn.getText();
+                if (text != null && !text.isEmpty()) {
+                    btn.setText(text.toUpperCase());
+                }
+            }
+        }
+    }
+
+    /**
+     * Chuyển đổi văn bản của các nhãn (JLabel) thành IN HOA.
+     */
+    public static void toUpperCase(JLabel... labels) {
+        for (JLabel lbl : labels) {
+            if (lbl != null) {
+                String text = lbl.getText();
+                if (text != null && !text.isEmpty()) {
+                    lbl.setText(text.toUpperCase());
+                }
+            }
+        }
+    }
+
+    // ==========================================================================
 
   public static void apply(JComponent component, Type type) {
     FontConfig config = FONT_MAP.get(type);
