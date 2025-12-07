@@ -636,7 +636,7 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
         setBorder(javax.swing.BorderFactory.createMatteBorder(0, 0, 1, 0, new java.awt.Color(232, 232, 232)));
         setMaximumSize(new java.awt.Dimension(32767, 100));
         setMinimumSize(new java.awt.Dimension(800, 100));
-        setPreferredSize(new java.awt.Dimension(1000, 100));
+        setPreferredSize(new java.awt.Dimension(1150, 100));
         setRequestFocusEnabled(false);
         
         // Sử dụng GridBagLayout để các cột thẳng hàng
@@ -667,8 +667,8 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
         lblTenSP = new javax.swing.JLabel();
         lblTenSP.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         lblTenSP.setText("");
-        lblTenSP.setPreferredSize(new java.awt.Dimension(180, 100));
-        lblTenSP.setMinimumSize(new java.awt.Dimension(180, 100));
+        lblTenSP.setPreferredSize(new java.awt.Dimension(220, 100));
+        lblTenSP.setMinimumSize(new java.awt.Dimension(150, 100));
         lblTenSP.setVerticalAlignment(javax.swing.SwingConstants.TOP);
         gbc.gridx = 1;
         gbc.weightx = 1.0;

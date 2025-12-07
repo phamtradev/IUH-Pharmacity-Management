@@ -146,8 +146,8 @@ public class GD_BanHang extends javax.swing.JPanel {
 
         javax.swing.JLabel lblHeaderDiscount = new javax.swing.JLabel("Giảm giá");
         lblHeaderDiscount.setFont(new java.awt.Font("Segoe UI", 1, 13));
-        lblHeaderDiscount.setPreferredSize(new java.awt.Dimension(70, 30));
-        lblHeaderDiscount.setMinimumSize(new java.awt.Dimension(70, 30));
+        lblHeaderDiscount.setPreferredSize(new java.awt.Dimension(60, 30));
+        lblHeaderDiscount.setMinimumSize(new java.awt.Dimension(60, 30));
         lblHeaderDiscount.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         gbc.gridx = 4;
         gbc.weightx = 0.0;
@@ -320,7 +320,7 @@ public class GD_BanHang extends javax.swing.JPanel {
                 .addGap(15, 15, 15)
                 .addComponent(btnMa, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(15, 15, 15)
-                .addComponent(btnXoa, javax.swing.GroupLayout.PREFERRED_SIZE, 105, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(btnXoa, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 40, Short.MAX_VALUE)
                 .addComponent(txtTimDonHang, javax.swing.GroupLayout.PREFERRED_SIZE, 350, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)

@@ -1461,8 +1461,8 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
 
         txtSearchNamePD.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
         txtSearchNamePD.setToolTipText("Nhập tên sản phẩm hoặc số đăng ký");
-        txtSearchNamePD.setMinimumSize(new java.awt.Dimension(190, 40));
-        txtSearchNamePD.setPreferredSize(new java.awt.Dimension(190, 40));
+        txtSearchNamePD.setMinimumSize(new java.awt.Dimension(280, 40));
+        txtSearchNamePD.setPreferredSize(new java.awt.Dimension(280, 40));
         txtSearchNamePD.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 txtSearchNamePDActionPerformed(evt);
@@ -1523,7 +1523,8 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         headerPanel.add(jPanel5, java.awt.BorderLayout.CENTER);
 
         actionPanel.setBackground(new java.awt.Color(255, 255, 255));
-        actionPanel.setPreferredSize(new java.awt.Dimension(470, 60));
+        //actionPanel.setPreferredSize(new java.awt.Dimension(470, 60));
+        actionPanel.setPreferredSize(null);
         actionPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 10, 25));
 
         btnAdd.setBackground(new java.awt.Color(115, 165, 71));
