@@ -897,6 +897,31 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
                         cal.add(Calendar.YEAR, 2);
                         hanDung = cal.getTime();
                     }
+                    
+                    // Kiểm tra hạn sử dụng dưới 6 tháng
+                    LocalDate hsdLocal = new java.sql.Date(hanDung.getTime()).toLocalDate();
+                    LocalDate ngayGioiHan = LocalDate.now().plusMonths(6);
+                    if (hsdLocal.isBefore(ngayGioiHan) || hsdLocal.isEqual(ngayGioiHan)) {
+                        String tenSP = maSP;
+                        try {
+                            SanPham spTemp = sanPhamBUS.laySanPhamTheoMa(maSP);
+                            if (spTemp != null) {
+                                tenSP = spTemp.getTenSanPham();
+                            }
+                        } catch (Exception ex) {
+                            // Nếu không tìm thấy sản phẩm, dùng mã SP
+                        }
+                        String errorMsg = String.format("Dòng %d: Hạn sử dụng của sản phẩm '%s' (HSD: %s) dưới 6 tháng. Yêu cầu HSD phải lớn hơn %s", 
+                                i + 1, tenSP, hsdLocal.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")), 
+                                ngayGioiHan.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+                        errors.append(errorMsg).append("\n");
+                        errorCount++;
+                        Notifications.getInstance().show(
+                                Notifications.Type.ERROR,
+                                Notifications.Location.TOP_CENTER,
+                                errorMsg);
+                        continue; // Bỏ qua dòng này
+                    }
 
                     String tenLoHang = null;
                     if (colLoHang != -1) {
@@ -978,7 +1003,7 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
 
                     // Gom nhóm theo key: SĐK + HSD + Giá nhập
                     String soDangKy = sanPham.getSoDangKy() != null ? sanPham.getSoDangKy() : maSP;
-                    LocalDate hsdLocal = new java.sql.Date(hanDung.getTime()).toLocalDate();
+                    // hsdLocal đã được tạo trong validation ở trên
                     LoKey key = new LoKey(soDangKy, hsdLocal, donGiaNhap);
 
                     gopSoLuong.merge(key, soLuong, Integer::sum);
