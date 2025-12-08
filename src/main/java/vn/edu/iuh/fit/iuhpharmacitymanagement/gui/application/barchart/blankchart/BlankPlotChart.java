@@ -5,10 +5,13 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
+import java.awt.Point;
 import java.awt.RenderingHints;
+import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
 import java.text.DecimalFormat;
 import javax.swing.JComponent;
+import javax.swing.ToolTipManager;
 import javax.swing.border.EmptyBorder;
 
 public class BlankPlotChart extends JComponent {
@@ -59,13 +62,35 @@ public class BlankPlotChart extends JComponent {
     private int labelCount;
     private String valuesFormat = "#,##0.##";
     private BlankPlotChatRender blankPlotChatRender;
+    private java.util.function.Function<Point, String> tooltipProvider;
 
     public BlankPlotChart() {
         setBackground(Color.WHITE);
         setOpaque(false);
         setForeground(new Color(100, 100, 100));
         setBorder(new EmptyBorder(20, 10, 10, 10));
+        ToolTipManager.sharedInstance().registerComponent(this);
         init();
+    }
+    
+    public void setTooltipProvider(java.util.function.Function<Point, String> provider) {
+        this.tooltipProvider = provider;
+    }
+    
+    @Override
+    public String getToolTipText(MouseEvent event) {
+        if (tooltipProvider != null && event != null) {
+            Point point = event.getPoint();
+            // Đảm bảo tooltip hiển thị ngay lập tức
+            String tooltip = tooltipProvider.apply(point);
+            if (tooltip != null && !tooltip.isEmpty()) {
+                // Set tooltip delay ngắn hơn mỗi lần có tooltip
+                ToolTipManager.sharedInstance().setInitialDelay(0);
+                ToolTipManager.sharedInstance().setDismissDelay(5000);
+                return tooltip;
+            }
+        }
+        return super.getToolTipText(event);
     }
 
     private void init() {
