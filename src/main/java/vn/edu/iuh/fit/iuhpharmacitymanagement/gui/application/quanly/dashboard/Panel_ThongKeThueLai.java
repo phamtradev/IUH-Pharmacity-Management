@@ -47,6 +47,8 @@ public class Panel_ThongKeThueLai extends javax.swing.JPanel {
     private JDateChooser dateTo;
     private JButton btnSearch;
     private JPanel datePickerPanel;
+    private JLabel lblFrom;
+    private JLabel lblTo;
 
     public Panel_ThongKeThueLai() {
         thongKeService = new ThongKeThueLaiService();
@@ -104,7 +106,7 @@ public class Panel_ThongKeThueLai extends javax.swing.JPanel {
      * Tạo header panel với tab và date picker (gọn gàng)
      */
     private JPanel createHeaderPanel() {
-        JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 5));
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
         panel.setBackground(Color.WHITE);
         panel.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(new Color(230, 230, 230), 1),
@@ -132,15 +134,15 @@ public class Panel_ThongKeThueLai extends javax.swing.JPanel {
         
         btnTheoNgay.addActionListener(e -> {
             currentDateMode = "Theo ngày";
-            showDatePickers();
+            updateDatePickerLabels();
         });
         btnTheoThang.addActionListener(e -> {
             currentDateMode = "Theo tháng";
-            showDatePickers();
+            updateDatePickerLabels();
         });
         btnTheoNam.addActionListener(e -> {
             currentDateMode = "Theo năm";
-            showDatePickers();
+            updateDatePickerLabels();
         });
         
         panel.add(btnTheoNgay);
@@ -151,6 +153,9 @@ public class Panel_ThongKeThueLai extends javax.swing.JPanel {
         datePickerPanel = createDatePickerPanel();
         datePickerPanel.setVisible(true);
         panel.add(datePickerPanel);
+        
+        // Cập nhật labels ban đầu
+        updateDatePickerLabels();
         
         return panel;
     }
@@ -163,7 +168,7 @@ public class Panel_ThongKeThueLai extends javax.swing.JPanel {
         panel.setOpaque(false);
         
         // Ngày bắt đầu
-        JLabel lblFrom = new JLabel("Ngày bắt đầu:");
+        lblFrom = new JLabel("Ngày bắt đầu:");
         lblFrom.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         
         dateFrom = new JDateChooser();
@@ -177,7 +182,7 @@ public class Panel_ThongKeThueLai extends javax.swing.JPanel {
         lblArrow.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         
         // Ngày kết thúc
-        JLabel lblTo = new JLabel("Ngày kết thúc:");
+        lblTo = new JLabel("Ngày kết thúc:");
         lblTo.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         
         dateTo = new JDateChooser();
@@ -205,11 +210,35 @@ public class Panel_ThongKeThueLai extends javax.swing.JPanel {
     }
     
     /**
-     * Hiển thị date pickers
+     * Cập nhật label và format của date picker dựa trên mode
      */
-    private void showDatePickers() {
+    private void updateDatePickerLabels() {
         datePickerPanel.setVisible(true);
-        // Có thể cập nhật format hoặc validation dựa trên currentDateMode nếu cần
+        
+        switch (currentDateMode) {
+            case "Theo ngày":
+                lblFrom.setText("Ngày bắt đầu:");
+                lblTo.setText("Ngày kết thúc:");
+                dateFrom.setDateFormatString("dd/MM/yyyy");
+                dateTo.setDateFormatString("dd/MM/yyyy");
+                break;
+            case "Theo tháng":
+                lblFrom.setText("Tháng bắt đầu:");
+                lblTo.setText("Tháng kết thúc:");
+                dateFrom.setDateFormatString("MM/yyyy");
+                dateTo.setDateFormatString("MM/yyyy");
+                break;
+            case "Theo năm":
+                lblFrom.setText("Năm bắt đầu:");
+                lblTo.setText("Năm kết thúc:");
+                dateFrom.setDateFormatString("yyyy");
+                dateTo.setDateFormatString("yyyy");
+                break;
+        }
+        
+        // Repaint để cập nhật UI
+        datePickerPanel.revalidate();
+        datePickerPanel.repaint();
     }
     
     /**
@@ -217,30 +246,76 @@ public class Panel_ThongKeThueLai extends javax.swing.JPanel {
      */
     private void searchByDateRange() {
         if (dateFrom.getDate() == null || dateTo.getDate() == null) {
+            String message = "Vui lòng chọn đầy đủ ";
+            switch (currentDateMode) {
+                case "Theo ngày":
+                    message += "ngày bắt đầu và ngày kết thúc";
+                    break;
+                case "Theo tháng":
+                    message += "tháng bắt đầu và tháng kết thúc";
+                    break;
+                case "Theo năm":
+                    message += "năm bắt đầu và năm kết thúc";
+                    break;
+            }
             Notifications.getInstance().show(Notifications.Type.WARNING, 
-                Notifications.Location.TOP_CENTER, 
-                "Vui lòng chọn đầy đủ ngày bắt đầu và ngày kết thúc");
+                Notifications.Location.TOP_CENTER, message);
             return;
         }
         
-        LocalDate from = dateFrom.getDate().toInstant()
-            .atZone(ZoneId.systemDefault()).toLocalDate();
-        LocalDate to = dateTo.getDate().toInstant()
-            .atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate from, to;
+        String periodDesc;
+        
+        switch (currentDateMode) {
+            case "Theo ngày":
+                from = dateFrom.getDate().toInstant()
+                    .atZone(ZoneId.systemDefault()).toLocalDate();
+                to = dateTo.getDate().toInstant()
+                    .atZone(ZoneId.systemDefault()).toLocalDate();
+                periodDesc = String.format("%s - %s", 
+                    from.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")),
+                    to.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+                break;
+            case "Theo tháng":
+                // Lấy ngày đầu tháng và cuối tháng
+                LocalDate fromDate = dateFrom.getDate().toInstant()
+                    .atZone(ZoneId.systemDefault()).toLocalDate();
+                LocalDate toDate = dateTo.getDate().toInstant()
+                    .atZone(ZoneId.systemDefault()).toLocalDate();
+                from = fromDate.withDayOfMonth(1);
+                to = toDate.withDayOfMonth(toDate.lengthOfMonth());
+                periodDesc = String.format("%s - %s", 
+                    fromDate.format(java.time.format.DateTimeFormatter.ofPattern("MM/yyyy")),
+                    toDate.format(java.time.format.DateTimeFormatter.ofPattern("MM/yyyy")));
+                break;
+            case "Theo năm":
+                // Lấy ngày đầu năm và cuối năm
+                LocalDate fromYear = dateFrom.getDate().toInstant()
+                    .atZone(ZoneId.systemDefault()).toLocalDate();
+                LocalDate toYear = dateTo.getDate().toInstant()
+                    .atZone(ZoneId.systemDefault()).toLocalDate();
+                from = fromYear.withDayOfYear(1);
+                to = toYear.withDayOfYear(toYear.lengthOfYear());
+                periodDesc = String.format("%s - %s", 
+                    String.valueOf(fromYear.getYear()),
+                    String.valueOf(toYear.getYear()));
+                break;
+            default:
+                from = dateFrom.getDate().toInstant()
+                    .atZone(ZoneId.systemDefault()).toLocalDate();
+                to = dateTo.getDate().toInstant()
+                    .atZone(ZoneId.systemDefault()).toLocalDate();
+                periodDesc = String.format("%s - %s", 
+                    from.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")),
+                    to.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+        }
         
         if (from.isAfter(to)) {
+            String message = "Thời gian bắt đầu phải trước thời gian kết thúc";
             Notifications.getInstance().show(Notifications.Type.WARNING, 
-                Notifications.Location.TOP_CENTER, 
-                "Ngày bắt đầu phải trước ngày kết thúc");
+                Notifications.Location.TOP_CENTER, message);
             return;
         }
-        
-        // Cập nhật description
-        String periodDesc = String.format("%s - %s", 
-            dateFrom.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(
-                java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")),
-            dateTo.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(
-                java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")));
         
         // Load data với khoảng thời gian đã chọn
         loadDataByDateRange(from, to, periodDesc);
