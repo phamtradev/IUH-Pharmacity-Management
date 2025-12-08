@@ -32,8 +32,8 @@ public class SplashScreen extends javax.swing.JFrame {
         BackgroundPanel.setComponentZOrder(progressBar, 0); // ProgressBar ở lớp trên cùng
         BackgroundPanel.setComponentZOrder(lblLoading, 1);
         
-        BackgroundPanel.setComponentZOrder(IUHLogo, 3);
-        BackgroundPanel.setComponentZOrder(BackgroundImg, 3);
+//        BackgroundPanel.setComponentZOrder(IUHLogo, 3);
+        BackgroundPanel.setComponentZOrder(BackgroundImg, 2);
 
         setLocationRelativeTo(null);
         setResizable(false);
@@ -46,9 +46,9 @@ public class SplashScreen extends javax.swing.JFrame {
                 
                 // Bước 2: Load hình ảnh (thực tế)
                 updateProgress("Đang tải hình ảnh...", 5);
-                setImageToLabel(BackgroundImg, "/img/LoadingImage.png");
+                setImageToLabel(BackgroundImg, "/img/LoadingImageCopy.png");
                 updateProgress("Đang tải hình ảnh...", 10);
-                setImageToLabel(IUHLogo, "/img/IUH.png");
+                //setImageToLabel(IUHLogo, "/img/IUH_New.png");
                 updateProgress("Đã tải hình ảnh", 15);
                 
                 // Bước 3: Kết nối database (thực tế)
@@ -157,7 +157,6 @@ public class SplashScreen extends javax.swing.JFrame {
 
         BackgroundPanel = new javax.swing.JPanel();
         BackgroundImg = new javax.swing.JLabel();
-        IUHLogo = new javax.swing.JLabel();
         progressBar = new javax.swing.JProgressBar();
         lblLoading = new javax.swing.JLabel();
 
@@ -173,12 +172,6 @@ public class SplashScreen extends javax.swing.JFrame {
         BackgroundImg.setText("BackgroundImage");
         BackgroundImg.setPreferredSize(new java.awt.Dimension(1200, 600));
         BackgroundPanel.add(BackgroundImg, new org.netbeans.lib.awtextra.AbsoluteConstraints(3, -2, 1200, 600));
-
-        IUHLogo.setText("IUHLogo");
-        IUHLogo.setMaximumSize(new java.awt.Dimension(424, 300));
-        IUHLogo.setMinimumSize(new java.awt.Dimension(424, 300));
-        IUHLogo.setPreferredSize(new java.awt.Dimension(424, 300));
-        BackgroundPanel.add(IUHLogo, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 10, 250, 140));
 
         progressBar.setStringPainted(true);
         BackgroundPanel.add(progressBar, new org.netbeans.lib.awtextra.AbsoluteConstraints(6, 576, 1190, -1));
@@ -267,7 +260,6 @@ public class SplashScreen extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel BackgroundImg;
     private javax.swing.JPanel BackgroundPanel;
-    private javax.swing.JLabel IUHLogo;
     private javax.swing.JLabel lblLoading;
     private javax.swing.JProgressBar progressBar;
     // End of variables declaration//GEN-END:variables
