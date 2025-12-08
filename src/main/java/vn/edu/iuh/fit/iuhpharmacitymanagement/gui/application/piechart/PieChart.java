@@ -30,7 +30,11 @@ public class PieChart extends JPanel {
     public PieChart() {
         setOpaque(false);
         setPreferredSize(new Dimension(320, 320));
-        ToolTipManager.sharedInstance().registerComponent(this);
+        ToolTipManager toolTipManager = ToolTipManager.sharedInstance();
+        toolTipManager.registerComponent(this);
+        toolTipManager.setInitialDelay(0); // Hiển thị ngay lập tức
+        toolTipManager.setReshowDelay(0); // Hiển thị lại ngay khi di chuyển
+        toolTipManager.setDismissDelay(5000); // Giữ tooltip 5 giây
     }
 
     public void setData(List<PieChartItem> data) {
@@ -127,6 +131,15 @@ public class PieChart extends JPanel {
 
     @Override
     public String getToolTipText(MouseEvent event) {
+        if (event == null) {
+            return null;
+        }
+        // Đảm bảo tooltip hiển thị ngay lập tức
+        ToolTipManager toolTipManager = ToolTipManager.sharedInstance();
+        toolTipManager.setInitialDelay(0);
+        toolTipManager.setReshowDelay(0);
+        toolTipManager.setDismissDelay(5000);
+        
         SliceInfo slice = findSliceAt(event.getPoint());
         if (slice == null) {
             return null;

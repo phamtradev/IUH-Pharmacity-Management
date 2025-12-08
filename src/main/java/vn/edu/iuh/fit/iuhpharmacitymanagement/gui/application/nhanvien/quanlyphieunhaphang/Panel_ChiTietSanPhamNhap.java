@@ -27,6 +27,8 @@ import java.awt.Component;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
+import com.toedter.calendar.JDateChooser;
+import raven.toast.Notifications;
 
 /**
  *
@@ -1056,22 +1058,20 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
         gbcTab2.weightx = 0.0;
         tabTaoLoMoi.add(lblHSD, gbcTab2);
 
-        // Thay JSpinner thành JTextField
-        javax.swing.JTextField txtHSDMoi = new javax.swing.JTextField(20);
-        txtHSDMoi.setFont(new java.awt.Font("Segoe UI", 0, 14));
-        txtHSDMoi.setPreferredSize(new java.awt.Dimension(300, 35));
+        // Sử dụng JDateChooser thay vì JTextField
+        JDateChooser dateHSDMoi = new JDateChooser();
+        dateHSDMoi.setDateFormatString("dd/MM/yyyy");
+        dateHSDMoi.setFont(new java.awt.Font("Segoe UI", 0, 14));
+        dateHSDMoi.setPreferredSize(new java.awt.Dimension(300, 35));
 
         // Tự động điền HSD từ Excel (nếu có)
         if (hsdTuExcel != null) {
-            txtHSDMoi.setText(dateFormat.format(hsdTuExcel));
-        } else {
-            // Placeholder
-            txtHSDMoi.putClientProperty("JTextField.placeholderText", "dd/MM/yyyy");
+            dateHSDMoi.setDate(hsdTuExcel);
         }
 
         gbcTab2.gridx = 1;
         gbcTab2.weightx = 1.0;
-        tabTaoLoMoi.add(txtHSDMoi, gbcTab2);
+        tabTaoLoMoi.add(dateHSDMoi, gbcTab2);
 
         // Số lượng
         javax.swing.JLabel lblSoLuongMoi = new javax.swing.JLabel("Số lượng:");
@@ -1149,12 +1149,12 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
                                                     + (donGiaCuOpt.isPresent()
                                                             ? currencyFormat.format(donGiaCuOpt.get())
                                                             : "không xác định")
-                                                    + " đ.\nBạn đang nhập giá " + currencyFormat.format(donGiaHienTai)
-                                                    + " đ.\nMỗi lô chỉ được phép có 1 giá nhập. Vui lòng chọn lô khác hoặc tạo lô mới.";
-                                            javax.swing.JOptionPane.showMessageDialog(dialog,
-                                                    msg,
-                                                    "Giá nhập không hợp lệ",
-                                                    javax.swing.JOptionPane.ERROR_MESSAGE);
+                                                    + " đ. Bạn đang nhập giá " + currencyFormat.format(donGiaHienTai)
+                                                    + " đ. Mỗi lô chỉ được phép có 1 giá nhập. Vui lòng chọn lô khác hoặc tạo lô mới.";
+                                            Notifications.getInstance().show(
+                                                    Notifications.Type.ERROR,
+                                                    Notifications.Location.TOP_CENTER,
+                                                    msg);
                                             return;
                                         }
 
@@ -1181,29 +1181,29 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
                         }
                     }
                 } else {
-                    javax.swing.JOptionPane.showMessageDialog(dialog,
-                            "Vui lòng chọn một lô hàng!",
-                            "Thông báo",
-                            javax.swing.JOptionPane.WARNING_MESSAGE);
+                    Notifications.getInstance().show(
+                            Notifications.Type.WARNING,
+                            Notifications.Location.TOP_CENTER,
+                            "Vui lòng chọn một lô hàng!");
                 }
             } else {
                 // Tab "Tạo lô mới"
                 String tenLo = txtTenLoMoi.getText().trim();
                 if (tenLo.isEmpty()) {
-                    javax.swing.JOptionPane.showMessageDialog(dialog,
-                            "Vui lòng nhập tên lô!",
-                            "Thông báo",
-                            javax.swing.JOptionPane.WARNING_MESSAGE);
+                    Notifications.getInstance().show(
+                            Notifications.Type.WARNING,
+                            Notifications.Location.TOP_CENTER,
+                            "Vui lòng nhập tên lô!");
                     return;
                 }
 
                 // Lấy và parse số lượng
                 String soLuongText = txtSoLuongMoi.getText().trim();
                 if (soLuongText.isEmpty()) {
-                    javax.swing.JOptionPane.showMessageDialog(dialog,
-                            "Vui lòng nhập số lượng!",
-                            "Thông báo",
-                            javax.swing.JOptionPane.WARNING_MESSAGE);
+                    Notifications.getInstance().show(
+                            Notifications.Type.WARNING,
+                            Notifications.Location.TOP_CENTER,
+                            "Vui lòng nhập số lượng!");
                     return;
                 }
 
@@ -1211,38 +1211,27 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
                 try {
                     soLuong = Integer.parseInt(soLuongText);
                     if (soLuong <= 0) {
-                        javax.swing.JOptionPane.showMessageDialog(dialog,
-                                "Số lượng phải lớn hơn 0!",
-                                "Thông báo",
-                                javax.swing.JOptionPane.WARNING_MESSAGE);
+                        Notifications.getInstance().show(
+                                Notifications.Type.WARNING,
+                                Notifications.Location.TOP_CENTER,
+                                "Số lượng phải lớn hơn 0!");
                         return;
                     }
                 } catch (NumberFormatException ex) {
-                    javax.swing.JOptionPane.showMessageDialog(dialog,
-                            "Số lượng không hợp lệ! Vui lòng nhập số nguyên.",
-                            "Thông báo",
-                            javax.swing.JOptionPane.WARNING_MESSAGE);
+                    Notifications.getInstance().show(
+                            Notifications.Type.WARNING,
+                            Notifications.Location.TOP_CENTER,
+                            "Số lượng không hợp lệ! Vui lòng nhập số nguyên.");
                     return;
                 }
 
-                // Kiểm tra và parse hạn sử dụng
-                String hsdText = txtHSDMoi.getText().trim();
-                if (hsdText.isEmpty()) {
-                    javax.swing.JOptionPane.showMessageDialog(dialog,
-                            "Vui lòng nhập hạn sử dụng!",
-                            "Thông báo",
-                            javax.swing.JOptionPane.WARNING_MESSAGE);
-                    return;
-                }
-
-                Date hsdDate;
-                try {
-                    hsdDate = dateFormat.parse(hsdText);
-                } catch (Exception ex) {
-                    javax.swing.JOptionPane.showMessageDialog(dialog,
-                            "Định dạng ngày không hợp lệ! Vui lòng nhập theo định dạng dd/MM/yyyy",
-                            "Thông báo",
-                            javax.swing.JOptionPane.WARNING_MESSAGE);
+                // Kiểm tra hạn sử dụng từ JDateChooser
+                Date hsdDate = dateHSDMoi.getDate();
+                if (hsdDate == null) {
+                    Notifications.getInstance().show(
+                            Notifications.Type.WARNING,
+                            Notifications.Location.TOP_CENTER,
+                            "Vui lòng chọn hạn sử dụng!");
                     return;
                 }
 
@@ -1252,10 +1241,11 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
                 LocalDate ngayGioiHan = LocalDate.now().plusMonths(6);
 
                 if (hsd.isBefore(ngayGioiHan) || hsd.isEqual(ngayGioiHan)) {
-                    javax.swing.JOptionPane.showMessageDialog(dialog,
-                            "Hạn sử dụng phải lớn hơn 6 tháng kể từ ngày hiện tại!",
-                            "Thông báo",
-                            javax.swing.JOptionPane.WARNING_MESSAGE);
+                    Notifications.getInstance().show(
+                            Notifications.Type.ERROR,
+                            Notifications.Location.TOP_CENTER,
+                            "Hạn sử dụng phải lớn hơn 6 tháng kể từ ngày hiện tại! Yêu cầu HSD phải lớn hơn " 
+                            + ngayGioiHan.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")));
                     return;
                 }
 
@@ -1279,10 +1269,10 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
                     // Lưu lô mới vào DB
                     boolean themThanhCong = loHangBUS.themLoHang(loMoi);
                     if (!themThanhCong) {
-                        javax.swing.JOptionPane.showMessageDialog(dialog,
-                                "Lỗi khi tạo lô mới! Vui lòng thử lại.",
-                                "Lỗi",
-                                javax.swing.JOptionPane.ERROR_MESSAGE);
+                        Notifications.getInstance().show(
+                                Notifications.Type.ERROR,
+                                Notifications.Location.TOP_CENTER,
+                                "Lỗi khi tạo lô mới! Vui lòng thử lại.");
                         return;
                     }
 
@@ -1301,16 +1291,16 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
                     updateLoInfo();
                     dialog.dispose();
 
-                    javax.swing.JOptionPane.showMessageDialog(Panel_ChiTietSanPhamNhap.this,
-                            "Đã tạo lô mới thành công: " + loMoi.getMaLoHang() + " - " + tenLo,
-                            "Thành công",
-                            javax.swing.JOptionPane.INFORMATION_MESSAGE);
+                    Notifications.getInstance().show(
+                            Notifications.Type.SUCCESS,
+                            Notifications.Location.TOP_CENTER,
+                            "Đã tạo lô mới thành công: " + loMoi.getMaLoHang() + " - " + tenLo);
 
                 } catch (Exception ex) {
-                    javax.swing.JOptionPane.showMessageDialog(dialog,
-                            "Lỗi khi tạo lô mới: " + ex.getMessage(),
-                            "Lỗi",
-                            javax.swing.JOptionPane.ERROR_MESSAGE);
+                    Notifications.getInstance().show(
+                            Notifications.Type.ERROR,
+                            Notifications.Location.TOP_CENTER,
+                            "Lỗi khi tạo lô mới: " + ex.getMessage());
                 }
             }
         });

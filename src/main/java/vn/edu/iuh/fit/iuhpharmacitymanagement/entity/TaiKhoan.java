@@ -17,11 +17,11 @@ public class TaiKhoan {
     private String matKhau;
     private NhanVien nhanVien;
     
-    public static final String TEN_DANG_NHAP_SAI = "Tên đăng nhập phải có dạng TDNxxxxx (5 chữ số dương)";
+    public static final String TEN_DANG_NHAP_SAI = "Tên đăng nhập phải có dạng nvxxxxx hoặc qlxxxxx (5 chữ số dương)";
     public static final String MAT_KHAU_SAI = "Mật khẩu phải từ 6 ký tự trở lên, có ít nhất 1 chữ số và 1 ký tự đặc biệt (@#$^*)";
     public static final String NHAN_VIEN_RONG = "Nhân viên không được để trống";
     
-    public static final String TEN_DANG_NHAP_REGEX = "^TDN\\d{5}$";
+    public static final String TEN_DANG_NHAP_REGEX = "^(nv|ql)\\d{5}$";
     public static final String MAT_KHAU_REGEX = "^(?=.*[0-9])(?=.*[@#$^*]).{6,}$";
 
     public TaiKhoan() {

@@ -8,6 +8,7 @@ import com.formdev.flatlaf.FlatLightLaf;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.service.backup.BackupManifestService;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.service.backup.BackupRecord;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.service.backup.DataBackupService;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.service.backup.ScheduledBackupService;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.util.BackupPreferences;
 
 import java.awt.Color;
@@ -32,12 +33,14 @@ public class MenuForm extends javax.swing.JFrame {
         initComponents();
         setupWindow();
         setupMainForm();
+        startScheduledBackup();
     }
     
      public MenuForm(int type) {
         initComponents();
         setupWindow();
         setupMainForm(type);
+        startScheduledBackup();
     }
      
     private void setupWindow() {
@@ -63,6 +66,9 @@ public class MenuForm extends javax.swing.JFrame {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
+                // Dừng scheduled backup khi đóng ứng dụng
+                ScheduledBackupService.getInstance().stop();
+                
                 if (BackupPreferences.isAutoBackupEnabled()) {
                     // Cho phép đóng app ngay, backup chạy background
                     performAutoBackupInBackground();
@@ -72,6 +78,13 @@ public class MenuForm extends javax.swing.JFrame {
                 }
             }
         });
+    }
+    
+    /**
+     * Khởi động scheduled backup nếu được bật
+     */
+    private void startScheduledBackup() {
+        ScheduledBackupService.getInstance().startIfEnabled();
     }
     
     private void performAutoBackupInBackground() {

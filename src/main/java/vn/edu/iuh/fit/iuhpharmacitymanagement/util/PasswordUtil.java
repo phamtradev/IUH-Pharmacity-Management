@@ -16,6 +16,12 @@ public class PasswordUtil {
 
     public static String encode(String plainPassword) {
         try {
+            // Normalize mật khẩu đầu vào (trim để loại bỏ khoảng trắng thừa)
+            if (plainPassword == null) {
+                throw new IllegalArgumentException("Password cannot be null");
+            }
+            plainPassword = plainPassword.trim();
+            
             // Generate random salt
             SecureRandom random = new SecureRandom();
             byte[] salt = new byte[SALT_LENGTH];
@@ -39,6 +45,12 @@ public class PasswordUtil {
 
     public static boolean verify(String plainPassword, String encodedPassword) {
         try {
+            // Normalize mật khẩu đầu vào (trim để loại bỏ khoảng trắng thừa)
+            if (plainPassword == null || encodedPassword == null) {
+                return false;
+            }
+            plainPassword = plainPassword.trim();
+            
             // Split encoded password to get salt and hash
             String[] parts = encodedPassword.split(":");
             if (parts.length != 2) {

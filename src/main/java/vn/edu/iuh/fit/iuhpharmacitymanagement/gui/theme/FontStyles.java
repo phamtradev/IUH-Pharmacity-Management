@@ -1,6 +1,7 @@
 package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme;
 
 import javax.swing.*;
+import javax.swing.text.JTextComponent;
 import java.awt.*;
 import java.util.EnumMap;
 import java.util.Map;
@@ -99,6 +100,34 @@ public final class FontStyles {
 
     Font font = new Font(fontFamily, config.style(), config.size());
     component.setFont(font);
+  }
+
+  /**
+   * Chuyển toàn bộ text của component sang chữ hoa.
+   * Dùng cho label, button, text field, text area...
+   */
+  public static void applyUpperCase(JLabel label) {
+    if (label == null) return;
+    String text = label.getText();
+    if (text != null) {
+      label.setText(text.toUpperCase());
+    }
+  }
+
+  public static void applyUpperCase(AbstractButton button) {
+    if (button == null) return;
+    String text = button.getText();
+    if (text != null) {
+      button.setText(text.toUpperCase());
+    }
+  }
+
+  public static void applyUpperCase(JTextComponent textComponent) {
+    if (textComponent == null) return;
+    String text = textComponent.getText();
+    if (text != null) {
+      textComponent.setText(text.toUpperCase());
+    }
   }
 
   /**

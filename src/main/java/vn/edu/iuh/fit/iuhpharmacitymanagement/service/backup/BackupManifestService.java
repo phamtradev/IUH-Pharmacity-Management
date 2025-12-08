@@ -70,6 +70,13 @@ public class BackupManifestService {
         }
         return removed;
     }
+    
+    /**
+     * Thay thế toàn bộ danh sách backup bằng danh sách mới
+     */
+    public synchronized void replaceAll(List<BackupRecord> newRecords) {
+        write(newRecords);
+    }
 
     public void ensureManifestDirectory() throws IOException {
         Files.createDirectories(manifestPath.getParent());

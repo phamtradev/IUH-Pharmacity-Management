@@ -5,10 +5,13 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
+import java.awt.Point;
 import java.awt.RenderingHints;
+import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
 import java.text.DecimalFormat;
 import javax.swing.JComponent;
+import javax.swing.ToolTipManager;
 import javax.swing.border.EmptyBorder;
 
 public class BlankPlotChart extends JComponent {
@@ -59,13 +62,41 @@ public class BlankPlotChart extends JComponent {
     private int labelCount;
     private String valuesFormat = "#,##0.##";
     private BlankPlotChatRender blankPlotChatRender;
+    private java.util.function.Function<Point, String> tooltipProvider;
 
     public BlankPlotChart() {
         setBackground(Color.WHITE);
         setOpaque(false);
         setForeground(new Color(100, 100, 100));
         setBorder(new EmptyBorder(20, 10, 10, 10));
+        ToolTipManager toolTipManager = ToolTipManager.sharedInstance();
+        toolTipManager.registerComponent(this);
+        toolTipManager.setInitialDelay(0); // Hiển thị ngay lập tức
+        toolTipManager.setReshowDelay(0); // Hiển thị lại ngay khi di chuyển
+        toolTipManager.setDismissDelay(5000); // Giữ tooltip 5 giây
         init();
+    }
+    
+    public void setTooltipProvider(java.util.function.Function<Point, String> provider) {
+        this.tooltipProvider = provider;
+    }
+    
+    @Override
+    public String getToolTipText(MouseEvent event) {
+        if (tooltipProvider != null && event != null) {
+            Point point = event.getPoint();
+            // Đảm bảo tooltip hiển thị ngay lập tức
+            String tooltip = tooltipProvider.apply(point);
+            if (tooltip != null && !tooltip.isEmpty()) {
+                // Đảm bảo delay luôn là 0 mỗi lần có tooltip
+                ToolTipManager toolTipManager = ToolTipManager.sharedInstance();
+                toolTipManager.setInitialDelay(0);
+                toolTipManager.setReshowDelay(0);
+                toolTipManager.setDismissDelay(5000);
+                return tooltip;
+            }
+        }
+        return super.getToolTipText(event);
     }
 
     private void init() {

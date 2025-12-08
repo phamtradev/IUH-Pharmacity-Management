@@ -117,7 +117,7 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
         double oldTongTien = cachedTongTien;
         cachedTongTien = pricing.tongTien;
         txtTongTien.setText(currencyFormat.format(pricing.tongTien) + " đ");
-
+            
         // Đơn giá chưa VAT
         if (txtDonGiaChuaVAT != null) {
             if (pricing.donGiaDonChuaVAT > 0) {
@@ -166,7 +166,7 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
     
     public double getTongTien() {
         if (sanPham == null) {
-            return 0;
+        return 0;
         }
         Map<LoHang, Integer> phanBo = getMapLoHangVaSoLuong();
         return tinhTongTienTheoPhanBo(phanBo).tongTien;
@@ -457,7 +457,7 @@ public class Panel_ChiTietSanPham extends javax.swing.JPanel {
         if (tongSoLuong > 0) {
             result.donGiaDon = tongTienCoVAT / tongSoLuong;
             result.donGiaDonChuaVAT = tongTienChuaVAT / tongSoLuong;
-        }
+                        }
 
         return result;
     }

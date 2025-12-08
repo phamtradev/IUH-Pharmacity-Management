@@ -86,6 +86,10 @@ public class NhanVienBUS {
     }
 
     public boolean xoaNhanVien(String maNhanVien) {
+        // Xóa tài khoản của nhân viên trước (nếu có)
+        taiKhoanDAO.deleteByMaNhanVien(maNhanVien);
+        
+        // Sau đó xóa nhân viên
         return nhanVienDAO.delete(maNhanVien);
     }
 

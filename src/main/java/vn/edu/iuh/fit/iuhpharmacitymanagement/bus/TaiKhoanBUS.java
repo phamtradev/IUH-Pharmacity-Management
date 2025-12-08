@@ -148,4 +148,32 @@ public class TaiKhoanBUS {
             return false;
         }
     }
+    
+    /**
+     * Xóa tài khoản theo mã nhân viên
+     * @param maNhanVien mã nhân viên
+     * @return true nếu xóa thành công
+     */
+    public boolean xoaTaiKhoanTheoMaNhanVien(String maNhanVien) {
+        try {
+            return taiKhoanDAO.deleteByMaNhanVien(maNhanVien);
+        } catch (Exception e) {
+            System.out.println("Lỗi khi xóa tài khoản: " + e.getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Xóa tài khoản theo tên đăng nhập
+     * @param tenDangNhap tên đăng nhập
+     * @return true nếu xóa thành công
+     */
+    public boolean xoaTaiKhoan(String tenDangNhap) {
+        try {
+            return taiKhoanDAO.delete(tenDangNhap);
+        } catch (Exception e) {
+            System.out.println("Lỗi khi xóa tài khoản: " + e.getMessage());
+            return false;
+        }
+    }
 }

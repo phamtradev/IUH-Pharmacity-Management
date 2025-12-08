@@ -51,6 +51,7 @@ public class GD_ChatBot extends javax.swing.JPanel {
             "cho", "xin", "hoi", "hỏi", "toi", "tôi", "ban", "bán",
             "duoc", "được", "la", "là", "ve", "về"
     ));
+    //loai bo ky tu dac biet
     private static final String NON_TEXT_PATTERN = "[^a-z0-9áàảãạăắằẳẵặâấầẩẫậđéèẻẽẹêếềểễệíìỉĩịóòỏõọôốồổỗộơớờởỡợúùủũụưứừửữựýỳỷỹỵ\\s]";
 
     // Cấu hình API - OpenAI

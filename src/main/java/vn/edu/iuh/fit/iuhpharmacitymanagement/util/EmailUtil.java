@@ -18,10 +18,12 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Optional;
 import javax.mail.*;
 import javax.mail.internet.*;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.TaiKhoanDAO;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhanVien;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.TaiKhoan;
 
 /**
  * Utility class để gửi email sử dụng JavaMail API (SMTP)
@@ -485,9 +487,14 @@ public class EmailUtil {
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(nv.getEmail(), false));
             // Gửi email
             Transport.send(message);
-            //gửi xong upd
-            if (taiKhoanDao.updatePass(taiKhoanDao.findById(nv.getMaNhanVien()).get(), nv, pass)) {
-                return true;
+            //gửi xong upd - Tìm tài khoản theo mã nhân viên
+            Optional<TaiKhoan> taiKhoanOpt = taiKhoanDao.timTheoMaNhanVien(nv.getMaNhanVien());
+            if (taiKhoanOpt.isPresent()) {
+                if (taiKhoanDao.updatePass(taiKhoanOpt.get(), nv, pass)) {
+                    return true;
+                }
+            } else {
+                System.err.println("❌ Không tìm thấy tài khoản cho nhân viên: " + nv.getMaNhanVien());
             }
             return false;
 

@@ -14,6 +14,7 @@ public class GD_DashBoardQuanLy extends javax.swing.JPanel {
         tabbedStats.add("Tổng quan", new Panel_TongQuan());
         tabbedStats.add("Thống kê theo thời gian", new Panel_ThongKeTheoThoiGian());
         tabbedStats.add("Thống kê sản phẩm", new Panel_XuHuongMuaHang());
+        tabbedStats.add("Thống kê Thuế & Lãi", new Panel_ThongKeThueLai());
         tabbedStats.setSelectedIndex(0);
     }
 

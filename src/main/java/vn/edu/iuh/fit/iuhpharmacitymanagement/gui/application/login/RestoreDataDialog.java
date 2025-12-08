@@ -6,6 +6,7 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.service.backup.BackupRecord;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.service.backup.DataBackupService;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -14,6 +15,10 @@ import java.nio.file.attribute.FileTime;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,19 +26,23 @@ import java.util.stream.Collectors;
 public class RestoreDataDialog extends JDialog {
     // Hash SHA-256 của key "20092004"
     private static final String ADMIN_KEY_HASH = "8124684675a378155feb7b4b06cacf2ba09e49def0536b757c50c12d63c7224a";
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
     
     private JPasswordField txtKey;
     private JButton btnTimKiem;
     private JButton btnKhoiPhuc;
     private JButton btnHuy;
-    private JTextArea txtThongTin;
+    private JTable tblBackup;
+    private DefaultTableModel tableModel;
     private JLabel lblTrangThai;
     private Path selectedBackupFile;
     private DataBackupService backupService;
     private BackupManifestService manifestService;
+    private List<BackupRecord> backupRecords;
 
     public RestoreDataDialog(JFrame parent, boolean modal) {
         super(parent, modal);
+        backupRecords = new ArrayList<>();
         initComponents();
         backupService = new DataBackupService();
         Path backupDir = backupService.getDefaultBackupDirectory();
@@ -43,7 +52,7 @@ public class RestoreDataDialog extends JDialog {
     private void initComponents() {
         setTitle("Khôi phục dữ liệu");
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-        setResizable(false);
+        setResizable(true);
         setLayout(new BorderLayout(10, 10));
 
         // Panel chính
@@ -75,9 +84,9 @@ public class RestoreDataDialog extends JDialog {
         gbc.weightx = 1.0;
         inputPanel.add(txtKey, gbc);
 
-        btnTimKiem = new JButton("Khôi phục");
+        btnTimKiem = new JButton("Tìm kiếm");
         btnTimKiem.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        btnTimKiem.addActionListener(e -> timKiemVaKhoiPhuc());
+        btnTimKiem.addActionListener(e -> timKiemBackup());
         gbc.gridx = 1;
         gbc.gridy = 1;
         gbc.fill = GridBagConstraints.NONE;
@@ -86,30 +95,63 @@ public class RestoreDataDialog extends JDialog {
 
         mainPanel.add(inputPanel, BorderLayout.NORTH);
 
-        // Panel thông tin
-        JPanel infoPanel = new JPanel(new BorderLayout(5, 5));
-        JLabel lblThongTin = new JLabel("Thông tin backup:");
-        lblThongTin.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        infoPanel.add(lblThongTin, BorderLayout.NORTH);
+        // Panel danh sách backup
+        JPanel listPanel = new JPanel(new BorderLayout(5, 5));
+        JLabel lblDanhSach = new JLabel("Danh sách backup:");
+        lblDanhSach.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        listPanel.add(lblDanhSach, BorderLayout.NORTH);
 
-        txtThongTin = new JTextArea(6, 30);
-        txtThongTin.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-        txtThongTin.setEditable(false);
-        txtThongTin.setBackground(getBackground());
-        txtThongTin.setBorder(BorderFactory.createCompoundBorder(
+        // Tạo table model
+        String[] columnNames = {"Tên file", "Ngày tạo", "Kích thước", "Đường dẫn"};
+        tableModel = new DefaultTableModel(columnNames, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        tblBackup = new JTable(tableModel);
+        tblBackup.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        tblBackup.setRowHeight(25);
+        tblBackup.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        tblBackup.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 11));
+        tblBackup.getSelectionModel().addListSelectionListener(e -> {
+            int selectedRow = tblBackup.getSelectedRow();
+            if (selectedRow >= 0 && selectedRow < backupRecords.size()) {
+                BackupRecord record = backupRecords.get(selectedRow);
+                Path filePath = Path.of(record.absolutePath());
+                if (Files.exists(filePath)) {
+                    selectedBackupFile = filePath;
+                    btnKhoiPhuc.setEnabled(true);
+                } else {
+                    selectedBackupFile = null;
+                    btnKhoiPhuc.setEnabled(false);
+                }
+            } else {
+                selectedBackupFile = null;
+                btnKhoiPhuc.setEnabled(false);
+            }
+        });
+        
+        // Điều chỉnh độ rộng cột
+        tblBackup.getColumnModel().getColumn(0).setPreferredWidth(200);
+        tblBackup.getColumnModel().getColumn(1).setPreferredWidth(150);
+        tblBackup.getColumnModel().getColumn(2).setPreferredWidth(100);
+        tblBackup.getColumnModel().getColumn(3).setPreferredWidth(300);
+        
+        JScrollPane scrollPane = new JScrollPane(tblBackup);
+        scrollPane.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(Color.GRAY),
             BorderFactory.createEmptyBorder(5, 5, 5, 5)
         ));
-        JScrollPane scrollPane = new JScrollPane(txtThongTin);
-        scrollPane.setBorder(null);
-        infoPanel.add(scrollPane, BorderLayout.CENTER);
+        scrollPane.setPreferredSize(new Dimension(750, 300));
+        listPanel.add(scrollPane, BorderLayout.CENTER);
 
         lblTrangThai = new JLabel(" ");
         lblTrangThai.setFont(new Font("Segoe UI", Font.ITALIC, 11));
         lblTrangThai.setForeground(Color.GRAY);
-        infoPanel.add(lblTrangThai, BorderLayout.SOUTH);
+        listPanel.add(lblTrangThai, BorderLayout.SOUTH);
 
-        mainPanel.add(infoPanel, BorderLayout.CENTER);
+        mainPanel.add(listPanel, BorderLayout.CENTER);
 
         // Panel nút
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
@@ -123,9 +165,6 @@ public class RestoreDataDialog extends JDialog {
         btnHuy.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         btnHuy.addActionListener(e -> dispose());
         buttonPanel.add(btnHuy);
-        
-        // Ẩn nút khôi phục riêng vì đã tích hợp vào btnTimKiem
-        btnKhoiPhuc.setVisible(false);
 
         mainPanel.add(buttonPanel, BorderLayout.SOUTH);
 
@@ -135,7 +174,7 @@ public class RestoreDataDialog extends JDialog {
         setLocationRelativeTo(getParent());
     }
 
-    private void timKiemVaKhoiPhuc() {
+    private void timKiemBackup() {
         String key = new String(txtKey.getPassword()).trim();
         if (key.isEmpty()) {
             Notifications.getInstance().setJFrame((JFrame) SwingUtilities.getWindowAncestor(this));
@@ -156,35 +195,24 @@ public class RestoreDataDialog extends JDialog {
             return;
         }
 
-        lblTrangThai.setText("Đang tìm bản backup mới nhất...");
+        lblTrangThai.setText("Đang tải danh sách backup...");
         btnTimKiem.setEnabled(false);
         selectedBackupFile = null;
-        txtThongTin.setText("");
+        tableModel.setRowCount(0);
+        backupRecords = new ArrayList<>();
 
-        // Tìm bản backup mới nhất
-        SwingWorker<Path, Void> worker = new SwingWorker<Path, Void>() {
+        // Tìm tất cả các bản backup
+        SwingWorker<List<BackupRecord>, Void> worker = new SwingWorker<List<BackupRecord>, Void>() {
             @Override
-            protected Path doInBackground() throws Exception {
-                // Tìm trong manifest trước (sắp xếp theo thời gian)
-                List<BackupRecord> records = manifestService.readAll();
-                if (!records.isEmpty()) {
-                    // Sắp xếp theo createdAtIso (mới nhất trước)
-                    records.sort((r1, r2) -> {
-                        try {
-                            Instant time1 = Instant.parse(r1.createdAtIso());
-                            Instant time2 = Instant.parse(r2.createdAtIso());
-                            return time2.compareTo(time1); // Mới nhất trước
-                        } catch (Exception e) {
-                            return 0;
-                        }
-                    });
-                    
-                    // Lấy bản mới nhất còn tồn tại
-                    for (BackupRecord record : records) {
-                        Path filePath = Path.of(record.absolutePath());
-                        if (Files.exists(filePath)) {
-                            return filePath;
-                        }
+            protected List<BackupRecord> doInBackground() throws Exception {
+                List<BackupRecord> allRecords = new ArrayList<>();
+                
+                // Tìm trong manifest trước
+                List<BackupRecord> manifestRecords = manifestService.readAll();
+                for (BackupRecord record : manifestRecords) {
+                    Path filePath = Path.of(record.absolutePath());
+                    if (Files.exists(filePath)) {
+                        allRecords.add(record);
                     }
                 }
                 
@@ -200,39 +228,60 @@ public class RestoreDataDialog extends JDialog {
                             })
                             .collect(Collectors.toList());
                         
-                        if (!backupFiles.isEmpty()) {
-                            // Sắp xếp theo thời gian sửa đổi (mới nhất trước)
-                            backupFiles.sort((p1, p2) -> {
-                                try {
-                                    FileTime time1 = Files.getLastModifiedTime(p1);
-                                    FileTime time2 = Files.getLastModifiedTime(p2);
-                                    return time2.compareTo(time1);
-                                } catch (IOException e) {
-                                    return 0;
-                                }
-                            });
+                        for (Path filePath : backupFiles) {
+                            // Kiểm tra xem đã có trong manifest chưa
+                            boolean existsInManifest = allRecords.stream()
+                                .anyMatch(r -> r.absolutePath().equals(filePath.toAbsolutePath().toString()));
                             
-                            return backupFiles.get(0);
+                            if (!existsInManifest) {
+                                // Tạo record mới từ file
+                                try {
+                                    FileTime lastModified = Files.getLastModifiedTime(filePath);
+                                    long size = Files.size(filePath);
+                                    String createdAtIso = Instant.ofEpochMilli(lastModified.toMillis()).toString();
+                                    
+                                    BackupRecord record = new BackupRecord(
+                                        filePath.getFileName().toString(),
+                                        filePath.toAbsolutePath().toString(),
+                                        size,
+                                        createdAtIso,
+                                        "IUH_Pharmacity_Management"
+                                    );
+                                    allRecords.add(record);
+                                } catch (IOException e) {
+                                    // Bỏ qua file lỗi
+                                }
+                            }
                         }
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                 }
                 
-                return null;
+                // Sắp xếp theo thời gian (mới nhất trước)
+                allRecords.sort((r1, r2) -> {
+                    try {
+                        Instant time1 = Instant.parse(r1.createdAtIso());
+                        Instant time2 = Instant.parse(r2.createdAtIso());
+                        return time2.compareTo(time1); // Mới nhất trước
+                    } catch (Exception e) {
+                        // Nếu không parse được, so sánh theo tên file
+                        return r2.fileName().compareTo(r1.fileName());
+                    }
+                });
+                
+                return allRecords;
             }
 
             @Override
             protected void done() {
                 btnTimKiem.setEnabled(true);
                 try {
-                    Path found = get();
-                    if (found != null && Files.exists(found)) {
-                        selectedBackupFile = found;
-                        hienThiThongTin(found);
-                        lblTrangThai.setText("Đã tìm thấy bản backup mới nhất");
-                        // Tự động thực hiện khôi phục
-                        thucHienKhoiPhuc();
+                    List<BackupRecord> records = get();
+                    if (records != null && !records.isEmpty()) {
+                        backupRecords = records;
+                        hienThiDanhSachBackup(records);
+                        lblTrangThai.setText("Đã tìm thấy " + records.size() + " bản backup");
                     } else {
                         lblTrangThai.setText("Không tìm thấy bản backup nào");
                         JOptionPane.showMessageDialog(RestoreDataDialog.this,
@@ -246,6 +295,7 @@ public class RestoreDataDialog extends JDialog {
                         "Lỗi khi tìm kiếm: " + e.getMessage(),
                         "Lỗi",
                         JOptionPane.ERROR_MESSAGE);
+                    e.printStackTrace();
                 }
             }
         };
@@ -274,28 +324,44 @@ public class RestoreDataDialog extends JDialog {
         }
     }
 
-    private void hienThiThongTin(Path file) {
-        try {
-            StringBuilder info = new StringBuilder();
-            info.append("File: ").append(file.getFileName().toString()).append("\n");
-            info.append("Đường dẫn: ").append(file.toAbsolutePath().toString()).append("\n");
-            
-            if (Files.exists(file)) {
-                long sizeBytes = Files.size(file);
-                String sizeStr;
-                if (sizeBytes < 1024) {
-                    sizeStr = sizeBytes + " bytes";
-                } else if (sizeBytes < 1024 * 1024) {
-                    sizeStr = String.format("%.2f KB", sizeBytes / 1024.0);
-                } else {
-                    sizeStr = String.format("%.2f MB", sizeBytes / (1024.0 * 1024.0));
+    private void hienThiDanhSachBackup(List<BackupRecord> records) {
+        tableModel.setRowCount(0);
+        for (BackupRecord record : records) {
+            try {
+                // Format ngày tạo
+                String ngayTao = "";
+                try {
+                    Instant instant = Instant.parse(record.createdAtIso());
+                    LocalDateTime dateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
+                    ngayTao = dateTime.format(DATE_FORMATTER);
+                } catch (Exception e) {
+                    ngayTao = record.createdAtIso();
                 }
-                info.append("Kích thước: ").append(sizeStr).append("\n");
+                
+                // Format kích thước
+                String kichThuoc = formatSize(record.sizeInBytes());
+                
+                // Thêm vào table
+                tableModel.addRow(new Object[]{
+                    record.fileName(),
+                    ngayTao,
+                    kichThuoc,
+                    record.absolutePath()
+                });
+            } catch (Exception e) {
+                // Bỏ qua record lỗi
+                e.printStackTrace();
             }
-            
-            txtThongTin.setText(info.toString());
-        } catch (IOException e) {
-            txtThongTin.setText("Lỗi khi đọc thông tin file: " + e.getMessage());
+        }
+    }
+    
+    private String formatSize(long sizeBytes) {
+        if (sizeBytes < 1024) {
+            return sizeBytes + " bytes";
+        } else if (sizeBytes < 1024 * 1024) {
+            return String.format("%.2f KB", sizeBytes / 1024.0);
+        } else {
+            return String.format("%.2f MB", sizeBytes / (1024.0 * 1024.0));
         }
     }
 
