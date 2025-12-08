@@ -9,9 +9,13 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.barchart.ModelChar
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.dashboard.DashboardCard;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.service.ThongKeThueLaiService;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.util.DinhDangSo;
+import com.toedter.calendar.JDateChooser;
+import raven.toast.Notifications;
 
 import java.awt.*;
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.Map;
 import javax.swing.*;
 
@@ -25,6 +29,8 @@ public class Panel_ThongKeThueLai extends javax.swing.JPanel {
     private Chart chartThue;
     private Chart chartLai;
     private String currentPeriod = "7 ngày qua"; // "7 ngày qua", "Tháng này", "12 tháng"
+    private String currentCardPeriod = "Tháng này"; // Khoảng thời gian cho cards: "Hôm nay", "7 ngày qua", "Tháng này", "Năm này"
+    private String currentDateMode = "Theo ngày"; // "Theo ngày", "Theo tháng", "Theo năm"
     
     // Dashboard cards
     private DashboardCard cardThueThu;
@@ -34,6 +40,13 @@ public class Panel_ThongKeThueLai extends javax.swing.JPanel {
     
     // Chart panels (comboPeriod được khai báo trong NetBeans generated code)
     private JComboBox<String> comboPeriod;
+    private JComboBox<String> comboCardPeriod;
+    
+    // Date pickers
+    private JDateChooser dateFrom;
+    private JDateChooser dateTo;
+    private JButton btnSearch;
+    private JPanel datePickerPanel;
 
     public Panel_ThongKeThueLai() {
         thongKeService = new ThongKeThueLaiService();
@@ -59,6 +72,11 @@ public class Panel_ThongKeThueLai extends javax.swing.JPanel {
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
         contentPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         
+        // ========== HEADER: Tiêu đề + Combobox chọn khoảng thời gian ==========
+        JPanel headerPanel = createHeaderPanel();
+        contentPanel.add(headerPanel);
+        contentPanel.add(Box.createVerticalStrut(15));
+        
         // ========== CARDS: Thống kê ==========
         JPanel statsPanel = createStatsPanel();
         contentPanel.add(statsPanel);
@@ -83,6 +101,189 @@ public class Panel_ThongKeThueLai extends javax.swing.JPanel {
     }
     
     /**
+     * Tạo header panel với tab và date picker (gọn gàng)
+     */
+    private JPanel createHeaderPanel() {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 5));
+        panel.setBackground(Color.WHITE);
+        panel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(230, 230, 230), 1),
+            BorderFactory.createEmptyBorder(8, 15, 8, 15)
+        ));
+        
+        // Tab panel
+        ButtonGroup tabGroup = new ButtonGroup();
+        JToggleButton btnTheoNgay = new JToggleButton("Theo ngày");
+        JToggleButton btnTheoThang = new JToggleButton("Theo tháng");
+        JToggleButton btnTheoNam = new JToggleButton("Theo năm");
+        
+        btnTheoNgay.setSelected(true);
+        btnTheoNgay.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        btnTheoThang.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        btnTheoNam.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        
+        btnTheoNgay.setPreferredSize(new Dimension(90, 28));
+        btnTheoThang.setPreferredSize(new Dimension(90, 28));
+        btnTheoNam.setPreferredSize(new Dimension(90, 28));
+        
+        tabGroup.add(btnTheoNgay);
+        tabGroup.add(btnTheoThang);
+        tabGroup.add(btnTheoNam);
+        
+        btnTheoNgay.addActionListener(e -> {
+            currentDateMode = "Theo ngày";
+            showDatePickers();
+        });
+        btnTheoThang.addActionListener(e -> {
+            currentDateMode = "Theo tháng";
+            showDatePickers();
+        });
+        btnTheoNam.addActionListener(e -> {
+            currentDateMode = "Theo năm";
+            showDatePickers();
+        });
+        
+        panel.add(btnTheoNgay);
+        panel.add(btnTheoThang);
+        panel.add(btnTheoNam);
+        
+        // Date picker panel
+        datePickerPanel = createDatePickerPanel();
+        datePickerPanel.setVisible(true);
+        panel.add(datePickerPanel);
+        
+        return panel;
+    }
+    
+    /**
+     * Tạo panel chứa date picker (gọn gàng)
+     */
+    private JPanel createDatePickerPanel() {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        panel.setOpaque(false);
+        
+        // Ngày bắt đầu
+        JLabel lblFrom = new JLabel("Ngày bắt đầu:");
+        lblFrom.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        
+        dateFrom = new JDateChooser();
+        dateFrom.setDateFormatString("dd/MM/yyyy");
+        dateFrom.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        dateFrom.setPreferredSize(new Dimension(100, 26));
+        dateFrom.setDate(new Date()); // Mặc định là hôm nay
+        
+        // Arrow
+        JLabel lblArrow = new JLabel("-->");
+        lblArrow.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        
+        // Ngày kết thúc
+        JLabel lblTo = new JLabel("Ngày kết thúc:");
+        lblTo.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        
+        dateTo = new JDateChooser();
+        dateTo.setDateFormatString("dd/MM/yyyy");
+        dateTo.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        dateTo.setPreferredSize(new Dimension(100, 26));
+        dateTo.setDate(new Date()); // Mặc định là hôm nay
+        
+        // Nút tìm kiếm
+        btnSearch = new JButton("Tìm kiếm");
+        btnSearch.setBackground(new Color(115, 165, 71));
+        btnSearch.setForeground(Color.WHITE);
+        btnSearch.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        btnSearch.setPreferredSize(new Dimension(100, 26));
+        btnSearch.addActionListener(e -> searchByDateRange());
+        
+        panel.add(lblFrom);
+        panel.add(dateFrom);
+        panel.add(lblArrow);
+        panel.add(lblTo);
+        panel.add(dateTo);
+        panel.add(btnSearch);
+        
+        return panel;
+    }
+    
+    /**
+     * Hiển thị date pickers
+     */
+    private void showDatePickers() {
+        datePickerPanel.setVisible(true);
+        // Có thể cập nhật format hoặc validation dựa trên currentDateMode nếu cần
+    }
+    
+    /**
+     * Tìm kiếm theo khoảng thời gian đã chọn
+     */
+    private void searchByDateRange() {
+        if (dateFrom.getDate() == null || dateTo.getDate() == null) {
+            Notifications.getInstance().show(Notifications.Type.WARNING, 
+                Notifications.Location.TOP_CENTER, 
+                "Vui lòng chọn đầy đủ ngày bắt đầu và ngày kết thúc");
+            return;
+        }
+        
+        LocalDate from = dateFrom.getDate().toInstant()
+            .atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate to = dateTo.getDate().toInstant()
+            .atZone(ZoneId.systemDefault()).toLocalDate();
+        
+        if (from.isAfter(to)) {
+            Notifications.getInstance().show(Notifications.Type.WARNING, 
+                Notifications.Location.TOP_CENTER, 
+                "Ngày bắt đầu phải trước ngày kết thúc");
+            return;
+        }
+        
+        // Cập nhật description
+        String periodDesc = String.format("%s - %s", 
+            dateFrom.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(
+                java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")),
+            dateTo.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(
+                java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+        
+        // Load data với khoảng thời gian đã chọn
+        loadDataByDateRange(from, to, periodDesc);
+    }
+    
+    /**
+     * Load data theo khoảng thời gian tùy chỉnh
+     */
+    private void loadDataByDateRange(LocalDate from, LocalDate to, String periodDesc) {
+        // Hiển thị loading
+        cardThueThu.updateValue("Đang tải...");
+        cardThueTra.updateValue("Đang tải...");
+        cardLoiNhuan.updateValue("Đang tải...");
+        cardTySuat.updateValue("Đang tải...");
+
+        javax.swing.SwingWorker<Void, Void> worker = new javax.swing.SwingWorker<Void, Void>() {
+            @Override
+            protected Void doInBackground() throws Exception {
+                // Tính toán số liệu
+                double tongThueThu = thongKeService.tinhTongThueThu(from, to);
+                double tongThueTra = thongKeService.tinhTongThueTra(from, to);
+                double tongLoiNhuan = thongKeService.tinhTongLoiNhuan(from, to);
+                double tySuatLoiNhuan = thongKeService.tinhTySuatLoiNhuan(from, to);
+
+                // Cập nhật UI trong EDT
+                javax.swing.SwingUtilities.invokeLater(() -> {
+                    cardThueThu.updateValue(DinhDangSo.dinhDangTien(tongThueThu));
+                    cardThueThu.updateDescription(periodDesc);
+                    cardThueTra.updateValue(DinhDangSo.dinhDangTien(tongThueTra));
+                    cardThueTra.updateDescription(periodDesc);
+                    cardLoiNhuan.updateValue(DinhDangSo.dinhDangTien(tongLoiNhuan));
+                    cardLoiNhuan.updateDescription(periodDesc);
+                    cardTySuat.updateValue(String.format("%.2f%%", tySuatLoiNhuan));
+                    cardTySuat.updateDescription(periodDesc);
+                });
+
+                return null;
+            }
+        };
+        worker.execute();
+    }
+    
+    /**
      * Tạo stats panel với các cards
      */
     private JPanel createStatsPanel() {
@@ -95,7 +296,7 @@ public class Panel_ThongKeThueLai extends javax.swing.JPanel {
         cardThueThu = new DashboardCard(
                 "THUẾ GTGT ĐÃ THU",
                 "0 đ",
-                "Tháng này",
+                currentCardPeriod,
                 new Color(76, 175, 80),
                 Color.WHITE,
                 null  // Không dùng icon, dùng emoji trong description
@@ -105,7 +306,7 @@ public class Panel_ThongKeThueLai extends javax.swing.JPanel {
         cardThueTra = new DashboardCard(
                 "THUẾ GTGT ĐÃ TRẢ",
                 "0 đ",
-                "Tháng này",
+                currentCardPeriod,
                 new Color(244, 67, 54),
                 Color.WHITE,
                 null
@@ -115,7 +316,7 @@ public class Panel_ThongKeThueLai extends javax.swing.JPanel {
         cardLoiNhuan = new DashboardCard(
                 "TỔNG LỢI NHUẬN",
                 "0 đ",
-                "Tháng này",
+                currentCardPeriod,
                 new Color(33, 150, 243),
                 Color.WHITE,
                 null
@@ -125,7 +326,7 @@ public class Panel_ThongKeThueLai extends javax.swing.JPanel {
         cardTySuat = new DashboardCard(
                 "TỶ SUẤT LỢI NHUẬN",
                 "0%",
-                "Tháng này",
+                currentCardPeriod,
                 new Color(255, 152, 0),
                 Color.WHITE,
                 null
@@ -215,21 +416,48 @@ public class Panel_ThongKeThueLai extends javax.swing.JPanel {
             @Override
             protected Void doInBackground() throws Exception {
                 LocalDate today = LocalDate.now();
-                LocalDate monthStart = today.withDayOfMonth(1);
-                LocalDate monthEnd = today.withDayOfMonth(today.lengthOfMonth());
+                LocalDate from, to;
+                
+                // Xác định khoảng thời gian dựa trên lựa chọn
+                switch (currentCardPeriod) {
+                    case "Hôm nay":
+                        from = today;
+                        to = today;
+                        break;
+                    case "7 ngày qua":
+                        from = today.minusDays(6);
+                        to = today;
+                        break;
+                    case "Tháng này":
+                        from = today.withDayOfMonth(1);
+                        to = today.withDayOfMonth(today.lengthOfMonth());
+                        break;
+                    case "Năm này":
+                        from = today.withDayOfYear(1);
+                        to = today.withDayOfYear(today.lengthOfYear());
+                        break;
+                    default:
+                        from = today.withDayOfMonth(1);
+                        to = today.withDayOfMonth(today.lengthOfMonth());
+                        break;
+                }
 
-                // Tính toán số liệu tháng này
-                double tongThueThu = thongKeService.tinhTongThueThu(monthStart, monthEnd);
-                double tongThueTra = thongKeService.tinhTongThueTra(monthStart, monthEnd);
-                double tongLoiNhuan = thongKeService.tinhTongLoiNhuan(monthStart, monthEnd);
-                double tySuatLoiNhuan = thongKeService.tinhTySuatLoiNhuan(monthStart, monthEnd);
+                // Tính toán số liệu
+                double tongThueThu = thongKeService.tinhTongThueThu(from, to);
+                double tongThueTra = thongKeService.tinhTongThueTra(from, to);
+                double tongLoiNhuan = thongKeService.tinhTongLoiNhuan(from, to);
+                double tySuatLoiNhuan = thongKeService.tinhTySuatLoiNhuan(from, to);
 
                 // Cập nhật UI trong EDT
                 javax.swing.SwingUtilities.invokeLater(() -> {
                     cardThueThu.updateValue(DinhDangSo.dinhDangTien(tongThueThu));
+                    cardThueThu.updateDescription(currentCardPeriod);
                     cardThueTra.updateValue(DinhDangSo.dinhDangTien(tongThueTra));
+                    cardThueTra.updateDescription(currentCardPeriod);
                     cardLoiNhuan.updateValue(DinhDangSo.dinhDangTien(tongLoiNhuan));
+                    cardLoiNhuan.updateDescription(currentCardPeriod);
                     cardTySuat.updateValue(String.format("%.2f%%", tySuatLoiNhuan));
+                    cardTySuat.updateDescription(currentCardPeriod);
                 });
 
                 return null;
