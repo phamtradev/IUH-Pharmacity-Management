@@ -173,13 +173,13 @@ public class Panel_ThongKeThueLai extends javax.swing.JPanel {
         
         dateFrom = new JDateChooser();
         dateFrom.setDateFormatString("dd/MM/yyyy");
-        dateFrom.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        dateFrom.setPreferredSize(new Dimension(100, 26));
+        dateFrom.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        dateFrom.setPreferredSize(new Dimension(140, 35));
         dateFrom.setDate(new Date()); // Mặc định là hôm nay
         
         // Arrow
         JLabel lblArrow = new JLabel("-->");
-        lblArrow.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        lblArrow.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         
         // Ngày kết thúc
         lblTo = new JLabel("Ngày kết thúc:");
@@ -187,16 +187,16 @@ public class Panel_ThongKeThueLai extends javax.swing.JPanel {
         
         dateTo = new JDateChooser();
         dateTo.setDateFormatString("dd/MM/yyyy");
-        dateTo.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        dateTo.setPreferredSize(new Dimension(100, 26));
+        dateTo.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        dateTo.setPreferredSize(new Dimension(140, 35));
         dateTo.setDate(new Date()); // Mặc định là hôm nay
         
         // Nút tìm kiếm
         btnSearch = new JButton("Tìm kiếm");
         btnSearch.setBackground(new Color(115, 165, 71));
         btnSearch.setForeground(Color.WHITE);
-        btnSearch.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        btnSearch.setPreferredSize(new Dimension(100, 26));
+        btnSearch.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        btnSearch.setPreferredSize(new Dimension(120, 35));
         btnSearch.addActionListener(e -> searchByDateRange());
         
         panel.add(lblFrom);
