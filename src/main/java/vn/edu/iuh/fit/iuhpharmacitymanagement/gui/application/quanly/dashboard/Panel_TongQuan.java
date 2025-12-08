@@ -34,7 +34,7 @@ public class Panel_TongQuan extends javax.swing.JPanel {
     private final DonNhapHangBUS donNhapHangBUS;
     private final DonTraHangBUS donTraHangBUS;
     private final ChiTietDonHangBUS chiTietDonHangBUS;
-    
+
     private String currentChartType = "Doanh thu"; // "Doanh thu" hoặc "Sản phẩm"
 
     public Panel_TongQuan() {
@@ -47,23 +47,23 @@ public class Panel_TongQuan extends javax.swing.JPanel {
         initHeader();
         chart.start();
     }
-    
+
     private void initHeader() {
         try {
-            lblIconReturn.setIcon(ResizeImage.resizeImage(new FlatSVGIcon(getClass().getResource("/img/8.svg")), 55, 55));
-            lblIconOrder.setIcon(ResizeImage.resizeImage(new FlatSVGIcon(getClass().getResource("/img/10.svg")), 55, 55));
-            lblIconCompare.setIcon(ResizeImage.resizeImage(new FlatSVGIcon(getClass().getResource("/img/7.svg")), 55, 55));
+            lblIconReturn.setIcon(new FlatSVGIcon("img/8.svg", 100, 100));  //Trả hàng
+            lblIconOrder.setIcon(new FlatSVGIcon("img/0.svg", 100, 100));
+            lblIconCompare.setIcon(new FlatSVGIcon("img/25.svg", 100, 100));
         } catch (Exception e) {
             System.out.println("Không thể tải icon: " + e.getMessage());
         }
-        
+
         LocalDate today = LocalDate.now();
-        
+
         // Lấy dữ liệu đơn hàng
         List<DonHang> danhSachDonHang = donHangBUS.layTatCaDonHang().stream()
                 .filter(dh -> dh.getNgayDatHang() != null && dh.getNgayDatHang().equals(today))
                 .collect(Collectors.toList());
-        
+
         int soLuongDonHang = danhSachDonHang.size();
         double tongTienDonHang = danhSachDonHang.stream()
                 .mapToDouble(DonHang::getThanhTien)
@@ -73,7 +73,7 @@ public class Panel_TongQuan extends javax.swing.JPanel {
         List<DonTraHang> danhSachTraHang = donTraHangBUS.layTatCaDonTraHang().stream()
                 .filter(dth -> dth.getNgayTraHang() != null && dth.getNgayTraHang().equals(today))
                 .collect(Collectors.toList());
-        
+
         int soLuongTraHang = danhSachTraHang.size();
         double tongTienTraHang = danhSachTraHang.stream()
                 .mapToDouble(DonTraHang::getThanhTien)
@@ -83,7 +83,7 @@ public class Panel_TongQuan extends javax.swing.JPanel {
         List<DonNhapHang> danhSachNhapHang = donNhapHangBUS.layTatCaDonNhapHang().stream()
                 .filter(dnh -> dnh.getNgayNhap() != null && dnh.getNgayNhap().equals(today))
                 .collect(Collectors.toList());
-        
+
         int soLuongNhapHang = danhSachNhapHang.size();
         double tongTienNhapHang = danhSachNhapHang.stream()
                 .mapToDouble(DonNhapHang::getThanhTien)
@@ -104,7 +104,7 @@ public class Panel_TongQuan extends javax.swing.JPanel {
         updateChartLegend();
         loadDataChart7Days();
     }
-    
+
     private void updateChartLegend() {
         chart.clearLegends();
         if (currentChartType.equals("Doanh thu")) {
@@ -118,15 +118,15 @@ public class Panel_TongQuan extends javax.swing.JPanel {
         chart.clear();
         LocalDate today = LocalDate.now();
         List<DonHang> allOrders = donHangBUS.layTatCaDonHang();
-        
+
         for (int i = 6; i >= 0; i--) {
             LocalDate date = today.minusDays(i);
-            
+
             double sumPrice = allOrders.stream()
                     .filter(dh -> dh.getNgayDatHang() != null && dh.getNgayDatHang().equals(date))
                     .mapToDouble(DonHang::getThanhTien)
                     .sum();
-            
+
             chart.addData(new ModelChart(date.getDayOfMonth() + "/" + date.getMonthValue(),
                     new double[]{sumPrice}));
         }
@@ -139,12 +139,12 @@ public class Panel_TongQuan extends javax.swing.JPanel {
         List<DonHang> todayOrders = donHangBUS.layTatCaDonHang().stream()
                 .filter(dh -> dh.getNgayDatHang() != null && dh.getNgayDatHang().equals(today))
                 .collect(Collectors.toList());
-        
+
         // Nhóm theo giờ (giả sử dữ liệu chỉ có ngày, hiển thị tổng cho mỗi giờ)
         for (int hour = 0; hour < 24; hour++) {
             // Vì không có giờ trong entity, hiển thị 0 hoặc phân bổ đều
-            double avgPrice = todayOrders.isEmpty() ? 0 : 
-                todayOrders.stream().mapToDouble(DonHang::getThanhTien).sum() / 24.0;
+            double avgPrice = todayOrders.isEmpty() ? 0
+                    : todayOrders.stream().mapToDouble(DonHang::getThanhTien).sum() / 24.0;
             chart.addData(new ModelChart(hour + "h", new double[]{avgPrice}));
         }
         chart.start();
@@ -156,11 +156,11 @@ public class Panel_TongQuan extends javax.swing.JPanel {
         List<DonHang> yesterdayOrders = donHangBUS.layTatCaDonHang().stream()
                 .filter(dh -> dh.getNgayDatHang() != null && dh.getNgayDatHang().equals(yesterday))
                 .collect(Collectors.toList());
-        
+
         // Nhóm theo giờ (giả sử dữ liệu chỉ có ngày, hiển thị tổng cho mỗi giờ)
         for (int hour = 0; hour < 24; hour++) {
-            double avgPrice = yesterdayOrders.isEmpty() ? 0 : 
-                yesterdayOrders.stream().mapToDouble(DonHang::getThanhTien).sum() / 24.0;
+            double avgPrice = yesterdayOrders.isEmpty() ? 0
+                    : yesterdayOrders.stream().mapToDouble(DonHang::getThanhTien).sum() / 24.0;
             chart.addData(new ModelChart(hour + "h", new double[]{avgPrice}));
         }
         chart.start();
@@ -171,15 +171,15 @@ public class Panel_TongQuan extends javax.swing.JPanel {
         LocalDate today = LocalDate.now();
         LocalDate lastDay = today.with(TemporalAdjusters.lastDayOfMonth());
         List<DonHang> allOrders = donHangBUS.layTatCaDonHang();
-        
+
         for (int day = 1; day <= lastDay.getDayOfMonth(); day++) {
             LocalDate date = LocalDate.of(today.getYear(), today.getMonth(), day);
-            
+
             double sumPrice = allOrders.stream()
                     .filter(dh -> dh.getNgayDatHang() != null && dh.getNgayDatHang().equals(date))
                     .mapToDouble(DonHang::getThanhTien)
                     .sum();
-            
+
             chart.addData(new ModelChart(day + "", new double[]{sumPrice}));
         }
         chart.start();
@@ -191,25 +191,25 @@ public class Panel_TongQuan extends javax.swing.JPanel {
         LocalDate firstDayLastMonth = today.minusMonths(1).with(TemporalAdjusters.firstDayOfMonth());
         LocalDate lastDayLastMonth = today.minusMonths(1).with(TemporalAdjusters.lastDayOfMonth());
         List<DonHang> allOrders = donHangBUS.layTatCaDonHang();
-        
+
         for (int day = 1; day <= lastDayLastMonth.getDayOfMonth(); day++) {
             LocalDate date = LocalDate.of(firstDayLastMonth.getYear(), firstDayLastMonth.getMonth(), day);
-            
+
             double sumPrice = allOrders.stream()
                     .filter(dh -> dh.getNgayDatHang() != null && dh.getNgayDatHang().equals(date))
                     .mapToDouble(DonHang::getThanhTien)
                     .sum();
-            
+
             chart.addData(new ModelChart(day + "", new double[]{sumPrice}));
         }
         chart.start();
     }
-    
+
     private void changeDateSelect() {
         LocalDateTime now = LocalDateTime.now();
         String typeLabel = currentChartType.equals("Doanh thu") ? "DOANH THU" : "SẢN PHẨM BÁN CHẠY";
         updateChartLegend(); // Cập nhật legend khi thay đổi
-        
+
         switch (comboDate.getSelectedIndex()) {
             case 0 -> {
                 lblChart.setText("THỐNG KÊ " + typeLabel + " 7 NGÀY GẦN NHẤT ( THEO NGÀY )");
@@ -587,96 +587,95 @@ public class Panel_TongQuan extends javax.swing.JPanel {
     }
 
     // ==================== THỐNG KÊ SẢN PHẨM ====================
-    
     private void loadProductChart7Days() {
         chart.clear();
         LocalDate today = LocalDate.now();
         List<ChiTietDonHang> allDetails = chiTietDonHangBUS.layTatCaChiTietDonHang();
-        
+
         for (int i = 6; i >= 0; i--) {
             LocalDate date = today.minusDays(i);
-            
+
             int totalQuantity = allDetails.stream()
-                    .filter(ct -> ct.getDonHang() != null && ct.getDonHang().getNgayDatHang() != null 
-                            && ct.getDonHang().getNgayDatHang().equals(date))
+                    .filter(ct -> ct.getDonHang() != null && ct.getDonHang().getNgayDatHang() != null
+                    && ct.getDonHang().getNgayDatHang().equals(date))
                     .mapToInt(ChiTietDonHang::getSoLuong)
                     .sum();
-            
+
             String label = date.getDayOfMonth() + "/" + date.getMonthValue();
             chart.addData(new ModelChart(label, new double[]{totalQuantity}));
         }
         chart.start();
     }
-    
+
     private void loadProductChartToday() {
         chart.clear();
         LocalDate today = LocalDate.now();
         List<ChiTietDonHang> allDetails = chiTietDonHangBUS.layTatCaChiTietDonHang();
-        
+
         // Lấy tổng số lượng sản phẩm trong ngày hôm nay
         int totalQuantity = allDetails.stream()
-                .filter(ct -> ct.getDonHang() != null && ct.getDonHang().getNgayDatHang() != null 
-                        && ct.getDonHang().getNgayDatHang().equals(today))
+                .filter(ct -> ct.getDonHang() != null && ct.getDonHang().getNgayDatHang() != null
+                && ct.getDonHang().getNgayDatHang().equals(today))
                 .mapToInt(ChiTietDonHang::getSoLuong)
                 .sum();
-        
+
         // Hiển thị tổng số lượng trong 1 cột duy nhất
         chart.addData(new ModelChart("Hôm nay", new double[]{totalQuantity}));
         chart.start();
     }
-    
+
     private void loadProductChartYesterday() {
         chart.clear();
         LocalDate yesterday = LocalDate.now().minusDays(1);
         List<ChiTietDonHang> allDetails = chiTietDonHangBUS.layTatCaChiTietDonHang();
-        
+
         // Lấy tổng số lượng sản phẩm trong ngày hôm qua
         int totalQuantity = allDetails.stream()
-                .filter(ct -> ct.getDonHang() != null && ct.getDonHang().getNgayDatHang() != null 
-                        && ct.getDonHang().getNgayDatHang().equals(yesterday))
+                .filter(ct -> ct.getDonHang() != null && ct.getDonHang().getNgayDatHang() != null
+                && ct.getDonHang().getNgayDatHang().equals(yesterday))
                 .mapToInt(ChiTietDonHang::getSoLuong)
                 .sum();
-        
+
         // Hiển thị tổng số lượng trong 1 cột duy nhất
         chart.addData(new ModelChart("Hôm qua", new double[]{totalQuantity}));
         chart.start();
     }
-    
+
     private void loadProductChartThisMonth() {
         chart.clear();
         LocalDate today = LocalDate.now();
         LocalDate lastDay = today.with(TemporalAdjusters.lastDayOfMonth());
         List<ChiTietDonHang> allDetails = chiTietDonHangBUS.layTatCaChiTietDonHang();
-        
+
         for (int day = 1; day <= lastDay.getDayOfMonth(); day++) {
             LocalDate date = LocalDate.of(today.getYear(), today.getMonth(), day);
-            
+
             int totalQuantity = allDetails.stream()
-                    .filter(ct -> ct.getDonHang() != null && ct.getDonHang().getNgayDatHang() != null 
-                            && ct.getDonHang().getNgayDatHang().equals(date))
+                    .filter(ct -> ct.getDonHang() != null && ct.getDonHang().getNgayDatHang() != null
+                    && ct.getDonHang().getNgayDatHang().equals(date))
                     .mapToInt(ChiTietDonHang::getSoLuong)
                     .sum();
-            
+
             chart.addData(new ModelChart(day + "", new double[]{totalQuantity}));
         }
         chart.start();
     }
-    
+
     private void loadProductChartLastMonth() {
         chart.clear();
         LocalDate lastMonth = LocalDate.now().minusMonths(1);
         LocalDate lastDay = lastMonth.with(TemporalAdjusters.lastDayOfMonth());
         List<ChiTietDonHang> allDetails = chiTietDonHangBUS.layTatCaChiTietDonHang();
-        
+
         for (int day = 1; day <= lastDay.getDayOfMonth(); day++) {
             LocalDate date = LocalDate.of(lastMonth.getYear(), lastMonth.getMonth(), day);
-            
+
             int totalQuantity = allDetails.stream()
-                    .filter(ct -> ct.getDonHang() != null && ct.getDonHang().getNgayDatHang() != null 
-                            && ct.getDonHang().getNgayDatHang().equals(date))
+                    .filter(ct -> ct.getDonHang() != null && ct.getDonHang().getNgayDatHang() != null
+                    && ct.getDonHang().getNgayDatHang().equals(date))
                     .mapToInt(ChiTietDonHang::getSoLuong)
                     .sum();
-            
+
             chart.addData(new ModelChart(day + "", new double[]{totalQuantity}));
         }
         chart.start();

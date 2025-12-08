@@ -16,6 +16,7 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.DonHangDAO;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.KhachHangDAO;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.KhachHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.FontStyles;
 
 /**
  *
@@ -65,9 +66,24 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
         ButtonStyles.apply(btnEditCustomer, ButtonStyles.Type.WARNING);
         ButtonStyles.apply(btnExitModalEdit, ButtonStyles.Type.SECONDARY);
         ButtonStyles.apply(btnSearch, ButtonStyles.Type.INFO);
+        
         ButtonStyles.apply(btnAdd, ButtonStyles.Type.SUCCESS);
-        ButtonStyles.apply(btnUpdate, ButtonStyles.Type.WARNING);
+        FontStyles.apply(btnAdd, FontStyles.Type.TEXT_MEDIUM);
+        
+        ButtonStyles.apply(btnUpdate, ButtonStyles.Type.PRIMARY);
+        FontStyles.apply(btnUpdate, FontStyles.Type.TEXT_MEDIUM);
+        
         ButtonStyles.apply(btnDelete, ButtonStyles.Type.DANGER);
+        FontStyles.apply(btnDelete, FontStyles.Type.TEXT_MEDIUM);
+        
+        FontStyles.apply(btnSearch, FontStyles.Type.TEXT_MEDIUM);
+        
+        FontStyles.toUpperCase(
+                btnAdd,
+                btnUpdate,
+                btnDelete,
+                btnSearch
+        );
     }
 
     private void fillTable() {
