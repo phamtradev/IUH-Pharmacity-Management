@@ -69,7 +69,11 @@ public class BlankPlotChart extends JComponent {
         setOpaque(false);
         setForeground(new Color(100, 100, 100));
         setBorder(new EmptyBorder(20, 10, 10, 10));
-        ToolTipManager.sharedInstance().registerComponent(this);
+        ToolTipManager toolTipManager = ToolTipManager.sharedInstance();
+        toolTipManager.registerComponent(this);
+        toolTipManager.setInitialDelay(0); // Hiển thị ngay lập tức
+        toolTipManager.setReshowDelay(0); // Hiển thị lại ngay khi di chuyển
+        toolTipManager.setDismissDelay(5000); // Giữ tooltip 5 giây
         init();
     }
     
@@ -84,9 +88,11 @@ public class BlankPlotChart extends JComponent {
             // Đảm bảo tooltip hiển thị ngay lập tức
             String tooltip = tooltipProvider.apply(point);
             if (tooltip != null && !tooltip.isEmpty()) {
-                // Set tooltip delay ngắn hơn mỗi lần có tooltip
-                ToolTipManager.sharedInstance().setInitialDelay(0);
-                ToolTipManager.sharedInstance().setDismissDelay(5000);
+                // Đảm bảo delay luôn là 0 mỗi lần có tooltip
+                ToolTipManager toolTipManager = ToolTipManager.sharedInstance();
+                toolTipManager.setInitialDelay(0);
+                toolTipManager.setReshowDelay(0);
+                toolTipManager.setDismissDelay(5000);
                 return tooltip;
             }
         }

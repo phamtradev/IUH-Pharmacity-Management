@@ -37,8 +37,11 @@ public class Chart extends javax.swing.JPanel {
     public Chart() {
         initComponents();
         // Enable tooltip cho cả Chart panel và blankPlotChart
-        javax.swing.ToolTipManager.sharedInstance().registerComponent(blankPlotChart);
-        javax.swing.ToolTipManager.sharedInstance().setInitialDelay(0);
+        javax.swing.ToolTipManager toolTipManager = javax.swing.ToolTipManager.sharedInstance();
+        toolTipManager.registerComponent(blankPlotChart);
+        toolTipManager.setInitialDelay(0); // Hiển thị ngay lập tức
+        toolTipManager.setReshowDelay(0); // Hiển thị lại ngay khi di chuyển
+        toolTipManager.setDismissDelay(5000); // Giữ tooltip 5 giây
         // Setup tooltip provider cho blankPlotChart
         blankPlotChart.setTooltipProvider(point -> getToolTipTextForPoint(point));
         TimingTarget target = new TimingTargetAdapter() {
