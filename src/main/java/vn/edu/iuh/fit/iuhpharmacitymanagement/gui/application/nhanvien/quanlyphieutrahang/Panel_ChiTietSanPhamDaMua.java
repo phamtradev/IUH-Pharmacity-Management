@@ -208,6 +208,10 @@ public class Panel_ChiTietSanPhamDaMua extends javax.swing.JPanel {
         return Double.parseDouble(txtTongTien.getText().replaceAll("[^0-9.]", ""));
     }
 
+    public void setTongTien(double tongTien) {
+        txtTongTien.setText(String.format("%,.0f ₫", tongTien));
+    }
+
     public void setHinhAnh(String imagePath) {
         if (imagePath != null && !imagePath.isEmpty()) {
             try {

@@ -16,6 +16,7 @@ public class Panel_ChiTietSanPhamTraHang extends javax.swing.JPanel {
     private PanelDeleteListener deleteListener;
     private int soLuongToiDa = 1000; // Số lượng tối đa đã mua
     private boolean isResettingValue = false; // Flag để tránh vòng lặp validation
+    private vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonHang chiTietDonHang; // Lưu chi tiết đơn hàng gốc để lấy giảm giá
 
     public Panel_ChiTietSanPhamTraHang() {
         initComponents();
@@ -356,6 +357,54 @@ public class Panel_ChiTietSanPhamTraHang extends javax.swing.JPanel {
             setLyDoTraHang(dialog.getLyDo());
         }
     }//GEN-LAST:event_btnLyDoActionPerformed
+
+    /**
+     * Lưu chi tiết đơn hàng gốc để lấy thông tin giảm giá
+     */
+    public void setChiTietDonHang(vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonHang chiTietDonHang) {
+        this.chiTietDonHang = chiTietDonHang;
+    }
+
+    /**
+     * Lấy chi tiết đơn hàng gốc
+     */
+    public vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonHang getChiTietDonHang() {
+        return chiTietDonHang;
+    }
+
+    /**
+     * Lấy giảm giá sản phẩm (tính theo tỷ lệ số lượng trả)
+     */
+    public double getGiamGiaSanPham() {
+        if (chiTietDonHang == null) {
+            return 0;
+        }
+        int soLuongGoc = chiTietDonHang.getSoLuong();
+        int soLuongTra = getSoLuongTra();
+        if (soLuongGoc <= 0) {
+            return 0;
+        }
+        // Tính giảm giá theo tỷ lệ số lượng trả
+        double tyLe = (double) soLuongTra / soLuongGoc;
+        return chiTietDonHang.getGiamGiaSanPham() * tyLe;
+    }
+
+    /**
+     * Lấy giảm giá hóa đơn phân bổ (tính theo tỷ lệ số lượng trả)
+     */
+    public double getGiamGiaHoaDon() {
+        if (chiTietDonHang == null) {
+            return 0;
+        }
+        int soLuongGoc = chiTietDonHang.getSoLuong();
+        int soLuongTra = getSoLuongTra();
+        if (soLuongGoc <= 0) {
+            return 0;
+        }
+        // Tính giảm giá hóa đơn theo tỷ lệ số lượng trả
+        double tyLe = (double) soLuongTra / soLuongGoc;
+        return chiTietDonHang.getGiamGiaHoaDonPhanBo() * tyLe;
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JSpinner spinnerSoLuongTra;

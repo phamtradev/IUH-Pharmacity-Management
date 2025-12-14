@@ -1108,11 +1108,16 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
         returnProduct.setSoLuongToiDa(soLuongDaMua); // Set số lượng tối đa trước
         returnProduct.setSoLuongTra(soLuongDaMua); // Mặc định trả hết
         
-        // Tính giá hoàn đúng theo nghiệp vụ
+        // Lấy giá hoàn từ thành tiền trong hóa đơn (đã có giảm giá và VAT)
         vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonHang chiTiet = productPanel.getChiTietDonHang();
-        boolean isTraToanBo = kiemTraTraToanBoHoaDon(soLuongDaMua);
-        double donGiaHoan = tinhGiaHoanDonVi(chiTiet, isTraToanBo);
+        // Lấy trực tiếp thành tiền từ hóa đơn chia cho số lượng
+        double donGiaHoan = chiTiet != null && chiTiet.getSoLuong() > 0 
+            ? chiTiet.getThanhTien() / chiTiet.getSoLuong() 
+            : 0;
         returnProduct.setDonGia(donGiaHoan);
+        
+        // Lưu chi tiết đơn hàng gốc để lấy thông tin giảm giá
+        returnProduct.setChiTietDonHang(chiTiet);
 
         // Copy hình ảnh nếu có - tìm sản phẩm từ database để lấy đường dẫn hình ảnh
         try {
@@ -1341,6 +1346,8 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
                             : "N/A");
                     productPanel.setSoLuong(chiTiet.getSoLuong());
                     productPanel.setDonGia(chiTiet.getDonGia());
+                    // Set tổng tiền từ thanhTien (đã có VAT và khuyến mãi)
+                    productPanel.setTongTien(chiTiet.getThanhTien());
                     productPanel.setChiTietDonHang(chiTiet); // Lưu chi tiết đơn hàng để tính tiền hoàn
                     productPanel.setProductClickListener(this::onProductClicked);
 
@@ -1421,24 +1428,27 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
         }
 
         // TRƯỜNG HỢP 2: Giảm giá GẮN TRỰC TIẾP trên sản phẩm (line-item discount)
-        // → Hoàn đúng giá đã giảm
+        // → Hoàn đúng giá đã giảm (giá gốc - giảm giá sản phẩm)
         if (giamGiaSanPham > 0 && giamGiaHoaDonPhanBo == 0) {
             // Chỉ có giảm giá sản phẩm, không có giảm giá hóa đơn
-            return donGiaThucTe;
+            // Giá hoàn = giá gốc - giảm giá sản phẩm
+            double donGiaGoc = chiTiet.getDonGia();
+            double tongTienGoc = donGiaGoc * soLuong;
+            double thanhTienSauGiamGiaSP = tongTienGoc - giamGiaSanPham;
+            return thanhTienSauGiamGiaSP / soLuong;
         }
 
-        // TRƯỜNG HỢP 3: Khuyến mãi áp dụng THEO HÓA ĐƠN
-        // → Phải phân bổ tiền giảm theo tỷ lệ giá trị sản phẩm
+        // TRƯỜNG HỢP 3: Có giảm giá hóa đơn (có thể kèm giảm giá sản phẩm)
+        // → Phải phân bổ tiền giảm hóa đơn theo tỷ lệ giá trị sản phẩm SAU giảm giá sản phẩm
         if (giamGiaHoaDonPhanBo > 0) {
-            // Khi trả một phần, tính lại tỷ lệ phân bổ giảm giá hóa đơn
-            // dựa trên giá trị sản phẩm này so với tổng hóa đơn
-            
-            // Tính giá trị sản phẩm này (sau giảm giá sản phẩm)
+            // BƯỚC 1: Tính giá trị sản phẩm này SAU giảm giá sản phẩm
+            // Ví dụ: Yoosun sau giảm sản phẩm = 21.840
             double donGiaGoc = chiTiet.getDonGia();
             double tongTienGoc = donGiaGoc * soLuong;
             double thanhTienSauGiamGiaSP = tongTienGoc - giamGiaSanPham;
 
-            // Tính tổng giá trị toàn bộ hóa đơn (sau giảm giá sản phẩm)
+            // BƯỚC 2: Tính tổng giá trị toàn bộ hóa đơn SAU giảm giá sản phẩm
+            // Ví dụ: Tổng 2 sản phẩm sau giảm sản phẩm = 56.784
             double tongTienHangSauGiamGiaSP = 0;
             double tongGiamGiaHoaDon = 0;
             if (currentDonHang != null) {
@@ -1455,6 +1465,7 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
                     }
                     
                     // Tính tổng giảm giá hóa đơn
+                    // Ví dụ: Tổng giảm giá hóa đơn = 7.098
                     if (tongTienHangSauGiamGiaSP > 0 && currentDonHang.getKhuyenMai() != null 
                         && currentDonHang.getKhuyenMai().getGiamGia() > 0) {
                         tongGiamGiaHoaDon = tongTienHangSauGiamGiaSP * currentDonHang.getKhuyenMai().getGiamGia();
@@ -1465,16 +1476,18 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
                 }
             }
 
-            // Tính tỷ lệ giá trị sản phẩm này so với tổng hóa đơn
+            // BƯỚC 3: Tính tỷ lệ giá trị sản phẩm này so với tổng hóa đơn
+            // Ví dụ: Yoosun chiếm = 21.840 / 56.784 ≈ 38.45%
             double tyLe = tongTienHangSauGiamGiaSP > 0 
                 ? (thanhTienSauGiamGiaSP / tongTienHangSauGiamGiaSP) 
                 : 0;
 
-            // Phân bổ lại giảm giá hóa đơn theo tỷ lệ
-            // Khi trả một phần, chỉ được hoàn phần giảm giá tương ứng với tỷ lệ giá trị
+            // BƯỚC 4: Phân bổ giảm giá hóa đơn cho sản phẩm này
+            // Ví dụ: Phần giảm của Yoosun = 7.098 × 38.45% ≈ 2.729
             double giamGiaHoaDonPhanBoMoi = tongGiamGiaHoaDon * tyLe;
             
-            // Tính giá hoàn = giá gốc - giảm giá sản phẩm - giảm giá hóa đơn phân bổ mới
+            // BƯỚC 5: Tính tiền hoàn = giá trị sau giảm sản phẩm - phần giảm hóa đơn được phân bổ
+            // Ví dụ: Tiền hoàn = 21.840 - 2.729 = 19.111
             double thanhTienHoan = thanhTienSauGiamGiaSP - giamGiaHoaDonPhanBoMoi;
             double donGiaHoan = Math.max(0, thanhTienHoan / soLuong);
             
@@ -1679,6 +1692,7 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
                     chiTiet.setSoLuong(panel.getSoLuongTra());
                     chiTiet.setDonGia(panel.getDonGia());
                     chiTiet.setLyDoTra(panel.getLyDoTraHang());
+                    // Tổng tiền sau giảm giá = số lượng * đơn giá (đơn giá đã là giá sau giảm)
                     chiTiet.setThanhTien(panel.getSoLuongTra() * panel.getDonGia());
                     chiTiet.setSanPham(sanPham);
                     chiTiet.setDonTraHang(donTraHang);
@@ -1742,7 +1756,7 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
         mainPanel.add(headerPanel, java.awt.BorderLayout.NORTH);
 
         // Bảng
-        String[] columnNames = {"STT", "Tên sản phẩm", "Số lượng", "Đơn giá", "Thành tiền", "Lý do"};
+        String[] columnNames = {"STT", "Tên sản phẩm", "Số lượng", "Đơn giá", "Giảm giá sản phẩm", "Giảm giá hóa đơn", "Tổng tiền", "Lý do"};
         javax.swing.table.DefaultTableModel tableModel = new javax.swing.table.DefaultTableModel(columnNames, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -1756,12 +1770,31 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
 
         int stt = 1;
         for (vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonTraHang chiTiet : danhSachChiTiet) {
+            // Tìm panel tương ứng để lấy giảm giá sản phẩm và giảm giá hóa đơn
+            double giamGiaSanPham = 0;
+            double giamGiaHoaDon = 0;
+            for (java.awt.Component comp : pnHaveReturn.getComponents()) {
+                if (comp instanceof Panel_ChiTietSanPhamTraHang) {
+                    Panel_ChiTietSanPhamTraHang panel = (Panel_ChiTietSanPhamTraHang) comp;
+                    if (panel.getTenSanPham().equals(chiTiet.getSanPham().getTenSanPham())) {
+                        giamGiaSanPham = panel.getGiamGiaSanPham();
+                        giamGiaHoaDon = panel.getGiamGiaHoaDon();
+                        break;
+                    }
+                }
+            }
+            
+            // Tổng tiền sau giảm giá = số lượng * đơn giá (đơn giá đã là giá sau giảm)
+            double tongTienSauGiamGia = chiTiet.getSoLuong() * chiTiet.getDonGia();
+            
             tableModel.addRow(new Object[]{
                 stt++,
                 chiTiet.getSanPham().getTenSanPham(),
                 chiTiet.getSoLuong(),
                 currencyFormat.format(chiTiet.getDonGia()) + " đ",
-                currencyFormat.format(chiTiet.getThanhTien()) + " đ",
+                giamGiaSanPham > 0 ? "-" + currencyFormat.format(giamGiaSanPham) + " đ" : "0 đ",
+                giamGiaHoaDon > 0 ? "-" + currencyFormat.format(giamGiaHoaDon) + " đ" : "0 đ",
+                currencyFormat.format(tongTienSauGiamGia) + " đ",
                 chiTiet.getLyDoTra()
             });
         }
@@ -2075,7 +2108,7 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
         mainPanel.add(javax.swing.Box.createVerticalStrut(10));
 
         // ========== BẢNG SẢN PHẨM (GIỐNG HÓA ĐƠN BÁN HÀNG) ==========
-        String[] columnNames = {"STT", "Ten san pham", "SL", "Don gia", "Thanh tien"};
+        String[] columnNames = {"STT", "Ten san pham", "SL", "Don gia", "Giam gia san pham", "Giam gia hoa don", "Tong tien"};
         javax.swing.table.DefaultTableModel tableModel = new javax.swing.table.DefaultTableModel(columnNames, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -2091,22 +2124,43 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
 
         // Set column widths
         table.getColumnModel().getColumn(0).setPreferredWidth(40); // STT
-        table.getColumnModel().getColumn(1).setPreferredWidth(250); // Tên SP
-        table.getColumnModel().getColumn(2).setPreferredWidth(50); // SL
-        table.getColumnModel().getColumn(3).setPreferredWidth(100); // Đơn giá
-        table.getColumnModel().getColumn(4).setPreferredWidth(120); // Thành tiền
+        table.getColumnModel().getColumn(1).setPreferredWidth(200); // Tên SP
+        table.getColumnModel().getColumn(2).setPreferredWidth(40); // SL
+        table.getColumnModel().getColumn(3).setPreferredWidth(80); // Đơn giá
+        table.getColumnModel().getColumn(4).setPreferredWidth(100); // Giảm giá sản phẩm
+        table.getColumnModel().getColumn(5).setPreferredWidth(100); // Giảm giá hóa đơn
+        table.getColumnModel().getColumn(6).setPreferredWidth(100); // Tổng tiền
 
         // Thêm dữ liệu vào bảng
         int stt = 1;
         for (vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonTraHang chiTiet : danhSachChiTiet) {
             SanPham sanPham = chiTiet.getSanPham();
-
+            
+            // Tìm panel tương ứng để lấy giảm giá sản phẩm và giảm giá hóa đơn
+            double giamGiaSanPham = 0;
+            double giamGiaHoaDon = 0;
+            for (java.awt.Component comp : pnHaveReturn.getComponents()) {
+                if (comp instanceof Panel_ChiTietSanPhamTraHang) {
+                    Panel_ChiTietSanPhamTraHang panel = (Panel_ChiTietSanPhamTraHang) comp;
+                    if (panel.getTenSanPham().equals(sanPham.getTenSanPham())) {
+                        giamGiaSanPham = panel.getGiamGiaSanPham();
+                        giamGiaHoaDon = panel.getGiamGiaHoaDon();
+                        break;
+                    }
+                }
+            }
+            
+            // Tổng tiền sau giảm giá = số lượng * đơn giá (đơn giá đã là giá sau giảm)
+            double tongTienSauGiamGia = chiTiet.getSoLuong() * chiTiet.getDonGia();
+            
             tableModel.addRow(new Object[]{
                 stt++,
                 sanPham.getTenSanPham(),
                 chiTiet.getSoLuong(),
                 currencyFormat.format(chiTiet.getDonGia()) + " đ",
-                currencyFormat.format(chiTiet.getThanhTien()) + " đ"
+                giamGiaSanPham > 0 ? "-" + currencyFormat.format(giamGiaSanPham) + " đ" : "0 đ",
+                giamGiaHoaDon > 0 ? "-" + currencyFormat.format(giamGiaHoaDon) + " đ" : "0 đ",
+                currencyFormat.format(tongTienSauGiamGia) + " đ"
             });
         }
 
@@ -2270,9 +2324,9 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
             document.add(infoTable);
             document.add(new Paragraph("\n"));
 
-            Table itemsTable = new Table(UnitValue.createPercentArray(new float[]{8, 32, 12, 16, 16, 16}))
+            Table itemsTable = new Table(UnitValue.createPercentArray(new float[]{5, 20, 7, 10, 12, 12, 12, 22}))
                     .useAllAvailableWidth();
-            String[] headers = {"STT", "Ten san pham", "SL", "Don gia", "Thanh tien", "Ly do tra"};
+            String[] headers = {"STT", "Ten san pham", "SL", "Don gia", "Giam gia san pham", "Giam gia hoa don", "Tong tien", "Ly do tra"};
             for (String header : headers) {
                 itemsTable.addHeaderCell(new Cell()
                         .add(new Paragraph(header).setFont(fontBold).setFontSize(9).setTextAlignment(TextAlignment.CENTER))
@@ -2285,7 +2339,27 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
                 String tenSP = sanPham != null ? sanPham.getTenSanPham() : "";
                 String soLuong = String.valueOf(chiTiet.getSoLuong());
                 String donGia = currencyFormat.format(chiTiet.getDonGia()) + " đ";
-                String thanhTien = currencyFormat.format(chiTiet.getThanhTien()) + " đ";
+                
+                // Tìm panel tương ứng để lấy giảm giá sản phẩm và giảm giá hóa đơn
+                double giamGiaSanPham = 0;
+                double giamGiaHoaDon = 0;
+                for (java.awt.Component comp : pnHaveReturn.getComponents()) {
+                    if (comp instanceof Panel_ChiTietSanPhamTraHang) {
+                        Panel_ChiTietSanPhamTraHang panel = (Panel_ChiTietSanPhamTraHang) comp;
+                        if (panel.getTenSanPham().equals(tenSP)) {
+                            giamGiaSanPham = panel.getGiamGiaSanPham();
+                            giamGiaHoaDon = panel.getGiamGiaHoaDon();
+                            break;
+                        }
+                    }
+                }
+                String giamGiaSanPhamStr = giamGiaSanPham > 0 ? "-" + currencyFormat.format(giamGiaSanPham) + " đ" : "0 đ";
+                String giamGiaHoaDonStr = giamGiaHoaDon > 0 ? "-" + currencyFormat.format(giamGiaHoaDon) + " đ" : "0 đ";
+                
+                // Tổng tiền sau giảm giá = số lượng * đơn giá (đơn giá đã là giá sau giảm)
+                double tongTienSauGiamGia = chiTiet.getSoLuong() * chiTiet.getDonGia();
+                String tongTienStr = currencyFormat.format(tongTienSauGiamGia) + " đ";
+                
                 String lyDo = chiTiet.getLyDoTra() != null ? chiTiet.getLyDoTra() : "";
 
                 itemsTable.addCell(new Cell().add(new Paragraph(String.valueOf(stt++))
@@ -2301,7 +2375,15 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
                         .setFont(font)
                         .setFontSize(9)
                         .setTextAlignment(TextAlignment.RIGHT)));
-                itemsTable.addCell(new Cell().add(new Paragraph(thanhTien)
+                itemsTable.addCell(new Cell().add(new Paragraph(giamGiaSanPhamStr)
+                        .setFont(font)
+                        .setFontSize(9)
+                        .setTextAlignment(TextAlignment.RIGHT)));
+                itemsTable.addCell(new Cell().add(new Paragraph(giamGiaHoaDonStr)
+                        .setFont(font)
+                        .setFontSize(9)
+                        .setTextAlignment(TextAlignment.RIGHT)));
+                itemsTable.addCell(new Cell().add(new Paragraph(tongTienStr)
                         .setFont(font)
                         .setFontSize(9)
                         .setTextAlignment(TextAlignment.RIGHT)));
