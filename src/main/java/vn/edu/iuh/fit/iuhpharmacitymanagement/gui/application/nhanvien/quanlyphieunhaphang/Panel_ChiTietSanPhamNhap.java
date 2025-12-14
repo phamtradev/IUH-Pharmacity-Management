@@ -669,18 +669,32 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
      * Kiểm tra đơn giá nhập có hợp lệ với lô hàng theo nghiệp vụ:
      * - Nếu lô chưa có chi tiết nhập → chấp nhận bất kỳ giá nào.
      * - Nếu lô đã có chi tiết nhập → tất cả chi tiết phải dùng cùng một đơn giá.
+     * - Nếu giá nhập mới BẰNG giá cố định của lô → cho phép.
      */
     private boolean isDonGiaHopLeChoLo(LoHang loHang, double donGiaNhapMoi) {
         if (loHang == null) {
             return true;
         }
-        // Chỉ dùng những lô đã có giá nhập chuẩn trên cột giaNhapLo
-        // Các lô cũ (giaNhapLo = 0 hoặc NULL) sẽ không được auto-ghép theo giá
+        
+        // Kiểm tra giá nhập từ cột giaNhapLo (nếu có)
         double giaNhapLo = loHang.getGiaNhapLo();
-        if (giaNhapLo <= 0) {
-            return false;
+        if (giaNhapLo > 0) {
+            // Nếu giá nhập mới BẰNG giá cố định → cho phép
+            return Math.abs(giaNhapLo - donGiaNhapMoi) < 0.0001;
         }
-        return Math.abs(giaNhapLo - donGiaNhapMoi) < 0.0001;
+        
+        // Nếu giaNhapLo = 0, kiểm tra giá từ ChiTietDonNhapHang
+        java.util.Optional<Double> donGiaCuOpt = chiTietDonNhapHangDAO
+                .findDonGiaByMaLoHang(loHang.getMaLoHang());
+        
+        if (donGiaCuOpt.isPresent()) {
+            double donGiaCu = donGiaCuOpt.get();
+            // Nếu giá nhập mới BẰNG giá đã có → cho phép
+            return Math.abs(donGiaCu - donGiaNhapMoi) < 0.0001;
+        }
+        
+        // Lô chưa có giá nhập nào → cho phép
+        return true;
     }
 
     private void updateTongTien() {
@@ -1139,16 +1153,64 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
                                     if (btn.isSelected()) {
                                         LoHang loChon = (LoHang) btn.getClientProperty("loHang");
 
+                                        // Kiểm tra hạn sử dụng: HSD phải >= hôm nay
+                                        if (loChon.getHanSuDung() != null) {
+                                            LocalDate hsdLo = loChon.getHanSuDung();
+                                            LocalDate today = LocalDate.now();
+                                            if (hsdLo.isBefore(today)) {
+                                                Notifications.getInstance().show(
+                                                        Notifications.Type.ERROR,
+                                                        Notifications.Location.TOP_CENTER,
+                                                        "Lô " + loChon.getMaLoHang() 
+                                                        + " đã hết hạn sử dụng (HSD: " 
+                                                        + hsdLo.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+                                                        + "). Vui lòng chọn lô khác hoặc tạo lô mới.");
+                                                return;
+                                            }
+                                            
+                                            // Kiểm tra HSD có khớp với HSD đã nhập không (từ Excel hoặc form)
+                                            LocalDate hsdDaNhap = null;
+                                            if (hsdTuExcel != null) {
+                                                hsdDaNhap = hsdTuExcel.toInstant()
+                                                        .atZone(java.time.ZoneId.systemDefault())
+                                                        .toLocalDate();
+                                            } else if (hsdLoMoi != null) {
+                                                hsdDaNhap = hsdLoMoi.toInstant()
+                                                        .atZone(java.time.ZoneId.systemDefault())
+                                                        .toLocalDate();
+                                            }
+                                            
+                                            // Nếu có HSD đã nhập, phải khớp với HSD của lô
+                                            if (hsdDaNhap != null && !hsdLo.equals(hsdDaNhap)) {
+                                                Notifications.getInstance().show(
+                                                        Notifications.Type.ERROR,
+                                                        Notifications.Location.TOP_CENTER,
+                                                        "Hạn sử dụng không khớp! Lô " + loChon.getMaLoHang() 
+                                                        + " có HSD: " 
+                                                        + hsdLo.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+                                                        + ", nhưng bạn đã nhập HSD: "
+                                                        + hsdDaNhap.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+                                                        + ". Vui lòng chọn lô khác hoặc tạo lô mới.");
+                                                return;
+                                            }
+                                        }
+
                                         // Kiểm tra đơn giá nhập hiện tại có phù hợp với lô này không
                                         double donGiaHienTai = getDonGiaNhap();
                                         if (!isDonGiaHopLeChoLo(loChon, donGiaHienTai)) {
-                                            java.util.Optional<Double> donGiaCuOpt = chiTietDonNhapHangDAO
-                                                    .findDonGiaByMaLoHang(loChon.getMaLoHang());
+                                            // Lấy giá cố định của lô (ưu tiên giaNhapLo, sau đó từ ChiTietDonNhapHang)
+                                            double donGiaCoDinh = loChon.getGiaNhapLo();
+                                            if (donGiaCoDinh <= 0) {
+                                                java.util.Optional<Double> donGiaCuOpt = chiTietDonNhapHangDAO
+                                                        .findDonGiaByMaLoHang(loChon.getMaLoHang());
+                                                if (donGiaCuOpt.isPresent()) {
+                                                    donGiaCoDinh = donGiaCuOpt.get();
+                                                }
+                                            }
+                                            
                                             String msg = "Lô " + loChon.getMaLoHang()
                                                     + " đang có giá nhập cố định là "
-                                                    + (donGiaCuOpt.isPresent()
-                                                            ? currencyFormat.format(donGiaCuOpt.get())
-                                                            : "không xác định")
+                                                    + (donGiaCoDinh > 0 ? currencyFormat.format(donGiaCoDinh) : "không xác định")
                                                     + " đ. Bạn đang nhập giá " + currencyFormat.format(donGiaHienTai)
                                                     + " đ. Mỗi lô chỉ được phép có 1 giá nhập. Vui lòng chọn lô khác hoặc tạo lô mới.";
                                             Notifications.getInstance().show(
