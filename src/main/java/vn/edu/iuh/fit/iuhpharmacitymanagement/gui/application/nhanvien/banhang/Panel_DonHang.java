@@ -1802,7 +1802,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
 
         // Đơn giá trên giao diện xác nhận hóa đơn hiển thị GIÁ CHƯA VAT,
         // Thành tiền hiển thị sau khi đã cộng VAT và trừ giảm giá
-        String[] columnNames = {"STT", "Tên sản phẩm", "Đơn vị", "Số lượng", "Đơn giá (chưa VAT)", "% VAT", "Giảm giá",
+        String[] columnNames = {"STT", "Tên sản phẩm", "Đơn vị", "Số lượng", "Đơn giá (chưa VAT)", "% VAT", "Đơn giá (đã VAT)", "Giảm giá",
                 "Thành tiền"};
         javax.swing.table.DefaultTableModel tableModel = new javax.swing.table.DefaultTableModel(columnNames, 0) {
             @Override
@@ -1822,10 +1822,11 @@ public class Panel_DonHang extends javax.swing.JPanel {
         table.getColumnModel().getColumn(1).setPreferredWidth(250); // Tên SP
         table.getColumnModel().getColumn(2).setPreferredWidth(70); // Đơn vị
         table.getColumnModel().getColumn(3).setPreferredWidth(70); // Số lượng
-        table.getColumnModel().getColumn(4).setPreferredWidth(90); // Đơn giá
+        table.getColumnModel().getColumn(4).setPreferredWidth(90); // Đơn giá (chưa VAT)
         table.getColumnModel().getColumn(5).setPreferredWidth(70); // % VAT
-        table.getColumnModel().getColumn(6).setPreferredWidth(180); // Giảm giá
-        table.getColumnModel().getColumn(7).setPreferredWidth(120); // Thành tiền
+        table.getColumnModel().getColumn(6).setPreferredWidth(100); // Đơn giá (đã VAT)
+        table.getColumnModel().getColumn(7).setPreferredWidth(180); // Giảm giá
+        table.getColumnModel().getColumn(8).setPreferredWidth(120); // Thành tiền
 
         // Tính tổng tiền hàng và tổng giảm giá sản phẩm
         double tongTienHangTruocGiamGia = 0;
@@ -1886,6 +1887,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
                     chiTiet.getSoLuong(),
                     currencyFormat.format(donGiaChuaVAT) + " đ",
                     vatStr,
+                    currencyFormat.format(donGiaDaVAT) + " đ", // Đơn giá đã bao gồm VAT
                     giamGia, // Tổng giảm giá (sản phẩm + hóa đơn phân bổ)
                     currencyFormat.format(chiTiet.getThanhTien()) + " đ"
             });
@@ -2338,10 +2340,10 @@ public class Panel_DonHang extends javax.swing.JPanel {
             document.add(infoTable);
             document.add(new Paragraph("\n"));
 
-            Table itemsTable = new Table(UnitValue.createPercentArray(new float[]{6, 28, 8, 12, 10, 14, 22}))
+            Table itemsTable = new Table(UnitValue.createPercentArray(new float[]{5, 24, 7, 10, 8, 10, 12, 24}))
                     .useAllAvailableWidth();
             // Don gia tren hoa don in ra se la DON GIA CHUA VAT, thanh tien van giu nguyen
-            String[] headerLabels = {"STT", "Ten san pham", "SL", "Don gia (chua VAT)", "% VAT", "Giam gia",
+            String[] headerLabels = {"STT", "Ten san pham", "SL", "Don gia (chua VAT)", "% VAT", "Don gia (da VAT)", "Giam gia",
                     "Thanh tien"};
             for (String label : headerLabels) {
                 itemsTable.addHeaderCell(new Cell()
@@ -2363,6 +2365,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
                     donGiaChuaVAT = donGiaDaVAT / (1 + thueVAT);
                 }
                 String donGia = currencyFormat.format(donGiaChuaVAT) + " đ";
+                String donGiaDaVATStr = currencyFormat.format(donGiaDaVAT) + " đ"; // Đơn giá đã bao gồm VAT
                 String giamGia = chiTiet.getGiamGiaSanPham() > 0
                         ? "-" + currencyFormat.format(chiTiet.getGiamGiaSanPham()) + " đ"
                         : "0 đ";
@@ -2374,6 +2377,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
                 itemsTable.addCell(taoCell(String.valueOf(chiTiet.getSoLuong()), font, TextAlignment.CENTER));
                 itemsTable.addCell(taoCell(donGia, font, TextAlignment.RIGHT));
                 itemsTable.addCell(taoCell(vatStr, font, TextAlignment.CENTER));
+                itemsTable.addCell(taoCell(donGiaDaVATStr, font, TextAlignment.RIGHT)); // Đơn giá đã bao gồm VAT
                 itemsTable.addCell(taoCell(giamGia, font, TextAlignment.RIGHT));
                 itemsTable.addCell(taoCell(thanhTien, font, TextAlignment.RIGHT));
             }

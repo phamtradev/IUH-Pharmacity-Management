@@ -30,15 +30,15 @@ import java.util.function.ToDoubleFunction;
  * @author PhamTra
  */
 public class Panel_XuHuongMuaHang extends javax.swing.JPanel {
-    
+
     private static final int TOP_PRODUCT_LIMIT = 5;
     private static final Color[] PIE_COLORS = new Color[]{
-            new Color(90, 159, 255),
-            new Color(255, 112, 147),
-            new Color(0, 188, 170),
-            new Color(255, 202, 40),
-            new Color(156, 39, 176),
-            new Color(121, 85, 72)
+        new Color(90, 159, 255),
+        new Color(255, 112, 147),
+        new Color(0, 188, 170),
+        new Color(255, 202, 40),
+        new Color(156, 39, 176),
+        new Color(121, 85, 72)
     };
     private static final DateTimeFormatter DATE_DISPLAY_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
@@ -59,12 +59,12 @@ public class Panel_XuHuongMuaHang extends javax.swing.JPanel {
         LocalDate today = LocalDate.now();
         reloadDashboard(today.withDayOfMonth(1), today);
     }
-    
+
     private void initChart() {
         chart = new Chart();
         chart.addLegend("Doanh thu", new Color(90, 159, 255));
     }
-    
+
     private void initPieCharts() {
         pieChartRevenue = createPieChart();
         pieChartQuantity = createPieChart();
@@ -352,36 +352,36 @@ public class Panel_XuHuongMuaHang extends javax.swing.JPanel {
             Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER, "Vui lòng chọn ngày bắt đầu và ngày kết thúc");
             return;
         }
-        
+
         LocalDate dateFrom = jDateFrom.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
         LocalDate dateTo = jDateTo.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-        
+
         if (dateFrom.isAfter(dateTo)) {
             Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER, "Ngày bắt đầu phải trước ngày kết thúc");
             return;
         }
-        
+
         reloadDashboard(dateFrom, dateTo);
         Notifications.getInstance().show(Notifications.Type.SUCCESS, Notifications.Location.TOP_CENTER, "Đã tải dữ liệu xu hướng mua hàng");
     }//GEN-LAST:event_btnSearchActionPerformed
-    
+
     private void reloadDashboard(LocalDate dateFrom, LocalDate dateTo) {
         loadCategoryCharts(dateFrom, dateTo);
         loadTopProducts(dateFrom, dateTo);
         updateSummaryTitle(dateFrom, dateTo);
     }
-    
+
     private void loadCategoryCharts(LocalDate dateFrom, LocalDate dateTo) {
         List<CategorySalesSummary> summaries = chiTietDonHangBUS.layThongKeBanHangTheoLoai(dateFrom, dateTo);
         applyPieData(pieChartRevenue, summaries, CategorySalesSummary::getTotalRevenue);
         applyPieData(pieChartQuantity, summaries, summary -> summary.getTotalQuantity());
         applyPieData(pieChartTrend, summaries, CategorySalesSummary::getOrderCount);
     }
-    
+
     private void applyPieData(PieChart chart, List<CategorySalesSummary> summaries, ToDoubleFunction<CategorySalesSummary> valueExtractor) {
         List<PieChartItem> items = new ArrayList<>();
         int index = 0;
-        
+
         for (CategorySalesSummary summary : summaries) {
             double value = valueExtractor.applyAsDouble(summary);
             if (value <= 0) {
@@ -391,14 +391,14 @@ public class Panel_XuHuongMuaHang extends javax.swing.JPanel {
             items.add(new PieChartItem(label, value, PIE_COLORS[index % PIE_COLORS.length]));
             index++;
         }
-        
+
         if (items.isEmpty()) {
             chart.clear();
         } else {
             chart.setData(items);
         }
     }
-    
+
     private void updateSummaryTitle(LocalDate dateFrom, LocalDate dateTo) {
         String title = String.format(
                 "XU HƯỚNG MUA HÀNG TỪ %s ĐẾN %s",
@@ -407,7 +407,7 @@ public class Panel_XuHuongMuaHang extends javax.swing.JPanel {
         );
         lblXuHuong.setText(title);
     }
-    
+
     private void loadTopProducts(LocalDate dateFrom, LocalDate dateTo) {
         chart.clear();
 
@@ -441,8 +441,6 @@ public class Panel_XuHuongMuaHang extends javax.swing.JPanel {
                 DATE_DISPLAY_FORMATTER.format(dateTo)
         ));
     }
-
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnSearch;

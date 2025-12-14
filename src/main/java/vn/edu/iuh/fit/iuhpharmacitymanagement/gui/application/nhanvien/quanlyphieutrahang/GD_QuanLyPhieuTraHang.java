@@ -749,11 +749,18 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
         }
 
         // Chuyển tất cả sản phẩm sang danh sách trả
+        // Lưu danh sách sản phẩm trước để tính lại giá hoàn cho tất cả
+        java.util.List<Panel_ChiTietSanPhamDaMua> danhSachSanPham = new java.util.ArrayList<>();
         for (java.awt.Component comp : pnHaveOrder.getComponents()) {
             if (comp instanceof Panel_ChiTietSanPhamDaMua) {
                 Panel_ChiTietSanPhamDaMua productPanel = (Panel_ChiTietSanPhamDaMua) comp;
-                onProductClicked(productPanel);
+                danhSachSanPham.add(productPanel);
             }
+        }
+
+        // Thêm tất cả sản phẩm vào danh sách trả (trả toàn bộ = true)
+        for (Panel_ChiTietSanPhamDaMua productPanel : danhSachSanPham) {
+            onProductClicked(productPanel);
         }
 
         // Hiện 2 nút sau khi bấm Trả tất cả
@@ -1100,7 +1107,12 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
         returnProduct.setDonVi(donVi);
         returnProduct.setSoLuongToiDa(soLuongDaMua); // Set số lượng tối đa trước
         returnProduct.setSoLuongTra(soLuongDaMua); // Mặc định trả hết
-        returnProduct.setDonGia(productPanel.getDonGia());
+        
+        // Tính giá hoàn đúng theo nghiệp vụ
+        vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonHang chiTiet = productPanel.getChiTietDonHang();
+        boolean isTraToanBo = kiemTraTraToanBoHoaDon(soLuongDaMua);
+        double donGiaHoan = tinhGiaHoanDonVi(chiTiet, isTraToanBo);
+        returnProduct.setDonGia(donGiaHoan);
 
         // Copy hình ảnh nếu có - tìm sản phẩm từ database để lấy đường dẫn hình ảnh
         try {
@@ -1329,6 +1341,7 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
                             : "N/A");
                     productPanel.setSoLuong(chiTiet.getSoLuong());
                     productPanel.setDonGia(chiTiet.getDonGia());
+                    productPanel.setChiTietDonHang(chiTiet); // Lưu chi tiết đơn hàng để tính tiền hoàn
                     productPanel.setProductClickListener(this::onProductClicked);
 
                     // Thiết lập hình ảnh sản phẩm
@@ -1365,6 +1378,145 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
             raven.toast.Notifications.getInstance().show(
                     raven.toast.Notifications.Type.ERROR,
                     "Lỗi khi tải hóa đơn: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Tính giá hoàn đơn vị cho sản phẩm theo đúng nghiệp vụ
+     * 
+     * NGUYÊN TẮC:
+     * 1) CHỈ hoàn đúng giá đã giảm trong 2 trường hợp:
+     *    - Trả TOÀN BỘ hóa đơn → hoàn đúng số tiền khách đã trả
+     *    - Giảm giá GẮN TRỰC TIẾP trên sản phẩm (line-item discount)
+     * 
+     * 2) KHÔNG được hoàn đúng giá giảm nếu:
+     *    - Khuyến mãi áp dụng THEO HÓA ĐƠN
+     *    → Phải phân bổ tiền giảm theo tỷ lệ giá trị sản phẩm
+     * 
+     * 3) Số tiền hoàn = số tiền KHÁCH ĐÃ THỰC TRẢ, không dùng giá gốc
+     * 
+     * @param chiTiet Chi tiết đơn hàng gốc
+     * @param isTraToanBo true nếu trả toàn bộ hóa đơn, false nếu trả một phần
+     * @return Giá hoàn đơn vị (đã tính giảm giá đúng)
+     */
+    private double tinhGiaHoanDonVi(
+            vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonHang chiTiet,
+            boolean isTraToanBo) {
+        if (chiTiet == null) {
+            return 0;
+        }
+
+        // Lấy thông tin từ chi tiết đơn hàng
+        double thanhTienThucTe = chiTiet.getThanhTien(); // Số tiền khách đã thực trả
+        int soLuong = chiTiet.getSoLuong();
+        double giamGiaSanPham = chiTiet.getGiamGiaSanPham(); // Giảm giá gắn trực tiếp trên sản phẩm
+        double giamGiaHoaDonPhanBo = chiTiet.getGiamGiaHoaDonPhanBo(); // Giảm giá hóa đơn phân bổ
+
+        // Tính giá đơn vị thực tế khách đã trả
+        double donGiaThucTe = thanhTienThucTe / soLuong;
+
+        // TRƯỜNG HỢP 1: Trả TOÀN BỘ hóa đơn → hoàn đúng số tiền khách đã trả
+        if (isTraToanBo) {
+            return donGiaThucTe;
+        }
+
+        // TRƯỜNG HỢP 2: Giảm giá GẮN TRỰC TIẾP trên sản phẩm (line-item discount)
+        // → Hoàn đúng giá đã giảm
+        if (giamGiaSanPham > 0 && giamGiaHoaDonPhanBo == 0) {
+            // Chỉ có giảm giá sản phẩm, không có giảm giá hóa đơn
+            return donGiaThucTe;
+        }
+
+        // TRƯỜNG HỢP 3: Khuyến mãi áp dụng THEO HÓA ĐƠN
+        // → Phải phân bổ tiền giảm theo tỷ lệ giá trị sản phẩm
+        if (giamGiaHoaDonPhanBo > 0) {
+            // Khi trả một phần, tính lại tỷ lệ phân bổ giảm giá hóa đơn
+            // dựa trên giá trị sản phẩm này so với tổng hóa đơn
+            
+            // Tính giá trị sản phẩm này (sau giảm giá sản phẩm)
+            double donGiaGoc = chiTiet.getDonGia();
+            double tongTienGoc = donGiaGoc * soLuong;
+            double thanhTienSauGiamGiaSP = tongTienGoc - giamGiaSanPham;
+
+            // Tính tổng giá trị toàn bộ hóa đơn (sau giảm giá sản phẩm)
+            double tongTienHangSauGiamGiaSP = 0;
+            double tongGiamGiaHoaDon = 0;
+            if (currentDonHang != null) {
+                try {
+                    vn.edu.iuh.fit.iuhpharmacitymanagement.dao.ChiTietDonHangDAO chiTietDAO = 
+                        new vn.edu.iuh.fit.iuhpharmacitymanagement.dao.ChiTietDonHangDAO();
+                    java.util.List<vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonHang> 
+                        danhSachChiTiet = chiTietDAO.findByIdList(currentDonHang.getMaDonHang());
+                    
+                    for (vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonHang ct : danhSachChiTiet) {
+                        double tongTienGocCT = ct.getDonGia() * ct.getSoLuong();
+                        double thanhTienSauGiamSPCT = tongTienGocCT - ct.getGiamGiaSanPham();
+                        tongTienHangSauGiamGiaSP += thanhTienSauGiamSPCT;
+                    }
+                    
+                    // Tính tổng giảm giá hóa đơn
+                    if (tongTienHangSauGiamGiaSP > 0 && currentDonHang.getKhuyenMai() != null 
+                        && currentDonHang.getKhuyenMai().getGiamGia() > 0) {
+                        tongGiamGiaHoaDon = tongTienHangSauGiamGiaSP * currentDonHang.getKhuyenMai().getGiamGia();
+                    }
+                } catch (Exception e) {
+                    // Nếu lỗi, dùng giá thực tế đã trả
+                    return donGiaThucTe;
+                }
+            }
+
+            // Tính tỷ lệ giá trị sản phẩm này so với tổng hóa đơn
+            double tyLe = tongTienHangSauGiamGiaSP > 0 
+                ? (thanhTienSauGiamGiaSP / tongTienHangSauGiamGiaSP) 
+                : 0;
+
+            // Phân bổ lại giảm giá hóa đơn theo tỷ lệ
+            // Khi trả một phần, chỉ được hoàn phần giảm giá tương ứng với tỷ lệ giá trị
+            double giamGiaHoaDonPhanBoMoi = tongGiamGiaHoaDon * tyLe;
+            
+            // Tính giá hoàn = giá gốc - giảm giá sản phẩm - giảm giá hóa đơn phân bổ mới
+            double thanhTienHoan = thanhTienSauGiamGiaSP - giamGiaHoaDonPhanBoMoi;
+            double donGiaHoan = Math.max(0, thanhTienHoan / soLuong);
+            
+            return donGiaHoan;
+        }
+
+        // Trường hợp không có giảm giá → hoàn giá gốc
+        return donGiaThucTe;
+    }
+
+    /**
+     * Kiểm tra xem có phải trả toàn bộ hóa đơn không
+     * @param soLuongDangThem Số lượng sản phẩm đang được thêm vào danh sách trả
+     */
+    private boolean kiemTraTraToanBoHoaDon(int soLuongDangThem) {
+        if (currentDonHang == null) {
+            return false;
+        }
+
+        try {
+            // Đếm số sản phẩm đã mua
+            int tongSoLuongDaMua = 0;
+            for (java.awt.Component comp : pnHaveOrder.getComponents()) {
+                if (comp instanceof Panel_ChiTietSanPhamDaMua) {
+                    Panel_ChiTietSanPhamDaMua panel = (Panel_ChiTietSanPhamDaMua) comp;
+                    tongSoLuongDaMua += panel.getSoLuong();
+                }
+            }
+
+            // Đếm số lượng đang trả (trước khi thêm sản phẩm mới)
+            int tongSoLuongDangTra = 0;
+            for (java.awt.Component comp : pnHaveReturn.getComponents()) {
+                if (comp instanceof Panel_ChiTietSanPhamTraHang) {
+                    Panel_ChiTietSanPhamTraHang panel = (Panel_ChiTietSanPhamTraHang) comp;
+                    tongSoLuongDangTra += panel.getSoLuongTra();
+                }
+            }
+
+            // Nếu số lượng trả (sau khi thêm) = số lượng đã mua → trả toàn bộ
+            return (tongSoLuongDangTra + soLuongDangThem) == tongSoLuongDaMua;
+        } catch (Exception e) {
+            return false;
         }
     }
 

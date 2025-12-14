@@ -19,6 +19,7 @@ public class Panel_ChiTietSanPhamDaMua extends javax.swing.JPanel {
     }
 
     private ProductClickListener clickListener;
+    private vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonHang chiTietDonHang; // Lưu thông tin chi tiết đơn hàng để tính tiền hoàn
 
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -236,6 +237,20 @@ public class Panel_ChiTietSanPhamDaMua extends javax.swing.JPanel {
         } catch (Exception e) {
             txtTongTien.setText("0 ₫");
         }
+    }
+
+    /**
+     * Lưu thông tin chi tiết đơn hàng để tính tiền hoàn
+     */
+    public void setChiTietDonHang(vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonHang chiTietDonHang) {
+        this.chiTietDonHang = chiTietDonHang;
+    }
+
+    /**
+     * Lấy thông tin chi tiết đơn hàng
+     */
+    public vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonHang getChiTietDonHang() {
+        return chiTietDonHang;
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
