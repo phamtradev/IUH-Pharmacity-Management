@@ -1108,12 +1108,10 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
         returnProduct.setSoLuongToiDa(soLuongDaMua); // Set số lượng tối đa trước
         returnProduct.setSoLuongTra(soLuongDaMua); // Mặc định trả hết
         
-        // Lấy giá hoàn từ thành tiền trong hóa đơn (đã có giảm giá và VAT)
+        // Tính giá hoàn đúng theo nghiệp vụ (phân bổ giảm giá hóa đơn khi trả một phần)
         vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonHang chiTiet = productPanel.getChiTietDonHang();
-        // Lấy trực tiếp thành tiền từ hóa đơn chia cho số lượng
-        double donGiaHoan = chiTiet != null && chiTiet.getSoLuong() > 0 
-            ? chiTiet.getThanhTien() / chiTiet.getSoLuong() 
-            : 0;
+        boolean isTraToanBo = kiemTraTraToanBoHoaDon(soLuongDaMua);
+        double donGiaHoan = tinhGiaHoanDonVi(chiTiet, isTraToanBo);
         returnProduct.setDonGia(donGiaHoan);
         
         // Lưu chi tiết đơn hàng gốc để lấy thông tin giảm giá
