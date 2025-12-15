@@ -59,15 +59,7 @@ jobs:
         shell: pwsh
         run: mvn -B verify
 
-      - name: Copy runtime dependencies (for packaging)
-        shell: pwsh
-        run: |
-          mvn -B dependency:copy-dependencies -DincludeScope=runtime -DoutputDirectory=target/lib
-          if (Test-Path "library/swing-toast-notifications-1.0.4.jar") {
-            Copy-Item -Force "library/swing-toast-notifications-1.0.4.jar" "target/lib/swing-toast-notifications-1.0.4.jar"
-          }
-
-      - name: Create Windows EXE with jpackage (includes libs)
+      - name: Create Windows App Image (Portable)
         shell: pwsh
         run: |
           $appName   = "iuhpharmacitymanagement"
@@ -81,22 +73,19 @@ jobs:
 
           New-Item -ItemType Directory -Path dist -Force | Out-Null
 
-          # Dùng một dòng để tránh lỗi nhận tham số trên PowerShell
-          jpackage --type exe `
+          jpackage `
+            --type app-image `
             --name $appName `
             --input target `
             --main-jar (Split-Path $mainJar -Leaf) `
             --main-class $mainClass `
-            --class-path "lib/*" `
-            --dest dist `
-            --win-shortcut `
-            --win-dir-chooser
+            --dest dist
 
       - name: Debug dist folder
         shell: pwsh
         run: Get-ChildItem -Recurse dist
 
-      - name: Upload Windows App (EXE)
+      - name: Upload Windows App Image
         uses: actions/upload-artifact@v4
         with:
           name: windows-app
