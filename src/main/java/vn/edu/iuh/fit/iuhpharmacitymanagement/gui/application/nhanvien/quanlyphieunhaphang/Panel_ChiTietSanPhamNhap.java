@@ -1002,7 +1002,7 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
                         tenLoMoi,
                         LocalDate.now(), // Ngày sản xuất = hôm nay
                         hsd,
-                        soLuongLoMoi, // Tồn kho ban đầu
+                        0, // Tồn kho ban đầu = 0, sẽ cộng khi lưu chi tiết nhập
                         true, // Trạng thái: đang bán
                         sanPham // Gắn sản phẩm
                 );
