@@ -30,22 +30,22 @@ jobs:
 
       - name: Install local toast jar versions 1.0.2 and 1.0.3 (if present)
         run: |
-          if [ -f library/swing-toast-notifications-1.0.3.jar ]; then
-            echo "Installing local swing-toast-notifications as 1.0.2 and 1.0.3"
+          if [ -f library/swing-toast-notifications-1.0.4.jar ]; then
+            echo "Installing local swing-toast-notifications as 1.0.2, 1.0.3 (from 1.0.4 jar)"
             mvn -q install:install-file \
-              -Dfile=library/swing-toast-notifications-1.0.3.jar \
+              -Dfile=library/swing-toast-notifications-1.0.4.jar \
               -DgroupId=raven.toast \
               -DartifactId=swing-toast-notifications \
               -Dversion=1.0.3 \
               -Dpackaging=jar
             mvn -q install:install-file \
-              -Dfile=library/swing-toast-notifications-1.0.3.jar \
+              -Dfile=library/swing-toast-notifications-1.0.4.jar \
               -DgroupId=raven.toast \
               -DartifactId=swing-toast-notifications \
               -Dversion=1.0.2 \
               -Dpackaging=jar
           else
-            echo "WARNING: library/swing-toast-notifications-1.0.3.jar not found; skipping local install"
+            echo "WARNING: library/swing-toast-notifications-1.0.4.jar not found; skipping local install"
           fi
 
       - name: Build & Test
