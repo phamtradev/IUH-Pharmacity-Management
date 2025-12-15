@@ -160,7 +160,8 @@ public class SplashScreen extends javax.swing.JFrame {
         progressBar = new javax.swing.JProgressBar();
         lblLoading = new javax.swing.JLabel();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        // Chỉ dispose splash để không tắt toàn bộ JVM khi đóng splash
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setCursor(new java.awt.Cursor(java.awt.Cursor.WAIT_CURSOR));
         setUndecorated(true);
 
