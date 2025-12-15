@@ -1941,6 +1941,7 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
     private byte[] taoHoaDonNhapPdf(DonNhapHang donNhapHang, List<ChiTietDonNhapHang> danhSachChiTiet) throws IOException {
         DecimalFormat currencyFormat = new DecimalFormat("#,###");
         currencyFormat.setRoundingMode(RoundingMode.DOWN);//k làm tròn như đã bàn
+        DecimalFormat percentFormat = new DecimalFormat("#,##0.##");
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
         double tongTamTinh = 0;
@@ -2034,8 +2035,9 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
 //            Table itemsTable = new Table(UnitValue.createPercentArray(new float[]{6, 30, 16, 10, 16, 22}))
 //                    .useAllAvailableWidth();
             //String[] headerLabels = {"STT", "Ten san pham", "So lo", "SL", "Don gia", "Thanh toan"};
-            Table itemsTable = new Table(UnitValue.createPercentArray(new float[]{4, 7, 26, 8, 9, 5, 10, 15, 5, 15, 17, 4, 12, 17})).useAllAvailableWidth();                        
-            String[] headerLabels = {"STT", "Mã hàng", "Tên hàng hóa", "Số\nlô", "Hạn\ndùng", "DVT", "Số\nlượng", "Đơn\ngiá", "% CK", "Thành tiền\nchiết khấu", "Thành tiền\ntính thuế", "% TS", "Thuế\nGTGT", "Thành tiền\nsau thuế"};
+            Table itemsTable = new Table(UnitValue.createPercentArray(new float[]{4, 8, 24, 8, 10, 6, 8, 12, 6, 12, 12, 6, 8, 12}))
+                    .useAllAvailableWidth();
+            String[] headerLabels = {"STT", "Mã hàng", "Tên hàng hóa", "Số lô", "Hạn dùng", "DVT", "SL", "Đơn giá", "% CK", "Thành tiền CK", "Thành tiền tính thuế", "% Thuế", "Thuế GTGT", "Thành tiền sau thuế"};
             for (String label : headerLabels) {
                 itemsTable.addHeaderCell(
                         new com.itextpdf.layout.element.Cell()
@@ -2050,26 +2052,38 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
             }
 
             int stt = 1;
-            //thêm trước cách tính toán ra sau cho ng dùng bt
-            for (int i = 1; i <= 9; i++) {
-                itemsTable.addCell(taoCellNhap(String.valueOf(i), font, TextAlignment.CENTER));
-            }
-            itemsTable.addCell(taoCellNhap("10 = 7 x 8 x 9", font, TextAlignment.CENTER));
-            itemsTable.addCell(taoCellNhap("11 = 7 x 8 - 10", font, TextAlignment.CENTER));
-            itemsTable.addCell(taoCellNhap("12", font, TextAlignment.CENTER));
-            itemsTable.addCell(taoCellNhap("13 = 11 x 12", font, TextAlignment.CENTER));
-            itemsTable.addCell(taoCellNhap("14 = 11 + 13", font, TextAlignment.CENTER));
             for (ChiTietDonNhapHang chiTiet : danhSachChiTiet) {
                 LoHang loHang = chiTiet.getLoHang();
                 SanPham sanPham = loHang != null ? loHang.getSanPham() : null;
                 String maSP = sanPham != null ? sanPham.getMaSanPham() : "";
                 String tenSP = sanPham != null ? sanPham.getTenSanPham() : "";
                 String soLo = loHang != null ? loHang.getMaLoHang() : "-";
-                String hsd = loHang.getHanSuDung().toString();
-                String dvt = sanPham.getDonViTinh().getTenDonVi();
-                String soLuong = chiTiet.getSoLuong() + "";
-                String donGia = currencyFormat.format(chiTiet.getDonGia()) + " đ";
-                String chietKhau = chiTiet.getTyLeChietKhau() + "";
+                String hsd = loHang != null && loHang.getHanSuDung() != null
+                        ? loHang.getHanSuDung().format(dateFormatter)
+                        : "-";
+                String dvt = (sanPham != null && sanPham.getDonViTinh() != null)
+                        ? sanPham.getDonViTinh().getTenDonVi()
+                        : "-";
+
+                int sl = chiTiet.getSoLuong();
+                double donGiaVal = chiTiet.getDonGia();
+                double tamTinh = donGiaVal * sl;
+                double tyLeCK = chiTiet.getTyLeChietKhau();
+                double tienCK = chiTiet.getTienChietKhau();
+                double thanhTienTinhThue = chiTiet.getThanhTienTinhThue() > 0
+                        ? chiTiet.getThanhTienTinhThue()
+                        : Math.max(tamTinh - tienCK, 0);
+                double thueSuat = chiTiet.getThueSuat();
+                double tienThue = chiTiet.getTienThue() > 0 ? chiTiet.getTienThue() : thanhTienTinhThue * (thueSuat / 100.0);
+                double thanhTienSauThue = chiTiet.getThanhTienSauThue() > 0
+                        ? chiTiet.getThanhTienSauThue()
+                        : thanhTienTinhThue + tienThue;
+
+                // Cộng dồn tổng
+                tongTamTinh += tamTinh;
+                tongTienChietKhau += tienCK;
+                tongTienThue += tienThue;
+                tongThanhToan += thanhTienSauThue;
 
                 itemsTable.addCell(taoCellNhap(String.valueOf(stt++), font, TextAlignment.CENTER));
                 itemsTable.addCell(taoCellNhap(maSP, font, TextAlignment.LEFT));
@@ -2077,14 +2091,14 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
                 itemsTable.addCell(taoCellNhap(soLo, font, TextAlignment.CENTER));
                 itemsTable.addCell(taoCellNhap(hsd, font, TextAlignment.CENTER));
                 itemsTable.addCell(taoCellNhap(dvt, font, TextAlignment.CENTER));
-                itemsTable.addCell(taoCellNhap(soLuong, font, TextAlignment.CENTER));
-                itemsTable.addCell(taoCellNhap(donGia, font, TextAlignment.CENTER));
-                itemsTable.addCell(taoCellNhap(currencyFormat.format(chiTiet.getTyLeChietKhau()), font, TextAlignment.CENTER));
-                itemsTable.addCell(taoCellNhap(currencyFormat.format(chiTiet.getTienChietKhau()), font, TextAlignment.CENTER));
-                itemsTable.addCell(taoCellNhap(currencyFormat.format(chiTiet.getThanhTienTinhThue()), font, TextAlignment.CENTER));
-                itemsTable.addCell(taoCellNhap(currencyFormat.format(chiTiet.getThueSuat()), font, TextAlignment.CENTER));
-                itemsTable.addCell(taoCellNhap(currencyFormat.format(chiTiet.getTienThue()), font, TextAlignment.CENTER));
-                itemsTable.addCell(taoCellNhap(currencyFormat.format(chiTiet.getThanhTienSauThue()), font, TextAlignment.CENTER));
+                itemsTable.addCell(taoCellNhap(String.valueOf(sl), font, TextAlignment.CENTER));
+                itemsTable.addCell(taoCellNhap(currencyFormat.format(donGiaVal), font, TextAlignment.RIGHT));
+                itemsTable.addCell(taoCellNhap(percentFormat.format(tyLeCK) + " %", font, TextAlignment.RIGHT));
+                itemsTable.addCell(taoCellNhap(currencyFormat.format(tienCK), font, TextAlignment.RIGHT));
+                itemsTable.addCell(taoCellNhap(currencyFormat.format(thanhTienTinhThue), font, TextAlignment.RIGHT));
+                itemsTable.addCell(taoCellNhap(percentFormat.format(thueSuat) + " %", font, TextAlignment.RIGHT));
+                itemsTable.addCell(taoCellNhap(currencyFormat.format(tienThue), font, TextAlignment.RIGHT));
+                itemsTable.addCell(taoCellNhap(currencyFormat.format(thanhTienSauThue), font, TextAlignment.RIGHT));
             }
 
             document.add(itemsTable);
@@ -2094,15 +2108,13 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
                     .setHorizontalAlignment(HorizontalAlignment.CENTER.CENTER)
                     .setWidth(UnitValue.createPercentValue(80));
 
-            addSummaryRowNhap(summaryTable, "Tam tinh:",
+            addSummaryRowNhap(summaryTable, "Tạm tính:",
                     currencyFormat.format(tongTamTinh) + " đ", font, font);
-            addSummaryRowNhap(summaryTable, "Chiet khau:",
+            addSummaryRowNhap(summaryTable, "Chiết khấu:",
                     "-" + currencyFormat.format(tongTienChietKhau) + " đ", font, font);
-            addSummaryRowNhap(summaryTable, "Sau chiet khau:",
-                    currencyFormat.format(tongSauChietKhau) + " đ", font, font);
-            addSummaryRowNhap(summaryTable, "Thue GTGT:",
+            addSummaryRowNhap(summaryTable, "Thuế GTGT:",
                     "+" + currencyFormat.format(tongTienThue) + " đ", font, font);
-            addSummaryRowNhap(summaryTable, "Tong thanh toan:",
+            addSummaryRowNhap(summaryTable, "Tổng thanh toán:",
                     currencyFormat.format(tongThanhToan) + " đ", fontBold, fontBold);
 
             document.add(summaryTable);
