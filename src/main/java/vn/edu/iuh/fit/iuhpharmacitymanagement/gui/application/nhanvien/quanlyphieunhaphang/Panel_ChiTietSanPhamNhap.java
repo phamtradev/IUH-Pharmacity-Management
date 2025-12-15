@@ -956,7 +956,11 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
      */
     public LoHang taoLoMoiThucSu() {
         // Chỉ tạo lô nếu có thông tin lô mới và chưa có lô đã chọn
-        if (tenLoMoi == null || hsdLoMoi == null || loHangDaChon != null) {
+        if (tenLoMoi == null || hsdLoMoi == null) {
+            // Nếu đã có lô đã chọn thì không cần tạo lô mới
+            if (loHangDaChon != null) {
+                return loHangDaChon;
+            }
             return null;
         }
 
@@ -969,16 +973,23 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
                     .atZone(java.time.ZoneId.systemDefault())
                     .toLocalDate();
 
-            // Tạo lô mới
-            LoHang loMoi = new LoHang(
-                    maLoMoiStr,
-                    tenLoMoi,
-                    LocalDate.now(), // Ngày sản xuất = hôm nay
-                    hsd,
-                    soLuongLoMoi, // Tồn kho ban đầu
-                    true, // Trạng thái: đang bán
-                    sanPham // Gắn sản phẩm
-            );
+            // Tạo lô mới (constructor có thể throw Exception)
+            LoHang loMoi;
+            try {
+                loMoi = new LoHang(
+                        maLoMoiStr,
+                        tenLoMoi,
+                        LocalDate.now(), // Ngày sản xuất = hôm nay
+                        hsd,
+                        soLuongLoMoi, // Tồn kho ban đầu
+                        true, // Trạng thái: đang bán
+                        sanPham // Gắn sản phẩm
+                );
+            } catch (Exception e) {
+                System.err.println("[Panel_ChiTietSanPhamNhap] Lỗi khi tạo đối tượng LoHang: " + e.getMessage());
+                e.printStackTrace();
+                return null;
+            }
             
             // Gán giá nhập chuẩn cho lô theo nghiệp vụ (mỗi lô 1 giá nhập)
             double donGiaNhapMoi = getDonGiaNhap();
@@ -987,6 +998,7 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
             // Lưu lô mới vào DB
             boolean themThanhCong = loHangBUS.themLoHang(loMoi);
             if (!themThanhCong) {
+                System.err.println("[Panel_ChiTietSanPhamNhap] Không thể lưu lô mới vào database");
                 return null;
             }
 
@@ -1007,6 +1019,7 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
             return loMoi;
         } catch (Exception ex) {
             System.err.println("[Panel_ChiTietSanPhamNhap] Lỗi khi tạo lô mới: " + ex.getMessage());
+            ex.printStackTrace();
             return null;
         }
     }
