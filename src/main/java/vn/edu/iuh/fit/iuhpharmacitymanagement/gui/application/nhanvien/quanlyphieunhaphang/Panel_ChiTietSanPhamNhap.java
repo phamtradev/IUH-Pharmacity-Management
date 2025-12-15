@@ -970,6 +970,7 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
     public boolean coThongTinLoMoi() {
         return tenLoMoi != null && hsdLoMoi != null;
         //okk
+        //okkk
     }
 
     /**
