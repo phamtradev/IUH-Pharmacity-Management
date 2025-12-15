@@ -2035,9 +2035,9 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
 //            Table itemsTable = new Table(UnitValue.createPercentArray(new float[]{6, 30, 16, 10, 16, 22}))
 //                    .useAllAvailableWidth();
             //String[] headerLabels = {"STT", "Ten san pham", "So lo", "SL", "Don gia", "Thanh toan"};
-            Table itemsTable = new Table(UnitValue.createPercentArray(new float[]{4, 8, 24, 8, 10, 6, 8, 12, 6, 12, 12, 6, 8, 12}))
+            Table itemsTable = new Table(UnitValue.createPercentArray(new float[]{4, 8, 24, 10, 13, 7, 8, 15, 6, 12, 12, 6, 8, 12}))
                     .useAllAvailableWidth();
-            String[] headerLabels = {"STT", "Mã hàng", "Tên hàng hóa", "Số lô", "Hạn dùng", "DVT", "SL", "Đơn giá", "% CK", "Thành tiền CK", "Thành tiền tính thuế", "% Thuế", "Thuế GTGT", "Thành tiền sau thuế"};
+            String[] headerLabels = {"STT", "Ma hang", "Ten hang hoa", "So lo", "Han dung", "DVT", "SL", "Don gia", "% CK", "Thanh tien CK", "Thanh tien tinh thue", "% Thue", "Thue GTGT", "Thanh tien sau thue"};
             for (String label : headerLabels) {
                 itemsTable.addHeaderCell(
                         new com.itextpdf.layout.element.Cell()
