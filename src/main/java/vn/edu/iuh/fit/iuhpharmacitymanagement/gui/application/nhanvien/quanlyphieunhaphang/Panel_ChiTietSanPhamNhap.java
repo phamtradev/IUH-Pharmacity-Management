@@ -179,7 +179,7 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
         btnChonLo.setPreferredSize(new java.awt.Dimension(120, 40));
         ButtonStyles.apply(btnChonLo, ButtonStyles.Type.PRIMARY);
         btnChonLo.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        btnChonLo.addActionListener(evt -> showDialogChonLo());
+        btnChonLo.addActionListener(evt -> showDialogChonLo(false));
 
         pnLo.add(btnChonLo);
 
@@ -526,18 +526,18 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
                 soLuongLoMoi = 1;
                 updateLoInfo(); // Hiển thị thẻ lô
             } else {
-                // Không tìm thấy lô trùng: Lưu thông tin để tạo lô mới khi nhập hàng
+                // Không tìm thấy lô trùng: Lưu thông tin từ Excel để người dùng nhập tên lô
                 loHangDaChon = null;
-                // Lưu thông tin lô mới từ Excel để tự động tạo khi nhập hàng
-                if (tenLoHangTuExcel != null && !tenLoHangTuExcel.trim().isEmpty()) {
-                    tenLoMoi = tenLoHangTuExcel;
-                } else {
-                    // Nếu không có tên lô từ Excel, tạo tên mặc định
-                    tenLoMoi = "Lô nhập " + new SimpleDateFormat("ddMMyyyy").format(new Date());
-                }
+                // Lưu thông tin lô mới từ Excel (chưa có tên lô, người dùng sẽ nhập sau)
+                tenLoMoi = tenLoHangTuExcel; // Có thể null, người dùng sẽ nhập khi chọn "Tạo lô mới"
                 hsdLoMoi = hsdTuExcel != null ? hsdTuExcel : hanDung;
                 soLuongLoMoi = soLuongTuExcel != null ? soLuongTuExcel : 1;
-                updateLoInfo(); // Hiển thị thông tin lô mới sẽ tạo
+                // Tự động mở dialog "Chọn lô" với tab "Tạo lô mới" để người dùng nhập tên lô
+                updateLoInfo(); // Hiển thị nút "Chọn lô"
+                // Tự động mở dialog sau khi initComponents xong
+                javax.swing.SwingUtilities.invokeLater(() -> {
+                    showDialogChonLoVoiTabTaoLoMoi();
+                });
             }
 
             updateTongTien();
@@ -570,7 +570,7 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
                         java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"));
                 tonKho = loHangDaChon.getTonKho();
             } else {
-                tenLo = tenLoMoi + " (mới)";
+                tenLo = tenLoMoi != null ? tenLoMoi : "Chưa đặt tên";
                 hsd = dateFormat.format(hsdLoMoi);
                 tonKho = 0;
             }
@@ -604,7 +604,7 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
             btnChonLo.setPreferredSize(new java.awt.Dimension(120, 40));
             ButtonStyles.apply(btnChonLo, ButtonStyles.Type.PRIMARY);
             btnChonLo.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-            btnChonLo.addActionListener(evt -> showDialogChonLo());
+            btnChonLo.addActionListener(evt -> showDialogChonLo(false));
 
             pnLo.add(btnChonLo);
         }
@@ -1039,9 +1039,17 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
     }
 
     /**
-     * Hiển thị dialog chọn lô hàng với 2 tab: Lô cũ & Tạo lô mới
+     * Hiển thị dialog chọn lô hàng với tab "Tạo lô mới" được chọn sẵn (dùng khi import từ Excel)
      */
-    private void showDialogChonLo() {
+    private void showDialogChonLoVoiTabTaoLoMoi() {
+        showDialogChonLo(true);
+    }
+
+    /**
+     * Hiển thị dialog chọn lô hàng với 2 tab: Lô cũ & Tạo lô mới
+     * @param autoSelectTabTaoLoMoi true nếu muốn tự động chọn tab "Tạo lô mới"
+     */
+    private void showDialogChonLo(boolean autoSelectTabTaoLoMoi) {
         // Tạo dialog
         javax.swing.JDialog dialog = new javax.swing.JDialog();
         dialog.setTitle("Chọn lô hàng");
@@ -1215,6 +1223,11 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
         // Thêm tab vào tabbed pane
         tabbedPane.addTab("Chọn lô có sẵn", tabChonLoCu);
         tabbedPane.addTab("Tạo lô mới", tabTaoLoMoi);
+
+        // Tự động chọn tab "Tạo lô mới" nếu được yêu cầu (khi import từ Excel)
+        if (autoSelectTabTaoLoMoi) {
+            tabbedPane.setSelectedIndex(1); // Tab "Tạo lô mới" là tab thứ 2 (index 1)
+        }
 
         // === Nút Xác nhận ===
         javax.swing.JPanel pnBottom = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT));
