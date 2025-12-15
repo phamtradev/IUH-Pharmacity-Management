@@ -26,6 +26,18 @@ jobs:
           restore-keys: |
             maven-${{ runner.os }}-
 
+      - name: Download swing-toast-notifications-1.0.4.jar
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path library -Force | Out-Null
+          $url = "${{ secrets.TOAST_JAR_URL }}"
+          if ([string]::IsNullOrEmpty($url)) {
+            Write-Error "TOAST_JAR_URL secret is not set. Please configure the jar download URL."
+            exit 1
+          }
+          Write-Host "Downloading toast jar from $url"
+          Invoke-WebRequest -Uri $url -OutFile "library/swing-toast-notifications-1.0.4.jar"
+
       - name: Install local swing-toast-notifications (1.0.4 as 1.0.3 & 1.0.2)
         shell: pwsh
         run: |
@@ -47,9 +59,9 @@ jobs:
             Write-Host "WARNING: library/swing-toast-notifications-1.0.4.jar not found; skipping install-file"
           }
 
-      - name: Build (package)
+      - name: Build & Test (same as CI)
         shell: pwsh
-        run: mvn -B clean package
+        run: mvn -B verify
 
       - name: Create EXE with jpackage
         shell: pwsh
