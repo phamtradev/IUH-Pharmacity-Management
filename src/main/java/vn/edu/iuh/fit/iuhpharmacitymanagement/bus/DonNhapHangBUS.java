@@ -19,6 +19,7 @@ public class DonNhapHangBUS {
             System.out.println("Lỗi khi tạo đơn nhập hàng: " + e.getMessage());
             return false;
         }
+        //ok
     }
 
     public boolean capNhatDonNhapHang(DonNhapHang donNhapHang) {
