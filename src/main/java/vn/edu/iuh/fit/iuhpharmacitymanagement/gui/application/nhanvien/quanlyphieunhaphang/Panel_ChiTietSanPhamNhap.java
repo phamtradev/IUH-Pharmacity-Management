@@ -965,6 +965,13 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
     }
 
     /**
+     * Kiểm tra panel có đang giữ thông tin lô mới (chưa tạo DB) hay không
+     */
+    public boolean coThongTinLoMoi() {
+        return tenLoMoi != null && hsdLoMoi != null;
+    }
+
+    /**
      * Tạo lô mới thực sự trong database (chỉ gọi khi nhập hàng và in hóa đơn)
      * @return LoHang đã được tạo, hoặc null nếu có lỗi hoặc không có thông tin lô mới
      */

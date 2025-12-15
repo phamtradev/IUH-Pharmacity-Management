@@ -1338,6 +1338,23 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
             }
             donNhapHang.setThanhTien(tongThanhToan);
 
+            // ✅ BƯỚC 1: Tạo các lô mới trước (nếu có panel nào chọn tạo lô mới)
+            for (Panel_ChiTietSanPhamNhap panel : danhSachPanel) {
+                // Kiểm tra xem panel này có cần tạo lô mới không
+                if (panel.getTenLoMoi() != null && panel.getLoHangDaChon() == null) {
+                    LoHang loMoiTao = panel.taoLoMoiThucSu();
+                    if (loMoiTao != null) {
+                        System.out.println("✅ Đã tạo lô mới: " + loMoiTao.getMaLoHang() + " - " + loMoiTao.getTenLoHang());
+                    } else {
+                        // Lỗi khi tạo lô mới
+                        Notifications.getInstance().show(Notifications.Type.ERROR,
+                                Notifications.Location.TOP_CENTER,
+                                "Lỗi khi tạo lô mới cho sản phẩm: " + panel.getSanPham().getTenSanPham() + ". Vui lòng thử lại.");
+                        return;
+                    }
+                }
+            }
+
             // Tạo danh sách chi tiết TẠM (chưa lưu vào DB)
             List<ChiTietDonNhapHang> danhSachChiTiet = new ArrayList<>();
             boolean allDetailsValid = true;
@@ -1364,7 +1381,30 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
                     continue;
                 }
 
+                // ✅ Kiểm tra số đăng ký và nhà cung cấp
+                if (nhaCungCapHienTai != null && nhaCungCapHienTai.getMaNhaCungCap() != null) {
+                    String soDangKy = sanPham.getSoDangKy();
+                    if (soDangKy != null && !soDangKy.trim().isEmpty()) {
+                        boolean coTheNhap = sanPhamBUS.kiemTraNhaCungCapCoTheNhapSoDangKy(soDangKy, nhaCungCapHienTai.getMaNhaCungCap());
+                        if (!coTheNhap) {
+                            // Lấy số điện thoại NCC đã nhập để hiển thị
+                            List<String> danhSachSDT = sanPhamDAO.getSoDienThoaiNCCBySoDangKy(soDangKy);
+                            String sdtNCCDaNhap = danhSachSDT != null && !danhSachSDT.isEmpty() ? danhSachSDT.get(0) : "không xác định";
+                            String sdtNCCHienTai = nhaCungCapHienTai.getSoDienThoai() != null ? nhaCungCapHienTai.getSoDienThoai() : "không xác định";
+                            Notifications.getInstance().show(Notifications.Type.ERROR,
+                                    Notifications.Location.TOP_CENTER,
+                                    "Số đăng ký '" + soDangKy + "' đã được nhập bởi nhà cung cấp có số điện thoại: " + sdtNCCDaNhap + ". Bạn đang nhập từ nhà cung cấp có số điện thoại: " + sdtNCCHienTai + ". Không thể nhập từ nhiều nhà cung cấp khác nhau!");
+                            allDetailsValid = false;
+                            continue;
+                        }
+                    }
+                }
+
+                // ✅ Nếu chưa có lô nhưng có thông tin lô mới tạm → tạo lô ngay lúc xác nhận
                 LoHang loHang = panel.getLoHangDaChon();
+                if (loHang == null && panel.coThongTinLoMoi()) {
+                    loHang = panel.taoLoMoiThucSu();
+                }
 
                 if (loHang == null) {
                     Notifications.getInstance().show(Notifications.Type.WARNING,
