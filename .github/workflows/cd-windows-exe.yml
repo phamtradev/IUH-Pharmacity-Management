@@ -81,13 +81,13 @@ jobs:
 
           New-Item -ItemType Directory -Path dist -Force | Out-Null
 
-          jpackage `
-            --type exe `
+          # Dùng một dòng để tránh lỗi nhận tham số trên PowerShell
+          jpackage --type exe `
             --name $appName `
             --input target `
             --main-jar (Split-Path $mainJar -Leaf) `
             --main-class $mainClass `
-            --classpath "lib/*" `
+            --class-path "lib/*" `
             --dest dist `
             --win-shortcut `
             --win-dir-chooser
