@@ -1,0 +1,70 @@
+name: CI and Auto Merge to main
+
+on:
+  # Chạy khi push hoặc tạo PR; có thể chạy thủ công
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: "temurin"
+
+      - name: Cache Maven repository
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: maven-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            maven-${{ runner.os }}-
+
+      - name: Build & Test
+        run: mvn -B verify
+
+  merge-to-main:
+    needs: build-test
+    runs-on: ubuntu-latest
+    if: github.ref != 'refs/heads/main'
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Merge into main locally and build
+        env:
+          HEAD_BRANCH: ${{ github.ref_name }}
+        run: |
+          set -e
+          git fetch origin main "${HEAD_BRANCH}"
+          git checkout main
+          # Merge without committing to detect conflicts
+          git merge --no-ff "origin/${HEAD_BRANCH}" --no-commit || {
+            echo "Merge conflict detected. Aborting."
+            git merge --abort || true
+            exit 1
+          }
+          # Build on merged result
+          mvn -B verify
+
+          # Commit and push merge
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git commit -am "Auto-merge ${HEAD_BRANCH} into main" || {
+            echo "Nothing to commit (fast-forward or already merged)"
+          }
+          git push origin main
+
