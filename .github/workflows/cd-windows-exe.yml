@@ -1,24 +1,38 @@
-name: CD Windows EXE
+name: CD - Build Windows EXE
 
 on:
+  # Cho phép chạy tay
   workflow_dispatch:
+
+  # Chạy khi code đã merge vào main
   push:
     branches: [ main ]
 
 jobs:
   build-windows-exe:
+    name: Build Windows EXE with jpackage
     runs-on: windows-latest
+
     steps:
-      - name: Checkout
+      # ===============================
+      # Checkout source code
+      # ===============================
+      - name: Checkout source code
         uses: actions/checkout@v4
 
+      # ===============================
+      # Setup Java 21
+      # ===============================
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
+          distribution: temurin
           java-version: "21"
-          distribution: "temurin"
 
-      - name: Cache Maven repository
+      # ===============================
+      # Cache Maven repository
+      # ===============================
+      - name: Cache Maven dependencies
         uses: actions/cache@v4
         with:
           path: ~/.m2/repository
@@ -26,78 +40,40 @@ jobs:
           restore-keys: |
             maven-${{ runner.os }}-
 
-      - name: Ensure swing-toast-notifications-1.0.4.jar (download if needed)
+      # ===============================
+      # Ensure local toast jar exists
+      # ===============================
+      - name: Ensure swing-toast-notifications jar
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Path library -Force | Out-Null
           $localJar = "library/swing-toast-notifications-1.0.4.jar"
+
           if (Test-Path $localJar) {
             Write-Host "Found local $localJar, skip download"
           } else {
             $url = "${{ secrets.TOAST_JAR_URL }}"
             if ([string]::IsNullOrEmpty($url)) {
-              Write-Host "WARNING: No local jar and TOAST_JAR_URL not set. Skipping download; build may fail if dependency is required."
+              Write-Host "WARNING: No local jar and TOAST_JAR_URL not set."
+              Write-Host "Build may fail if this dependency is required."
             } else {
-              Write-Host "Downloading toast jar from $url"
+              Write-Host "Downloading toast jar from secret URL"
               Invoke-WebRequest -Uri $url -OutFile $localJar
             }
           }
 
+      # ===============================
+      # Install local jar into Maven
+      # FIXED: PowerShell-safe quoting
+      # ===============================
       - name: Install local swing-toast-notifications (1.0.4 as 1.0.3 & 1.0.2)
         shell: pwsh
         run: |
           $localJar = "library/swing-toast-notifications-1.0.4.jar"
+
           if (-not (Test-Path $localJar)) {
             Write-Host "WARNING: $localJar not found; skipping install-file"
             exit 0
           }
 
           Write-Host "Installing $localJar as versions 1.0.3 and 1.0.2"
-          mvn -q install:install-file `
-            "-Dfile=$localJar" `
-            -DgroupId=raven.toast `
-            -DartifactId=swing-toast-notifications `
-            -Dversion=1.0.3 `
-            -Dpackaging=jar
-
-          mvn -q install:install-file `
-            "-Dfile=$localJar" `
-            -DgroupId=raven.toast `
-            -DartifactId=swing-toast-notifications `
-            -Dversion=1.0.2 `
-            -Dpackaging=jar
-
-      - name: Build & Test (same as CI)
-        shell: pwsh
-        run: mvn -B verify
-
-      - name: Create EXE with jpackage
-        shell: pwsh
-        run: |
-          $appName = "iuhpharmacitymanagement"
-          $mainJar = "target/iuhpharmacitymanagement-1.0-SNAPSHOT.jar"
-          $mainClass = "vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.MainApplication"
-
-          if (-not (Test-Path $mainJar)) {
-            Write-Error "Main JAR not found at $mainJar"
-            exit 1
-          }
-
-          New-Item -ItemType Directory -Path dist -Force | Out-Null
-
-          jpackage `
-            --type exe `
-            --name $appName `
-            --input target `
-            --main-jar (Split-Path $mainJar -Leaf) `
-            --main-class $mainClass `
-            --dest dist `
-            --win-shortcut `
-            --win-dir-chooser
-
-      - name: Upload EXE artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: windows-exe
-          path: dist/*.exe
-
