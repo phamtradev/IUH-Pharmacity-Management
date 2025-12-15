@@ -46,6 +46,8 @@ public class MainApplication {
                 UIManager.put("Component.focusWidth", 2);
 
                 // Thiết lập Look and Feel
+                // test
+                //test
                 FlatLightLaf.setup();
 
                 // Hiển thị SplashScreen trước
