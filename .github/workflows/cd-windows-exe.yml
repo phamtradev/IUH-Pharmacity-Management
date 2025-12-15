@@ -32,14 +32,14 @@ jobs:
           New-Item -ItemType Directory -Path library -Force | Out-Null
           $jar = "library/swing-toast-notifications-1.0.4.jar"
           if (-not (Test-Path $jar)) {
-            Write-Host "Toast jar missing (optional)"
+            Write-Error "Toast jar not found"
+            exit 1
           }
 
-      - name: Install local toast jar
+      - name: Install local Swing Toast Notifications library
         shell: pwsh
         run: |
           $jar = "library/swing-toast-notifications-1.0.4.jar"
-          if (-not (Test-Path $jar)) { exit 0 }
 
           mvn install:install-file `
             "-Dfile=$jar" `
@@ -48,12 +48,17 @@ jobs:
             "-Dversion=1.0.3" `
             "-Dpackaging=jar"
 
-      - name: Build JAR
+          mvn install:install-file `
+            "-Dfile=$jar" `
+            "-DgroupId=raven.toast" `
+            "-DartifactId=swing-toast-notifications" `
+            "-Dversion=1.0.2" `
+            "-Dpackaging=jar"
+
+      - name: Build project
         shell: pwsh
         run: mvn -B verify
 
-      # ✅ KHÔNG DÙNG exe / msi
-      # ✅ KHÔNG CẦN WiX
       - name: Create Windows App Image (Portable)
         shell: pwsh
         run: |
