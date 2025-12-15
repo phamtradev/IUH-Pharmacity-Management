@@ -520,10 +520,24 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
                     this.sanPham = loHangDaChon.getSanPham();
                     loadSanPhamData();
                 }
+                // Clear thông tin lô mới nếu đã tìm thấy lô phù hợp
+                tenLoMoi = null;
+                hsdLoMoi = null;
+                soLuongLoMoi = 1;
                 updateLoInfo(); // Hiển thị thẻ lô
             } else {
-                // Không tìm thấy lô trùng đủ 4 điều kiện: dữ liệu Excel sẽ được điền sẵn khi chọn "Tạo lô mới"
+                // Không tìm thấy lô trùng: Lưu thông tin để tạo lô mới khi nhập hàng
                 loHangDaChon = null;
+                // Lưu thông tin lô mới từ Excel để tự động tạo khi nhập hàng
+                if (tenLoHangTuExcel != null && !tenLoHangTuExcel.trim().isEmpty()) {
+                    tenLoMoi = tenLoHangTuExcel;
+                } else {
+                    // Nếu không có tên lô từ Excel, tạo tên mặc định
+                    tenLoMoi = "Lô nhập " + new SimpleDateFormat("ddMMyyyy").format(new Date());
+                }
+                hsdLoMoi = hsdTuExcel != null ? hsdTuExcel : hanDung;
+                soLuongLoMoi = soLuongTuExcel != null ? soLuongTuExcel : 1;
+                updateLoInfo(); // Hiển thị thông tin lô mới sẽ tạo
             }
 
             updateTongTien();
