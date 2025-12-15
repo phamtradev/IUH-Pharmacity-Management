@@ -951,6 +951,67 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
     }
 
     /**
+     * Tạo lô mới thực sự trong database (chỉ gọi khi nhập hàng và in hóa đơn)
+     * @return LoHang đã được tạo, hoặc null nếu có lỗi hoặc không có thông tin lô mới
+     */
+    public LoHang taoLoMoiThucSu() {
+        // Chỉ tạo lô nếu có thông tin lô mới và chưa có lô đã chọn
+        if (tenLoMoi == null || hsdLoMoi == null || loHangDaChon != null) {
+            return null;
+        }
+
+        try {
+            // Tạo mã lô mới
+            String maLoMoiStr = loHangBUS.taoMaLoHangMoi();
+            
+            // Chuyển Date sang LocalDate
+            LocalDate hsd = hsdLoMoi.toInstant()
+                    .atZone(java.time.ZoneId.systemDefault())
+                    .toLocalDate();
+
+            // Tạo lô mới
+            LoHang loMoi = new LoHang(
+                    maLoMoiStr,
+                    tenLoMoi,
+                    LocalDate.now(), // Ngày sản xuất = hôm nay
+                    hsd,
+                    soLuongLoMoi, // Tồn kho ban đầu
+                    true, // Trạng thái: đang bán
+                    sanPham // Gắn sản phẩm
+            );
+            
+            // Gán giá nhập chuẩn cho lô theo nghiệp vụ (mỗi lô 1 giá nhập)
+            double donGiaNhapMoi = getDonGiaNhap();
+            loMoi.setGiaNhapLo(donGiaNhapMoi);
+
+            // Lưu lô mới vào DB
+            boolean themThanhCong = loHangBUS.themLoHang(loMoi);
+            if (!themThanhCong) {
+                return null;
+            }
+
+            // Gán lô mới vừa tạo làm lô đã chọn
+            loHangDaChon = loMoi;
+            
+            // Clear thông tin tạo mới
+            tenLoMoi = null;
+            hsdLoMoi = null;
+            soLuongLoMoi = 1;
+
+            // Reload danh sách lô (để hiển thị lô mới)
+            loadLoHangData();
+            
+            // Cập nhật hiển thị
+            updateLoInfo();
+
+            return loMoi;
+        } catch (Exception ex) {
+            System.err.println("[Panel_ChiTietSanPhamNhap] Lỗi khi tạo lô mới: " + ex.getMessage());
+            return null;
+        }
+    }
+
+    /**
      * Hiển thị dialog chọn lô hàng với 2 tab: Lô cũ & Tạo lô mới
      */
     private void showDialogChonLo() {
@@ -1100,11 +1161,13 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
         txtSoLuongMoi.setFont(new java.awt.Font("Segoe UI", 0, 14));
         txtSoLuongMoi.setPreferredSize(new java.awt.Dimension(300, 35));
 
-        // Tự động điền số lượng từ Excel (nếu có)
+        // Tự động điền số lượng từ Excel (nếu có), nếu không thì lấy số lượng hiện tại từ panel chính
         if (soLuongTuExcel != null) {
             txtSoLuongMoi.setText(String.valueOf(soLuongTuExcel));
         } else {
-            txtSoLuongMoi.setText("1");
+            // Lấy số lượng hiện tại từ panel chính để người dùng biết và có thể chỉnh sửa
+            int soLuongHienTai = getSoLuong();
+            txtSoLuongMoi.setText(String.valueOf(soLuongHienTai));
         }
 
         gbcTab2.gridx = 1;
@@ -1311,58 +1374,40 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
                     return;
                 }
 
-                // ✅ TẠO LÔ MỚI NGAY LẬP TỨC với mã LHxxxxx
+                // ✅ CHỈ LƯU THÔNG TIN LÔ MỚI TẠM THỜI (chưa tạo trong DB)
+                // Lô sẽ được tạo thực sự khi bấm "Nhập hàng" và in hóa đơn
                 try {
-                    String maLoMoiStr = txtMaLoMoi.getText(); // Lấy mã đã generate
+                    // Lưu thông tin lô mới vào biến tạm
+                    tenLoMoi = tenLo;
+                    hsdLoMoi = hsdDate;
+                    soLuongLoMoi = soLuong;
+                    
+                    // Clear lô đã chọn (vì đang chọn tạo lô mới)
+                    loHangDaChon = null;
 
-                    LoHang loMoi = new LoHang(
-                            maLoMoiStr, // Mã lô đã tự generate
-                            tenLo,
-                            LocalDate.now(), // Ngày sản xuất = hôm nay
-                            hsd,
-                            soLuong, // Tồn kho ban đầu
-                            true, // Trạng thái: đang bán
-                            sanPham // Gắn sản phẩm
-                    );
-                    // Gán giá nhập chuẩn cho lô theo nghiệp vụ (mỗi lô 1 giá nhập)
-                    double donGiaNhapMoi = getDonGiaNhap();
-                    loMoi.setGiaNhapLo(donGiaNhapMoi);
-
-                    // Lưu lô mới vào DB
-                    boolean themThanhCong = loHangBUS.themLoHang(loMoi);
-                    if (!themThanhCong) {
-                        Notifications.getInstance().show(
-                                Notifications.Type.ERROR,
-                                Notifications.Location.TOP_CENTER,
-                                "Lỗi khi tạo lô mới! Vui lòng thử lại.");
-                        return;
+                    // Cập nhật số lượng lên panel chính (THAY THẾ, không cộng dồn)
+                    // Cập nhật text field TRƯỚC để tránh ChangeListener gây cộng dồn
+                    if (txtSoLuong != null) {
+                        txtSoLuong.setText(String.valueOf(soLuong));
                     }
-
-                    // Gán lô mới vừa tạo làm lô đã chọn
-                    loHangDaChon = loMoi;
-                    tenLoMoi = null; // Clear thông tin tạo mới
-                    hsdLoMoi = null;
-
-                    // Cập nhật số lượng lên panel chính
+                    // Sau đó mới setValue cho spinner (số lượng từ dialog, không cộng với số lượng cũ)
                     spinnerSoLuong.setValue(soLuong);
                     updateTongTien();
 
-                    // Reload danh sách lô (để hiển thị lô mới)
-                    loadLoHangData();
-
+                    // Cập nhật hiển thị lô (sẽ hiển thị thông tin lô mới chưa tạo)
                     updateLoInfo();
                     dialog.dispose();
 
                     Notifications.getInstance().show(
-                            Notifications.Type.SUCCESS,
+                            Notifications.Type.INFO,
                             Notifications.Location.TOP_CENTER,
-                            "Đã tạo lô mới thành công: " + loMoi.getMaLoHang() + " - " + tenLo);
+                            "Đã chọn tạo lô mới: " + tenLo + ". Lô sẽ được tạo khi bạn nhập hàng và in hóa đơn.");
 
                 } catch (Exception ex) {
                     Notifications.getInstance().show(
                             Notifications.Type.ERROR,
                             Notifications.Location.TOP_CENTER,
-                            "Lỗi khi tạo lô mới: " + ex.getMessage());
+                            "Lỗi khi lưu thông tin lô mới: " + ex.getMessage());
                 }
             }
         });
