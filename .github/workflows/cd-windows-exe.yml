@@ -1,7 +1,10 @@
 name: CD - Build Windows EXE
 
 on:
+  # Cho phép chạy tay
   workflow_dispatch:
+
+  # Chạy khi code đã merge vào main
   push:
     branches: [ main ]
 
@@ -11,41 +14,67 @@ jobs:
     runs-on: windows-latest
 
     steps:
+      # ===============================
+      # Checkout source code
+      # ===============================
       - name: Checkout source code
         uses: actions/checkout@v4
 
+      # ===============================
+      # Setup Java 21
+      # ===============================
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "21"
 
+      # ===============================
+      # Cache Maven repository
+      # ===============================
       - name: Cache Maven dependencies
         uses: actions/cache@v4
         with:
           path: ~/.m2/repository
           key: maven-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            maven-${{ runner.os }}-
 
+      # ===============================
+      # Ensure local toast jar exists
+      # ===============================
       - name: Ensure swing-toast-notifications jar
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Path library -Force | Out-Null
           $localJar = "library/swing-toast-notifications-1.0.4.jar"
 
-          if (-not (Test-Path $localJar)) {
+          if (Test-Path $localJar) {
+            Write-Host "Found local $localJar, skip download"
+          } else {
             $url = "${{ secrets.TOAST_JAR_URL }}"
-            if ($url) {
-              Invoke-WebRequest -Uri $url -OutFile $localJar
+            if ([string]::IsNullOrEmpty($url)) {
+              Write-Host "WARNING: No local jar and TOAST_JAR_URL not set."
+              Write-Host "Build may fail if this dependency is required."
             } else {
-              Write-Host "WARNING: toast jar missing"
+              Write-Host "Downloading toast jar from secret URL"
+              Invoke-WebRequest -Uri $url -OutFile $localJar
             }
           }
 
+      # ===============================
+      # Install local jar into Maven
+      # (PowerShell-safe quoting)
+      # ===============================
       - name: Install local swing-toast-notifications
         shell: pwsh
         run: |
           $localJar = "library/swing-toast-notifications-1.0.4.jar"
-          if (-not (Test-Path $localJar)) { exit 0 }
+
+          if (-not (Test-Path $localJar)) {
+            Write-Host "WARNING: $localJar not found; skipping install-file"
+            exit 0
+          }
 
           mvn install:install-file `
             "-Dfile=$localJar" `
@@ -61,10 +90,16 @@ jobs:
             "-Dversion=1.0.2" `
             "-Dpackaging=jar"
 
-      - name: Build & Test
+      # ===============================
+      # Build & Test (same as CI)
+      # ===============================
+      - name: Build and test with Maven
         shell: pwsh
         run: mvn -B verify
 
+      # ===============================
+      # Create Windows EXE (NO MSI, NO WiX)
+      # ===============================
       - name: Create Windows EXE with jpackage
         shell: pwsh
         run: |
@@ -73,7 +108,7 @@ jobs:
           $mainClass = "vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.MainApplication"
 
           if (-not (Test-Path $mainJar)) {
-            Write-Error "Main JAR not found"
+            Write-Error "Main JAR not found at $mainJar"
             exit 1
           }
 
@@ -86,13 +121,22 @@ jobs:
             --main-jar (Split-Path $mainJar -Leaf) `
             --main-class $mainClass `
             --dest dist `
+            --win-console `
             --win-shortcut `
             --win-dir-chooser
 
+      # ===============================
+      # Debug dist folder (để chắc chắn có exe)
+      # ===============================
       - name: Debug dist folder
         shell: pwsh
-        run: Get-ChildItem -Recurse dist
+        run: |
+          Write-Host "Listing dist folder:"
+          Get-ChildItem -Recurse dist
 
+      # ===============================
+      # Upload EXE artifact
+      # ===============================
       - name: Upload Windows EXE artifact
         uses: actions/upload-artifact@v4
         with:
