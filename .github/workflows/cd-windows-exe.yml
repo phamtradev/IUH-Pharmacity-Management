@@ -1,4 +1,4 @@
-name: CD - Build Windows App Image
+name: CD - Build Windows EXE
 
 on:
   workflow_dispatch:
@@ -6,44 +6,57 @@ on:
     branches: [ main ]
 
 jobs:
-  build-windows-app:
-    name: Build Windows App Image (No WiX)
+  build-windows-exe:
+    name: Build Windows EXE (WiX enabled)
     runs-on: windows-latest
 
     steps:
+      # ===============================
+      # Checkout
+      # ===============================
       - name: Checkout source code
         uses: actions/checkout@v4
 
+      # ===============================
+      # Java 21
+      # ===============================
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "21"
 
-      - name: Install WiX Toolset (for jpackage exe)
+      # ===============================
+      # Install WiX Toolset + add to PATH
+      # ===============================
+      - name: Install WiX Toolset
         shell: pwsh
-        run: choco install wixtoolset -y
+        run: |
+          choco install wixtoolset -y --no-progress
+          $wixPath = "C:\Program Files (x86)\WiX Toolset v3.11\bin"
+          echo $wixPath | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          light.exe -?
 
+      # ===============================
+      # Cache Maven
+      # ===============================
       - name: Cache Maven dependencies
         uses: actions/cache@v4
         with:
           path: ~/.m2/repository
           key: maven-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
 
-      - name: Ensure swing-toast-notifications jar
+      # ===============================
+      # Install local toast JAR (2 versions)
+      # ===============================
+      - name: Install Swing Toast Notifications
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Path library -Force | Out-Null
           $jar = "library/swing-toast-notifications-1.0.4.jar"
           if (-not (Test-Path $jar)) {
             Write-Error "Toast jar not found"
             exit 1
           }
-
-      - name: Install local Swing Toast Notifications library
-        shell: pwsh
-        run: |
-          $jar = "library/swing-toast-notifications-1.0.4.jar"
 
           mvn install:install-file `
             "-Dfile=$jar" `
@@ -59,22 +72,21 @@ jobs:
             "-Dversion=1.0.2" `
             "-Dpackaging=jar"
 
+      # ===============================
+      # Build project
+      # ===============================
       - name: Build project
         shell: pwsh
         run: mvn -B verify
 
-      - name: Copy runtime dependencies (for packaging)
-        shell: pwsh
-        run: |
-          mvn -B dependency:copy-dependencies -DincludeScope=runtime -DoutputDirectory=target
-          if (Test-Path "library/swing-toast-notifications-1.0.4.jar") {
-            Copy-Item -Force "library/swing-toast-notifications-1.0.4.jar" "target/swing-toast-notifications-1.0.4.jar"
-          }
-
-      - name: Create Windows EXE with jpackage (includes libs)
+      # ===============================
+      # Build Windows EXE with jpackage
+      # ===============================
+      - name: Create Windows EXE
         shell: pwsh
         run: |
           $appName   = "iuhpharmacitymanagement"
+          $version   = "1.0.0"
           $mainJar   = "target/iuhpharmacitymanagement-1.0-SNAPSHOT.jar"
           $mainClass = "vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.MainApplication"
 
@@ -85,22 +97,30 @@ jobs:
 
           New-Item -ItemType Directory -Path dist -Force | Out-Null
 
-          jpackage --type exe `
+          jpackage `
+            --type exe `
             --name $appName `
+            --app-version $version `
             --input target `
             --main-jar (Split-Path $mainJar -Leaf) `
             --main-class $mainClass `
             --dest dist `
+            --win-console `
             --win-shortcut `
-            --win-dir-chooser `
-            --win-console
+            --win-dir-chooser
 
+      # ===============================
+      # Debug
+      # ===============================
       - name: Debug dist folder
         shell: pwsh
         run: Get-ChildItem -Recurse dist
 
-      - name: Upload Windows App (EXE)
+      # ===============================
+      # Upload Artifact
+      # ===============================
+      - name: Upload Windows EXE
         uses: actions/upload-artifact@v4
         with:
-          name: windows-app
+          name: windows-exe
           path: dist/**
