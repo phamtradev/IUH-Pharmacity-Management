@@ -46,23 +46,26 @@ jobs:
       - name: Install local swing-toast-notifications (1.0.4 as 1.0.3 & 1.0.2)
         shell: pwsh
         run: |
-          if (Test-Path "library/swing-toast-notifications-1.0.4.jar") {
-            Write-Host "Installing swing-toast-notifications 1.0.4 as 1.0.3 and 1.0.2"
-            mvn -q install:install-file `
-              -Dfile=library/swing-toast-notifications-1.0.4.jar `
-              -DgroupId=raven.toast `
-              -DartifactId=swing-toast-notifications `
-              -Dversion=1.0.3 `
-              -Dpackaging=jar
-            mvn -q install:install-file `
-              -Dfile=library/swing-toast-notifications-1.0.4.jar `
-              -DgroupId=raven.toast `
-              -DartifactId=swing-toast-notifications `
-              -Dversion=1.0.2 `
-              -Dpackaging=jar
-          } else {
-            Write-Host "WARNING: library/swing-toast-notifications-1.0.4.jar not found; skipping install-file"
+          $localJar = "library/swing-toast-notifications-1.0.4.jar"
+          if (-not (Test-Path $localJar)) {
+            Write-Host "WARNING: $localJar not found; skipping install-file"
+            exit 0
           }
+
+          Write-Host "Installing $localJar as versions 1.0.3 and 1.0.2"
+          mvn -q install:install-file `
+            "-Dfile=$localJar" `
+            -DgroupId=raven.toast `
+            -DartifactId=swing-toast-notifications `
+            -Dversion=1.0.3 `
+            -Dpackaging=jar
+
+          mvn -q install:install-file `
+            "-Dfile=$localJar" `
+            -DgroupId=raven.toast `
+            -DartifactId=swing-toast-notifications `
+            -Dversion=1.0.2 `
+            -Dpackaging=jar
 
       - name: Build & Test (same as CI)
         shell: pwsh
