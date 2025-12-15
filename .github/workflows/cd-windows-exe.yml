@@ -62,9 +62,9 @@ jobs:
       - name: Copy runtime dependencies (for packaging)
         shell: pwsh
         run: |
-          mvn -B dependency:copy-dependencies -DincludeScope=runtime -DoutputDirectory=target/lib
+          mvn -B dependency:copy-dependencies -DincludeScope=runtime -DoutputDirectory=target
           if (Test-Path "library/swing-toast-notifications-1.0.4.jar") {
-            Copy-Item -Force "library/swing-toast-notifications-1.0.4.jar" "target/lib/swing-toast-notifications-1.0.4.jar"
+            Copy-Item -Force "library/swing-toast-notifications-1.0.4.jar" "target/swing-toast-notifications-1.0.4.jar"
           }
 
       - name: Create Windows EXE with jpackage (includes libs)
@@ -81,13 +81,11 @@ jobs:
 
           New-Item -ItemType Directory -Path dist -Force | Out-Null
 
-          # Copy libs đã có ở target/lib, dùng class-path để bundle vào exe
           jpackage --type exe `
             --name $appName `
             --input target `
             --main-jar (Split-Path $mainJar -Leaf) `
             --main-class $mainClass `
-            --class-path "lib/*" `
             --dest dist `
             --win-shortcut `
             --win-dir-chooser `
