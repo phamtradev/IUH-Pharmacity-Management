@@ -67,18 +67,18 @@ jobs:
       # ===============================
       # Build project (JAR)
       # ===============================
-      - name: Build project with Maven
+      - name: Build project with Maven (create shaded JAR)
         shell: pwsh
-        run: mvn -B verify
+        run: mvn -B -DskipTests package
 
       # ===============================
       # Create Windows App Image
       # ===============================
-      - name: Create Windows App Image (jpackage)
+      - name: Create Windows App Image (jpackage, using shaded JAR)
         shell: pwsh
         run: |
           $appName   = "iuhpharmacitymanagement"
-          $mainJar   = "target/iuhpharmacitymanagement-1.0-SNAPSHOT.jar"
+          $mainJar   = "target/iuhpharmacitymanagement-1.0-SNAPSHOT-shaded.jar"
           $mainClass = "vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.MainApplication"
 
           if (-not (Test-Path $mainJar)) {
