@@ -87,7 +87,7 @@ jobs:
             --input target `
             --main-jar (Split-Path $mainJar -Leaf) `
             --main-class $mainClass `
-            --class-path "lib/*" `
+            --classpath "lib/*" `
             --dest dist `
             --win-shortcut `
             --win-dir-chooser
