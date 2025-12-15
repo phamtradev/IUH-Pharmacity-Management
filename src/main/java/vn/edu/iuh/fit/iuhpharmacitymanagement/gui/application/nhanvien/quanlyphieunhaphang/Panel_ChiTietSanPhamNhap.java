@@ -386,7 +386,6 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     //Phần Logic code
-    
     /**
      * Constructor khi KHÔNG có thông tin lô từ Excel Hiển thị Spinner HSD +
      * Button "Chọn lô"
@@ -680,33 +679,33 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
     }
 
     /**
-     * Kiểm tra đơn giá nhập có hợp lệ với lô hàng theo nghiệp vụ:
-     * - Nếu lô chưa có chi tiết nhập → chấp nhận bất kỳ giá nào.
-     * - Nếu lô đã có chi tiết nhập → tất cả chi tiết phải dùng cùng một đơn giá.
-     * - Nếu giá nhập mới BẰNG giá cố định của lô → cho phép.
+     * Kiểm tra đơn giá nhập có hợp lệ với lô hàng theo nghiệp vụ: - Nếu lô chưa
+     * có chi tiết nhập → chấp nhận bất kỳ giá nào. - Nếu lô đã có chi tiết nhập
+     * → tất cả chi tiết phải dùng cùng một đơn giá. - Nếu giá nhập mới BẰNG giá
+     * cố định của lô → cho phép.
      */
     private boolean isDonGiaHopLeChoLo(LoHang loHang, double donGiaNhapMoi) {
         if (loHang == null) {
             return true;
         }
-        
+
         // Kiểm tra giá nhập từ cột giaNhapLo (nếu có)
         double giaNhapLo = loHang.getGiaNhapLo();
         if (giaNhapLo > 0) {
             // Nếu giá nhập mới BẰNG giá cố định → cho phép
             return Math.abs(giaNhapLo - donGiaNhapMoi) < 0.0001;
         }
-        
+
         // Nếu giaNhapLo = 0, kiểm tra giá từ ChiTietDonNhapHang
         java.util.Optional<Double> donGiaCuOpt = chiTietDonNhapHangDAO
                 .findDonGiaByMaLoHang(loHang.getMaLoHang());
-        
+
         if (donGiaCuOpt.isPresent()) {
             double donGiaCu = donGiaCuOpt.get();
             // Nếu giá nhập mới BẰNG giá đã có → cho phép
             return Math.abs(donGiaCu - donGiaNhapMoi) < 0.0001;
         }
-        
+
         // Lô chưa có giá nhập nào → cho phép
         return true;
     }
@@ -938,7 +937,8 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
     }
 
     /**
-     * Cho phép các màn hình khác (ví dụ Quản lý Đơn vị tính) báo Panel reload dữ liệu.
+     * Cho phép các màn hình khác (ví dụ Quản lý Đơn vị tính) báo Panel reload
+     * dữ liệu.
      */
     public void refreshDonViTinhTuQuanLy() {
         loadDanhSachDonViTinh();
@@ -969,11 +969,14 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
      */
     public boolean coThongTinLoMoi() {
         return tenLoMoi != null && hsdLoMoi != null;
+        //okk
     }
 
     /**
      * Tạo lô mới thực sự trong database (chỉ gọi khi nhập hàng và in hóa đơn)
-     * @return LoHang đã được tạo, hoặc null nếu có lỗi hoặc không có thông tin lô mới
+     *
+     * @return LoHang đã được tạo, hoặc null nếu có lỗi hoặc không có thông tin
+     * lô mới
      */
     public LoHang taoLoMoiThucSu() {
         // Chỉ tạo lô nếu có thông tin lô mới và chưa có lô đã chọn
@@ -988,7 +991,7 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
         try {
             // Tạo mã lô mới
             String maLoMoiStr = loHangBUS.taoMaLoHangMoi();
-            
+
             // Chuyển Date sang LocalDate
             LocalDate hsd = hsdLoMoi.toInstant()
                     .atZone(java.time.ZoneId.systemDefault())
@@ -1011,7 +1014,7 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
                 e.printStackTrace();
                 return null;
             }
-            
+
             // Gán giá nhập chuẩn cho lô theo nghiệp vụ (mỗi lô 1 giá nhập)
             double donGiaNhapMoi = getDonGiaNhap();
             loMoi.setGiaNhapLo(donGiaNhapMoi);
@@ -1025,7 +1028,7 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
 
             // Gán lô mới vừa tạo làm lô đã chọn
             loHangDaChon = loMoi;
-            
+
             // Clear thông tin tạo mới
             tenLoMoi = null;
             hsdLoMoi = null;
@@ -1033,7 +1036,7 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
 
             // Reload danh sách lô (để hiển thị lô mới)
             loadLoHangData();
-            
+
             // Cập nhật hiển thị
             updateLoInfo();
 
@@ -1046,7 +1049,8 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
     }
 
     /**
-     * Hiển thị dialog chọn lô hàng với tab "Tạo lô mới" được chọn sẵn (dùng khi import từ Excel)
+     * Hiển thị dialog chọn lô hàng với tab "Tạo lô mới" được chọn sẵn (dùng khi
+     * import từ Excel)
      */
     private void showDialogChonLoVoiTabTaoLoMoi() {
         showDialogChonLo(true);
@@ -1054,6 +1058,7 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
 
     /**
      * Hiển thị dialog chọn lô hàng với 2 tab: Lô cũ & Tạo lô mới
+     *
      * @param autoSelectTabTaoLoMoi true nếu muốn tự động chọn tab "Tạo lô mới"
      */
     private void showDialogChonLo(boolean autoSelectTabTaoLoMoi) {
@@ -1271,13 +1276,13 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
                                                 Notifications.getInstance().show(
                                                         Notifications.Type.ERROR,
                                                         Notifications.Location.TOP_CENTER,
-                                                        "Lô " + loChon.getMaLoHang() 
-                                                        + " đã hết hạn sử dụng (HSD: " 
+                                                        "Lô " + loChon.getMaLoHang()
+                                                        + " đã hết hạn sử dụng (HSD: "
                                                         + hsdLo.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"))
                                                         + "). Vui lòng chọn lô khác hoặc tạo lô mới.");
                                                 return;
                                             }
-                                            
+
                                             // Kiểm tra HSD có khớp với HSD đã nhập không (từ Excel hoặc form)
                                             LocalDate hsdDaNhap = null;
                                             if (hsdTuExcel != null) {
@@ -1289,14 +1294,14 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
                                                         .atZone(java.time.ZoneId.systemDefault())
                                                         .toLocalDate();
                                             }
-                                            
+
                                             // Nếu có HSD đã nhập, phải khớp với HSD của lô
                                             if (hsdDaNhap != null && !hsdLo.equals(hsdDaNhap)) {
                                                 Notifications.getInstance().show(
                                                         Notifications.Type.ERROR,
                                                         Notifications.Location.TOP_CENTER,
-                                                        "Hạn sử dụng không khớp! Lô " + loChon.getMaLoHang() 
-                                                        + " có HSD: " 
+                                                        "Hạn sử dụng không khớp! Lô " + loChon.getMaLoHang()
+                                                        + " có HSD: "
                                                         + hsdLo.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"))
                                                         + ", nhưng bạn đã nhập HSD: "
                                                         + hsdDaNhap.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"))
@@ -1317,7 +1322,7 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
                                                     donGiaCoDinh = donGiaCuOpt.get();
                                                 }
                                             }
-                                            
+
                                             String msg = "Lô " + loChon.getMaLoHang()
                                                     + " đang có giá nhập cố định là "
                                                     + (donGiaCoDinh > 0 ? currencyFormat.format(donGiaCoDinh) : "không xác định")
@@ -1339,7 +1344,7 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
                                             this.sanPham = loHangDaChon.getSanPham();
                                             System.out.println(
                                                     "✅ [Panel] Đã cập nhật sanPham từ loHangDaChon (chọn từ dialog), hinhAnh = "
-                                                            + this.sanPham.getHinhAnh());
+                                                    + this.sanPham.getHinhAnh());
                                             // Load lại dữ liệu sản phẩm (bao gồm hình ảnh)
                                             loadSanPhamData();
                                         }
@@ -1416,7 +1421,7 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
                     Notifications.getInstance().show(
                             Notifications.Type.ERROR,
                             Notifications.Location.TOP_CENTER,
-                            "Hạn sử dụng phải lớn hơn 6 tháng kể từ ngày hiện tại! Yêu cầu HSD phải lớn hơn " 
+                            "Hạn sử dụng phải lớn hơn 6 tháng kể từ ngày hiện tại! Yêu cầu HSD phải lớn hơn "
                             + ngayGioiHan.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")));
                     return;
                 }
@@ -1428,7 +1433,7 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
                     tenLoMoi = tenLo;
                     hsdLoMoi = hsdDate;
                     soLuongLoMoi = soLuong;
-                    
+
                     // Clear lô đã chọn (vì đang chọn tạo lô mới)
                     loHangDaChon = null;
 
