@@ -178,7 +178,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
         // }
         // pnContent.revalidate();
         // pnContent.repaint();
-        // orderDetails.clear();
+        // orderDetails.clear();    
     }
 
     @SuppressWarnings("unchecked")
