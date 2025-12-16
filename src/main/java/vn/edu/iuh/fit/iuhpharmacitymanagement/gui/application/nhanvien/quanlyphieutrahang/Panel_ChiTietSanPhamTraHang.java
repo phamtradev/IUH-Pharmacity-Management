@@ -4,6 +4,7 @@
  */
 package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlyphieutrahang;
 
+import com.formdev.flatlaf.extras.FlatSVGIcon;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
 
 /**
@@ -274,7 +275,8 @@ public class Panel_ChiTietSanPhamTraHang extends javax.swing.JPanel {
     public void setLyDoTraHang(String lyDo) {
         this.lyDoTraHang = lyDo;
         if (lyDo != null && !lyDo.trim().isEmpty()) {
-            btnLyDo.setText("✓ Lý do");
+            btnLyDo.setText("Lý do");
+            btnLyDo.setIcon(new FlatSVGIcon("img/icons/check.svg", 24, 24)); 
             ButtonStyles.apply(btnLyDo, ButtonStyles.Type.SUCCESS);
         } else {
             btnLyDo.setText("Lý do");

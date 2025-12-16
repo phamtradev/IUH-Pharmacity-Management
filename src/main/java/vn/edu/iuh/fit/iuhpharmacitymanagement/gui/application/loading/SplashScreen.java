@@ -46,7 +46,7 @@ public class SplashScreen extends javax.swing.JFrame {
                 
                 // Bước 2: Load hình ảnh (thực tế)
                 updateProgress("Đang tải hình ảnh...", 5);
-                setImageToLabel(BackgroundImg, "/img/LoadingImageCopy.png");
+                setImageToLabel(BackgroundImg, "/img/landing.png");
                 updateProgress("Đang tải hình ảnh...", 10);
                 //setImageToLabel(IUHLogo, "/img/IUH_New.png");
                 updateProgress("Đã tải hình ảnh", 15);
