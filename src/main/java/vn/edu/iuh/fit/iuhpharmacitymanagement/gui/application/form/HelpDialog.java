@@ -50,6 +50,7 @@ public class HelpDialog extends JDialog {
             if (localUrl != null) {
                 engine.load(localUrl.toExternalForm());
             }
+            //okkk
             jfxPanel.setScene(new Scene(webView));
         });
     }
