@@ -1559,10 +1559,12 @@ public class Panel_DonHang extends javax.swing.JPanel {
             // Danh sách 6 nút gợi ý
             java.util.List<Long> suggestions = new java.util.ArrayList<>();
 
-            // Làm tròn tổng hóa đơn thành số nguyên
-            long total = Math.round(tongHoaDon);
+            // Làm tròn tổng hóa đơn theo quy tắc:
+            // - Phần lẻ từ 500đ trở lên → làm tròn lên 1.000đ
+            // - Phần lẻ dưới 500đ      → làm tròn xuống
+            long total = roundToNearestThousand(Math.round(tongHoaDon));
 
-            // NÚT 1: Đúng số tiền hóa đơn
+            // NÚT 1: Số tiền hóa đơn đã làm tròn
             suggestions.add(total);
 
             // Các mức làm tròn thông minh (chỉ thêm nếu chênh lệch đủ lớn)
@@ -1620,6 +1622,24 @@ public class Panel_DonHang extends javax.swing.JPanel {
         // Kiểm tra chưa có trong list → Thêm vào
         if (!list.contains(value)) {
             list.add(value);
+        }
+    }
+
+    /**
+     * Làm tròn số tiền về bội số 1.000đ theo quy tắc:
+     * - Phần lẻ từ 500đ trở lên → làm tròn lên 1.000đ
+     * - Phần lẻ dưới 500đ      → làm tròn xuống
+     * 
+     * Ví dụ:
+     *  - 10.500 → 11.000
+     *  - 10.400 → 10.000
+     */
+    private long roundToNearestThousand(long amount) {
+        long remainder = amount % 1000;
+        if (remainder >= 500) {
+            return amount + (1000 - remainder);
+        } else {
+            return amount - remainder;
         }
     }
 
