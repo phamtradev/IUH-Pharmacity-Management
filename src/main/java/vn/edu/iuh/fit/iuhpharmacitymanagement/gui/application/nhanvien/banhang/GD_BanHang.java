@@ -37,6 +37,7 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.constant.LoaiKhuyenMai;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.FontStyles;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.form.MainForm;
 
 /**
  *
@@ -406,6 +407,8 @@ public class GD_BanHang extends javax.swing.JPanel {
             }
             
             themSanPhamVaoGioHang(sanPham);
+            // Sau khi thêm sản phẩm thành công, tự động thu gọn menu để có nhiều không gian hiển thị
+            autoHideMenuForBetterView();
             
             Notifications.getInstance().show(Notifications.Type.SUCCESS, Notifications.Location.TOP_CENTER, 
                 "✓ Đã thêm: " + sanPham.getTenSanPham());
@@ -494,6 +497,20 @@ public class GD_BanHang extends javax.swing.JPanel {
         }
         
         capNhatTongTien();
+
+        // Sau khi đã có/ cập nhật sản phẩm trong giỏ, tự động thu gọn menu (nếu đang ở trong MainForm)
+        autoHideMenuForBetterView();
+    }
+
+    /**
+     * Tự động thu gọn menu bên trái để tăng không gian nhìn khi bán hàng.
+     * Được gọi sau khi quét/thêm sản phẩm thành công.
+     */
+    private void autoHideMenuForBetterView() {
+        java.awt.Component ancestor = javax.swing.SwingUtilities.getAncestorOfClass(MainForm.class, this);
+        if (ancestor instanceof MainForm) {
+            ((MainForm) ancestor).hideMenu();
+        }
     }
     
     public void capNhatTongTien() {

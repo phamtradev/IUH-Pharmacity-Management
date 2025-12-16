@@ -416,7 +416,8 @@ public class MainForm extends JLayeredPane {
 //    revalidate();
 //}
     public void hideMenu() {
-        menu.hideMenuItem();
+        // Thu gọn menu về trạng thái tối thiểu (giống khi người dùng bấm nút toggle)
+        setMenuFull(false);
     }
 
     public void showForm(Component component) {
