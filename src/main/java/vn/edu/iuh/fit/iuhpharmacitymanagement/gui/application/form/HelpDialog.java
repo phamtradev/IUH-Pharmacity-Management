@@ -9,6 +9,7 @@ import javafx.scene.web.WebView;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import java.awt.BorderLayout;
+import java.net.URL;
 
 /**
  * Dialog hiển thị trang hướng dẫn sử dụng ngay trong ứng dụng
@@ -43,7 +44,12 @@ public class HelpDialog extends JDialog {
         Platform.runLater(() -> {
             WebView webView = new WebView();
             WebEngine engine = webView.getEngine();
-            engine.load("https://iuh-pharmacity-user-guide.vercel.app/");
+
+            // Bản offline (file tĩnh đóng gói trong JAR: /help/index.html)
+            URL localUrl = getClass().getResource("/help/index.html");
+            if (localUrl != null) {
+                engine.load(localUrl.toExternalForm());
+            }
             jfxPanel.setScene(new Scene(webView));
         });
     }

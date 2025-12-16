@@ -414,15 +414,47 @@ public class MainForm extends JLayeredPane {
     }
 
     /**
-     * Mở trang hướng dẫn người dùng ngay trong ứng dụng (dialog chứa WebView).
+     * Mở trang hướng dẫn:
+     * - Nếu có mạng: mở trình duyệt ngoài với URL online
+     * - Nếu không có mạng/không mở được: mở bản offline (HelpDialog dùng JavaFX)
      */
     private void openHelpPage() {
+        String onlineUrl = "https://iuh-pharmacity-user-guide.vercel.app/";
+
+        if (isInternetAvailable(onlineUrl) && Desktop.isDesktopSupported()
+                && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+            try {
+                Desktop.getDesktop().browse(new URI(onlineUrl));
+                return;
+            } catch (Exception ignored) {
+                // Nếu có lỗi khi mở trình duyệt thì tiếp tục fallback xuống offline
+            }
+        }
+
+        // Fallback: mở bản offline trong app bằng JavaFX WebView
         java.awt.Window window = javax.swing.SwingUtilities.getWindowAncestor(this);
         javax.swing.JFrame frameOwner = (window instanceof javax.swing.JFrame)
                 ? (javax.swing.JFrame) window
                 : null;
         HelpDialog dialog = (frameOwner != null) ? new HelpDialog(frameOwner) : new HelpDialog();
         dialog.setVisible(true);
+    }
+
+    /**
+     * Kiểm tra nhanh xem có truy cập được URL online hay không.
+     */
+    private boolean isInternetAvailable(String testUrl) {
+        try {
+            java.net.URL url = new java.net.URL(testUrl);
+            java.net.URLConnection connection = url.openConnection();
+            connection.setConnectTimeout(1500);
+            connection.setReadTimeout(1500);
+            try (java.io.InputStream is = connection.getInputStream()) {
+                return true;
+            }
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     public void showForm(Component component) {
