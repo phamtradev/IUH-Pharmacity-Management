@@ -414,30 +414,15 @@ public class MainForm extends JLayeredPane {
     }
 
     /**
-     * Mở trang hướng dẫn người dùng trong trình duyệt mặc định.
+     * Mở trang hướng dẫn người dùng ngay trong ứng dụng (dialog chứa WebView).
      */
     private void openHelpPage() {
-        try {
-            URI uri = new URI("https://iuh-pharmacity-user-guide.vercel.app/");
-            if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-                Desktop.getDesktop().browse(uri);
-            } else {
-                javax.swing.JOptionPane.showMessageDialog(
-                        this,
-                        "Không thể mở trình duyệt trên máy này.\nVui lòng truy cập thủ công: https://iuh-pharmacity-user-guide.vercel.app/",
-                        "Không thể mở trình duyệt",
-                        javax.swing.JOptionPane.WARNING_MESSAGE
-                );
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            javax.swing.JOptionPane.showMessageDialog(
-                    this,
-                    "Không thể mở trang trợ giúp.\nVui lòng truy cập: https://iuh-pharmacity-user-guide.vercel.app/",
-                    "Lỗi khi mở trang trợ giúp",
-                    javax.swing.JOptionPane.ERROR_MESSAGE
-            );
-        }
+        java.awt.Window window = javax.swing.SwingUtilities.getWindowAncestor(this);
+        javax.swing.JFrame frameOwner = (window instanceof javax.swing.JFrame)
+                ? (javax.swing.JFrame) window
+                : null;
+        HelpDialog dialog = (frameOwner != null) ? new HelpDialog(frameOwner) : new HelpDialog();
+        dialog.setVisible(true);
     }
 
     public void showForm(Component component) {
