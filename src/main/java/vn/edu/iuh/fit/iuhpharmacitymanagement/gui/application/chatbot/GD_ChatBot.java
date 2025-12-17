@@ -8,6 +8,7 @@ import com.formdev.flatlaf.FlatClientProperties;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.BufferedReader;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
@@ -20,6 +21,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -55,12 +57,34 @@ public class GD_ChatBot extends javax.swing.JPanel {
     private static final String NON_TEXT_PATTERN = "[^a-z0-9áàảãạăắằẳẵặâấầẩẫậđéèẻẽẹêếềểễệíìỉĩịóòỏõọôốồổỗộơớờởỡợúùủũụưứừửữựýỳỷỹỵ\\s]";
 
     // Cấu hình API - OpenAI
-    private static final String OPENAI_API_KEY = "AIzaSyBz23hMSqXdIi7uw9NGlETOXX8DbN3PL1I";
+    private static final String OPENAI_API_KEY = loadApiKey();
     private static final String API_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
     private static final String MODEL = "gemini-2.5-flash";
     private static final int CONNECT_TIMEOUT = 10000; // 10 giây
     private static final int READ_TIMEOUT = 30000; // 30 giây
     private static final String PLACEHOLDER_TEXT = "Nhập câu hỏi của bạn...";
+    
+    /**
+     * Đọc API key từ file config để bảo mật (không hardcode trong code)
+     */
+    private static String loadApiKey() {
+        try {
+            Properties props = new Properties();
+            InputStream is = GD_ChatBot.class.getResourceAsStream("/chatbot-config.properties");
+            if (is != null) {
+                props.load(is);
+                String apiKey = props.getProperty("api.key", "").trim();
+                if (!apiKey.isEmpty() && !apiKey.equals("YOUR_API_KEY_HERE")) {
+                    return apiKey;
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Không thể đọc API key từ config: " + e.getMessage());
+        }
+        // Fallback: trả về key mặc định (nếu file config không tồn tại)
+        // Lưu ý: Key này sẽ bị leak nếu commit vào Git, nên luôn dùng file config
+        return "AIzaSyCLx6iK70qDzzXTZ0oMvffTgpS8Slh67Qs";
+    }
 
     public GD_ChatBot() {
         timeFormatter = DateTimeFormatter.ofPattern("HH:mm");

@@ -7,6 +7,9 @@
 # File cấu hình email (chứa mật khẩu SMTP)
 src/main/resources/email.properties
 
+# File cấu hình ChatBot API Key (chứa API key nhạy cảm)
+src/main/resources/chatbot-config.properties
+
 # File backup và temp
 *.DS_Store
 *.bak
