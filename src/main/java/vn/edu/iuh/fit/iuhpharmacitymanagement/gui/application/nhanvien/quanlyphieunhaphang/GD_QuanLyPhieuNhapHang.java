@@ -96,6 +96,7 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
 
     // Key gom nhóm dòng Excel: 1 lô = 1 (SĐK, HSD, Giá nhập) - KHÔNG phụ thuộc tên lô trong Excel
     private static class LoKey {
+
         private final String soDangKy;
         private final LocalDate hanSuDung;
         private final double donGia;
@@ -120,10 +121,12 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o)
+            if (this == o) {
                 return true;
-            if (!(o instanceof LoKey))
+            }
+            if (!(o instanceof LoKey)) {
                 return false;
+            }
             LoKey other = (LoKey) o;
             return Double.compare(other.donGia, donGia) == 0
                     && java.util.Objects.equals(soDangKy, other.soDangKy)
@@ -572,6 +575,11 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
      * cấp khi tìm thấy
      */
     private void searchSupplierByPhone() {
+        // Nếu ô nhập liệu bị khóa (đang mode Import E thì k chạy tìm kiếm để tránh việc nó tự xóa dữ liệu vừa điền
+        if (!txtSearchSupplier.isEditable()) {
+            return;
+        }
+
         String soDienThoai = txtSearchSupplier.getText().trim();
 
         // Nếu rỗng → xóa thông tin hiện tại
@@ -769,46 +777,45 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
                 if (cell == null) {
                     continue;
                 }
-                String header = getCellValueAsString(cell).trim().toLowerCase();
 
-                if ((header.contains("số") && header.contains("đăng ký"))
-                        || (header.contains("so") && header.contains("dang ky"))) {
+                // Chuẩn hóa: chữ thường + bỏ dấu tiếng Việt (để "mã" thành "ma")
+                String headerOrigin = getCellValueAsString(cell).trim().toLowerCase();
+                String header = java.text.Normalizer.normalize(headerOrigin, java.text.Normalizer.Form.NFD)
+                        .replaceAll("\\p{M}", "").replace("đ", "d");
+
+                // 1. Check các cột định danh trước
+                if (header.contains("so dang ky") || header.contains("sdk") || header.contains("ma sp")) {
                     colMaSP = i;
-                } else if (header.contains("số lượng") || header.contains("so luong")) {
-                    colSoLuong = i;
-                } else if (header.contains("đơn vị") || header.contains("don vi") || header.contains("dvt")) {
-                    colDonViTinh = i;
-                } else if (header.contains("đơn giá") || header.contains("don gia")) {
-                    colDonGia = i;
-                } else if (header.contains("hạn") && (header.contains("dùng") || header.contains("sử dụng") || header.contains("su dung"))) {
-                    colHanDung = i;
-                } else if (header.contains("lô") && header.contains("hàng")) {
-                    colLoHang = i; // Lưu index cột "Lô hàng"
-                } else if (header.contains("chiết khấu") || header.contains("chiet khau") || header.contains("ck")) {
-                    colChietKhau = i;
-                } else if ((header.contains("thuế") || header.contains("thue"))
-                        && !header.contains("mã") && !header.contains("ma")) {
+                } // 2. Mã số thuế (Check trước để không bị nhận nhầm là Thuế GTGT)
+                else if (header.contains("ma") && header.contains("thue")) {
+                    colMaSoThue = i;
+                } // 3. Thuế GTGT (Chỉ nhận nếu không phải là Mã số thuế)
+                else if (header.contains("thue") || header.contains("vat")) {
                     colThueGTGT = i;
-                } // ═══════════════════════════════════════════════════════════════
-                // CÁC CỘT NHÀ CUNG CẤP - ƯU TIÊN KIỂM TRA SĐT TRƯỚC (tránh nhầm với "Tên NCC")
-                // ═══════════════════════════════════════════════════════════════
-                else if (header.contains("sđt") || header.contains("sdt")) {
+                } // 4. Các cột còn lại
+                else if (header.contains("so luong") || header.equals("sl")) {
+                    colSoLuong = i;
+                } else if (header.contains("don vi") || header.contains("dvt")) {
+                    colDonViTinh = i;
+                } else if (header.contains("don gia") || header.contains("gia nhap")) {
+                    colDonGia = i;
+                } else if (header.contains("han") && (header.contains("dung") || header.contains("su dung"))) {
+                    colHanDung = i;
+                } else if (header.contains("lo") && header.contains("hang")) {
+                    colLoHang = i;
+                } else if (header.contains("chiet khau") || header.equals("ck")) {
+                    colChietKhau = i;
+                } // 5. Thông tin NCC
+                else if (header.contains("sdt") || header.contains("dien thoai")) {
                     colSDT = i;
-                } else if ((header.contains("số") || header.contains("so")) && header.contains("điện thoại")) {
-                    // "Số điện thoại" hoặc "So dien thoai"
-                    if (colSDT == -1) {
-                        colSDT = i;
-                    }
-                } else if (header.contains("tên") && header.contains("ncc")) {
+                } else if (header.contains("ten") && header.contains("ncc")) {
                     colTenNCC = i;
-                } else if (header.contains("mã") && header.contains("ncc")) {
+                } else if (header.contains("ma") && header.contains("ncc")) {
                     colMaNCC = i;
-                } else if (header.contains("địa chỉ") || header.contains("dia chi")) {
+                } else if (header.contains("dia chi")) {
                     colDiaChi = i;
                 } else if (header.contains("email")) {
                     colEmail = i;
-                } else if (header.contains("mã") && header.contains("thuế")) {
-                    colMaSoThue = i;
                 }
             }
 
@@ -842,13 +849,20 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
                         if (nhaCungCap != null) {
                             nhaCungCapDaTao = true;
                             nhaCungCapHienTai = nhaCungCap; // Lưu vào biến instance
-                            // Điền thông tin nhà cung cấp vào form
+
+                            // Điền thông tin mã và tên nhà cung cấp vào form
                             if (nhaCungCap.getMaNhaCungCap() != null) {
                                 txtSupplierId.setText(nhaCungCap.getMaNhaCungCap());
                             } else {
                                 txtSupplierId.setText("(chưa có - sẽ tự sinh)");
                             }
                             txtSupplierName.setText(nhaCungCap.getTenNhaCungCap());
+
+                            //Thêm số điện thoại ncc và k cho sửa
+                            txtSearchSupplier.setEditable(false);
+                            if (nhaCungCap.getSoDienThoai() != null) {
+                                txtSearchSupplier.setText(nhaCungCap.getSoDienThoai());
+                            }
                         }
                     } catch (Exception ex) {
                         errors.append("Lỗi xử lý thông tin nhà cung cấp: ").append(ex.getMessage()).append("\n");
@@ -897,7 +911,7 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
                         cal.add(Calendar.YEAR, 2);
                         hanDung = cal.getTime();
                     }
-                    
+
                     // Kiểm tra hạn sử dụng dưới 6 tháng
                     LocalDate hsdLocal = new java.sql.Date(hanDung.getTime()).toLocalDate();
                     LocalDate ngayGioiHan = LocalDate.now().plusMonths(6);
@@ -911,8 +925,8 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
                         } catch (Exception ex) {
                             // Nếu không tìm thấy sản phẩm, dùng mã SP
                         }
-                        String errorMsg = String.format("Dòng %d: Hạn sử dụng của sản phẩm '%s' (HSD: %s) dưới 6 tháng. Yêu cầu HSD phải lớn hơn %s", 
-                                i + 1, tenSP, hsdLocal.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")), 
+                        String errorMsg = String.format("Dòng %d: Hạn sử dụng của sản phẩm '%s' (HSD: %s) dưới 6 tháng. Yêu cầu HSD phải lớn hơn %s",
+                                i + 1, tenSP, hsdLocal.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
                                 ngayGioiHan.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
                         errors.append(errorMsg).append("\n");
                         errorCount++;
@@ -1153,7 +1167,31 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
         String maNCC = (colMaNCC != -1) ? getCellValueAsString(row.getCell(colMaNCC)) : null;
         String tenNCC = (colTenNCC != -1) ? getCellValueAsString(row.getCell(colTenNCC)) : null;
         String diaChi = (colDiaChi != -1) ? getCellValueAsString(row.getCell(colDiaChi)) : null;
-        String sdt = (colSDT != -1) ? getCellValueAsString(row.getCell(colSDT)) : null;
+
+        // sửa lại đọc sdt do bên excel nhập ssdt nó mất số 0 ở đầu
+        String sdt = null;
+        if (colSDT != -1) {
+            Cell cellSDT = row.getCell(colSDT);
+
+            if (cellSDT != null) {
+                if (cellSDT.getCellType() == CellType.NUMERIC) {
+                    sdt = String.format("%.0f", cellSDT.getNumericCellValue());
+                } else {
+                    sdt = cellSDT.getStringCellValue().trim();
+                }
+            }
+        }
+
+// Chuẩn hóa: chỉ giữ số
+        if (sdt != null) {
+            sdt = sdt.replaceAll("\\D", "");
+        }
+
+// Excel mất số 0 → thêm lại
+        if (sdt != null && sdt.length() == 9) {
+            sdt = "0" + sdt;
+        }
+
         String email = (colEmail != -1) ? getCellValueAsString(row.getCell(colEmail)) : null;
         String maSoThue = (colMaSoThue != -1) ? getCellValueAsString(row.getCell(colMaSoThue)) : null;
 
@@ -1189,11 +1227,15 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
             }
 
         } else {
-            throw new Exception("Phải có ít nhất TÊN hoặc SĐT nhà cung cấp!");
+//            throw new Exception("Phải có ít nhất TÊN hoặc SĐT nhà cung cấp!");
         }
 
-        if (sdt != null && !sdt.trim().isEmpty() && !sdt.trim().matches(NhaCungCap.SO_DIEN_THOAI_REGEX)) {
-            throw new Exception("Số điện thoại không đúng định dạng: " + sdt);
+//Tạm bỏ qua lỗi
+//        if (sdt != null && !sdt.trim().isEmpty() && !sdt.trim().matches(NhaCungCap.SO_DIEN_THOAI_REGEX)) {
+//            throw new Exception("Số điện thoại không đúng định dạng: " + sdt);
+//        }
+        if (sdt != null && !sdt.trim().matches(NhaCungCap.SO_DIEN_THOAI_REGEX)) {
+            System.out.println("sdt ncc chua dung chuan: " + sdt + " (cho pphep nhap tam)");
         }
 
         if (email != null && !email.trim().isEmpty() && !email.trim().matches(NhaCungCap.EMAIL_REGEX)) {
@@ -1251,7 +1293,8 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
         } catch (Exception e) {
             throw new Exception("Lỗi validate thông tin nhà cung cấp: " + e.getMessage());
         }
-
+        //kiểm tra sdt có nhập vào không
+        System.out.println("NCC Excel: " + tenNCC + " | SDT=" + sdt);
         return nccTam;
     }
 
@@ -1483,6 +1526,8 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
                     txtSupplierId.setText("");
                     txtSupplierName.setText("");
                     txtTotalPrice.setText("0 đ");
+                    txtSearchSupplier.setText("");
+                    txtSearchSupplier.setEditable(true);
 
                     Notifications.getInstance().show(Notifications.Type.SUCCESS,
                             Notifications.Location.TOP_CENTER,
@@ -1535,11 +1580,11 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
             return donNhapHangBUS.duKienMaDonNhapHangTiepTheo();
         } catch (Exception ex) {
             System.err.println("Không thể lấy mã đơn nhập từ BUS, fallback cục bộ: " + ex.getMessage());
-        LocalDate ngayHienTai = LocalDate.now();
-        String ngayThangNam = String.format("%02d%02d%04d", 
-                ngayHienTai.getDayOfMonth(), 
-                ngayHienTai.getMonthValue(), 
-                ngayHienTai.getYear());
+            LocalDate ngayHienTai = LocalDate.now();
+            String ngayThangNam = String.format("%02d%02d%04d",
+                    ngayHienTai.getDayOfMonth(),
+                    ngayHienTai.getMonthValue(),
+                    ngayHienTai.getYear());
             return "DNH" + ngayThangNam + "0001";
         }
     }
