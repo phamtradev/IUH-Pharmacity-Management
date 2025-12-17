@@ -120,7 +120,7 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
         lblThanhTienSauThue = new javax.swing.JLabel();
 
         setBackground(new java.awt.Color(255, 255, 255));
-        setBorder(javax.swing.BorderFactory.createMatteBorder(0, 0, 1, 0, new java.awt.Color(232, 232, 232)));
+        setBorder(javax.swing.BorderFactory.createMatteBorder(0, 0, 2, 0, new java.awt.Color(200, 200, 200)));
         setMaximumSize(new java.awt.Dimension(32767, 120));
         setMinimumSize(new java.awt.Dimension(800, 120));
         setPreferredSize(new java.awt.Dimension(1000, 120));
