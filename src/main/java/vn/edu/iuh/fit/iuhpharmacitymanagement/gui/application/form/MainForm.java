@@ -11,11 +11,13 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.ComponentOrientation;
 import java.awt.Container;
+import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.LayoutManager;
 import java.awt.event.ActionEvent;
 import java.net.URL;
+import java.net.URI;
 import javax.swing.JButton;
 import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
@@ -52,12 +54,13 @@ public class MainForm extends JLayeredPane {
     public MainForm() {
         init();
     }
-     public MainForm(int type) {
+
+    public MainForm(int type) {
         this.type = type;
         this.menu = new Menu(type);
         init();
     }
-    
+
     public int getType() {
         return type;
     }
@@ -92,7 +95,7 @@ public class MainForm extends JLayeredPane {
         });
 //        initMenuEvent();
         setLayer(menuButton, JLayeredPane.POPUP_LAYER);
-        add(menu);        
+        add(menu);
         add(panelBody);
         add(menuButton);
         initMenuEvent();
@@ -136,7 +139,7 @@ public class MainForm extends JLayeredPane {
     private void initMenuEvent() {
         menu.addMenuEvent((int index, int subIndex, MenuAction action) -> {
             // Application.mainForm.showForm(new DefaultForm("Form : " + index + " " + subIndex));
-            try{
+            try {
                 if (getType() == 1) {
                     // Type 1 = Nhân viên (index từ 20-32)
                     if (index == 20) {
@@ -164,34 +167,29 @@ public class MainForm extends JLayeredPane {
                             // AI trợ giúp
                             showForm(new GD_ChatBot());
                         } else if (subIndex == 2) {
-                            // Trợ giúp
-                            javax.swing.JOptionPane.showMessageDialog(
-                                this,
-                                "Chức năng trợ giúp sẽ được cập nhật sau.",
-                                "Trợ giúp",
-                                javax.swing.JOptionPane.INFORMATION_MESSAGE
-                            );
+                            // Trợ giúp: mở trang hướng dẫn người dùng
+                            openHelpPage();
                         } else {
                             action.cancel();
                         }
                     } else if (index == 30) {
                         // Phiên bản
                         javax.swing.JOptionPane.showMessageDialog(
-                            this,
-                            "PHẦN MỀM QUẢN LÝ BÁN THUỐC TRƯỜNG ĐẠI HỌC CÔNG NGHIỆP THÀNH PHỐ HỒ CHÍ MINH\n\n"
-                            + "Phiên Bản: RELEASE 1.0\n"
-                            + "Giảng viên hướng dẫn: ThS. Trần Thị Anh Thi\n"
-                            + "Lớp học phần: DHKTPM19A\n\n"
-                            + "Nhóm phát triển:\n"
-                            + "- Phạm Văn Trà\n"
-                            + "- Đỗ Hoài Nhớ\n"
-                            + "- Tô Nguyễn An Thuyên\n"
-                            + "- Nguyễn Công Tuyến\n"
-                            + "- Phạm Minh Thịnh",
-                            "Thông tin Phiên bản",
-                            javax.swing.JOptionPane.INFORMATION_MESSAGE
+                                this,
+                                "PHẦN MỀM QUẢN LÝ BÁN THUỐC TRƯỜNG ĐẠI HỌC CÔNG NGHIỆP THÀNH PHỐ HỒ CHÍ MINH\n\n"
+                                + "Phiên Bản: RELEASE 1.0\n"
+                                + "Giảng viên hướng dẫn: ThS. Trần Thị Anh Thi\n"
+                                + "Lớp học phần: DHKTPM19A\n\n"
+                                + "Nhóm phát triển:\n"
+                                + "- Phạm Văn Trà\n"
+                                + "- Đỗ Hoài Nhớ\n"
+                                + "- Tô Nguyễn An Thuyên\n"
+                                + "- Nguyễn Công Tuyến\n"
+                                + "- Phạm Minh Thịnh",
+                                "Thông tin Phiên bản",
+                                javax.swing.JOptionPane.INFORMATION_MESSAGE
                         );
-                    } else if (index == 31) { 
+                    } else if (index == 31) {
                         // Đăng xuất nhân viên
                         handleLogout();
                     } else {
@@ -273,32 +271,27 @@ public class MainForm extends JLayeredPane {
                             // AI trợ giúp
                             showForm(new GD_ChatBot());
                         } else if (subIndex == 2) {
-                            // Trợ giúp
-                            javax.swing.JOptionPane.showMessageDialog(
-                                this,
-                                "Chức năng trợ giúp sẽ được cập nhật sau.",
-                                "Trợ giúp",
-                                javax.swing.JOptionPane.INFORMATION_MESSAGE
-                            );
+                            // Trợ giúp: mở trang hướng dẫn người dùng
+                            openHelpPage();
                         } else {
                             action.cancel();
                         }
                     } else if (index == 7) {
                         // Phiên bản
                         javax.swing.JOptionPane.showMessageDialog(
-                            this,
-                            "PHẦN MỀM QUẢN LÝ BÁN THUỐC TRƯỜNG ĐẠI HỌC CÔNG NGHIỆP THÀNH PHỐ HỒ CHÍ MINH\n\n"
-                            + "Phiên Bản: RELEASE 1.0\n"
-                            + "Giảng viên hướng dẫn: ThS. Trần Thị Anh Thi\n"
-                            + "Lớp học phần: DHKTPM19A\n\n"
-                            + "Nhóm phát triển:\n"
-                            + "- Phạm Văn Trà\n"
-                            + "- Đỗ Hoài Nhớ\n"
-                            + "- Tô Nguyễn An Thuyên\n"
-                            + "- Nguyễn Công Tuyến\n"
-                            + "- Phạm Minh Thịnh",
-                            "Thông tin Phiên bản",
-                            javax.swing.JOptionPane.INFORMATION_MESSAGE
+                                this,
+                                "PHẦN MỀM QUẢN LÝ BÁN THUỐC TRƯỜNG ĐẠI HỌC CÔNG NGHIỆP THÀNH PHỐ HỒ CHÍ MINH\n\n"
+                                + "Phiên Bản: RELEASE 1.0\n"
+                                + "Giảng viên hướng dẫn: ThS. Trần Thị Anh Thi\n"
+                                + "Lớp học phần: DHKTPM19A\n\n"
+                                + "Nhóm phát triển:\n"
+                                + "- Phạm Văn Trà\n"
+                                + "- Đỗ Hoài Nhớ\n"
+                                + "- Tô Nguyễn An Thuyên\n"
+                                + "- Nguyễn Công Tuyến\n"
+                                + "- Phạm Minh Thịnh",
+                                "Thông tin Phiên bản",
+                                javax.swing.JOptionPane.INFORMATION_MESSAGE
                         );
                     } else if (index == 8) {
                         // Đăng xuất quản lý
@@ -307,17 +300,17 @@ public class MainForm extends JLayeredPane {
                         action.cancel();
                     }
                 }
-            }catch(Exception e){
+            } catch (Exception e) {
                 System.err.println("ĐÃ XẢY RA LỖI NGHIÊM TRỌNG KHI TẠO FORM:");
-            e.printStackTrace();
-            
-            // Hiển thị lỗi cho người dùng
-            javax.swing.JOptionPane.showMessageDialog(
-                this, 
-                "Không thể mở form. Đã xảy ra lỗi:\n" + e.getMessage(), 
-                "Lỗi Giao Diện", 
-                javax.swing.JOptionPane.ERROR_MESSAGE
-            );
+                e.printStackTrace();
+
+                // Hiển thị lỗi cho người dùng
+                javax.swing.JOptionPane.showMessageDialog(
+                        this,
+                        "Không thể mở form. Đã xảy ra lỗi:\n" + e.getMessage(),
+                        "Lỗi Giao Diện",
+                        javax.swing.JOptionPane.ERROR_MESSAGE
+                );
             }
 
         });
@@ -326,33 +319,33 @@ public class MainForm extends JLayeredPane {
     // Xử lý đăng xuất
     private void handleLogout() {
         int confirm = javax.swing.JOptionPane.showConfirmDialog(
-            this,
-            "Bạn có chắc chắn muốn đăng xuất?",
-            "Xác nhận đăng xuất",
-            javax.swing.JOptionPane.YES_NO_OPTION,
-            javax.swing.JOptionPane.QUESTION_MESSAGE
+                this,
+                "Bạn có chắc chắn muốn đăng xuất?",
+                "Xác nhận đăng xuất",
+                javax.swing.JOptionPane.YES_NO_OPTION,
+                javax.swing.JOptionPane.QUESTION_MESSAGE
         );
-        
+
         if (confirm == javax.swing.JOptionPane.YES_OPTION) {
             // Xóa session người dùng
             vn.edu.iuh.fit.iuhpharmacitymanagement.util.UserSession.getInstance().logout();
-            
+
             // Tìm MenuForm chứa MainForm này và đóng nó
             javax.swing.SwingUtilities.invokeLater(() -> {
                 java.awt.Window window = javax.swing.SwingUtilities.getWindowAncestor(this);
                 if (window != null) {
                     window.dispose();
                 }
-                
+
                 // Mở lại LoginFrame
                 try {
-                    vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.login.LoginFrame loginFrame = 
-                        new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.login.LoginFrame();
+                    vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.login.LoginFrame loginFrame
+                            = new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.login.LoginFrame();
                     loginFrame.setVisible(true);
-                    
+
                     raven.toast.Notifications.getInstance().show(
-                        raven.toast.Notifications.Type.SUCCESS,
-                        "Đăng xuất thành công!"
+                            raven.toast.Notifications.Type.SUCCESS,
+                            "Đăng xuất thành công!"
                     );
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -360,7 +353,7 @@ public class MainForm extends JLayeredPane {
             });
         }
     }
-    
+
     private void setMenuFull(boolean full) {
         String icon;
         if (getComponentOrientation().isLeftToRight()) {
@@ -416,7 +409,52 @@ public class MainForm extends JLayeredPane {
 //    revalidate();
 //}
     public void hideMenu() {
-        menu.hideMenuItem();
+        // Thu gọn menu về trạng thái tối thiểu (giống khi người dùng bấm nút toggle)
+        setMenuFull(false);
+    }
+
+    /**
+     * Mở trang hướng dẫn:
+     * - Nếu có mạng: mở trình duyệt ngoài với URL online
+     * - Nếu không có mạng/không mở được: mở bản offline (HelpDialog dùng JavaFX)
+     */
+    private void openHelpPage() {
+        String onlineUrl = "https://iuh-pharmacity-user-guide.vercel.app/";
+
+        if (isInternetAvailable(onlineUrl) && Desktop.isDesktopSupported()
+                && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+            try {
+                Desktop.getDesktop().browse(new URI(onlineUrl));
+                return;
+            } catch (Exception ignored) {
+                // Nếu có lỗi khi mở trình duyệt thì tiếp tục fallback xuống offline
+            }
+        }
+
+        // Fallback: mở bản offline trong app bằng JavaFX WebView
+        java.awt.Window window = javax.swing.SwingUtilities.getWindowAncestor(this);
+        javax.swing.JFrame frameOwner = (window instanceof javax.swing.JFrame)
+                ? (javax.swing.JFrame) window
+                : null;
+        HelpDialog dialog = (frameOwner != null) ? new HelpDialog(frameOwner) : new HelpDialog();
+        dialog.setVisible(true);
+    }
+
+    /**
+     * Kiểm tra nhanh xem có truy cập được URL online hay không.
+     */
+    private boolean isInternetAvailable(String testUrl) {
+        try {
+            java.net.URL url = new java.net.URL(testUrl);
+            java.net.URLConnection connection = url.openConnection();
+            connection.setConnectTimeout(1500);
+            connection.setReadTimeout(1500);
+            try (java.io.InputStream is = connection.getInputStream()) {
+                return true;
+            }
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     public void showForm(Component component) {
@@ -429,7 +467,6 @@ public class MainForm extends JLayeredPane {
     public void setSelectedMenu(int index, int subIndex) {
         menu.setSelectedMenu(index, subIndex);
     }
-    
 
     private Menu menu;
     private JPanel panelBody;
@@ -491,5 +528,5 @@ public class MainForm extends JLayeredPane {
             }
         }
     }
-    
+
 }

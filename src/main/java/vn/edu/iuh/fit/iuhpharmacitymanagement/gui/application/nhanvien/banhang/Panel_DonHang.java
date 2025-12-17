@@ -111,6 +111,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
         customizeTextFields();
         addPromotionLabels();
         addPriceSuggestButtons();
+        setupKeyBindings();
     }
 
     private void applyButtonStyles() {
@@ -151,6 +152,25 @@ public class Panel_DonHang extends javax.swing.JPanel {
                 "arc:8;borderWidth:1;borderColor:#73A547;background:#FFFFFF");
     }
 
+    /**
+     * Thiết lập phím tắt toàn màn hình cho hành động "Bán Hàng"
+     * - F1 (ưu tiên) và F8 đều kích hoạt createOrder() khi đang ở màn hình bán hàng.
+     */
+    private void setupKeyBindings() {
+        javax.swing.InputMap inputMap = getInputMap(WHEN_IN_FOCUSED_WINDOW);
+        javax.swing.ActionMap actionMap = getActionMap();
+
+        inputMap.put(javax.swing.KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0), "BAN_HANG");
+        inputMap.put(javax.swing.KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0), "BAN_HANG");
+
+        actionMap.put("BAN_HANG", new javax.swing.AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                createOrder();
+            }
+        });
+    }
+
     private void clearOrderDetails() {
         // List<PnOrderDetail> orderDetails = getAllPnOrderDetailThuoc();
         // for (PnOrderDetail orderDetail : orderDetails) {
@@ -158,7 +178,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
         // }
         // pnContent.revalidate();
         // pnContent.repaint();
-        // orderDetails.clear();
+        // orderDetails.clear();    
     }
 
     @SuppressWarnings("unchecked")
@@ -1106,7 +1126,9 @@ public class Panel_DonHang extends javax.swing.JPanel {
     }// GEN-LAST:event_txtTienKhachDuaKeyPressed
 
     private void btnBanHangKeyPressed(java.awt.event.KeyEvent evt) {// GEN-FIRST:event_btnBanHangKeyPressed
-        if (evt.getKeyCode() == KeyEvent.VK_F8) {
+        // Phím tắt bán hàng: F1 (ưu tiên), vẫn giữ F8 cho thói quen cũ nếu cần
+        int key = evt.getKeyCode();
+        if (key == KeyEvent.VK_F1 || key == KeyEvent.VK_F8) {
             createOrder();
         }
     }// GEN-LAST:event_btnBanHangKeyPressed
@@ -1559,10 +1581,12 @@ public class Panel_DonHang extends javax.swing.JPanel {
             // Danh sách 6 nút gợi ý
             java.util.List<Long> suggestions = new java.util.ArrayList<>();
 
-            // Làm tròn tổng hóa đơn thành số nguyên
-            long total = Math.round(tongHoaDon);
+            // Làm tròn tổng hóa đơn theo quy tắc:
+            // - Phần lẻ từ 500đ trở lên → làm tròn lên 1.000đ
+            // - Phần lẻ dưới 500đ      → làm tròn xuống
+            long total = roundToNearestThousand(Math.round(tongHoaDon));
 
-            // NÚT 1: Đúng số tiền hóa đơn
+            // NÚT 1: Số tiền hóa đơn đã làm tròn
             suggestions.add(total);
 
             // Các mức làm tròn thông minh (chỉ thêm nếu chênh lệch đủ lớn)
@@ -1620,6 +1644,24 @@ public class Panel_DonHang extends javax.swing.JPanel {
         // Kiểm tra chưa có trong list → Thêm vào
         if (!list.contains(value)) {
             list.add(value);
+        }
+    }
+
+    /**
+     * Làm tròn số tiền về bội số 1.000đ theo quy tắc:
+     * - Phần lẻ từ 500đ trở lên → làm tròn lên 1.000đ
+     * - Phần lẻ dưới 500đ      → làm tròn xuống
+     * 
+     * Ví dụ:
+     *  - 10.500 → 11.000
+     *  - 10.400 → 10.000
+     */
+    private long roundToNearestThousand(long amount) {
+        long remainder = amount % 1000;
+        if (remainder >= 500) {
+            return amount + (1000 - remainder);
+        } else {
+            return amount - remainder;
         }
     }
 
