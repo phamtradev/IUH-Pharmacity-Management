@@ -1846,7 +1846,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
 
         // Đơn giá trên giao diện xác nhận hóa đơn hiển thị GIÁ CHƯA VAT,
         // Thành tiền hiển thị sau khi đã cộng VAT và trừ giảm giá
-        String[] columnNames = {"STT", "Tên sản phẩm", "Đơn vị", "Số lượng", "Đơn giá (chưa VAT)", "% VAT", "Đơn giá (đã VAT)", "Giảm giá",
+        String[] columnNames = {"STT", "Tên sản phẩm/HSD/Lô hàng", "Đơn vị", "Số lượng", "Đơn giá (chưa VAT)", "% VAT", "Đơn giá (đã VAT)", "Giảm giá",
                 "Thành tiền"};
         javax.swing.table.DefaultTableModel tableModel = new javax.swing.table.DefaultTableModel(columnNames, 0) {
             @Override
@@ -1863,14 +1863,14 @@ public class Panel_DonHang extends javax.swing.JPanel {
 
         // Set column widths
         table.getColumnModel().getColumn(0).setPreferredWidth(50); // STT
-        table.getColumnModel().getColumn(1).setPreferredWidth(250); // Tên SP
+        table.getColumnModel().getColumn(1).setPreferredWidth(300); // Tên SP/HSD/Lô
         table.getColumnModel().getColumn(2).setPreferredWidth(70); // Đơn vị
         table.getColumnModel().getColumn(3).setPreferredWidth(70); // Số lượng
         table.getColumnModel().getColumn(4).setPreferredWidth(90); // Đơn giá (chưa VAT)
         table.getColumnModel().getColumn(5).setPreferredWidth(70); // % VAT
         table.getColumnModel().getColumn(6).setPreferredWidth(100); // Đơn giá (đã VAT)
         table.getColumnModel().getColumn(7).setPreferredWidth(180); // Giảm giá
-        table.getColumnModel().getColumn(8).setPreferredWidth(120); // Thành tiền
+        table.getColumnModel().getColumn(8).setPreferredWidth(100); // Thành tiền
 
         // Tính tổng tiền hàng và tổng giảm giá sản phẩm
         double tongTienHangTruocGiamGia = 0;
@@ -1897,10 +1897,10 @@ public class Panel_DonHang extends javax.swing.JPanel {
             // Lấy hạn sử dụng và mã lô từ lô hàng
             String tenSPVaHSD = sanPham != null ? sanPham.getTenSanPham() : "";
             if (loHang != null && loHang.getHanSuDung() != null) {
-                String maLoHang = loHang.getMaLoHang() != null ? loHang.getMaLoHang() : "";
+                String tenLoHang = loHang.getTenLoHang() != null ? loHang.getTenLoHang() : "";
                 String hsdText = "HSD: " + loHang.getHanSuDung().format(dateFormatter);
-                if (!maLoHang.isEmpty()) {
-                    hsdText += " - " + maLoHang;
+                if (!tenLoHang.isEmpty()) {
+                    hsdText += " - " + tenLoHang;
                 }
                 tenSPVaHSD = tenSPVaHSD + "<br><span style='color: #666666; font-size: 11px;'>" + hsdText + "</span>";
             }
@@ -2396,10 +2396,10 @@ public class Panel_DonHang extends javax.swing.JPanel {
             document.add(infoTable);
             document.add(new Paragraph("\n"));
 
-            Table itemsTable = new Table(UnitValue.createPercentArray(new float[]{5, 24, 7, 10, 8, 10, 12, 24}))
+            Table itemsTable = new Table(UnitValue.createPercentArray(new float[]{5, 30, 7, 10, 8, 10, 12, 18}))
                     .useAllAvailableWidth();
             // Don gia tren hoa don in ra se la DON GIA CHUA VAT, thanh tien van giu nguyen
-            String[] headerLabels = {"STT", "Ten san pham", "SL", "Don gia (chua VAT)", "% VAT", "Don gia (da VAT)", "Giam gia",
+            String[] headerLabels = {"STT", "Ten san pham/HSD/Lo hang", "SL", "Don gia (chua VAT)", "% VAT", "Don gia (da VAT)", "Giam gia",
                     "Thanh tien"};
             for (String label : headerLabels) {
                 itemsTable.addHeaderCell(new Cell()
@@ -2416,10 +2416,10 @@ public class Panel_DonHang extends javax.swing.JPanel {
             // Lấy hạn sử dụng và mã lô từ lô hàng
             String hanSuDungStr = "";
             if (loHang != null && loHang.getHanSuDung() != null) {
-                String maLoHang = loHang.getMaLoHang() != null ? loHang.getMaLoHang() : "";
+                String tenLoHang = loHang.getTenLoHang() != null ? loHang.getTenLoHang() : "";
                 hanSuDungStr = "HSD: " + loHang.getHanSuDung().format(dateFormatter);
-                if (!maLoHang.isEmpty()) {
-                    hanSuDungStr += " - " + maLoHang;
+                if (!tenLoHang.isEmpty()) {
+                    hanSuDungStr += " - " + tenLoHang;
                 }
             }
             // Kết hợp tên sản phẩm và hạn sử dụng
