@@ -24,6 +24,17 @@ public class LoginFrame extends javax.swing.JFrame {
         setExtendedState(javax.swing.JFrame.MAXIMIZED_BOTH);
         setResizable(true); // Nên để true để người dùng có thể thu nhỏ lại cửa sổ
 
+        // Set application icon
+        try {
+            java.net.URL iconUrl = getClass().getResource("/img/iuh.jpg");
+            if (iconUrl != null) {
+                java.awt.Image icon = new javax.swing.ImageIcon(iconUrl).getImage();
+                setIconImage(icon);
+            }
+        } catch (Exception e) {
+            // Ignore if icon cannot be loaded
+        }
+
         // Đảm bảo form login được focus khi frame hiển thị
         addWindowListener(new java.awt.event.WindowAdapter() {
             @Override

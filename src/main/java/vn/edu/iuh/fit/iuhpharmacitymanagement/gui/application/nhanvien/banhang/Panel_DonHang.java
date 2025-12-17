@@ -2483,7 +2483,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
 
             document.add(summaryTable);
 
-            document.add(new Paragraph("\nCam on quy khach da mua hang tai Pharmacity!")
+            document.add(new Paragraph("\nCam on quy khach da mua hang tai IUH Pharmacity!")
                     .setFont(font)
                     .setFontSize(9)
                     .setTextAlignment(TextAlignment.CENTER));

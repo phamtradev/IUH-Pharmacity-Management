@@ -12,10 +12,12 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.service.backup.ScheduledBackupServ
 import vn.edu.iuh.fit.iuhpharmacitymanagement.util.BackupPreferences;
 
 import java.awt.Color;
+import java.awt.Image;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
@@ -57,6 +59,18 @@ public class MenuForm extends javax.swing.JFrame {
 
         // Set window title
         setTitle("IUH Pharmacity Management");
+
+        // Set application icon
+        try {
+            java.net.URL iconUrl = getClass().getResource("/img/iuh.jpg");
+            if (iconUrl != null) {
+                ImageIcon iconIcon = new ImageIcon(iconUrl);
+                Image icon = iconIcon.getImage();
+                setIconImage(icon);
+            }
+        } catch (Exception e) {
+            // Ignore if icon cannot be loaded
+        }
 
         // Thiết lập full màn hình
         setExtendedState(javax.swing.JFrame.MAXIMIZED_BOTH);

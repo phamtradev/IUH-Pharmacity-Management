@@ -35,6 +35,18 @@ public class SplashScreen extends javax.swing.JFrame {
 //        BackgroundPanel.setComponentZOrder(IUHLogo, 3);
         BackgroundPanel.setComponentZOrder(BackgroundImg, 2);
 
+        // Set application icon
+        try {
+            java.net.URL iconUrl = getClass().getResource("/img/iuh.jpg");
+            if (iconUrl != null) {
+                ImageIcon iconIcon = new ImageIcon(iconUrl);
+                Image icon = iconIcon.getImage();
+                setIconImage(icon);
+            }
+        } catch (Exception e) {
+            // Ignore if icon cannot be loaded
+        }
+
         setLocationRelativeTo(null);
         setResizable(false);
 
