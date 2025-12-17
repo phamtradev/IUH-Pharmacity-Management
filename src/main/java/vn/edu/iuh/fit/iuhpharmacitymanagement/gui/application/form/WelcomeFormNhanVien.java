@@ -3,9 +3,11 @@ package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.form;
 import com.formdev.flatlaf.FlatClientProperties;
 import javax.swing.*;
 import java.awt.*;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.util.UserSession;
 
 /**
  * Giao diện chào mừng cho nhân viên
+ *
  * @author PhamTra
  */
 public class WelcomeFormNhanVien extends JPanel {
@@ -27,21 +29,27 @@ public class WelcomeFormNhanVien extends JPanel {
         gbc.insets = new Insets(20, 20, 20, 20);
         gbc.anchor = GridBagConstraints.CENTER;
 
-        // Tiêu đề chính
-        JLabel lblWelcome = new JLabel("XIN CHÀO NHÂN VIÊN");
-        lblWelcome.setFont(new Font("Segoe UI", Font.BOLD, 48));
-        lblWelcome.setForeground(new Color(52, 152, 219)); // Màu xanh dương
+        // Lấy tên + lời chào theo giờ (giống dashboard)
+        String tenNhanVien = UserSession.getInstance().getTenNhanVien();
+        if (tenNhanVien == null || tenNhanVien.isBlank()) {
+            // Thử fallback sang mã nhân viên nếu chưa có tên
+            String maNv = UserSession.getInstance().getMaNhanVien();
+            tenNhanVien = (maNv != null && !maNv.isBlank()) ? maNv : "Nhân viên";
+        }
+        // Tiêu đề chính: Chào buổi tối + tên nhân viên (theo yêu cầu)
+        JLabel lblWelcome = new JLabel("Xin chào, " + tenNhanVien + "!");
+        lblWelcome.setFont(new Font("Segoe UI", Font.BOLD, 36));
+        lblWelcome.setForeground(new Color(52, 152, 219)); // Xanh dương
         add(lblWelcome, gbc);
 
         // Icon hoặc hình ảnh (emoji)
-        gbc.gridy = 1;
-        JLabel lblIcon = new JLabel("👋");
-        lblIcon.setFont(new Font("Segoe UI", Font.PLAIN, 80));
-        add(lblIcon, gbc);
-
+//        gbc.gridy = 1;
+//        JLabel lblIcon = new JLabel("👋");
+//        lblIcon.setFont(new Font("Segoe UI", Font.PLAIN, 80));
+//        add(lblIcon, gbc);
         // Mô tả
         gbc.gridy = 2;
-        JLabel lblDescription = new JLabel("Chúc bạn một ngày làm việc vui vẻ!");
+        JLabel lblDescription = new JLabel("Chúc bạn một ngày làm việc tốt lành!");
         lblDescription.setFont(new Font("Segoe UI", Font.ITALIC, 20));
         lblDescription.setForeground(new Color(127, 140, 141));
         add(lblDescription, gbc);
@@ -115,6 +123,5 @@ public class WelcomeFormNhanVien extends JPanel {
 
         return card;
     }
+
 }
-
-

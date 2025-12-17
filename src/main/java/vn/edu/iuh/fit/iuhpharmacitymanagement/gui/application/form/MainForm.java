@@ -100,13 +100,13 @@ public class MainForm extends JLayeredPane {
         add(menuButton);
         initMenuEvent();
 
-        // Hiển thị giao diện chào mừng tương ứng với type khi khởi động
+        // Mở thẳng dashboard theo vai trò
         if (getType() == 1) {
-            // Nhân viên - Hiển thị giao diện chào mừng
-            showForm(new WelcomeFormNhanVien());
+            // Nhân viên → Dashboard nhân viên
+            showForm(new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.dashboard.GD_DashBoard());
         } else {
-            // Quản lý - Hiển thị giao diện chào mừng
-            showForm(new WelcomeFormQuanLy());
+            // Quản lý → Dashboard quản lý
+            showForm(new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.dashboard.GD_DashBoardQuanLy());
         }
     }
 
