@@ -1,6 +1,0 @@
-# Cấu hình API Key cho ChatBot AI
-# Copy file này thành chatbot-config.properties và điền API key của bạn
-# File chatbot-config.properties sẽ không được commit vào Git để bảo mật
-
-api.key=YOUR_API_KEY_HERE
-
