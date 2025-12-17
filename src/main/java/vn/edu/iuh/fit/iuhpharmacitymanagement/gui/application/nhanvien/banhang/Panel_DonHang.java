@@ -1891,7 +1891,19 @@ public class Panel_DonHang extends javax.swing.JPanel {
         // Thêm dữ liệu vào bảng
         int stt = 1;
         for (ChiTietDonHang chiTiet : danhSachChiTiet) {
-            SanPham sanPham = chiTiet.getLoHang().getSanPham();
+            LoHang loHang = chiTiet.getLoHang();
+            SanPham sanPham = loHang != null ? loHang.getSanPham() : null;
+            
+            // Lấy hạn sử dụng và mã lô từ lô hàng
+            String tenSPVaHSD = sanPham != null ? sanPham.getTenSanPham() : "";
+            if (loHang != null && loHang.getHanSuDung() != null) {
+                String maLoHang = loHang.getMaLoHang() != null ? loHang.getMaLoHang() : "";
+                String hsdText = "HSD: " + loHang.getHanSuDung().format(dateFormatter);
+                if (!maLoHang.isEmpty()) {
+                    hsdText += " - " + maLoHang;
+                }
+                tenSPVaHSD = tenSPVaHSD + "<br><span style='color: #666666; font-size: 11px;'>" + hsdText + "</span>";
+            }
 
             // Tính giảm giá TỔNG = giảm giá sản phẩm + giảm giá hóa đơn phân bổ
             double giamGiaSanPham = chiTiet.getGiamGiaSanPham();
@@ -1914,20 +1926,20 @@ public class Panel_DonHang extends javax.swing.JPanel {
                 giamGia = "0 đ";
             }
 
-            String vatStr = String.format("%.0f%%", sanPham.getThueVAT() * 100);
+            String vatStr = sanPham != null ? String.format("%.0f%%", sanPham.getThueVAT() * 100) : "0%";
 
             // DonGia trong chi tiết là giá đã VAT -> chuyển về giá chưa VAT để hiển thị ở cột
             // "Đơn giá"
             double donGiaDaVAT = chiTiet.getDonGia();
             double donGiaChuaVAT = donGiaDaVAT;
-            if (sanPham.getThueVAT() > 0) {
+            if (sanPham != null && sanPham.getThueVAT() > 0) {
                 donGiaChuaVAT = donGiaDaVAT / (1 + sanPham.getThueVAT());
             }
 
             tableModel.addRow(new Object[] {
                     stt++,
-                    sanPham.getTenSanPham(),
-                    sanPham.getDonViTinh() != null ? sanPham.getDonViTinh().getTenDonVi() : "Tuýp",
+                    "<html>" + tenSPVaHSD + "</html>",
+                    sanPham != null && sanPham.getDonViTinh() != null ? sanPham.getDonViTinh().getTenDonVi() : "Tuýp",
                     chiTiet.getSoLuong(),
                     currencyFormat.format(donGiaChuaVAT) + " đ",
                     vatStr,
@@ -2400,6 +2412,21 @@ public class Panel_DonHang extends javax.swing.JPanel {
             LoHang loHang = chiTiet.getLoHang();
             SanPham sanPham = loHang != null ? loHang.getSanPham() : null;
             String tenSP = sanPham != null ? sanPham.getTenSanPham() : "";
+            
+            // Lấy hạn sử dụng và mã lô từ lô hàng
+            String hanSuDungStr = "";
+            if (loHang != null && loHang.getHanSuDung() != null) {
+                String maLoHang = loHang.getMaLoHang() != null ? loHang.getMaLoHang() : "";
+                hanSuDungStr = "HSD: " + loHang.getHanSuDung().format(dateFormatter);
+                if (!maLoHang.isEmpty()) {
+                    hanSuDungStr += " - " + maLoHang;
+                }
+            }
+            // Kết hợp tên sản phẩm và hạn sử dụng
+            String tenSPVaHSD = tenSP;
+            if (!hanSuDungStr.isEmpty()) {
+                tenSPVaHSD = tenSP + "\n" + hanSuDungStr;
+            }
 
                 // DonGia trong chi tiet la gia DA BAO GOM VAT -> doi ve gia CHUA VAT de in ra
                 double donGiaDaVAT = chiTiet.getDonGia();
@@ -2417,7 +2444,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
                 String vatStr = sanPham != null ? String.format("%.0f%%", sanPham.getThueVAT() * 100) : "";
 
                 itemsTable.addCell(taoCell(String.valueOf(stt++), font, TextAlignment.CENTER));
-                itemsTable.addCell(taoCell(tenSP, font, TextAlignment.LEFT));
+                itemsTable.addCell(taoCell(tenSPVaHSD, font, TextAlignment.LEFT));
                 itemsTable.addCell(taoCell(String.valueOf(chiTiet.getSoLuong()), font, TextAlignment.CENTER));
                 itemsTable.addCell(taoCell(donGia, font, TextAlignment.RIGHT));
                 itemsTable.addCell(taoCell(vatStr, font, TextAlignment.CENTER));
@@ -2464,6 +2491,11 @@ public class Panel_DonHang extends javax.swing.JPanel {
                     .setFont(font)
                     .setFontSize(8)
                     .setTextAlignment(TextAlignment.CENTER));
+            document.add(new Paragraph("Luu y: Gia ban duoc ap dung tai thoi diem giao dich.")
+                    .setFont(font)
+                    .setFontSize(8)
+                    .setTextAlignment(TextAlignment.CENTER)
+                    .setFontColor(ColorConstants.GRAY));
 
             document.close();
             return baos.toByteArray();
