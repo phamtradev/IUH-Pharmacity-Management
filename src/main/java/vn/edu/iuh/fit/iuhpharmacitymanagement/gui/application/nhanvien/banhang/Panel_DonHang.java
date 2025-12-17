@@ -864,10 +864,12 @@ public class Panel_DonHang extends javax.swing.JPanel {
             double tongHoaDon = parseCurrency(txtTongHoaDon.getText());
             double tienKhachDua = parseCurrency(txtTienKhachDua.getText());
 
-            if (tienKhachDua < tongHoaDon) {
+            // Cho phép thiếu dưới 500đ (phần lẻ nhỏ coi như đủ)
+            double chenhLech = tongHoaDon - tienKhachDua;
+            if (chenhLech > 500) {
                 Notifications.getInstance().show(Notifications.Type.WARNING,
                         Notifications.Location.TOP_CENTER,
-                        "Tiền khách đưa không đủ! Còn thiếu: " + String.format("%,.0f đ", tongHoaDon - tienKhachDua));
+                        "Tiền khách đưa không đủ! Còn thiếu: " + String.format("%,.0f đ", chenhLech));
                 return;
             }
 
