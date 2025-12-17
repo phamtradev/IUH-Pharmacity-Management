@@ -169,7 +169,7 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
         // 3. Cột "Lô hàng" - Ban đầu hiển thị nút "Chọn lô"
         pnLo = new javax.swing.JPanel();
         pnLo.setBackground(java.awt.Color.WHITE);
-        pnLo.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 5, 30));
+        pnLo.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 5, 2));
         pnLo.setPreferredSize(new java.awt.Dimension(COLUMN_MIN_WIDTHS[2], 100));
         pnLo.setMinimumSize(new java.awt.Dimension(COLUMN_MIN_WIDTHS[2], 100));
 
