@@ -133,26 +133,9 @@ public class GD_ChatBot extends javax.swing.JPanel {
 
         headerPanel.add(leftPanel, BorderLayout.WEST);
 
-        // Phần bên phải - Nút xóa
+        // Bỏ nút xóa lịch sử (để trống bên phải)
         JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
         rightPanel.setOpaque(false);
-
-        btnClear = new JButton("Xóa lịch sử");
-        btnClear.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        btnClear.setForeground(Color.WHITE);
-        btnClear.setFocusPainted(false);
-        btnClear.setBorderPainted(false);
-        btnClear.setContentAreaFilled(false);
-        btnClear.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnClear.putClientProperty(FlatClientProperties.STYLE,
-                "arc: 8;"
-                + "background: rgba(255,255,255,26);"
-                + "hoverBackground: rgba(255,255,255,51);"
-                + "pressedBackground: rgba(255,255,255,38)");
-
-        btnClear.addActionListener(e -> clearChat());
-
-        rightPanel.add(btnClear);
         headerPanel.add(rightPanel, BorderLayout.EAST);
 
         return headerPanel;

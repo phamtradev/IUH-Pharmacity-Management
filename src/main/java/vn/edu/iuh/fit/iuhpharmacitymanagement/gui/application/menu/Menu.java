@@ -50,7 +50,7 @@ public class Menu extends JPanel {
         {
             "Hỗ trợ người dùng",
             "AI trợ giúp",
-            "Trợ giúp"
+            "Hướng dẫn sử dụng"
         },
         {"Phiên bản"},
         {"Đăng xuất"}
@@ -69,7 +69,7 @@ public class Menu extends JPanel {
         {
             "Hỗ trợ người dùng",
             "AI trợ giúp",
-            "Trợ giúp"
+            "Hướng dẫn sử dụng"
         },
         {"Phiên bản"},
         {"Đăng xuất"}
