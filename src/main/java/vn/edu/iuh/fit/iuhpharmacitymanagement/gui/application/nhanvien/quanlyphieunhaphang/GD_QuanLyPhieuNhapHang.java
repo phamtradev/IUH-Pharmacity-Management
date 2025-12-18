@@ -2079,8 +2079,8 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
 
 //            Table itemsTable = new Table(UnitValue.createPercentArray(new float[]{6, 30, 16, 10, 16, 22}))
 //                    .useAllAvailableWidth();
-            //String[] headerLabels = {"STT", "Ten san pham", "So lo", "SL", "Don gia", "Thanh toan"};
-            Table itemsTable = new Table(UnitValue.createPercentArray(new float[]{4, 8, 24, 10, 13, 7, 8, 15, 6, 12, 12, 6, 8, 12}))
+            //String[] headerLabels = {"STT", "Ten san pham", "So lo", "SL", "Don gia", "Thanh toan"}; // 6 va 8 dvt nhỏ nên tăng lên giam don gia    7-15 -> 10-12                 
+            Table itemsTable = new Table(UnitValue.createPercentArray(new float[]{4, 8, 24, 10, 13, 10, 8, 12, 6, 12, 12, 6, 10, 10}))// luc đau 8-12 ô 8 không du khoang trong-> 10-10
                     .useAllAvailableWidth();
             String[] headerLabels = {"STT", "Ma hang", "Ten hang hoa", "So lo", "Han dung", "DVT", "SL", "Don gia", "% CK", "Thanh tien CK", "Thanh tien tinh thue", "% Thue", "Thue GTGT", "Thanh tien sau thue"};
             for (String label : headerLabels) {
@@ -2095,7 +2095,24 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
                                 .setKeepTogether(false) // tự căn chỉ xuống dòng
                 );
             }
-
+            //chỉnh ở đây
+            itemsTable.addCell(taoCellNhap("1", font, TextAlignment.CENTER));
+                itemsTable.addCell(taoCellNhap("2", font, TextAlignment.CENTER));
+                itemsTable.addCell(taoCellNhap("3", font, TextAlignment.CENTER));
+                itemsTable.addCell(taoCellNhap("4", font, TextAlignment.CENTER));
+                itemsTable.addCell(taoCellNhap("5", font, TextAlignment.CENTER));
+                itemsTable.addCell(taoCellNhap("6", font, TextAlignment.CENTER));
+                itemsTable.addCell(taoCellNhap("7", font, TextAlignment.CENTER));
+                itemsTable.addCell(taoCellNhap("8", font, TextAlignment.CENTER));
+                itemsTable.addCell(taoCellNhap("9", font, TextAlignment.CENTER));
+                itemsTable.addCell(taoCellNhap("10 = 7 x 8 x 9", font, TextAlignment.CENTER));
+                itemsTable.addCell(taoCellNhap("11 = 7 x 8 - 10", font, TextAlignment.CENTER));
+                itemsTable.addCell(taoCellNhap("12", font, TextAlignment.CENTER));
+                itemsTable.addCell(taoCellNhap("13 = 11 x 12", font, TextAlignment.LEFT));
+                itemsTable.addCell(taoCellNhap("14 = 11 + 13", font, TextAlignment.CENTER));
+//                document.add(itemsTable);
+//                document.add(new Paragraph("\n"));
+                
             int stt = 1;
             for (ChiTietDonNhapHang chiTiet : danhSachChiTiet) {
                 LoHang loHang = chiTiet.getLoHang();
