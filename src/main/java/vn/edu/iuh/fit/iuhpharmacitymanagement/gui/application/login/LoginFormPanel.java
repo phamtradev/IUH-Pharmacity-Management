@@ -17,6 +17,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import javax.swing.UIManager;
 import raven.toast.Notifications;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.NhanVienBUS;
@@ -408,78 +409,93 @@ public class LoginFormPanel extends javax.swing.JPanel {
             return;
         }
 
-        //Kiểm tra kết nối database và dữ liệu có bị mất không
-        try (Connection con = ConnectDB.getConnection()) {
-            //Kiểm tra xem bảng TaiKhoan có tồn tại và có thể truy vấn được không
-            String checkTableSql = "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'TaiKhoan'";
-            try (java.sql.Statement stmt = con.createStatement();
-                 java.sql.ResultSet rs = stmt.executeQuery(checkTableSql)) {
-                if (!rs.next() || rs.getInt(1) == 0) {
-                    //Bảng TaiKhoan không tồn tại - dữ liệu bị mất
-                    throw new SQLException("Bảng TaiKhoan không tồn tại");
+        // Disable nút để tránh bấm nhiều lần & cho cảm giác đang xử lý
+        btnDangNhap.setEnabled(false);
+        btnDangNhap.setText("Đang đăng nhập...");
+
+        // Thực hiện kiểm tra DB + xác thực trong background để tránh đơ UI
+        SwingWorker<NhanVien, Void> worker = new SwingWorker<>() {
+            @Override
+            protected NhanVien doInBackground() throws Exception {
+                // Kiểm tra kết nối database và dữ liệu có bị mất không
+                try (Connection con = ConnectDB.getConnection()) {
+                    String checkTableSql = "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'TaiKhoan'";
+                    try (java.sql.Statement stmt = con.createStatement();
+                         java.sql.ResultSet rs = stmt.executeQuery(checkTableSql)) {
+                        if (!rs.next() || rs.getInt(1) == 0) {
+                            throw new SQLException("Bảng TaiKhoan không tồn tại");
+                        }
+                    }
+                }
+
+                // Gọi BUS để xác thực và lấy về đối tượng NhanVien
+                NhanVienBUS nhanVienBUS = new NhanVienBUS();
+                return nhanVienBUS.xacThucNguoiDung(tenDangNhap, matKhau);
+            }
+
+            @Override
+            protected void done() {
+                // Re-enable nút
+                btnDangNhap.setEnabled(true);
+                btnDangNhap.setText("Đăng nhập");
+
+                try {
+                    NhanVien nguoiDung = get();
+
+                    if (nguoiDung == null) {
+                        // Đăng nhập không thành công
+                        Notifications.getInstance().setJFrame(parentFrame);
+                        Notifications.getInstance().show(Notifications.Type.ERROR, "Sai tên đăng nhập hoặc mật khẩu!");
+                        txtTenDangNhap.requestFocus();
+                        return;
+                    }
+
+                    // Lưu thông tin nv vào session
+                    SessionManager.getInstance().setCurrentUser(nguoiDung);
+
+                    // Xác định vai trò để mở form chính
+                    int userType;
+                    String welcomeMessage;
+
+                    if (nguoiDung.getVaiTro().equalsIgnoreCase("Quản lý")) {
+                        userType = 2; // 2 là Quản lý
+                        welcomeMessage = "Đăng nhập thành công! Xin chào Quản lý " + nguoiDung.getTenNhanVien();
+                    } else {
+                        userType = 1; // 1 là Nhân viên
+                        welcomeMessage = "Đăng nhập thành công! Xin chào Nhân viên " + nguoiDung.getTenNhanVien();
+                    }
+
+                    // Mở MenuForm với đúng loại người dùng
+                    MenuForm menuForm = new MenuForm(userType);
+                    menuForm.setVisible(true);
+
+                    // Đóng cửa sổ đăng nhập hiện tại
+                    if (parentFrame != null) {
+                        parentFrame.dispose();
+                    }
+
+                    Notifications.getInstance().setJFrame(menuForm);
+                    Notifications.getInstance().show(Notifications.Type.SUCCESS, welcomeMessage);
+
+                } catch (Exception ex) {
+                    // Lỗi khi xác thực hoặc lỗi kết nối DB
+                    Throwable cause = ex.getCause() != null ? ex.getCause() : ex;
+                    if (cause instanceof SQLException) {
+                        Notifications.getInstance().setJFrame(parentFrame);
+                        Notifications.getInstance().show(Notifications.Type.ERROR,
+                                Notifications.Location.TOP_CENTER,
+                                "Ôi không dữ liệu của bạn đã mất hãy liên hệ với quản lý !");
+                    } else {
+                        Notifications.getInstance().setJFrame(parentFrame);
+                        Notifications.getInstance().show(Notifications.Type.ERROR,
+                                Notifications.Location.TOP_CENTER,
+                                "Có lỗi xảy ra khi đăng nhập, vui lòng thử lại!");
+                    }
                 }
             }
-        } catch (SQLException e) {
-            //Lỗi kết nối database hoặc dữ liệu bị mất
-            Notifications.getInstance().setJFrame(parentFrame);
-            Notifications.getInstance().show(Notifications.Type.ERROR, 
-                Notifications.Location.TOP_CENTER,
-                "Ôi không dữ liệu của bạn đã mất hãy liên hệ với quản lý !");
-            return;
-        }
+        };
 
-        //Gọi BUS để xác thực và lấy về đối tượng NhanVien
-        NhanVienBUS nhanVienBUS = new NhanVienBUS();
-        NhanVien nguoiDung;
-        
-        try {
-            nguoiDung = nhanVienBUS.xacThucNguoiDung(tenDangNhap, matKhau);
-        } catch (Exception e) {
-            //Lỗi khi xác thực - có thể dữ liệu bị mất
-            if (e instanceof SQLException || (e.getCause() != null && e.getCause() instanceof SQLException)) {
-                Notifications.getInstance().setJFrame(parentFrame);
-                Notifications.getInstance().show(Notifications.Type.ERROR, 
-                    Notifications.Location.TOP_CENTER,
-                    "Ôi không dữ liệu của bạn đã mất hãy liên hệ với quản lý !");
-                return;
-            }
-            //Nếu không phải SQLException, xử lý như đăng nhập sai
-            nguoiDung = null;
-        }
-
-        if (nguoiDung == null) {
-            //đăng nhập k thành công
-            Notifications.getInstance().setJFrame(parentFrame);
-            Notifications.getInstance().show(Notifications.Type.ERROR, "Sai tên đăng nhập hoặc mật khẩu!");
-            txtTenDangNhap.requestFocus();
-        } else {
-            //Lưu thông tin nv vào session
-            SessionManager.getInstance().setCurrentUser(nguoiDung);
-
-            //Xác định vai trò để mở form chính
-            int userType;
-            String welcomeMessage;
-
-            if (nguoiDung.getVaiTro().equalsIgnoreCase("Quản lý")) {
-                userType = 2; // 2 là Quản lý
-                welcomeMessage = "Đăng nhập thành công! Xin chào Quản lý " + nguoiDung.getTenNhanVien();
-            } else {
-                userType = 1; // 1 là Nhân viên
-                welcomeMessage = "Đăng nhập thành công! Xin chào Nhân viên " + nguoiDung.getTenNhanVien();
-            }
-
-            //Mở MenuForm với đúng loại người dùng
-            MenuForm menuForm = new MenuForm(userType);
-            menuForm.setVisible(true);
-
-            //Đóng cửa sổ đăng nhập hiện tại
-            if (parentFrame != null) {
-                parentFrame.dispose();
-            }
-
-            Notifications.getInstance().setJFrame(menuForm);
-            Notifications.getInstance().show(Notifications.Type.SUCCESS, welcomeMessage);
-        }
+        worker.execute();
     }//GEN-LAST:event_btnDangNhapActionPerformed
     public void addPlayhoder(JTextField txt) {
         Font font = txt.getFont();

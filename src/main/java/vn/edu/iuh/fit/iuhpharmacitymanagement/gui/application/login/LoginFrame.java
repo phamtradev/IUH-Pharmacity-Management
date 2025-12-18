@@ -5,6 +5,9 @@
 package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.login;
 
 import java.awt.Dimension;
+import java.awt.Image;
+import java.awt.MediaTracker;
+import javax.swing.ImageIcon;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhanVien;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.session.SessionManager;
 
@@ -28,7 +31,18 @@ public class LoginFrame extends javax.swing.JFrame {
         try {
             java.net.URL iconUrl = getClass().getResource("/img/iuh.jpg");
             if (iconUrl != null) {
-                java.awt.Image icon = new javax.swing.ImageIcon(iconUrl).getImage();
+                ImageIcon iconIcon = new ImageIcon(iconUrl);
+                Image icon = iconIcon.getImage();
+                
+                // Đảm bảo icon được load hoàn toàn trước khi set (tránh bất đồng bộ)
+                MediaTracker tracker = new MediaTracker(this);
+                tracker.addImage(icon, 0);
+                try {
+                    tracker.waitForID(0);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+                
                 setIconImage(icon);
             }
         } catch (Exception e) {

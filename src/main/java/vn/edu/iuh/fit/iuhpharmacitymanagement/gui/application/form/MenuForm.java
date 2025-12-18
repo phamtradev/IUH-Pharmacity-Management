@@ -13,6 +13,8 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.util.BackupPreferences;
 
 import java.awt.Color;
 import java.awt.Image;
+import java.awt.MediaTracker;
+import java.awt.Toolkit;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.nio.file.Files;
@@ -66,6 +68,16 @@ public class MenuForm extends javax.swing.JFrame {
             if (iconUrl != null) {
                 ImageIcon iconIcon = new ImageIcon(iconUrl);
                 Image icon = iconIcon.getImage();
+                
+                // Đảm bảo icon được load hoàn toàn trước khi set (tránh bất đồng bộ)
+                MediaTracker tracker = new MediaTracker(this);
+                tracker.addImage(icon, 0);
+                try {
+                    tracker.waitForID(0);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+                
                 setIconImage(icon);
             }
         } catch (Exception e) {
