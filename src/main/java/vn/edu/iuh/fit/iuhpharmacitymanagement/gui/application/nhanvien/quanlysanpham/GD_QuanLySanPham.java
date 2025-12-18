@@ -105,8 +105,20 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         FontStyles.apply(btnAdd, FontStyles.Type.TEXT_MEDIUM);
         btnAdd.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnAdd.setPreferredSize(new java.awt.Dimension(95, 40));
+        
+        ButtonStyles.apply(btnEditProduct, ButtonStyles.Type.PRIMARY);
+        FontStyles.apply(btnEditProduct, FontStyles.Type.BUTTON_MEDIUM);
+        FontStyles.apply(btnEditProduct, FontStyles.Type.TEXT_MEDIUM);
+        btnEditProduct.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnEditProduct.setPreferredSize(new java.awt.Dimension(95, 40));
+        
+        ButtonStyles.apply(btnUpdate, ButtonStyles.Type.PRIMARY);
+        FontStyles.apply(btnUpdate, FontStyles.Type.BUTTON_MEDIUM);
+        FontStyles.apply(btnUpdate, FontStyles.Type.TEXT_MEDIUM);
+        btnUpdate.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnUpdate.setPreferredSize(new java.awt.Dimension(95, 40));
 
-        ButtonStyles.apply(btnViewDetail, ButtonStyles.Type.PRIMARY);
+        ButtonStyles.apply(btnViewDetail, ButtonStyles.Type.SUCCESS);
         FontStyles.apply(btnViewDetail, FontStyles.Type.BUTTON_MEDIUM);
         FontStyles.apply(btnViewDetail, FontStyles.Type.TEXT_MEDIUM);
         btnViewDetail.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
@@ -997,7 +1009,7 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
 
         btnEditProduct.setBackground(new java.awt.Color(92, 107, 192));
         btnEditProduct.setForeground(new java.awt.Color(255, 255, 255));
-        btnEditProduct.setText("Sửa");
+        btnEditProduct.setText("SỬA");
         btnEditProduct.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnEditProductActionPerformed(evt);
@@ -1543,7 +1555,7 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
 
         btnUpdate.setBackground(new java.awt.Color(255, 193, 7));
         btnUpdate.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnUpdate.setText("Sửa");
+        btnUpdate.setText("SỬA");
         btnUpdate.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnUpdate.setFocusPainted(false);
         btnUpdate.setPreferredSize(new java.awt.Dimension(95, 40));

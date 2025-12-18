@@ -57,16 +57,19 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
         FontStyles.apply(btnUpdate, FontStyles.Type.BUTTON_MEDIUM);
         btnUpdate.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnUpdate.setPreferredSize(new java.awt.Dimension(95, 40));
+        FontStyles.apply(btnUpdate, FontStyles.Type.TEXT_MEDIUM);
         
         ButtonStyles.apply(btnDelete, ButtonStyles.Type.DANGER);
         FontStyles.apply(btnDelete, FontStyles.Type.BUTTON_MEDIUM);
         btnDelete.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnDelete.setPreferredSize(new java.awt.Dimension(95, 40));
+        FontStyles.apply(btnDelete, FontStyles.Type.TEXT_MEDIUM);
         
         ButtonStyles.apply(btnSearch, ButtonStyles.Type.SUCCESS);
         FontStyles.apply(btnSearch, FontStyles.Type.BUTTON_MEDIUM);
         btnSearch.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnSearch.setPreferredSize(new java.awt.Dimension(150, 40));
+        FontStyles.apply(btnSearch, FontStyles.Type.TEXT_MEDIUM);
     }
 
     private void setUIManager() {
@@ -615,7 +618,7 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
         btnUpdate.setBackground(new java.awt.Color(255, 193, 7));
         btnUpdate.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         btnUpdate.setForeground(new java.awt.Color(0, 0, 0));
-        btnUpdate.setText("Sửa");
+        btnUpdate.setText("SỬA");
         btnUpdate.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnUpdate.setFocusPainted(false);
         btnUpdate.setPreferredSize(new java.awt.Dimension(95, 40));
@@ -629,7 +632,7 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
         btnDelete.setBackground(new java.awt.Color(244, 67, 54));
         btnDelete.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         btnDelete.setForeground(new java.awt.Color(255, 255, 255));
-        btnDelete.setText("Xóa");
+        btnDelete.setText("XÓA");
         btnDelete.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnDelete.setFocusPainted(false);
         btnDelete.setPreferredSize(new java.awt.Dimension(95, 40));
@@ -677,7 +680,7 @@ public class GD_QuanLyLoHang extends javax.swing.JPanel {
         btnSearch.setBackground(new java.awt.Color(115, 165, 71));
         btnSearch.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
         btnSearch.setForeground(new java.awt.Color(255, 255, 255));
-        btnSearch.setText("Tìm kiếm");
+        btnSearch.setText("TÌM KIẾM");
         btnSearch.setPreferredSize(new java.awt.Dimension(120, 40));
         btnSearch.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

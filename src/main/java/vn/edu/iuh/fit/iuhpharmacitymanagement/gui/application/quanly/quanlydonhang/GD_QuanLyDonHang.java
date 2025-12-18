@@ -7,6 +7,7 @@ package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlydonh
 import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.DonHangBUS;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.ChiTietDonHangBUS;
 import com.formdev.flatlaf.FlatClientProperties;
+import java.awt.Cursor;
 import java.util.Arrays;
 import java.util.List;
 import javax.swing.BorderFactory;
@@ -21,6 +22,7 @@ import javax.swing.UIManager;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.util.*;
 import raven.toast.Notifications;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.FontStyles;
 
 /**
  *
@@ -110,7 +112,7 @@ public class GD_QuanLyDonHang extends javax.swing.JPanel {
         btnSearch.setBackground(new java.awt.Color(115, 165, 71));
         btnSearch.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
         btnSearch.setForeground(new java.awt.Color(255, 255, 255));
-        btnSearch.setText("Tìm kiếm");
+        btnSearch.setText("TÌM KIẾM");
         btnSearch.setMaximumSize(new java.awt.Dimension(150, 40));
         btnSearch.setMinimumSize(new java.awt.Dimension(150, 40));
         btnSearch.setPreferredSize(new java.awt.Dimension(150, 40));
@@ -135,10 +137,10 @@ public class GD_QuanLyDonHang extends javax.swing.JPanel {
         jLabel2.setFont(new java.awt.Font("Segoe UI", 0, 20)); // NOI18N
         jLabel2.setText("-->");
 
-        txtOrder.setBackground(new java.awt.Color(115, 165, 71));
+        txtOrder.setBackground(new java.awt.Color(76, 175, 80));
         txtOrder.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
         txtOrder.setForeground(new java.awt.Color(255, 255, 255));
-        txtOrder.setText("Xuất excel");
+        txtOrder.setText("XUẤT EXCEL");
         txtOrder.setMaximumSize(new java.awt.Dimension(150, 40));
         txtOrder.setMinimumSize(new java.awt.Dimension(150, 40));
         txtOrder.setPreferredSize(new java.awt.Dimension(150, 40));
@@ -170,7 +172,7 @@ public class GD_QuanLyDonHang extends javax.swing.JPanel {
             .addGroup(jPanel5Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(btnView, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED, 115, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED, 10, Short.MAX_VALUE)
                 .addComponent(jDateFrom, javax.swing.GroupLayout.PREFERRED_SIZE, 210, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel2)
@@ -257,9 +259,18 @@ public class GD_QuanLyDonHang extends javax.swing.JPanel {
         UIManager.put("Button.arc", 10);
         jDateFrom.setDate(Date.valueOf(LocalDate.now()));
         jDateTo.setDate(Date.valueOf(LocalDate.now()));
+        
+        FontStyles.apply(btnView, FontStyles.Type.TEXT_MEDIUM);
+        FontStyles.apply(btnSearch, FontStyles.Type.TEXT_MEDIUM);
+        FontStyles.apply(txtOrder, FontStyles.Type.TEXT_MEDIUM);
+        
+        btnView.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        btnSearch.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        txtOrder.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
-        // Style cho button Xem chi tiết - màu xanh nước biển, kích thước nhỏ
-        ButtonStyles.apply(btnView, ButtonStyles.Type.INFO);
+        ButtonStyles.apply(btnView, ButtonStyles.Type.PRIMARY);
+        ButtonStyles.apply(btnSearch, ButtonStyles.Type.SUCCESS);
+        ButtonStyles.apply(txtOrder, ButtonStyles.Type.SUCCESS);
     }
     
       private void fillTable() {

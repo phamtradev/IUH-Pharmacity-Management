@@ -43,21 +43,25 @@ public class GD_QuanLyDonViTinh extends javax.swing.JPanel {
         FontStyles.apply(btnThem, FontStyles.Type.BUTTON_MEDIUM);
         btnThem.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnThem.setPreferredSize(new java.awt.Dimension(95, 40));
+        FontStyles.apply(btnThem, FontStyles.Type.TEXT_MEDIUM);
         
         ButtonStyles.apply(btnSua, ButtonStyles.Type.PRIMARY);
         FontStyles.apply(btnSua, FontStyles.Type.BUTTON_MEDIUM);
         btnSua.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnSua.setPreferredSize(new java.awt.Dimension(95, 40));
+        FontStyles.apply(btnSua, FontStyles.Type.TEXT_MEDIUM);
         
         ButtonStyles.apply(btnXoa, ButtonStyles.Type.DANGER);
         FontStyles.apply(btnXoa, FontStyles.Type.BUTTON_MEDIUM);
         btnXoa.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnXoa.setPreferredSize(new java.awt.Dimension(95, 40));
+        FontStyles.apply(btnXoa, FontStyles.Type.TEXT_MEDIUM);
         
         ButtonStyles.apply(btnTimKiem, ButtonStyles.Type.SUCCESS);
         FontStyles.apply(btnTimKiem, FontStyles.Type.BUTTON_MEDIUM);
         btnTimKiem.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnTimKiem.setPreferredSize(new java.awt.Dimension(150, 40));
+        FontStyles.apply(btnTimKiem, FontStyles.Type.TEXT_MEDIUM);
     }
     
     private void setupModalStyle() {
@@ -183,7 +187,7 @@ public class GD_QuanLyDonViTinh extends javax.swing.JPanel {
         txtNameUnitAdd.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
         btnAddUnit.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        btnAddUnit.setText("Thêm");
+        btnAddUnit.setText("THÊM");
         btnAddUnit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnAddUnitActionPerformed(evt);
@@ -191,7 +195,7 @@ public class GD_QuanLyDonViTinh extends javax.swing.JPanel {
         });
 
         btnExitModalAdd.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        btnExitModalAdd.setText("Thoát");
+        btnExitModalAdd.setText("THOÁT");
         btnExitModalAdd.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnExitModalAddActionPerformed(evt);
@@ -390,7 +394,7 @@ public class GD_QuanLyDonViTinh extends javax.swing.JPanel {
 
         btnSua.setBackground(new java.awt.Color(255, 193, 7));
         btnSua.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnSua.setText("Sửa");
+        btnSua.setText("SỬA");
         btnSua.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnSua.setFocusPainted(false);
         btnSua.setPreferredSize(new java.awt.Dimension(95, 40));
@@ -404,7 +408,7 @@ public class GD_QuanLyDonViTinh extends javax.swing.JPanel {
         btnXoa.setBackground(new java.awt.Color(220, 60, 60));
         btnXoa.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         btnXoa.setForeground(new java.awt.Color(255, 255, 255));
-        btnXoa.setText("Xóa");
+        btnXoa.setText("XÓA");
         btnXoa.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnXoa.setFocusPainted(false);
         btnXoa.setPreferredSize(new java.awt.Dimension(95, 40));

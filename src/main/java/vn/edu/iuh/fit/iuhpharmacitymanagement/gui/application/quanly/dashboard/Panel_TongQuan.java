@@ -50,8 +50,8 @@ public class Panel_TongQuan extends javax.swing.JPanel {
 
     private void initHeader() {
         try {
-            lblIconReturn.setIcon(new FlatSVGIcon("img/8.svg", 100, 100));  //Trả hàng
-            lblIconOrder.setIcon(new FlatSVGIcon("img/0.svg", 100, 100));
+            lblIconReturn.setIcon(new FlatSVGIcon("img/9.svg", 100, 100));  //Trả hàng
+            lblIconOrder.setIcon(new FlatSVGIcon("img/1.svg", 100, 100));
             lblIconCompare.setIcon(new FlatSVGIcon("img/25.svg", 100, 100));
         } catch (Exception e) {
             System.out.println("Không thể tải icon: " + e.getMessage());

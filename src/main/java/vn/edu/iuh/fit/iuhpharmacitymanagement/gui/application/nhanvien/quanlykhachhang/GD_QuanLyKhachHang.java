@@ -65,7 +65,7 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
         ButtonStyles.apply(btnExitModalAdd, ButtonStyles.Type.SECONDARY);
         ButtonStyles.apply(btnEditCustomer, ButtonStyles.Type.WARNING);
         ButtonStyles.apply(btnExitModalEdit, ButtonStyles.Type.SECONDARY);
-        ButtonStyles.apply(btnSearch, ButtonStyles.Type.INFO);
+        ButtonStyles.apply(btnSearch, ButtonStyles.Type.SUCCESS);
         
         ButtonStyles.apply(btnAdd, ButtonStyles.Type.SUCCESS);
         FontStyles.apply(btnAdd, FontStyles.Type.TEXT_MEDIUM);

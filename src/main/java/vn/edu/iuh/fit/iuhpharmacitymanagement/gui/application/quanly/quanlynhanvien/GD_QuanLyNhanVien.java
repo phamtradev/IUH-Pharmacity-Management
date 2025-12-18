@@ -23,6 +23,7 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.TaiKhoan;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.util.PasswordUtil;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
 import raven.toast.Notifications;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.FontStyles;
 
 /**
  *
@@ -59,6 +60,12 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
         ButtonStyles.apply(btnCancelUpdateEmployee, ButtonStyles.Type.DANGER);
         ButtonStyles.apply(btnCofirmResetPassword, ButtonStyles.Type.PRIMARY);
         ButtonStyles.apply(btnCancelResetPassword, ButtonStyles.Type.DANGER);
+        
+        FontStyles.apply(btnThem, FontStyles.Type.TEXT_MEDIUM);
+        FontStyles.apply(btnSua, FontStyles.Type.TEXT_MEDIUM);
+        FontStyles.apply(btnXoa, FontStyles.Type.TEXT_MEDIUM);
+        FontStyles.apply(btnTimKiem, FontStyles.Type.TEXT_MEDIUM);
+        FontStyles.apply(btnDatLaiMatKhau, FontStyles.Type.TEXT_MEDIUM);
 
         setUIManager();
         fillTable();
@@ -936,7 +943,7 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
         pnlTimKiem.add(txtTimKiem);
 
         btnTimKiem.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
-        btnTimKiem.setText("Tìm kiếm");
+        btnTimKiem.setText("TÌM KIẾM");
         btnTimKiem.setMaximumSize(new java.awt.Dimension(150, 40));
         btnTimKiem.setMinimumSize(new java.awt.Dimension(150, 40));
         btnTimKiem.setPreferredSize(new java.awt.Dimension(150, 40));
@@ -952,7 +959,7 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
         // }
 
         btnDatLaiMatKhau.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
-        btnDatLaiMatKhau.setText("Đặt lại mật khẩu");
+        btnDatLaiMatKhau.setText("ĐẶT LẠI MẬT KHẨU");
         btnDatLaiMatKhau.setMaximumSize(new java.awt.Dimension(200, 40));
         btnDatLaiMatKhau.setMinimumSize(new java.awt.Dimension(200, 40));
         btnDatLaiMatKhau.setPreferredSize(new java.awt.Dimension(200, 40));
@@ -970,7 +977,7 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
         pnlChinhSua.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 10, 25));
 
         btnThem.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnThem.setText("Thêm");
+        btnThem.setText("THÊM");
         btnThem.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnThem.setFocusPainted(false);
         btnThem.setPreferredSize(new java.awt.Dimension(95, 40));
@@ -982,7 +989,7 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
         pnlChinhSua.add(btnThem);
 
         btnSua.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnSua.setText("Sửa");
+        btnSua.setText("SỬA");
         btnSua.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnSua.setFocusPainted(false);
         btnSua.setPreferredSize(new java.awt.Dimension(95, 40));
@@ -994,7 +1001,7 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
         pnlChinhSua.add(btnSua);
 
         btnXoa.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnXoa.setText("Xóa");
+        btnXoa.setText("XÒA");
         btnXoa.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnXoa.setFocusPainted(false);
         btnXoa.setPreferredSize(new java.awt.Dimension(95, 40));

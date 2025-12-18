@@ -121,7 +121,7 @@ public class GD_QuanLyKhuyenMai extends javax.swing.JPanel {
         cboLoaiKhuyenMai.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Tất cả", "Sản phẩm", "Đơn hàng" }));
 
         btnTimKiem.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnTimKiem.setText("Tìm kiếm");
+        btnTimKiem.setText("TÌM KIẾM");
         btnTimKiem.setPreferredSize(new java.awt.Dimension(120, 40));
         btnTimKiem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -207,11 +207,11 @@ public class GD_QuanLyKhuyenMai extends javax.swing.JPanel {
         UIManager.put("Button.arc", 10);
         
         ButtonStyles.apply(btnThem, ButtonStyles.Type.SUCCESS);
-        ButtonStyles.apply(btnSua, ButtonStyles.Type.WARNING);
+        ButtonStyles.apply(btnSua, ButtonStyles.Type.PRIMARY);
         ButtonStyles.apply(btnXoa, ButtonStyles.Type.DANGER);
         ButtonStyles.apply(btnXemChiTiet, ButtonStyles.Type.INFO);
-        ButtonStyles.apply(btnTimKiem, ButtonStyles.Type.INFO);
-        ButtonStyles.apply(btnLamMoi, ButtonStyles.Type.PRIMARY);
+        ButtonStyles.apply(btnTimKiem, ButtonStyles.Type.PRIMARY);
+        ButtonStyles.apply(btnLamMoi, ButtonStyles.Type.INFO);
         
         // Đảm bảo style được áp dụng
         SwingUtilities.invokeLater(() -> {

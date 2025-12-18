@@ -217,7 +217,7 @@ public class GD_DashBoard extends javax.swing.JPanel {
                 "Doanh thu hôm nay",
                 new Color(76, 175, 80),
                 Color.WHITE,
-                "0.svg" // Icon đơn hàng
+                "1.svg" // Icon đơn hàng
         );
 
         // Card 2: Đơn hàng cá nhân hôm nay
@@ -227,7 +227,7 @@ public class GD_DashBoard extends javax.swing.JPanel {
                 "Số đơn đã bán",
                 new Color(33, 150, 243),
                 Color.WHITE,
-                "5.svg" // Icon đơn hàng
+                "6.svg" // Icon đơn hàng
         );
 
         // Card 3: Đơn nhập hàng trong tuần

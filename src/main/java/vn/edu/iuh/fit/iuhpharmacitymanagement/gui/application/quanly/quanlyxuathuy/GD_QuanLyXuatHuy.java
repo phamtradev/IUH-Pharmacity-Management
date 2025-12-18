@@ -7,6 +7,7 @@ package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlyxuat
 import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.HangHongBUS;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.ChiTietHangHongBUS;
 import com.formdev.flatlaf.FlatClientProperties;
+import java.awt.Cursor;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
@@ -27,6 +28,7 @@ import javax.swing.ImageIcon;
 import raven.toast.Notifications;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.HangHongDAO;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.FontStyles;
 
 /**
  *
@@ -45,6 +47,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         setUIManager();
         fillTable();
     }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -110,7 +113,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         btnSearch.setBackground(new java.awt.Color(115, 165, 71));
         btnSearch.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
         btnSearch.setForeground(new java.awt.Color(255, 255, 255));
-        btnSearch.setText("Tìm kiếm");
+        btnSearch.setText("TÌM KIẾM");
         btnSearch.setMaximumSize(new java.awt.Dimension(150, 40));
         btnSearch.setMinimumSize(new java.awt.Dimension(150, 40));
         btnSearch.setPreferredSize(new java.awt.Dimension(150, 40));
@@ -142,7 +145,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         txtOrder.setBackground(new java.awt.Color(115, 165, 71));
         txtOrder.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
         txtOrder.setForeground(new java.awt.Color(255, 255, 255));
-        txtOrder.setText("Xuất excel");
+        txtOrder.setText("XUẤT EXCEL");
         txtOrder.setMaximumSize(new java.awt.Dimension(150, 40));
         txtOrder.setMinimumSize(new java.awt.Dimension(150, 40));
         txtOrder.setPreferredSize(new java.awt.Dimension(150, 40));
@@ -174,14 +177,14 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
             .addGroup(jPanel5Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(btnView, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(115, 115, 115)
+                .addGap(10)
                 .addComponent(jDateFrom, javax.swing.GroupLayout.PREFERRED_SIZE, 210, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jDateTo, javax.swing.GroupLayout.PREFERRED_SIZE, 210, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(txtEmp, javax.swing.GroupLayout.PREFERRED_SIZE, 350, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(txtEmp, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnSearch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -234,8 +237,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
 
         add(pnAll);
     }// </editor-fold>//GEN-END:initComponents
-    
-    
+
     /**
      * Tạo panel thông tin phiếu xuất hủy cho dialog chi tiết
      */
@@ -286,9 +288,18 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         jDateFrom.setDate(Date.valueOf(LocalDate.now()));
         jDateTo.setDate(Date.valueOf(LocalDate.now()));
 
-        // Style cho button Xem chi tiết - màu xanh nước biển, kích thước nhỏ
-        ButtonStyles.apply(btnView, ButtonStyles.Type.INFO);
-        
+        FontStyles.apply(btnView, FontStyles.Type.TEXT_MEDIUM);
+        FontStyles.apply(btnSearch, FontStyles.Type.TEXT_MEDIUM);
+        FontStyles.apply(txtOrder, FontStyles.Type.TEXT_MEDIUM);
+
+        btnView.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        btnSearch.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        txtOrder.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+        ButtonStyles.apply(btnView, ButtonStyles.Type.PRIMARY);
+        ButtonStyles.apply(btnSearch, ButtonStyles.Type.SUCCESS);
+        ButtonStyles.apply(txtOrder, ButtonStyles.Type.SUCCESS);
+
         // Setup barcode scanner cho textfield tìm kiếm
         setupBarcodeScanner();
     }
@@ -302,8 +313,8 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         List<HangHong> hangHongs = hangHongBUS.layTatCaHangHong();
         fillContent(hangHongs);
     }
-    
-     private List<HangHong> sortNewToOld(List<HangHong> hangHongs) {
+
+    private List<HangHong> sortNewToOld(List<HangHong> hangHongs) {
         List<HangHong> hh = new HangHongDAO().findAll();
         hh.sort((a, b) -> {
             String maA = a.getMaHangHong().substring(2); // DDMMYYYYNNNN
@@ -390,15 +401,16 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
     }
 
     /**
-     * Thiết lập barcode scanner listener cho textfield tìm kiếm mã phiếu xuất hủy
-     * Hỗ trợ cả quét barcode (tự động xử lý) và nhập thủ công (xử lý khi nhấn Enter)
+     * Thiết lập barcode scanner listener cho textfield tìm kiếm mã phiếu xuất
+     * hủy Hỗ trợ cả quét barcode (tự động xử lý) và nhập thủ công (xử lý khi
+     * nhấn Enter)
      */
     private void setupBarcodeScanner() {
         // Biến để theo dõi trạng thái xử lý (tránh xử lý nhiều lần)
         final java.util.concurrent.atomic.AtomicBoolean isProcessing = new java.util.concurrent.atomic.AtomicBoolean(false);
         final java.util.concurrent.atomic.AtomicBoolean isClearing = new java.util.concurrent.atomic.AtomicBoolean(false);
         final javax.swing.Timer[] barcodeTimer = new javax.swing.Timer[1]; // Mảng để có thể thay đổi trong lambda
-        
+
         // Theo dõi thời gian giữa các lần gõ để phân biệt quét vs nhập thủ công
         final long[] lastKeyTime = new long[1];
         lastKeyTime[0] = System.currentTimeMillis();
@@ -413,12 +425,12 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
             public void keyTyped(java.awt.event.KeyEvent e) {
                 long currentTime = System.currentTimeMillis();
                 long timeSinceLastKey = currentTime - lastKeyTime[0];
-                
+
                 // Ghi nhận thời gian ký tự đầu tiên
                 if (firstKeyTime[0] == 0) {
                     firstKeyTime[0] = currentTime;
                 }
-                
+
                 // Nếu khoảng cách giữa các lần gõ < 50ms → có thể là quét barcode
                 if (timeSinceLastKey < 50) {
                     keyCount[0]++;
@@ -430,10 +442,10 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
                     // Khoảng cách 50-200ms → có thể là gõ nhanh, tăng counter
                     keyCount[0]++;
                 }
-                
+
                 lastKeyTime[0] = currentTime;
             }
-            
+
             @Override
             public void keyPressed(java.awt.event.KeyEvent e) {
                 // Khi nhấn Enter, tự động tìm kiếm (nhập thủ công)
@@ -450,7 +462,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
                 if (isClearing.get()) {
                     return;
                 }
-                
+
                 // Hủy timer cũ nếu có
                 if (barcodeTimer[0] != null && barcodeTimer[0].isRunning()) {
                     barcodeTimer[0].stop();
@@ -459,10 +471,10 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
                 // Tạo timer mới: đợi 200ms không có thay đổi → kiểm tra xem có phải quét không
                 barcodeTimer[0] = new javax.swing.Timer(200, evt -> {
                     String scannedText = txtEmp.getText().trim();
-                    
+
                     // Loại bỏ ký tự đặc biệt từ barcode scanner (\r, \n, \t)
                     scannedText = scannedText.replaceAll("[\\r\\n\\t]", "");
-                    
+
                     // Cập nhật lại textfield với giá trị đã làm sạch (nếu cần)
                     if (!scannedText.equals(txtEmp.getText().trim()) && !isClearing.get()) {
                         isClearing.set(true);
@@ -475,7 +487,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
                     // - Nhập thủ công: ít ký tự hoặc gõ chậm → không tự động xử lý, chờ Enter
                     long totalTime = firstKeyTime[0] > 0 ? (System.currentTimeMillis() - firstKeyTime[0]) : 0;
                     boolean isBarcodeScan = scannedText.length() >= 5 && keyCount[0] >= 5 && totalTime < 500;
-                    
+
                     if (!scannedText.isEmpty() && !isProcessing.get() && !isClearing.get() && isBarcodeScan) {
                         isProcessing.set(true);
                         // Tự động tìm kiếm khi quét barcode
@@ -495,7 +507,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
                             clearTimer.start();
                         });
                     }
-                    
+
                     // Reset counter sau một khoảng thời gian (nếu không phải quét)
                     if (!isBarcodeScan) {
                         keyCount[0] = 0;
@@ -525,7 +537,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
             }
         });
     }
-    
+
     /**
      * Thực hiện tìm kiếm với mã phiếu đã quét/nhập
      */
@@ -554,7 +566,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
             Notifications.getInstance().show(Notifications.Type.INFO, "Không tìm thấy phiếu xuất hủy với mã: " + maPhieu);
         } else {
             Notifications.getInstance().show(Notifications.Type.SUCCESS, "Tìm thấy " + hangHongs.size() + " phiếu xuất hủy!");
-            
+
             // Tự động chọn dòng đầu tiên nếu có kết quả
             if (hangHongs.size() == 1 && tableDesign != null && tableDesign.getTable() != null) {
                 javax.swing.SwingUtilities.invokeLater(() -> {
@@ -564,7 +576,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
             }
         }
     }
-    
+
     private void btnSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSearchActionPerformed
         // Lấy thông tin từ form
         java.util.Date date1 = jDateFrom.getDate();

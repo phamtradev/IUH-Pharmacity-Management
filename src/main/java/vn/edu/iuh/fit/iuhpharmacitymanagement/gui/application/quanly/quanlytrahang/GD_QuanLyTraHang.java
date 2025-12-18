@@ -29,8 +29,10 @@ import javax.swing.JPanel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.FlowLayout;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.FontStyles;
 
 /**
  *
@@ -59,9 +61,18 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
         UIManager.put("Button.arc", 10);
         jDateFrom.setDate(Date.valueOf(LocalDate.now()));
         jDateTo.setDate(Date.valueOf(LocalDate.now()));
+        
+        FontStyles.apply(btnView, FontStyles.Type.TEXT_MEDIUM);
+        FontStyles.apply(btnSearch, FontStyles.Type.TEXT_MEDIUM);
+        FontStyles.apply(txtExport, FontStyles.Type.TEXT_MEDIUM);
 
-        // Style cho button Xem chi tiết - màu xanh nước biển, kích thước nhỏ
-        ButtonStyles.apply(btnView, ButtonStyles.Type.INFO);
+        btnView.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        btnSearch.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        txtExport.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+        ButtonStyles.apply(btnView, ButtonStyles.Type.PRIMARY);
+        ButtonStyles.apply(btnSearch, ButtonStyles.Type.SUCCESS);
+        ButtonStyles.apply(txtExport, ButtonStyles.Type.SUCCESS);
         
         // Thiết lập barcode scanner cho textfield tìm kiếm
         setupBarcodeScanner();
@@ -1081,7 +1092,7 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
         btnSearch.setBackground(new java.awt.Color(115, 165, 71));
         btnSearch.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
         btnSearch.setForeground(new java.awt.Color(255, 255, 255));
-        btnSearch.setText("Tìm kiếm");
+        btnSearch.setText("TÌM KIẾM");
         btnSearch.setMaximumSize(new java.awt.Dimension(150, 40));
         btnSearch.setMinimumSize(new java.awt.Dimension(150, 40));
         btnSearch.setPreferredSize(new java.awt.Dimension(150, 40));
@@ -1109,7 +1120,7 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
         txtExport.setBackground(new java.awt.Color(115, 165, 71));
         txtExport.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
         txtExport.setForeground(new java.awt.Color(255, 255, 255));
-        txtExport.setText("Xuất excel");
+        txtExport.setText("XUẤT EXCEL");
         txtExport.setMaximumSize(new java.awt.Dimension(150, 40));
         txtExport.setMinimumSize(new java.awt.Dimension(150, 40));
         txtExport.setPreferredSize(new java.awt.Dimension(150, 40));
@@ -1152,7 +1163,7 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
                                 .addComponent(jDateTo, javax.swing.GroupLayout.PREFERRED_SIZE, 210,
                                         javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(18, 18, 18)
-                                .addComponent(txtOrder, javax.swing.GroupLayout.PREFERRED_SIZE, 350,
+                                .addComponent(txtOrder, javax.swing.GroupLayout.PREFERRED_SIZE, 300,
                                         javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(18, 18, 18)
                                 .addComponent(btnSearch, javax.swing.GroupLayout.PREFERRED_SIZE,

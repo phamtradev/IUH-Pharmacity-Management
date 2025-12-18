@@ -46,21 +46,25 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
         FontStyles.apply(btnThem, FontStyles.Type.BUTTON_MEDIUM);
         btnThem.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnThem.setPreferredSize(new java.awt.Dimension(95, 40));
+        FontStyles.apply(btnThem, FontStyles.Type.TEXT_MEDIUM);
 
         ButtonStyles.apply(btnSua, ButtonStyles.Type.PRIMARY);
         FontStyles.apply(btnSua, FontStyles.Type.BUTTON_MEDIUM);
         btnSua.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnSua.setPreferredSize(new java.awt.Dimension(95, 40));
+        FontStyles.apply(btnSua, FontStyles.Type.TEXT_MEDIUM);
 
         ButtonStyles.apply(btnXoa, ButtonStyles.Type.DANGER);
         FontStyles.apply(btnXoa, FontStyles.Type.BUTTON_MEDIUM);
         btnXoa.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnXoa.setPreferredSize(new java.awt.Dimension(95, 40));
+        FontStyles.apply(btnXoa, FontStyles.Type.TEXT_MEDIUM);
 
         ButtonStyles.apply(btnTimKiem, ButtonStyles.Type.SUCCESS);
         FontStyles.apply(btnTimKiem, FontStyles.Type.BUTTON_MEDIUM);
         btnTimKiem.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnTimKiem.setPreferredSize(new java.awt.Dimension(150, 40));
+        FontStyles.apply(btnTimKiem, FontStyles.Type.TEXT_MEDIUM);
 
         // Buttons trong modal
         ButtonStyles.apply(btnAddCustomer, ButtonStyles.Type.SUCCESS);
@@ -495,7 +499,7 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
         });
         pnlKhungTimKiem.add(txtTimKiem);
 
-        btnTimKiem.setText("Tìm kiếm");
+        btnTimKiem.setText("TÌM KIẾM");
         btnTimKiem.setPreferredSize(new java.awt.Dimension(150, 40));
         btnTimKiem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
