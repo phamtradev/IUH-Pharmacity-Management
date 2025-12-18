@@ -199,25 +199,21 @@ public class MainForm extends JLayeredPane {
                     // Type 2 = Quản lý
                     // Menu đã được gom nhóm lại:
                     // 0: Dashboard
-                    // 1: Thống kê
-                    // 2: Báo cáo thu chi
-                    // 3: Quản lý bán hàng (subIndex 1..6)
-                    // 4: Quản lý danh mục (subIndex 1..6)
-                    // 5: Quản lý dữ liệu
-                    // 6: Thông tin cá nhân
-                    // 7: Hỗ trợ người dùng (subIndex 1..2)
-                    // 8: Phiên bản
-                    // 9: Đăng xuất
+                    // 1: Báo cáo thu chi
+                    // 2: Quản lý bán hàng (subIndex 1..6)
+                    // 3: Quản lý danh mục (subIndex 1..6)
+                    // 4: Quản lý dữ liệu
+                    // 5: Thông tin cá nhân
+                    // 6: Hỗ trợ người dùng (subIndex 1..2)
+                    // 7: Phiên bản
+                    // 8: Đăng xuất
                     if (index == 0) {
                         // Dashboard
                         showForm(new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.dashboard.GD_DashBoardQuanLy());
                     } else if (index == 1) {
-                        // Thống kê
-                        showForm(new vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.thongke.GD_ThongKe());
-                    } else if (index == 2) {
                         // Báo cáo thu chi
                         showForm(new GD_BaoCaoThuChi());
-                    } else if (index == 3) {
+                    } else if (index == 2) {
                         // Nhóm: Quản lý bán hàng
                         if (subIndex == 1) {
                             // Quản lý đơn hàng
@@ -240,7 +236,7 @@ public class MainForm extends JLayeredPane {
                         } else {
                             action.cancel();
                         }
-                    } else if (index == 4) {
+                    } else if (index == 3) {
                         // Nhóm: Quản lý danh mục
                         if (subIndex == 1) {
                             // Quản lý sản phẩm (quản lý có button xóa)
@@ -263,13 +259,13 @@ public class MainForm extends JLayeredPane {
                         } else {
                             action.cancel();
                         }
-                    } else if (index == 5) {
+                    } else if (index == 4) {
                         // Quản lý dữ liệu
                         showForm(new GD_QuanLyDuLieu());
-                    } else if (index == 6) {
+                    } else if (index == 5) {
                         // Thông tin cá nhân
                         showForm(new GD_ThongTinCaNhan(true));
-                    } else if (index == 7) {
+                    } else if (index == 6) {
                         // Nhóm: Hỗ trợ người dùng
                         if (subIndex == 1) {
                             // AI trợ giúp
@@ -280,7 +276,7 @@ public class MainForm extends JLayeredPane {
                         } else {
                             action.cancel();
                         }
-                    } else if (index == 8) {
+                    } else if (index == 7) {
                         // Phiên bản
                         javax.swing.JOptionPane.showMessageDialog(
                                 this,
@@ -297,7 +293,7 @@ public class MainForm extends JLayeredPane {
                                 "Thông tin Phiên bản",
                                 javax.swing.JOptionPane.INFORMATION_MESSAGE
                         );
-                    } else if (index == 9) {
+                    } else if (index == 8) {
                         // Đăng xuất quản lý
                         handleLogout();
                     } else {
