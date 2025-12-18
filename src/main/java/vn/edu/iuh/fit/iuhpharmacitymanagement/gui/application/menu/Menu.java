@@ -25,7 +25,8 @@ public class Menu extends JPanel {
     // - Quản lý sản phẩm, Quản lý đơn vị tính, Quản lý lô hàng, Quản lý nhà cung cấp, Quản lý khách hàng, Quản lý nhân viên -> Quản lý danh mục
     // Các mục Dashboard, Báo cáo thu chi, Quản lý dữ liệu, Thông tin cá nhân, Hỗ trợ người dùng, Phiên bản, Đăng xuất giữ nguyên, không gom
     private final String[][] menuItemsManager = {
-        {"Dashboard"},
+        {"Trang chủ"},
+        {"Thống kê"},
         {"Báo cáo thu chi"},
         {
             "Quản lý bán hàng",
@@ -57,7 +58,7 @@ public class Menu extends JPanel {
     };
 
     private final String[][] menuItemsStaff = {
-        {"Dashboard"},
+        {"Trang chủ"},
         {"Bán hàng"},
         {"Quản lý sản phẩm"},
         {"Quản lý khách hàng"},
