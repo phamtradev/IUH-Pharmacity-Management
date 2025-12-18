@@ -755,6 +755,7 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
                     tableDesign.getModelTable().setValueAt(email, selectedRow, 4);
                     tableDesign.getModelTable().setValueAt(gioiTinh, selectedRow, 5);
                 }
+                //okkkokkk
 
                 // Xóa dữ liệu form và đóng modal
                 clearData(txtCusNameEdit, txtCusPhoneEdit, txtCusAddressEdit, txtCusEmailEdit);
