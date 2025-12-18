@@ -7,29 +7,29 @@ on:
 
 jobs:
   build-windows-app:
-    name: Build Windows App Image (Stable - No WiX)
+    name: Đóng gói ứng dụng Windows 
     runs-on: windows-latest
 
     steps:
       # ===============================
-      # Checkout source code
+      # Lấy mã nguồn
       # ===============================
-      - name: Checkout source code
+      - name: Lấy mã nguồn
         uses: actions/checkout@v4
 
       # ===============================
-      # Setup Java 21
+      # Cài đặt Java 21
       # ===============================
-      - name: Set up JDK 21
+      - name: Cài đặt JDK 21
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "21"
 
       # ===============================
-      # Cache Maven dependencies
+      # Cache các thư viện Maven
       # ===============================
-      - name: Cache Maven repository
+      - name: Cache kho Maven
         uses: actions/cache@v4
         with:
           path: ~/.m2/repository
@@ -38,15 +38,15 @@ jobs:
             maven-${{ runner.os }}-
 
       # ===============================
-      # Install local Swing Toast jar
+      # Cài đặt thư viện Swing Toast
       # ===============================
-      - name: Install Swing Toast Notifications (local jar)
+      - name: Cài đặt Swing Toast Notifications 
         shell: pwsh
         run: |
           $jar = "library/swing-toast-notifications-1.0.4.jar"
 
           if (-not (Test-Path $jar)) {
-            Write-Error "Missing local jar: $jar"
+            Write-Error "Không tìm thấy jar cục bộ: $jar"
             exit 1
           }
 
@@ -65,16 +65,16 @@ jobs:
             "-Dpackaging=jar"
 
       # ===============================
-      # Build project (JAR)
+      # Build dự án (JAR)
       # ===============================
-      - name: Build project with Maven (create shaded JAR)
+      - name: Build dự án với Maven (tạo shaded JAR)
         shell: pwsh
         run: mvn -B -DskipTests package
 
       # ===============================
-      # Create Windows App Image
+      # Tạo ứng dụng Windows
       # ===============================
-      - name: Create Windows App Image (jpackage, using shaded JAR)
+      - name: Tạo ứng dụng Windows (jpackage, sử dụng shaded JAR)
         shell: pwsh
         run: |
           $appName   = "iuhpharmacitymanagement"
@@ -82,7 +82,7 @@ jobs:
           $mainClass = "vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.MainApplication"
 
           if (-not (Test-Path $mainJar)) {
-            Write-Error "Main JAR not found: $mainJar"
+            Write-Error "Không tìm thấy JAR chính: $mainJar"
             exit 1
           }
 
@@ -98,16 +98,16 @@ jobs:
             --win-console
 
       # ===============================
-      # Debug output
+      # Kiểm tra kết quả
       # ===============================
-      - name: Debug dist folder
+      - name: Kiểm tra thư mục dist
         shell: pwsh
         run: Get-ChildItem -Recurse dist
 
       # ===============================
-      # Upload Artifact
+      # Tải lên Artifact
       # ===============================
-      - name: Upload Windows App Image
+      - name: Tải lên ứng dụng Windows
         uses: actions/upload-artifact@v4
         with:
           name: windows-app-image

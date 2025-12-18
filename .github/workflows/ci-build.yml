@@ -8,20 +8,20 @@ on:
 
 jobs:
   build-and-test:
-    name: Build and Test Java Application
+    name: Build và Kiểm thử ứng dụng Java
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout source code
+      - name: Lấy mã nguồn
         uses: actions/checkout@v4
 
-      - name: Set up JDK 21
+      - name: Cài đặt JDK 21
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 21
 
-      - name: Cache Maven dependencies
+      - name: Cache các thư viện Maven
         uses: actions/cache@v4
         with:
           path: ~/.m2/repository
@@ -29,7 +29,7 @@ jobs:
           restore-keys: |
             maven-${{ runner.os }}-
 
-      - name: Install local Swing Toast Notifications library
+      - name: Cài đặt thư viện Swing Toast Notifications cục bộ
         run: |
           if [ -f library/swing-toast-notifications-1.0.4.jar ]; then
             mvn install:install-file \
@@ -46,8 +46,8 @@ jobs:
               -Dversion=1.0.2 \
               -Dpackaging=jar
           else
-            echo "Local library not found, skipping installation"
+            echo "Không tìm thấy thư viện cục bộ, bỏ qua cài đặt"
           fi
 
-      - name: Build and run tests
+      - name: Build và chạy kiểm thử
         run: mvn -B verify
