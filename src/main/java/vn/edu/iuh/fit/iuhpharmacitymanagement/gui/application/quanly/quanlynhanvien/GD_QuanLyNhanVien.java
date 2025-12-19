@@ -61,6 +61,20 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
         ButtonStyles.apply(btnCofirmResetPassword, ButtonStyles.Type.PRIMARY);
         ButtonStyles.apply(btnCancelResetPassword, ButtonStyles.Type.DANGER);
 
+        FontStyles.apply(btnThem, FontStyles.Type.BUTTON_MEDIUM);
+        FontStyles.apply(btnSua, FontStyles.Type.BUTTON_MEDIUM);
+        FontStyles.apply(btnXoa, FontStyles.Type.BUTTON_MEDIUM);
+        FontStyles.apply(btnTimKiem, FontStyles.Type.BUTTON_MEDIUM);
+        FontStyles.apply(btnDatLaiMatKhau, FontStyles.Type.BUTTON_MEDIUM);
+
+        // Style cho các button trong dialog
+        FontStyles.apply(btnAddNewEmployee, FontStyles.Type.BUTTON_MEDIUM);
+        FontStyles.apply(btnCancelAddEmployee, FontStyles.Type.BUTTON_MEDIUM);
+        FontStyles.apply(btnUpdateEmployee, FontStyles.Type.BUTTON_MEDIUM);
+        FontStyles.apply(btnCancelUpdateEmployee, FontStyles.Type.BUTTON_MEDIUM);
+        FontStyles.apply(btnCofirmResetPassword, FontStyles.Type.BUTTON_MEDIUM);
+        FontStyles.apply(btnCancelResetPassword, FontStyles.Type.BUTTON_MEDIUM);
+
         setUIManager();
         fillTable();
         addIconFeature();
