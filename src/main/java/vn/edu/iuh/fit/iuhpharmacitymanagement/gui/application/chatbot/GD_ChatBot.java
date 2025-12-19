@@ -51,7 +51,12 @@ public class GD_ChatBot extends javax.swing.JPanel {
             "con", "còn", "co", "có", "bao", "nhieu", "nhiêu", "so", "số", "luong", "lượng",
             "lo", "lô", "hang", "hàng", "may", "mấy", "gi", "gì",
             "cho", "xin", "hoi", "hỏi", "toi", "tôi", "ban", "bán",
-            "duoc", "được", "la", "là", "ve", "về"
+            "duoc", "được", "la", "là", "ve", "về",
+            // Thêm các từ phổ biến trong câu hỏi
+            "bạn", "hãy", "hay", "biết", "biet", "không", "khong",
+            "có thể", "co the", "có", "co", "thể", "the",
+            "của", "cua", "nào", "nao", "đó", "do",
+            "chi", "chỉ", "tiết", "tiet"
     ));
     //loai bo ky tu dac biet
     private static final String NON_TEXT_PATTERN = "[^a-z0-9áàảãạăắằẳẵặâấầẩẫậđéèẻẽẹêếềểễệíìỉĩịóòỏõọôốồổỗộơớờởỡợúùủũụưứừửữựýỳỷỹỵ\\s]";
@@ -454,8 +459,14 @@ public class GD_ChatBot extends javax.swing.JPanel {
         }
 
         // Phát hiện yêu cầu xem thông tin thuốc/sản phẩm
-        if (isProductInfoQuestion(lowerMessage) && productName != null && !productName.isEmpty()) {
-            return dbService.layThongTinSanPhamTheoTen(productName);
+        if (isProductInfoQuestion(lowerMessage)) {
+            if (productName != null && !productName.isEmpty()) {
+                // Làm sạch tên sản phẩm - loại bỏ các từ thừa có thể còn sót
+                String cleanedName = cleanProductName(productName);
+                if (cleanedName != null && !cleanedName.isEmpty()) {
+                    return dbService.layThongTinSanPhamTheoTen(cleanedName);
+                }
+            }
         }
 
         // Phát hiện câu hỏi tìm kiếm sản phẩm
@@ -509,8 +520,14 @@ public class GD_ChatBot extends javax.swing.JPanel {
         String sanitized = message.toLowerCase().replaceAll(NON_TEXT_PATTERN, " ");
         String[] tokens = sanitized.trim().split("\\s+");
         StringBuilder builder = new StringBuilder();
+        
+        // Lọc bỏ các từ stopwords và chỉ giữ lại các từ có vẻ là tên sản phẩm
         for (String token : tokens) {
             if (token.isEmpty() || PRODUCT_STOPWORDS.contains(token)) {
+                continue;
+            }
+            // Bỏ qua các từ quá ngắn (1 ký tự) trừ khi đã có từ trước đó
+            if (token.length() == 1 && builder.length() == 0) {
                 continue;
             }
             if (builder.length() > 0) {
@@ -519,6 +536,71 @@ public class GD_ChatBot extends javax.swing.JPanel {
             builder.append(token);
         }
         String cleaned = builder.toString().trim();
+        
+        // Nếu kết quả quá dài (có thể chứa nhiều từ không phải tên sản phẩm),
+        // thử lấy từ cuối cùng hoặc 2-3 từ cuối (thường là tên sản phẩm)
+        if (cleaned.length() > 30) {
+            String[] parts = cleaned.split("\\s+");
+            if (parts.length > 3) {
+                // Lấy 2-3 từ cuối cùng (thường là tên sản phẩm)
+                int start = Math.max(0, parts.length - 3);
+                StringBuilder shortBuilder = new StringBuilder();
+                for (int i = start; i < parts.length; i++) {
+                    if (shortBuilder.length() > 0) {
+                        shortBuilder.append(" ");
+                    }
+                    shortBuilder.append(parts[i]);
+                }
+                cleaned = shortBuilder.toString().trim();
+            }
+        }
+        
+        return cleaned.length() >= 2 ? cleaned : null;
+    }
+
+    /**
+     * Làm sạch tên sản phẩm - loại bỏ các từ không phải tên sản phẩm
+     */
+    private String cleanProductName(String productName) {
+        if (productName == null || productName.trim().isEmpty()) {
+            return null;
+        }
+        String lower = productName.toLowerCase().trim();
+        String[] tokens = lower.split("\\s+");
+        StringBuilder builder = new StringBuilder();
+        
+        for (String token : tokens) {
+            // Bỏ qua các từ stopwords còn sót lại
+            if (PRODUCT_STOPWORDS.contains(token)) {
+                continue;
+            }
+            // Bỏ qua các từ quá ngắn (1 ký tự) trừ khi đã có từ trước đó
+            if (token.length() == 1 && builder.length() == 0) {
+                continue;
+            }
+            if (builder.length() > 0) {
+                builder.append(" ");
+            }
+            builder.append(token);
+        }
+        
+        String cleaned = builder.toString().trim();
+        // Nếu kết quả quá dài, lấy 2-3 từ cuối (thường là tên sản phẩm)
+        if (cleaned.length() > 30) {
+            String[] parts = cleaned.split("\\s+");
+            if (parts.length > 3) {
+                int start = Math.max(0, parts.length - 3);
+                StringBuilder shortBuilder = new StringBuilder();
+                for (int i = start; i < parts.length; i++) {
+                    if (shortBuilder.length() > 0) {
+                        shortBuilder.append(" ");
+                    }
+                    shortBuilder.append(parts[i]);
+                }
+                cleaned = shortBuilder.toString().trim();
+            }
+        }
+        
         return cleaned.length() >= 2 ? cleaned : null;
     }
 
