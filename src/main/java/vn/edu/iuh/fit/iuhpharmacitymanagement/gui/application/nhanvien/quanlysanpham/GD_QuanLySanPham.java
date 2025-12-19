@@ -1552,7 +1552,7 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
 
         btnUpdate.setBackground(new java.awt.Color(255, 193, 7));
         btnUpdate.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnUpdate.setText("SỬA");
+        btnUpdate.setText("Sửa");
         btnUpdate.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnUpdate.setFocusPainted(false);
         btnUpdate.setPreferredSize(new java.awt.Dimension(95, 40));

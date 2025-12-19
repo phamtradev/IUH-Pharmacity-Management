@@ -390,7 +390,7 @@ public class GD_QuanLyDonViTinh extends javax.swing.JPanel {
 
         btnSua.setBackground(new java.awt.Color(255, 193, 7));
         btnSua.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnSua.setText("SỬA");
+        btnSua.setText("Sửa");
         btnSua.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnSua.setFocusPainted(false);
         btnSua.setPreferredSize(new java.awt.Dimension(95, 40));
@@ -404,7 +404,7 @@ public class GD_QuanLyDonViTinh extends javax.swing.JPanel {
         btnXoa.setBackground(new java.awt.Color(220, 60, 60));
         btnXoa.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         btnXoa.setForeground(new java.awt.Color(255, 255, 255));
-        btnXoa.setText("XÓA");
+        btnXoa.setText("Xóa");
         btnXoa.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnXoa.setFocusPainted(false);
         btnXoa.setPreferredSize(new java.awt.Dimension(95, 40));

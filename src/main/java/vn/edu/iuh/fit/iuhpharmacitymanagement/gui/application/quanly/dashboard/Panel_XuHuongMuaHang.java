@@ -24,6 +24,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.ToDoubleFunction;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.FontStyles;
 
 /**
  *
@@ -58,6 +60,12 @@ public class Panel_XuHuongMuaHang extends javax.swing.JPanel {
         initDefaultDates();
         LocalDate today = LocalDate.now();
         reloadDashboard(today.withDayOfMonth(1), today);
+        applyStyles();
+    }
+
+    private void applyStyles() {
+        ButtonStyles.apply(btnSearch, ButtonStyles.Type.SUCCESS);
+        FontStyles.apply(btnSearch, FontStyles.Type.BUTTON_MEDIUM);
     }
 
     private void initChart() {

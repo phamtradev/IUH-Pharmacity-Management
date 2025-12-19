@@ -546,7 +546,7 @@ public class GD_QuanLyNhaCungCap extends javax.swing.JPanel {
         btnTimKiem.setBackground(new java.awt.Color(115, 165, 71));
         btnTimKiem.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
         btnTimKiem.setForeground(new java.awt.Color(255, 255, 255));
-        btnTimKiem.setText("TÌM KIẾM");
+        btnTimKiem.setText("Tìm kiếm");
         btnTimKiem.setMaximumSize(new java.awt.Dimension(150, 40));
         btnTimKiem.setMinimumSize(new java.awt.Dimension(150, 40));
         btnTimKiem.setPreferredSize(new java.awt.Dimension(150, 40));
@@ -566,7 +566,7 @@ public class GD_QuanLyNhaCungCap extends javax.swing.JPanel {
         pnlChinhSua.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 6, 30));
 
         btnThem.setFont(new java.awt.Font("Roboto", 1, 14)); // NOI18N
-        btnThem.setText("THÊM");
+        btnThem.setText("Thêm");
         btnThem.setBorder(null);
         btnThem.setBorderPainted(false);
         btnThem.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
@@ -582,7 +582,7 @@ public class GD_QuanLyNhaCungCap extends javax.swing.JPanel {
         pnlChinhSua.add(btnThem);
 
         btnSua.setFont(new java.awt.Font("Roboto", 1, 14)); // NOI18N
-        btnSua.setText("SỬA");
+        btnSua.setText("Sửa");
         btnSua.setBorder(null);
         btnSua.setBorderPainted(false);
         btnSua.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
@@ -598,7 +598,7 @@ public class GD_QuanLyNhaCungCap extends javax.swing.JPanel {
         pnlChinhSua.add(btnSua);
 
         btnXoa.setFont(new java.awt.Font("Roboto", 1, 14)); // NOI18N
-        btnXoa.setText("XÓA");
+        btnXoa.setText("Xóa");
         btnXoa.setBorder(null);
         btnXoa.setBorderPainted(false);
         btnXoa.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));

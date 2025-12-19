@@ -22,6 +22,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.FontStyles;
 
 /**
  *
@@ -40,6 +42,7 @@ public class Panel_ThongKeTheoNam extends javax.swing.JPanel {
         initChart();
         initComponents();
         fillComboBoxMonthAndYear();
+        applyStyles();
     }
 
     private void initChart() {
@@ -55,6 +58,11 @@ public class Panel_ThongKeTheoNam extends javax.swing.JPanel {
             comboYearStart.addItem(currentYear - i + "");
         }
 
+    }
+    
+    private void applyStyles() {
+        ButtonStyles.apply(btnSearch, ButtonStyles.Type.SUCCESS);
+        FontStyles.apply(btnSearch, FontStyles.Type.BUTTON_MEDIUM);
     }
 
     /**

@@ -951,7 +951,7 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
         pnlTimKiem.add(txtTimKiem);
 
         btnTimKiem.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
-        btnTimKiem.setText("TÌM KIẾM");
+        btnTimKiem.setText("Tìm kiếm");
         btnTimKiem.setMaximumSize(new java.awt.Dimension(150, 40));
         btnTimKiem.setMinimumSize(new java.awt.Dimension(150, 40));
         btnTimKiem.setPreferredSize(new java.awt.Dimension(150, 40));
@@ -967,7 +967,7 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
         // }
 
         btnDatLaiMatKhau.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
-        btnDatLaiMatKhau.setText("ĐẶT LẠI MẬT KHẨU");
+        btnDatLaiMatKhau.setText("Đặt lại mật khẩu");
         btnDatLaiMatKhau.setMaximumSize(new java.awt.Dimension(200, 40));
         btnDatLaiMatKhau.setMinimumSize(new java.awt.Dimension(200, 40));
         btnDatLaiMatKhau.setPreferredSize(new java.awt.Dimension(200, 40));
@@ -985,7 +985,7 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
         pnlChinhSua.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 10, 25));
 
         btnThem.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnThem.setText("THÊM");
+        btnThem.setText("Thêm");
         btnThem.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnThem.setFocusPainted(false);
         btnThem.setPreferredSize(new java.awt.Dimension(95, 40));
@@ -997,7 +997,7 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
         pnlChinhSua.add(btnThem);
 
         btnSua.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnSua.setText("SỬA");
+        btnSua.setText("Sửa");
         btnSua.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnSua.setFocusPainted(false);
         btnSua.setPreferredSize(new java.awt.Dimension(95, 40));
@@ -1009,7 +1009,7 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
         pnlChinhSua.add(btnSua);
 
         btnXoa.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnXoa.setText("XÒA");
+        btnXoa.setText("Xóa");
         btnXoa.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnXoa.setFocusPainted(false);
         btnXoa.setPreferredSize(new java.awt.Dimension(95, 40));

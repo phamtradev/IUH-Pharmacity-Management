@@ -81,7 +81,7 @@ public class GD_QuanLyKhuyenMai extends javax.swing.JPanel {
         jPanel5.setBackground(new java.awt.Color(255, 255, 255));
 
         btnThem.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnThem.setText("THÊM");
+        btnThem.setText("Thêm");
         btnThem.setPreferredSize(new java.awt.Dimension(100, 40));
         btnThem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -90,7 +90,7 @@ public class GD_QuanLyKhuyenMai extends javax.swing.JPanel {
         });
 
         btnSua.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnSua.setText("SỬA");
+        btnSua.setText("Sửa");
         btnSua.setPreferredSize(new java.awt.Dimension(100, 40));
         btnSua.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -99,7 +99,7 @@ public class GD_QuanLyKhuyenMai extends javax.swing.JPanel {
         });
 
         btnXoa.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnXoa.setText("XÓA");
+        btnXoa.setText("Xóa");
         btnXoa.setPreferredSize(new java.awt.Dimension(100, 40));
         btnXoa.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -108,7 +108,7 @@ public class GD_QuanLyKhuyenMai extends javax.swing.JPanel {
         });
 
         btnXemChiTiet.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnXemChiTiet.setText("XEM CHI TIẾT");
+        btnXemChiTiet.setText("Xem chi tiết");
         btnXemChiTiet.setPreferredSize(new java.awt.Dimension(150, 40));
         btnXemChiTiet.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -122,7 +122,7 @@ public class GD_QuanLyKhuyenMai extends javax.swing.JPanel {
         cboLoaiKhuyenMai.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Tất cả", "Sản phẩm", "Đơn hàng" }));
 
         btnTimKiem.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnTimKiem.setText("TÌM KIẾM");
+        btnTimKiem.setText("Tìm kiếm");
         btnTimKiem.setPreferredSize(new java.awt.Dimension(120, 40));
         btnTimKiem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

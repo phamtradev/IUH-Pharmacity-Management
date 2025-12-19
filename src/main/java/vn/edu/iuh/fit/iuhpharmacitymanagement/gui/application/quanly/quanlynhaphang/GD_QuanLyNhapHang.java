@@ -221,7 +221,7 @@ public class GD_QuanLyNhapHang extends javax.swing.JPanel {
         btnSearch.setBackground(new java.awt.Color(115, 165, 71));
         btnSearch.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
         btnSearch.setForeground(new java.awt.Color(255, 255, 255));
-        btnSearch.setText("TÌM KIẾM");
+        btnSearch.setText("Tìm kiếm");
         btnSearch.setMaximumSize(new java.awt.Dimension(150, 40));
         btnSearch.setMinimumSize(new java.awt.Dimension(150, 40));
         btnSearch.setPreferredSize(new java.awt.Dimension(150, 40));
@@ -249,7 +249,7 @@ public class GD_QuanLyNhapHang extends javax.swing.JPanel {
         txtOrder.setBackground(new java.awt.Color(115, 165, 71));
         txtOrder.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
         txtOrder.setForeground(new java.awt.Color(255, 255, 255));
-        txtOrder.setText("XUẤT EXCEL");
+        txtOrder.setText("Xuất excel");
         txtOrder.setMaximumSize(new java.awt.Dimension(150, 40));
         txtOrder.setMinimumSize(new java.awt.Dimension(150, 40));
         txtOrder.setPreferredSize(new java.awt.Dimension(150, 40));
@@ -260,7 +260,7 @@ public class GD_QuanLyNhapHang extends javax.swing.JPanel {
         });
 
         btnView.setFont(new java.awt.Font("Roboto", 1, 14)); // NOI18N
-        btnView.setText("XEM CHI TIẾT");
+        btnView.setText("Xem chi tiết");
         btnView.setBorder(null);
         btnView.setBorderPainted(false);
         btnView.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));

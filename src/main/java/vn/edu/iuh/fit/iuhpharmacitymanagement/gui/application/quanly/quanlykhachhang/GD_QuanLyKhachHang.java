@@ -491,7 +491,7 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
         });
         pnlKhungTimKiem.add(txtTimKiem);
 
-        btnTimKiem.setText("TÌM KIẾM");
+        btnTimKiem.setText("Tìm kiếm");
         btnTimKiem.setPreferredSize(new java.awt.Dimension(150, 40));
         btnTimKiem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -508,7 +508,7 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
         pnlChinhSua.setPreferredSize(new java.awt.Dimension(600, 100));
         pnlChinhSua.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 6, 30));
 
-        btnThem.setText("THÊM");
+        btnThem.setText("Thêm");
         btnThem.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnThem.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         btnThem.setPreferredSize(new java.awt.Dimension(100, 90));
@@ -520,7 +520,7 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
         });
         pnlChinhSua.add(btnThem);
 
-        btnSua.setText("SỬA");
+        btnSua.setText("Sửa");
         btnSua.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnSua.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         btnSua.setPreferredSize(new java.awt.Dimension(100, 90));
@@ -532,7 +532,7 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
         });
         pnlChinhSua.add(btnSua);
 
-        btnXoa.setText("XÓA");
+        btnXoa.setText("Xóa");
         btnXoa.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnXoa.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         btnXoa.setPreferredSize(new java.awt.Dimension(100, 90));

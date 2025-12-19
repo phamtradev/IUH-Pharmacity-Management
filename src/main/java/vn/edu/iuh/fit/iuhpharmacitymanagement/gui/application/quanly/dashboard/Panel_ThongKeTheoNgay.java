@@ -24,6 +24,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.FontStyles;
 
 /**
  *
@@ -42,6 +44,7 @@ public class Panel_ThongKeTheoNgay extends javax.swing.JPanel {
         initChart();
         initComponents();
         initSimpleUI();
+        applyStyles();
     }
 
     private void initSimpleUI() {
@@ -52,6 +55,11 @@ public class Panel_ThongKeTheoNgay extends javax.swing.JPanel {
     private void initChart() {
         chart = new Chart();
         chart.addLegend("Doanh thu", new Color(135, 189, 245));
+    }
+    
+        private void applyStyles() {
+        ButtonStyles.apply(btnSearch, ButtonStyles.Type.SUCCESS);
+        FontStyles.apply(btnSearch, FontStyles.Type.BUTTON_MEDIUM);
     }
 
     /**

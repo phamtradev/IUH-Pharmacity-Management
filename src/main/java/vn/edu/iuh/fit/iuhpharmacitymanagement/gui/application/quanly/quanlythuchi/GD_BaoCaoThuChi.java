@@ -4,6 +4,7 @@
  */
 package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.quanly.quanlythuchi;
 
+import java.awt.Cursor;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.*;
 import java.util.Arrays;
 import java.util.List;
@@ -33,6 +34,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import raven.toast.Notifications;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.util.*;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.FontStyles;
 
 /**
  *
@@ -69,13 +71,23 @@ public class GD_BaoCaoThuChi extends javax.swing.JPanel {
         UIManager.put("Button.arc", 10);
         jDateFrom.setDate(Date.valueOf(LocalDate.now()));
         jDateTo.setDate(Date.valueOf(LocalDate.now()));
+        
+        
+        FontStyles.apply(btnView, FontStyles.Type.TEXT_MEDIUM);
+        FontStyles.apply(btnSearch, FontStyles.Type.TEXT_MEDIUM);
+        FontStyles.apply(txtOrder, FontStyles.Type.TEXT_MEDIUM);
 
-        // Style cho button Xem chi tiết - màu xanh nước biển
-        ButtonStyles.apply(btnView, ButtonStyles.Type.INFO);
+        btnView.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        btnSearch.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        txtOrder.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+        ButtonStyles.apply(btnView, ButtonStyles.Type.PRIMARY);
+        ButtonStyles.apply(btnSearch, ButtonStyles.Type.SUCCESS);
+        ButtonStyles.apply(txtOrder, ButtonStyles.Type.SUCCESS);
     }
 
     private void fillTable() {
-        String[] headers = { "Mã phiếu", "Ngày lập", "Loại thu chi", "Người lập", "Giá trị" };
+        String[] headers = {"Mã phiếu", "Ngày lập", "Loại thu chi", "Người lập", "Giá trị"};
         List<Integer> tableWidths = Arrays.asList(240, 240, 240, 240, 240);
         tableDesign = new TableDesign(headers, tableWidths);
         scrollTable.setViewportView(tableDesign.getTable());
@@ -89,36 +101,36 @@ public class GD_BaoCaoThuChi extends javax.swing.JPanel {
         tableDesign.getModelTable().setRowCount(0);
         report.getReports().forEach(obj -> {
             if (obj instanceof DonHang donHang) {
-                tableDesign.getModelTable().addRow(new Object[] {
-                        donHang.getMaDonHang(),
-                        DinhDangNgay.dinhDangNgay(donHang.getNgayDatHang()),
-                        "Bán hàng",
-                        donHang.getNhanVien() != null ? donHang.getNhanVien().getMaNhanVien() : "N/A",
-                        DinhDangSo.dinhDangTien(donHang.getThanhTien())
+                tableDesign.getModelTable().addRow(new Object[]{
+                    donHang.getMaDonHang(),
+                    DinhDangNgay.dinhDangNgay(donHang.getNgayDatHang()),
+                    "Bán hàng",
+                    donHang.getNhanVien() != null ? donHang.getNhanVien().getMaNhanVien() : "N/A",
+                    DinhDangSo.dinhDangTien(donHang.getThanhTien())
                 });
             } else if (obj instanceof DonTraHang donTraHang) {
-                tableDesign.getModelTable().addRow(new Object[] {
-                        donTraHang.getMaDonTraHang(),
-                        DinhDangNgay.dinhDangNgay(donTraHang.getNgayTraHang()),
-                        "Trả hàng",
-                        donTraHang.getNhanVien() != null ? donTraHang.getNhanVien().getMaNhanVien() : "N/A",
-                        "-" + DinhDangSo.dinhDangTien(donTraHang.getThanhTien())
+                tableDesign.getModelTable().addRow(new Object[]{
+                    donTraHang.getMaDonTraHang(),
+                    DinhDangNgay.dinhDangNgay(donTraHang.getNgayTraHang()),
+                    "Trả hàng",
+                    donTraHang.getNhanVien() != null ? donTraHang.getNhanVien().getMaNhanVien() : "N/A",
+                    "-" + DinhDangSo.dinhDangTien(donTraHang.getThanhTien())
                 });
             } else if (obj instanceof DonNhapHang donNhapHang) {
-                tableDesign.getModelTable().addRow(new Object[] {
-                        donNhapHang.getMaDonNhapHang(),
-                        DinhDangNgay.dinhDangNgay(donNhapHang.getNgayNhap()),
-                        "Nhập hàng",
-                        donNhapHang.getNhanVien() != null ? donNhapHang.getNhanVien().getMaNhanVien() : "N/A",
-                        "-" + DinhDangSo.dinhDangTien(donNhapHang.getThanhTien())
+                tableDesign.getModelTable().addRow(new Object[]{
+                    donNhapHang.getMaDonNhapHang(),
+                    DinhDangNgay.dinhDangNgay(donNhapHang.getNgayNhap()),
+                    "Nhập hàng",
+                    donNhapHang.getNhanVien() != null ? donNhapHang.getNhanVien().getMaNhanVien() : "N/A",
+                    "-" + DinhDangSo.dinhDangTien(donNhapHang.getThanhTien())
                 });
             } else if (obj instanceof HangHong hangHong) {
-                tableDesign.getModelTable().addRow(new Object[] {
-                        hangHong.getMaHangHong(),
-                        DinhDangNgay.dinhDangNgay(hangHong.getNgayNhap()),
-                        "Xuất hủy",
-                        hangHong.getNhanVien() != null ? hangHong.getNhanVien().getMaNhanVien() : "N/A",
-                        "-" + DinhDangSo.dinhDangTien(hangHong.getThanhTien())
+                tableDesign.getModelTable().addRow(new Object[]{
+                    hangHong.getMaHangHong(),
+                    DinhDangNgay.dinhDangNgay(hangHong.getNgayNhap()),
+                    "Xuất hủy",
+                    hangHong.getNhanVien() != null ? hangHong.getNhanVien().getMaNhanVien() : "N/A",
+                    "-" + DinhDangSo.dinhDangTien(hangHong.getThanhTien())
                 });
             }
         });
@@ -132,36 +144,39 @@ public class GD_BaoCaoThuChi extends javax.swing.JPanel {
                     orderPrice.setText(DinhDangSo.dinhDangTien(price));
                 } else if (key.equals("Trả hàng")) {
                     returnQty.setText(qty.toString());
-                    if (qty > 0)
+                    if (qty > 0) {
                         returnPrice.setText("-" + DinhDangSo.dinhDangTien(price));
-                    else
+                    } else {
                         returnPrice.setText(DinhDangSo.dinhDangTien(price));
+                    }
                 } else if (key.equals("Nhập hàng")) {
                     purchaseQty.setText(qty.toString());
-                    if (qty > 0)
+                    if (qty > 0) {
                         purchasePrice.setText("-" + DinhDangSo.dinhDangTien(price));
-                    else
+                    } else {
                         purchasePrice.setText(DinhDangSo.dinhDangTien(price));
+                    }
                 } else if (key.equals("Xuất hủy")) {
                     damageQty.setText(qty.toString());
-                    if (qty > 0)
+                    if (qty > 0) {
                         damagePrice.setText("-" + DinhDangSo.dinhDangTien(price));
-                    else
+                    } else {
                         damagePrice.setText(DinhDangSo.dinhDangTien(price));
+                    }
                 }
             }
         });
 
-        String[] headers = { "Loại thu chi", "Số lượng", "Tổng giá trị" };
+        String[] headers = {"Loại thu chi", "Số lượng", "Tổng giá trị"};
         List<Integer> tableWidths = Arrays.asList(200, 150, 200);
         TableDesign table = new TableDesign(headers, tableWidths);
         scrollDoanhSo.setViewportView(table.getTable());
         scrollDoanhSo.setBorder(BorderFactory.createEmptyBorder(15, 20, 20, 20));
         table.getModelTable().setRowCount(0);
-        table.getModelTable().addRow(new Object[] { "Bán hàng", orderQty.getText(), orderPrice.getText() });
-        table.getModelTable().addRow(new Object[] { "Nhập hàng", purchaseQty.getText(), purchasePrice.getText() });
-        table.getModelTable().addRow(new Object[] { "Trả hàng", returnQty.getText(), returnPrice.getText() });
-        table.getModelTable().addRow(new Object[] { "Xuất hủy", damageQty.getText(), damagePrice.getText() });
+        table.getModelTable().addRow(new Object[]{"Bán hàng", orderQty.getText(), orderPrice.getText()});
+        table.getModelTable().addRow(new Object[]{"Nhập hàng", purchaseQty.getText(), purchasePrice.getText()});
+        table.getModelTable().addRow(new Object[]{"Trả hàng", returnQty.getText(), returnPrice.getText()});
+        table.getModelTable().addRow(new Object[]{"Xuất hủy", damageQty.getText(), damagePrice.getText()});
 
         txtTongDoanhThu.setText(DinhDangSo.dinhDangTien(report.getProfit()));
         profit.setText(DinhDangSo.dinhDangTien(report.getProfit()));
@@ -553,7 +568,7 @@ public class GD_BaoCaoThuChi extends javax.swing.JPanel {
                 new String[] { "Tất cả", "Bán hàng", "Trả hàng", "Nhập hàng", "Xuất hủy" }));
 
         btnView.setFont(new java.awt.Font("Roboto", 1, 14)); // NOI18N
-        btnView.setText("XEM CHI TIẾT");
+        btnView.setText("Xem chi tiết");
         btnView.setBorder(null);
         btnView.setBorderPainted(false);
         btnView.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
@@ -858,7 +873,7 @@ public class GD_BaoCaoThuChi extends javax.swing.JPanel {
         String maPhieu = (String) table.getValueAt(selectedRow, 0);
 
         if (loaiPhieu.equalsIgnoreCase("Bán hàng")) {
-            String[] headers = { "Mã lô hàng", "Tên sản phẩm", "Số lượng", "Đơn giá", "Giảm giá", "Thành tiền" };
+            String[] headers = {"Mã lô hàng", "Tên sản phẩm", "Số lượng", "Đơn giá", "Giảm giá", "Thành tiền"};
             List<Integer> tableWidths = Arrays.asList(150, 300, 100, 150, 100, 150);
             tableDetail = new TableDesign(headers, tableWidths);
             scrollTableDetail.setViewportView(tableDetail.getTable());
@@ -877,19 +892,19 @@ public class GD_BaoCaoThuChi extends javax.swing.JPanel {
                     tenSanPham = ct.getLoHang().getSanPham().getTenSanPham();
                 }
 
-                tableDetail.getModelTable().addRow(new Object[] {
-                        maLoHang,
-                        tenSanPham,
-                        ct.getSoLuong(),
-                        DinhDangSo.dinhDangTien(ct.getDonGia()),
-                        DinhDangSo.dinhDangTien(ct.getGiamGiaSanPham()),
-                        DinhDangSo.dinhDangTien(ct.getThanhTien())
+                tableDetail.getModelTable().addRow(new Object[]{
+                    maLoHang,
+                    tenSanPham,
+                    ct.getSoLuong(),
+                    DinhDangSo.dinhDangTien(ct.getDonGia()),
+                    DinhDangSo.dinhDangTien(ct.getGiamGiaSanPham()),
+                    DinhDangSo.dinhDangTien(ct.getThanhTien())
                 });
             }
         }
 
         if (loaiPhieu.equalsIgnoreCase("Trả hàng")) {
-            String[] headers = { "Mã sản phẩm", "Tên sản phẩm", "Số lượng trả", "Đơn giá", "Thành tiền", "Lý do trả" };
+            String[] headers = {"Mã sản phẩm", "Tên sản phẩm", "Số lượng trả", "Đơn giá", "Thành tiền", "Lý do trả"};
             List<Integer> tableWidths = Arrays.asList(150, 250, 120, 150, 150, 250);
             tableDetail = new TableDesign(headers, tableWidths);
             scrollTableDetail.setViewportView(tableDetail.getTable());
@@ -912,20 +927,20 @@ public class GD_BaoCaoThuChi extends javax.swing.JPanel {
                         }
                     }
 
-                    tableDetail.getModelTable().addRow(new Object[] {
-                            maSanPham,
-                            tenSanPham,
-                            ct.getSoLuong(),
-                            DinhDangSo.dinhDangTien(ct.getDonGia()),
-                            DinhDangSo.dinhDangTien(ct.getThanhTien()),
-                            ct.getLyDoTra()
+                    tableDetail.getModelTable().addRow(new Object[]{
+                        maSanPham,
+                        tenSanPham,
+                        ct.getSoLuong(),
+                        DinhDangSo.dinhDangTien(ct.getDonGia()),
+                        DinhDangSo.dinhDangTien(ct.getThanhTien()),
+                        ct.getLyDoTra()
                     });
                 }
             }
         }
 
         if (loaiPhieu.equalsIgnoreCase("Nhập hàng")) {
-            String[] headers = { "Mã lô hàng", "Tên sản phẩm", "Số lượng", "Đơn giá", "Thành tiền" };
+            String[] headers = {"Mã lô hàng", "Tên sản phẩm", "Số lượng", "Đơn giá", "Thành tiền"};
             List<Integer> tableWidths = Arrays.asList(200, 300, 150, 200, 200);
             tableDetail = new TableDesign(headers, tableWidths);
             scrollTableDetail.setViewportView(tableDetail.getTable());
@@ -945,19 +960,19 @@ public class GD_BaoCaoThuChi extends javax.swing.JPanel {
                         tenSP = ct.getLoHang().getSanPham().getTenSanPham();
                     }
 
-                    tableDetail.getModelTable().addRow(new Object[] {
-                            maLoHang,
-                            tenSP,
-                            ct.getSoLuong(),
-                            DinhDangSo.dinhDangTien(ct.getDonGia()),
-                            DinhDangSo.dinhDangTien(ct.getThanhTien())
+                    tableDetail.getModelTable().addRow(new Object[]{
+                        maLoHang,
+                        tenSP,
+                        ct.getSoLuong(),
+                        DinhDangSo.dinhDangTien(ct.getDonGia()),
+                        DinhDangSo.dinhDangTien(ct.getThanhTien())
                     });
                 }
             }
         }
 
         if (loaiPhieu.equalsIgnoreCase("Xuất hủy")) {
-            String[] headers = { "Mã lô hàng", "Tên sản phẩm", "Số lượng", "Đơn giá", "Thành tiền" };
+            String[] headers = {"Mã lô hàng", "Tên sản phẩm", "Số lượng", "Đơn giá", "Thành tiền"};
             List<Integer> tableWidths = Arrays.asList(200, 300, 150, 200, 200);
             tableDetail = new TableDesign(headers, tableWidths);
             scrollTableDetail.setViewportView(tableDetail.getTable());
@@ -977,12 +992,12 @@ public class GD_BaoCaoThuChi extends javax.swing.JPanel {
                         tenSP = ct.getLoHang().getSanPham().getTenSanPham();
                     }
 
-                    tableDetail.getModelTable().addRow(new Object[] {
-                            maLoHang,
-                            tenSP,
-                            ct.getSoLuong(),
-                            DinhDangSo.dinhDangTien(ct.getDonGia()),
-                            DinhDangSo.dinhDangTien(ct.getThanhTien())
+                    tableDetail.getModelTable().addRow(new Object[]{
+                        maLoHang,
+                        tenSP,
+                        ct.getSoLuong(),
+                        DinhDangSo.dinhDangTien(ct.getDonGia()),
+                        DinhDangSo.dinhDangTien(ct.getThanhTien())
                     });
                 }
             }
