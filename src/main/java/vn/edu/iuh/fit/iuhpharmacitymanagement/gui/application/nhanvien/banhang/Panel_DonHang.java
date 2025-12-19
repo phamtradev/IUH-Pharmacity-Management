@@ -67,6 +67,7 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.LoHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhanVien;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.FontStyles;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.util.BarcodeUtil;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.util.UserSession;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.service.GiaBanTheoLoService;
@@ -116,7 +117,9 @@ public class Panel_DonHang extends javax.swing.JPanel {
 
     private void applyButtonStyles() {
         ButtonStyles.apply(btnBanHang, ButtonStyles.Type.SUCCESS);
+        FontStyles.apply(btnBanHang, FontStyles.Type.BUTTON_MEDIUM);
         ButtonStyles.apply(btnThanhToanQR, ButtonStyles.Type.INFO);
+        FontStyles.apply(btnThanhToanQR, FontStyles.Type.BUTTON_MEDIUM);
     }
 
     /**
@@ -153,8 +156,8 @@ public class Panel_DonHang extends javax.swing.JPanel {
     }
 
     /**
-     * Thiết lập phím tắt toàn màn hình cho hành động "Bán Hàng"
-     * - F1 (ưu tiên) và F8 đều kích hoạt createOrder() khi đang ở màn hình bán hàng.
+     * Thiết lập phím tắt toàn màn hình cho hành động "Bán Hàng" - F1 (ưu tiên)
+     * và F8 đều kích hoạt createOrder() khi đang ở màn hình bán hàng.
      */
     private void setupKeyBindings() {
         javax.swing.InputMap inputMap = getInputMap(WHEN_IN_FOCUSED_WINDOW);
@@ -681,7 +684,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
 
     /**
      * Tìm đơn hàng từ GD_BanHang (được gọi từ bên ngoài)
-     * 
+     *
      * @param maDonHang mã đơn hàng cần tìm
      */
     public void timDonHangTuGDBanHang(String maDonHang) {
@@ -991,7 +994,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
                 } else {
                     info.giamGiaHoaDonPhanBo = 0;
                 }
-                }
+            }
 
             // ===== BƯỚC 2: Tạo chi tiết đơn hàng và phân bổ giảm giá =====
             for (PanelPricingInfo info : pricingInfos) {
@@ -1018,12 +1021,12 @@ public class Panel_DonHang extends javax.swing.JPanel {
                     chiTiet.setGiamGiaHoaDonPhanBo(giamGiaHoaDonTheoLo);
                     chiTiet.setThanhTien(thanhTienThucTe);
 
-                if (!chiTietDonHangBUS.themChiTietDonHang(chiTiet)) {
-                    Notifications.getInstance().show(Notifications.Type.ERROR,
-                            Notifications.Location.TOP_CENTER,
-                            "Không thể lưu chi tiết đơn hàng!");
-                    return;
-                }
+                    if (!chiTietDonHangBUS.themChiTietDonHang(chiTiet)) {
+                        Notifications.getInstance().show(Notifications.Type.ERROR,
+                                Notifications.Location.TOP_CENTER,
+                                "Không thể lưu chi tiết đơn hàng!");
+                        return;
+                    }
 
                     chiTietDonHangList.add(chiTiet);
                 }
@@ -1157,7 +1160,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
 
     /**
      * Cập nhật tổng giảm giá sản phẩm
-     * 
+     *
      * @param discount Tổng số tiền giảm giá
      * @param khuyenMai Khuyến mãi được áp dụng (có thể null nếu có nhiều khuyến
      * mãi)
@@ -1171,7 +1174,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
 
     /**
      * Cập nhật tổng giảm giá hóa đơn
-     * 
+     *
      * @param discount Tổng số tiền giảm giá
      * @param khuyenMai Khuyến mãi được áp dụng (có thể null)
      */
@@ -1323,7 +1326,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
 
     /**
      * Lấy khuyến mãi đã chọn (backward compatibility)
-     * 
+     *
      * @deprecated Sử dụng getDanhSachKhuyenMaiDaChon() thay thế
      */
     @Deprecated
@@ -1347,7 +1350,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
 
     /**
      * Tự động kiểm tra và áp dụng khuyến mãi tốt nhất dựa trên giỏ hàng
-     * 
+     *
      * @param tongTienHang Tổng tiền hàng hiện tại
      * @param danhSachSanPham Map sản phẩm và số lượng trong giỏ
      */
@@ -1506,7 +1509,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
     /**
      * Áp dụng giảm giá cho tất cả Panel_ChiTietSanPham dựa trên khuyến mãi sản
      * phẩm
-     * 
+     *
      * @param kmSanPham Khuyến mãi sản phẩm (null = reset về 0)
      */
     private void apDungGiamGiaChoTatCaPanel(KhuyenMai kmSanPham) {
@@ -1563,7 +1566,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
     /**
      * Thêm các nút tiền mệnh giá gợi ý vào panel (CHỈ HIỂN THỊ KHI CÓ SẢN PHẨM)
      * Các nút này giúp người bán nhanh chóng chọn số tiền khách đưa
-     * 
+     *
      * LOGIC DỰ ĐOÁN THÔNG MINH - PHÙ HỢP VỚI MỨC GIÁ: - Ví dụ hóa đơn 1.500đ →
      * hiển thị: 2k, 3k, 5k, 10k, 20k, 50k - Ví dụ hóa đơn 44.000đ → hiển thị:
      * 44k, 45k, 50k, 100k, 200k, 500k - Ví dụ hóa đơn 567.000đ → hiển thị:
@@ -1593,10 +1596,10 @@ public class Panel_DonHang extends javax.swing.JPanel {
 
             // Các mức làm tròn thông minh (chỉ thêm nếu chênh lệch đủ lớn)
             long[] roundLevels = {
-                    ((total + 4999) / 5000) * 5000, // Làm tròn lên 5k
-                    ((total + 9999) / 10000) * 10000, // Làm tròn lên 10k
-                    ((total + 49999) / 50000) * 50000, // Làm tròn lên 50k
-                    ((total + 99999) / 100000) * 100000 // Làm tròn lên 100k
+                ((total + 4999) / 5000) * 5000, // Làm tròn lên 5k
+                ((total + 9999) / 10000) * 10000, // Làm tròn lên 10k
+                ((total + 49999) / 50000) * 50000, // Làm tròn lên 50k
+                ((total + 99999) / 100000) * 100000 // Làm tròn lên 100k
             };
 
             for (long rounded : roundLevels) {
@@ -1650,13 +1653,10 @@ public class Panel_DonHang extends javax.swing.JPanel {
     }
 
     /**
-     * Làm tròn số tiền về bội số 1.000đ theo quy tắc:
-     * - Phần lẻ từ 500đ trở lên → làm tròn lên 1.000đ
-     * - Phần lẻ dưới 500đ      → làm tròn xuống
-     * 
-     * Ví dụ:
-     *  - 10.500 → 11.000
-     *  - 10.400 → 10.000
+     * Làm tròn số tiền về bội số 1.000đ theo quy tắc: - Phần lẻ từ 500đ trở lên
+     * → làm tròn lên 1.000đ - Phần lẻ dưới 500đ → làm tròn xuống
+     *
+     * Ví dụ: - 10.500 → 11.000 - 10.400 → 10.000
      */
     private long roundToNearestThousand(long amount) {
         long remainder = amount % 1000;
@@ -1669,7 +1669,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
 
     /**
      * Tạo và thêm nút tiền vào panel
-     * 
+     *
      * @param amount số tiền hiển thị trên nút
      */
     private void addPriceSuggestButton(long amount) {
@@ -1711,7 +1711,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
 
     /**
      * Chuyển chuỗi tiền thành số VD: "1.000.000 đ" → 1000000.0
-     * 
+     *
      * @param currencyText chuỗi tiền (có dấu chấm, ký tự "đ")
      * @return giá trị số
      */
@@ -1770,7 +1770,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
 
     /**
      * Hiển thị dialog xác nhận hóa đơn (với nút In hóa đơn)
-     * 
+     *
      * @return true nếu đơn hàng bị hủy, false nếu giữ đơn hàng
      */
     private boolean hienThiXacNhanHoaDon(DonHang donHang, List<ChiTietDonHang> danhSachChiTiet,
@@ -1847,7 +1847,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
         // Đơn giá trên giao diện xác nhận hóa đơn hiển thị GIÁ CHƯA VAT,
         // Thành tiền hiển thị sau khi đã cộng VAT và trừ giảm giá
         String[] columnNames = {"STT", "Tên sản phẩm/HSD/Lô hàng", "Đơn vị", "Số lượng", "Đơn giá (chưa VAT)", "% VAT", "Đơn giá (đã VAT)", "Giảm giá",
-                "Thành tiền"};
+            "Thành tiền"};
         javax.swing.table.DefaultTableModel tableModel = new javax.swing.table.DefaultTableModel(columnNames, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -1893,7 +1893,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
         for (ChiTietDonHang chiTiet : danhSachChiTiet) {
             LoHang loHang = chiTiet.getLoHang();
             SanPham sanPham = loHang != null ? loHang.getSanPham() : null;
-            
+
             // Lấy hạn sử dụng và mã lô từ lô hàng
             String tenSPVaHSD = sanPham != null ? sanPham.getTenSanPham() : "";
             if (loHang != null && loHang.getHanSuDung() != null) {
@@ -1936,16 +1936,16 @@ public class Panel_DonHang extends javax.swing.JPanel {
                 donGiaChuaVAT = donGiaDaVAT / (1 + sanPham.getThueVAT());
             }
 
-            tableModel.addRow(new Object[] {
-                    stt++,
-                    "<html>" + tenSPVaHSD + "</html>",
-                    sanPham != null && sanPham.getDonViTinh() != null ? sanPham.getDonViTinh().getTenDonVi() : "Tuýp",
-                    chiTiet.getSoLuong(),
-                    currencyFormat.format(donGiaChuaVAT) + " đ",
-                    vatStr,
-                    currencyFormat.format(donGiaDaVAT) + " đ", // Đơn giá đã bao gồm VAT
-                    giamGia, // Tổng giảm giá (sản phẩm + hóa đơn phân bổ)
-                    currencyFormat.format(chiTiet.getThanhTien()) + " đ"
+            tableModel.addRow(new Object[]{
+                stt++,
+                "<html>" + tenSPVaHSD + "</html>",
+                sanPham != null && sanPham.getDonViTinh() != null ? sanPham.getDonViTinh().getTenDonVi() : "Tuýp",
+                chiTiet.getSoLuong(),
+                currencyFormat.format(donGiaChuaVAT) + " đ",
+                vatStr,
+                currencyFormat.format(donGiaDaVAT) + " đ", // Đơn giá đã bao gồm VAT
+                giamGia, // Tổng giảm giá (sản phẩm + hóa đơn phân bổ)
+                currencyFormat.format(chiTiet.getThanhTien()) + " đ"
             });
         }
 
@@ -2020,7 +2020,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
             lblGiamGiaHDText.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 14));
             javax.swing.JLabel lblGiamGiaHD = new javax.swing.JLabel(
                     "-" + currencyFormat.format(tongGiamGiaHoaDonPhanBo) + " đ (" + String.format("%.0f", phanTramGoc)
-                            + "%)");
+                    + "%)");
             lblGiamGiaHD.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 14));
             lblGiamGiaHD.setForeground(new Color(220, 53, 69));
             giamGiaHDPanel.add(lblGiamGiaHDText);
@@ -2357,7 +2357,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
                         .setAutoScale(false)
                         .setWidth(150);
                 document.add(barcodeImage);
-        } catch (Exception ex) {
+            } catch (Exception ex) {
                 System.err.println("Không thể tạo barcode cho hóa đơn: " + ex.getMessage());
                 document.add(new Paragraph(""));
             }
@@ -2378,7 +2378,7 @@ public class Panel_DonHang extends javax.swing.JPanel {
             infoTable.addCell(tieuDeThongTin("THONG TIN NHAN VIEN", fontBold));
 
             KhachHang khachHang = donHang.getKhachHang();
-        NhanVien nhanVien = donHang.getNhanVien();
+            NhanVien nhanVien = donHang.getNhanVien();
 
             infoTable.addCell(noiDungThongTin(font,
                     "Ho ten: " + (khachHang != null ? khachHang.getTenKhachHang() : "Vang lai") + "\n"
@@ -2400,33 +2400,33 @@ public class Panel_DonHang extends javax.swing.JPanel {
                     .useAllAvailableWidth();
             // Don gia tren hoa don in ra se la DON GIA CHUA VAT, thanh tien van giu nguyen
             String[] headerLabels = {"STT", "Ten san pham/HSD/Lo hang", "SL", "Don gia (chua VAT)", "% VAT", "Don gia (da VAT)", "Giam gia",
-                    "Thanh tien"};
+                "Thanh tien"};
             for (String label : headerLabels) {
                 itemsTable.addHeaderCell(new Cell()
                         .add(new Paragraph(label).setFont(fontBold).setFontSize(9).setTextAlignment(TextAlignment.CENTER))
                         .setBackgroundColor(ColorConstants.LIGHT_GRAY));
             }
 
-        int stt = 1;
-        for (ChiTietDonHang chiTiet : danhSachChiTiet) {
-            LoHang loHang = chiTiet.getLoHang();
-            SanPham sanPham = loHang != null ? loHang.getSanPham() : null;
-            String tenSP = sanPham != null ? sanPham.getTenSanPham() : "";
-            
-            // Lấy hạn sử dụng và mã lô từ lô hàng
-            String hanSuDungStr = "";
-            if (loHang != null && loHang.getHanSuDung() != null) {
-                String tenLoHang = loHang.getTenLoHang() != null ? loHang.getTenLoHang() : "";
-                hanSuDungStr = "HSD: " + loHang.getHanSuDung().format(dateFormatter);
-                if (!tenLoHang.isEmpty()) {
-                    hanSuDungStr += " - " + tenLoHang;
+            int stt = 1;
+            for (ChiTietDonHang chiTiet : danhSachChiTiet) {
+                LoHang loHang = chiTiet.getLoHang();
+                SanPham sanPham = loHang != null ? loHang.getSanPham() : null;
+                String tenSP = sanPham != null ? sanPham.getTenSanPham() : "";
+
+                // Lấy hạn sử dụng và mã lô từ lô hàng
+                String hanSuDungStr = "";
+                if (loHang != null && loHang.getHanSuDung() != null) {
+                    String tenLoHang = loHang.getTenLoHang() != null ? loHang.getTenLoHang() : "";
+                    hanSuDungStr = "HSD: " + loHang.getHanSuDung().format(dateFormatter);
+                    if (!tenLoHang.isEmpty()) {
+                        hanSuDungStr += " - " + tenLoHang;
+                    }
                 }
-            }
-            // Kết hợp tên sản phẩm và hạn sử dụng
-            String tenSPVaHSD = tenSP;
-            if (!hanSuDungStr.isEmpty()) {
-                tenSPVaHSD = tenSP + "\n" + hanSuDungStr;
-            }
+                // Kết hợp tên sản phẩm và hạn sử dụng
+                String tenSPVaHSD = tenSP;
+                if (!hanSuDungStr.isEmpty()) {
+                    tenSPVaHSD = tenSP + "\n" + hanSuDungStr;
+                }
 
                 // DonGia trong chi tiet la gia DA BAO GOM VAT -> doi ve gia CHUA VAT de in ra
                 double donGiaDaVAT = chiTiet.getDonGia();

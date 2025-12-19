@@ -48,7 +48,7 @@ public class GD_BanHang extends javax.swing.JPanel {
     static int transactionNumber = 1;
     private SanPhamBUS sanPhamBUS;
     private Panel_DonHang panelDonHang;
-    
+
     // TextField và Button tìm đơn hàng
     private javax.swing.JTextField txtTimDonHang;
     private javax.swing.JButton btnTimDonHang;
@@ -59,7 +59,7 @@ public class GD_BanHang extends javax.swing.JPanel {
     public GD_BanHang() {
         // Khởi tạo BUS
         sanPhamBUS = new SanPhamBUS(new SanPhamDAO());
-        
+
         lookAndFeelSet();
         initComponents();
         customUI();
@@ -67,17 +67,16 @@ public class GD_BanHang extends javax.swing.JPanel {
         addHeaderRow();
         applyStyles();
     }
-    
+
     private void applyStyles() {
         // Buttons chính
         ButtonStyles.apply(btnXoa, ButtonStyles.Type.DANGER);
         FontStyles.apply(btnXoa, FontStyles.Type.BUTTON_MEDIUM);
-        FontStyles.apply(btnXoa, FontStyles.Type.TEXT_MEDIUM);
-        
-        FontStyles.toUpperCase(
-                btnXoa,
-                btnMa
-        );
+
+//        FontStyles.toUpperCase(
+//                btnXoa,
+//                btnMa
+//        );
     }
 
     private void addPanelThanhToan() {
@@ -202,9 +201,10 @@ public class GD_BanHang extends javax.swing.JPanel {
                 + "borderColor:#CCCCCC"
         );
         txtTimDonHang.setToolTipText("Quét barcode hoặc nhập mã đơn hàng rồi nhấn Enter");
-        
+
         ButtonStyles.apply(btnTimDonHang, ButtonStyles.Type.PRIMARY);
-        
+        FontStyles.apply(btnTimDonHang, FontStyles.Type.BUTTON_MEDIUM);
+
         txtTimSanPham.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Vui lòng quét mã vạch hoặc nhập số đăng ký");
         txtTimSanPham.putClientProperty(FlatClientProperties.OUTLINE, "default");
         txtTimSanPham.putClientProperty(FlatClientProperties.STYLE,
@@ -214,13 +214,15 @@ public class GD_BanHang extends javax.swing.JPanel {
         );
 
         ButtonStyles.apply(btnMa, ButtonStyles.Type.SUCCESS);
+        FontStyles.apply(btnMa, FontStyles.Type.BUTTON_MEDIUM);
 
         ButtonStyles.apply(btnXoa, ButtonStyles.Type.DANGER);
-        
+        FontStyles.apply(btnXoa, FontStyles.Type.BUTTON_MEDIUM);
+
         javax.swing.SwingUtilities.invokeLater(() -> {
             txtTimSanPham.requestFocusInWindow();
         });
-        
+
         txtTimSanPham.addFocusListener(new java.awt.event.FocusAdapter() {
             @Override
             public void focusGained(java.awt.event.FocusEvent evt) {
@@ -381,48 +383,48 @@ public class GD_BanHang extends javax.swing.JPanel {
             timSanPham();
         }
     }//GEN-LAST:event_txtTimSanPhamKeyPressed
-    
+
     private void timSanPham() {
         String soDangKy = txtTimSanPham.getText().trim().replaceAll("[\\r\\n\\t]", "");
         txtTimSanPham.setText(soDangKy);
 
         if (soDangKy.isEmpty()) {
-            Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER, 
-                "Vui lòng nhập số đăng ký sản phẩm hoặc quét mã vạch");
+            Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER,
+                    "Vui lòng nhập số đăng ký sản phẩm hoặc quét mã vạch");
             txtTimSanPham.requestFocus();
             return;
         }
-        
+
         Optional<SanPham> sanPhamOpt = sanPhamBUS.timSanPhamTheoSoDangKy(soDangKy);
-        
+
         if (sanPhamOpt.isPresent()) {
             SanPham sanPham = sanPhamOpt.get();
 
             if (!sanPham.isHoatDong()) {
-                Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER, 
-                    "Sản phẩm '" + sanPham.getTenSanPham() + "' đã ngưng bán");
+                Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER,
+                        "Sản phẩm '" + sanPham.getTenSanPham() + "' đã ngưng bán");
                 txtTimSanPham.setText("");
                 txtTimSanPham.requestFocus();
                 return;
             }
-            
+
             themSanPhamVaoGioHang(sanPham);
             // Sau khi thêm sản phẩm thành công, tự động thu gọn menu để có nhiều không gian hiển thị
             autoHideMenuForBetterView();
-            
-            Notifications.getInstance().show(Notifications.Type.SUCCESS, Notifications.Location.TOP_CENTER, 
-                "✓ Đã thêm: " + sanPham.getTenSanPham());
-            
+
+            Notifications.getInstance().show(Notifications.Type.SUCCESS, Notifications.Location.TOP_CENTER,
+                    "✓ Đã thêm: " + sanPham.getTenSanPham());
+
             txtTimSanPham.setText("");
             txtTimSanPham.requestFocusInWindow();
         } else {
-            Notifications.getInstance().show(Notifications.Type.ERROR, Notifications.Location.TOP_CENTER, 
-                "❌ Không tìm thấy sản phẩm: " + soDangKy);
+            Notifications.getInstance().show(Notifications.Type.ERROR, Notifications.Location.TOP_CENTER,
+                    "❌ Không tìm thấy sản phẩm: " + soDangKy);
             txtTimSanPham.selectAll();
             txtTimSanPham.requestFocusInWindow();
         }
     }
-    
+
     private void themSanPhamVaoGioHang(SanPham sanPham) {
         Panel_ChiTietSanPham panelDaTonTai = null;
         for (Component comp : containerPanel.getComponents()) {
@@ -434,51 +436,51 @@ public class GD_BanHang extends javax.swing.JPanel {
                 }
             }
         }
-        
+
         LoHangBUS loHangBUS = new LoHangBUS();
         List<LoHang> danhSachLoHangGoc = loHangBUS.getLoHangBySanPham(sanPham);
-        
+
         List<LoHang> danhSachLoHangFIFO = danhSachLoHangGoc.stream()
                 .filter(lh -> lh.getTonKho() > 0 && lh.isTrangThai())
                 .sorted(Comparator.comparing(LoHang::getHanSuDung))
                 .collect(Collectors.toList());
-        
+
         int tongTonKho = danhSachLoHangFIFO.stream()
-            .mapToInt(LoHang::getTonKho)
-            .sum();
+                .mapToInt(LoHang::getTonKho)
+                .sum();
 
         int soLuongCanThem = 1;
         int soLuongHienTai = 0;
-        
+
         if (panelDaTonTai != null) {
             soLuongHienTai = panelDaTonTai.getSoLuong();
             soLuongCanThem = soLuongHienTai + 1; // Cộng dồn
         }
-        
+
         if (tongTonKho <= 0) {
             Notifications.getInstance().show(
-                Notifications.Type.ERROR, 
-                Notifications.Location.TOP_CENTER,
-                "❌ Sản phẩm '" + sanPham.getTenSanPham() + "' đã hết hàng"
+                    Notifications.Type.ERROR,
+                    Notifications.Location.TOP_CENTER,
+                    "❌ Sản phẩm '" + sanPham.getTenSanPham() + "' đã hết hàng"
             );
             return;
         }
-        
+
         if (soLuongCanThem > tongTonKho) {
             Notifications.getInstance().show(
-                Notifications.Type.WARNING, 
-                Notifications.Location.TOP_CENTER,
-                "⚠️ Chỉ còn " + tongTonKho + " " + 
-                (sanPham.getDonViTinh() != null ? sanPham.getDonViTinh().getTenDonVi() : "sản phẩm") + 
-                " '" + sanPham.getTenSanPham() + "' trong kho!"
+                    Notifications.Type.WARNING,
+                    Notifications.Location.TOP_CENTER,
+                    "⚠️ Chỉ còn " + tongTonKho + " "
+                    + (sanPham.getDonViTinh() != null ? sanPham.getDonViTinh().getTenDonVi() : "sản phẩm")
+                    + " '" + sanPham.getTenSanPham() + "' trong kho!"
             );
             return;
         }
-        
+
         if (panelDaTonTai != null) {
             final Panel_ChiTietSanPham panelFinal = panelDaTonTai;
             panelFinal.setSoLuong(soLuongCanThem);
-            
+
             panelFinal.setBackground(new java.awt.Color(200, 255, 200));
             javax.swing.Timer timer = new javax.swing.Timer(500, e -> {
                 panelFinal.setBackground(java.awt.Color.WHITE);
@@ -487,15 +489,15 @@ public class GD_BanHang extends javax.swing.JPanel {
             timer.start();
         } else {
             Panel_ChiTietSanPham panelChiTiet = new Panel_ChiTietSanPham(sanPham);
-            
+
             panelChiTiet.addPropertyChangeListener("tongTien", evt -> capNhatTongTien());
             panelChiTiet.addPropertyChangeListener("sanPhamXoa", evt -> capNhatTongTien());
-            
+
             containerPanel.add(panelChiTiet);
             containerPanel.revalidate();
             containerPanel.repaint();
         }
-        
+
         capNhatTongTien();
 
         // Sau khi đã có/ cập nhật sản phẩm trong giỏ, tự động thu gọn menu (nếu đang ở trong MainForm)
@@ -503,8 +505,8 @@ public class GD_BanHang extends javax.swing.JPanel {
     }
 
     /**
-     * Tự động thu gọn menu bên trái để tăng không gian nhìn khi bán hàng.
-     * Được gọi sau khi quét/thêm sản phẩm thành công.
+     * Tự động thu gọn menu bên trái để tăng không gian nhìn khi bán hàng. Được
+     * gọi sau khi quét/thêm sản phẩm thành công.
      */
     private void autoHideMenuForBetterView() {
         java.awt.Component ancestor = javax.swing.SwingUtilities.getAncestorOfClass(MainForm.class, this);
@@ -512,61 +514,61 @@ public class GD_BanHang extends javax.swing.JPanel {
             ((MainForm) ancestor).hideMenu();
         }
     }
-    
+
     public void capNhatTongTien() {
         double tongTienHang = 0;
         double tongGiamGiaSanPham = 0;
         double giamGiaHoaDon = 0;
-        
+
         Map<SanPham, Integer> danhSachSanPham = new HashMap<>();
-        
+
         int soLuongSanPham = 0;
         for (Component comp : containerPanel.getComponents()) {
             if (comp instanceof Panel_ChiTietSanPham) {
                 soLuongSanPham++;
             }
         }
-        
+
         if (soLuongSanPham == 0) {
             if (panelDonHang != null) {
                 panelDonHang.resetThanhToan();
             }
             return;
         }
-        
+
         for (Component comp : containerPanel.getComponents()) {
             if (comp instanceof Panel_ChiTietSanPham) {
                 Panel_ChiTietSanPham panel = (Panel_ChiTietSanPham) comp;
                 tongTienHang += panel.getTongTien();
-                
+
                 danhSachSanPham.put(panel.getSanPham(), panel.getSoLuong());
-                
+
                 panel.setGiamGia(0);
                 panel.setSoTienGiamGiaThucTe(null);
             }
         }
-        
+
         List<KhuyenMai> danhSachKMSanPham = panelDonHang.getKhuyenMaiBUS().getKhuyenMaiConHan()
                 .stream()
                 .filter(km -> km.getLoaiKhuyenMai() == LoaiKhuyenMai.SAN_PHAM)
                 .collect(Collectors.toList());
-        
+
         for (Component comp : containerPanel.getComponents()) {
             if (comp instanceof Panel_ChiTietSanPham) {
                 Panel_ChiTietSanPham panel = (Panel_ChiTietSanPham) comp;
                 KhuyenMai kmTotNhat = null;
                 double giamGiaMax = 0;
-                
+
                 for (KhuyenMai km : danhSachKMSanPham) {
-                    List<ChiTietKhuyenMaiSanPham> danhSachCTKM =
-                        panelDonHang.getChiTietKhuyenMaiSanPhamBUS()
-                            .timTheoMaKhuyenMai(km.getMaKhuyenMai());
-                    
+                    List<ChiTietKhuyenMaiSanPham> danhSachCTKM
+                            = panelDonHang.getChiTietKhuyenMaiSanPhamBUS()
+                                    .timTheoMaKhuyenMai(km.getMaKhuyenMai());
+
                     for (ChiTietKhuyenMaiSanPham ctkm : danhSachCTKM) {
                         if (ctkm.getSanPham().getMaSanPham().equals(panel.getSanPham().getMaSanPham())) {
                             int soLuongMua = panel.getSoLuong();
                             int soLuongToiDa = km.getSoLuongToiDa();
-                            
+
                             double tongTienApDung;
                             int soLuongApDung;
                             if (soLuongToiDa > 0) {
@@ -578,9 +580,9 @@ public class GD_BanHang extends javax.swing.JPanel {
                                 soLuongApDung = soLuongMua;
                                 tongTienApDung = panel.getTongTien();
                             }
-                            
+
                             double giamGia = tongTienApDung * km.getGiamGia();
-                            
+
                             if (giamGia > giamGiaMax) {
                                 giamGiaMax = giamGia;
                                 kmTotNhat = km;
@@ -589,13 +591,13 @@ public class GD_BanHang extends javax.swing.JPanel {
                         }
                     }
                 }
-                
+
                 if (kmTotNhat != null) {
                     tongGiamGiaSanPham += giamGiaMax;
-                    
+
                     int soLuongMua = panel.getSoLuong();
                     int soLuongToiDa = kmTotNhat.getSoLuongToiDa();
-                    
+
                     if (soLuongToiDa > 0 && soLuongMua > soLuongToiDa) {
                         panel.setSoTienGiamGiaThucTe(giamGiaMax);
                         panel.setGiamGia(kmTotNhat.getGiamGia(), kmTotNhat.getTenKhuyenMai());
@@ -603,7 +605,7 @@ public class GD_BanHang extends javax.swing.JPanel {
                         panel.setSoTienGiamGiaThucTe(null);
                         panel.setGiamGia(kmTotNhat.getGiamGia(), kmTotNhat.getTenKhuyenMai());
                     }
-                    
+
                     panel.setKhuyenMaiDuocApDung(kmTotNhat);
                 } else {
                     panel.setKhuyenMaiDuocApDung(null);
@@ -616,16 +618,16 @@ public class GD_BanHang extends javax.swing.JPanel {
                 .stream()
                 .filter(km -> km.getLoaiKhuyenMai() == LoaiKhuyenMai.DON_HANG)
                 .collect(Collectors.toList());
-        
+
         KhuyenMai kmDonHangTotNhat = null;
         double giamGiaDonHangMax = 0;
-        
+
         for (KhuyenMai km : danhSachKMDonHang) {
             if (tongTienHang >= km.getGiaToiThieu()) {
                 if (km.getGiaToiDa() > 0 && tongTienHang > km.getGiaToiDa()) {
                     continue;
                 }
-                
+
                 double giamGia = tongTienHang * km.getGiamGia();
 
                 if (giamGia > giamGiaDonHangMax) {
@@ -634,17 +636,17 @@ public class GD_BanHang extends javax.swing.JPanel {
                 }
             }
         }
-        
+
         if (kmDonHangTotNhat != null) {
             giamGiaHoaDon = giamGiaDonHangMax;
         }
-        
+
         Map<LoaiKhuyenMai, KhuyenMai> danhSachKMDaChon = new HashMap<>();
-        
+
         if (kmDonHangTotNhat != null) {
             danhSachKMDaChon.put(LoaiKhuyenMai.DON_HANG, kmDonHangTotNhat);
         }
-        
+
         if (panelDonHang != null) {
             panelDonHang.updateTongTienHang(tongTienHang);
             panelDonHang.updateDiscountProduct(tongGiamGiaSanPham, null);
@@ -681,22 +683,22 @@ public class GD_BanHang extends javax.swing.JPanel {
 
     private void btnXoaActionPerformed(java.awt.event.ActionEvent evt) {
         txtTimSanPham.setText("");
-        
+
         xoaToanBoGioHang();
-        
+
         txtTimSanPham.requestFocus();
-        
+
         Notifications.getInstance().show(Notifications.Type.SUCCESS, "Đã xóa trắng thành công !");
     }
-    
+
     private void txtTimDonHangActionPerformed(java.awt.event.ActionEvent evt) {
         timDonHang();
     }
-    
+
     private void btnTimDonHangActionPerformed(java.awt.event.ActionEvent evt) {
         timDonHang();
     }
-    
+
     private void timDonHang() {
         if (panelDonHang != null) {
             panelDonHang.timDonHangTuGDBanHang(txtTimDonHang.getText().trim());
@@ -704,39 +706,39 @@ public class GD_BanHang extends javax.swing.JPanel {
             txtTimSanPham.requestFocus();
         }
     }
-    
+
     public List<Panel_ChiTietSanPham> getDanhSachSanPhamTrongGio() {
         List<Panel_ChiTietSanPham> danhSach = new ArrayList<>();
-        
+
         for (Component comp : containerPanel.getComponents()) {
             if (comp instanceof Panel_ChiTietSanPham) {
                 danhSach.add((Panel_ChiTietSanPham) comp);
             }
         }
-        
+
         return danhSach;
     }
-    
+
     public void xoaToanBoGioHang() {
         List<Panel_ChiTietSanPham> danhSach = getDanhSachSanPhamTrongGio();
-        
+
         for (Panel_ChiTietSanPham panel : danhSach) {
             containerPanel.remove(panel);
         }
-        
+
         containerPanel.revalidate();
         containerPanel.repaint();
-        
+
         if (panelDonHang != null) {
             panelDonHang.resetMaDonHangHienTai();
         }
-        
+
         capNhatTongTien();
     }
-    
-    public void themSanPhamVaoGio(SanPham sanPham, 
-                                   LoHang loHang,
-                                   int soLuong) {
+
+    public void themSanPhamVaoGio(SanPham sanPham,
+            LoHang loHang,
+            int soLuong) {
         Panel_ChiTietSanPham panelDaTonTai = null;
         for (Component comp : containerPanel.getComponents()) {
             if (comp instanceof Panel_ChiTietSanPham) {
@@ -747,29 +749,29 @@ public class GD_BanHang extends javax.swing.JPanel {
                 }
             }
         }
-        
+
         if (loHang == null) {
             Notifications.getInstance().show(
-                Notifications.Type.WARNING, 
-                Notifications.Location.TOP_CENTER,
-                "⚠️ Lô hàng không tồn tại cho sản phẩm '" + sanPham.getTenSanPham() + "'!"
+                    Notifications.Type.WARNING,
+                    Notifications.Location.TOP_CENTER,
+                    "⚠️ Lô hàng không tồn tại cho sản phẩm '" + sanPham.getTenSanPham() + "'!"
             );
             return;
         }
-        
+
         if (soLuong <= 0) {
             Notifications.getInstance().show(
-                Notifications.Type.WARNING, 
-                Notifications.Location.TOP_CENTER,
-                "⚠️ Số lượng phải lớn hơn 0!"
+                    Notifications.Type.WARNING,
+                    Notifications.Location.TOP_CENTER,
+                    "⚠️ Số lượng phải lớn hơn 0!"
             );
             return;
         }
-        
+
         if (panelDaTonTai != null) {
             int soLuongMoi = panelDaTonTai.getSoLuong() + soLuong;
             panelDaTonTai.setSoLuong(soLuongMoi);
-            
+
             final Panel_ChiTietSanPham panelFinal = panelDaTonTai;
             panelFinal.setBackground(new java.awt.Color(200, 255, 200));
             javax.swing.Timer timer = new javax.swing.Timer(500, e -> {
@@ -777,14 +779,14 @@ public class GD_BanHang extends javax.swing.JPanel {
             });
             timer.setRepeats(false);
             timer.start();
-            
+
         } else {
             Panel_ChiTietSanPham panelChiTiet = new Panel_ChiTietSanPham(sanPham);
             panelChiTiet.setSoLuong(soLuong); // Set số lượng từ đơn hàng
-            
+
             panelChiTiet.addPropertyChangeListener("tongTien", evt -> capNhatTongTien());
             panelChiTiet.addPropertyChangeListener("sanPhamXoa", evt -> capNhatTongTien());
-            
+
             containerPanel.add(panelChiTiet);
             containerPanel.revalidate();
             containerPanel.repaint();
@@ -794,10 +796,10 @@ public class GD_BanHang extends javax.swing.JPanel {
                 scrollPaneProducts.getViewport().scrollRectToVisible(bounds);
             });
         }
-        
+
         capNhatTongTien();
     }
-    
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnMa;
     private javax.swing.JButton btnXoa;
@@ -808,7 +810,7 @@ public class GD_BanHang extends javax.swing.JPanel {
     private javax.swing.JPanel containerPanel;
     private javax.swing.JTextField txtTimSanPham;
     // End of variables declaration//GEN-END:variables
-    
+
     public javax.swing.JPanel getContainerPanel() {
         return containerPanel;
     }

@@ -45,7 +45,7 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
         txtCusPhoneAdd.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Số điện thoại");
         txtCusPhoneEdit.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Số điện thoại");
         txtSearchCus.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Tìm kiếm theo tên, số điện thoại, email");
-        
+
         // Thêm viền cho các TextField
         txtCusAddressAdd.putClientProperty(FlatClientProperties.STYLE, "arc:10");
         txtCusAddressEdit.putClientProperty(FlatClientProperties.STYLE, "arc:10");
@@ -56,7 +56,7 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
         txtCusPhoneAdd.putClientProperty(FlatClientProperties.STYLE, "arc:10");
         txtCusPhoneEdit.putClientProperty(FlatClientProperties.STYLE, "arc:10");
         txtSearchCus.putClientProperty(FlatClientProperties.STYLE, "arc:10");
-        
+
         UIManager.put("Button.arc", 10);
     }
 
@@ -66,24 +66,24 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
         ButtonStyles.apply(btnEditCustomer, ButtonStyles.Type.WARNING);
         ButtonStyles.apply(btnExitModalEdit, ButtonStyles.Type.SECONDARY);
         ButtonStyles.apply(btnSearch, ButtonStyles.Type.SUCCESS);
-        
+
         ButtonStyles.apply(btnAdd, ButtonStyles.Type.SUCCESS);
-        FontStyles.apply(btnAdd, FontStyles.Type.TEXT_MEDIUM);
-        
+        FontStyles.apply(btnAdd, FontStyles.Type.BUTTON_MEDIUM);
+
         ButtonStyles.apply(btnUpdate, ButtonStyles.Type.PRIMARY);
-        FontStyles.apply(btnUpdate, FontStyles.Type.TEXT_MEDIUM);
-        
+        FontStyles.apply(btnUpdate, FontStyles.Type.BUTTON_MEDIUM);
+
         ButtonStyles.apply(btnDelete, ButtonStyles.Type.DANGER);
-        FontStyles.apply(btnDelete, FontStyles.Type.TEXT_MEDIUM);
-        
-        FontStyles.apply(btnSearch, FontStyles.Type.TEXT_MEDIUM);
-        
-        FontStyles.toUpperCase(
-                btnAdd,
-                btnUpdate,
-                btnDelete,
-                btnSearch
-        );
+        FontStyles.apply(btnDelete, FontStyles.Type.BUTTON_MEDIUM);
+
+        FontStyles.apply(btnSearch, FontStyles.Type.BUTTON_MEDIUM);
+//        
+//        FontStyles.toUpperCase(
+//                btnAdd,
+//                btnUpdate,
+//                btnDelete,
+//                btnSearch
+//        );
     }
 
     private void fillTable() {
@@ -92,19 +92,19 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
         tableDesign = new TableDesign(headers, tableWidths);
         scrollTable.setViewportView(tableDesign.getTable());
         scrollTable.setBorder(BorderFactory.createEmptyBorder(15, 20, 20, 20));
-        
+
         // Load dữ liệu khách hàng từ database
         loadCustomerData();
     }
-    
+
     private void loadCustomerData() {
         try {
             // Xóa dữ liệu cũ trong bảng
             tableDesign.getModelTable().setRowCount(0);
-            
+
             // Lấy danh sách khách hàng từ BUS
             List<KhachHang> danhSachKH = khachHangBUS.getAllKhachHang();
-            
+
             // Thêm từng khách hàng vào bảng
             for (KhachHang kh : danhSachKH) {
                 tableDesign.getModelTable().addRow(new Object[]{
@@ -550,32 +550,32 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
             String diaChi = txtCusAddressAdd.getText().trim();
             String email = txtCusEmailAdd.getText().trim();
             String gioiTinh = (String) comboSexAdd.getSelectedItem();
-            
+
             // Validate dữ liệu
             if (tenKH.isEmpty()) {
                 Notifications.getInstance().show(Notifications.Type.WARNING, "Vui lòng nhập tên khách hàng!");
                 txtCusNameAdd.requestFocus();
                 return;
             }
-            
+
             if (sdt.isEmpty()) {
                 Notifications.getInstance().show(Notifications.Type.WARNING, "Vui lòng nhập số điện thoại!");
                 txtCusPhoneAdd.requestFocus();
                 return;
             }
-            
+
             if (diaChi.isEmpty()) {
                 Notifications.getInstance().show(Notifications.Type.WARNING, "Vui lòng nhập địa chỉ!");
                 txtCusAddressAdd.requestFocus();
                 return;
             }
-            
+
             if (email.isEmpty()) {
                 Notifications.getInstance().show(Notifications.Type.WARNING, "Vui lòng nhập email!");
                 txtCusEmailAdd.requestFocus();
                 return;
             }
-            
+
             // Tạo đối tượng KhachHang
             KhachHang kh = new KhachHang();
             kh.setTenKhachHang(tenKH);
@@ -583,10 +583,10 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
             kh.setDiaChi(diaChi);
             kh.setEmail(email);
             kh.setGioiTinh(gioiTinh);
-            
+
             // Gọi BUS để thêm khách hàng
             boolean isAdded = khachHangBUS.themKhachHang(kh);
-            
+
             if (isAdded) {
                 // Thêm vào bảng
                 tableDesign.getModelTable().addRow(new Object[]{
@@ -597,12 +597,12 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
                     kh.getEmail(),
                     kh.getGioiTinh()
                 });
-                
+
                 // Xóa dữ liệu form và đóng modal
                 clearData(txtCusNameAdd, txtCusPhoneAdd, txtCusAddressAdd, txtCusEmailAdd);
                 comboSexAdd.setSelectedIndex(0);
                 modalAddCustomer.dispose();
-                
+
                 Notifications.getInstance().show(Notifications.Type.SUCCESS, "Thêm khách hàng thành công!");
             } else {
                 Notifications.getInstance().show(Notifications.Type.ERROR, "Thêm khách hàng thất bại!");
@@ -620,39 +620,39 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
                 Notifications.getInstance().show(Notifications.Type.WARNING, "Vui lòng chọn khách hàng cần sửa!");
                 return;
             }
-            
+
             // Lấy dữ liệu từ form
             String tenKH = txtCusNameEdit.getText().trim();
             String sdt = txtCusPhoneEdit.getText().trim();
             String diaChi = txtCusAddressEdit.getText().trim();
             String email = txtCusEmailEdit.getText().trim();
             String gioiTinh = (String) comboSexEdit.getSelectedItem();
-            
+
             // Validate dữ liệu
             if (tenKH.isEmpty()) {
                 Notifications.getInstance().show(Notifications.Type.WARNING, "Vui lòng nhập tên khách hàng!");
                 txtCusNameEdit.requestFocus();
                 return;
             }
-            
+
             if (sdt.isEmpty()) {
                 Notifications.getInstance().show(Notifications.Type.WARNING, "Vui lòng nhập số điện thoại!");
                 txtCusPhoneEdit.requestFocus();
                 return;
             }
-            
+
             if (diaChi.isEmpty()) {
                 Notifications.getInstance().show(Notifications.Type.WARNING, "Vui lòng nhập địa chỉ!");
                 txtCusAddressEdit.requestFocus();
                 return;
             }
-            
+
             if (email.isEmpty()) {
                 Notifications.getInstance().show(Notifications.Type.WARNING, "Vui lòng nhập email!");
                 txtCusEmailEdit.requestFocus();
                 return;
             }
-            
+
             // Tạo đối tượng KhachHang với dữ liệu mới
             KhachHang kh = new KhachHang();
             kh.setMaKhachHang(customerIdEdit);
@@ -661,10 +661,10 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
             kh.setDiaChi(diaChi);
             kh.setEmail(email);
             kh.setGioiTinh(gioiTinh);
-            
+
             // Gọi BUS để cập nhật khách hàng
             boolean isUpdated = khachHangBUS.capNhatKhachHang(kh);
-            
+
             if (isUpdated) {
                 // Cập nhật lại dữ liệu trong bảng
                 int selectedRow = tableDesign.getTable().getSelectedRow();
@@ -675,13 +675,13 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
                     tableDesign.getModelTable().setValueAt(email, selectedRow, 4);
                     tableDesign.getModelTable().setValueAt(gioiTinh, selectedRow, 5);
                 }
-                
+
                 // Xóa dữ liệu form và đóng modal
                 clearData(txtCusNameEdit, txtCusPhoneEdit, txtCusAddressEdit, txtCusEmailEdit);
                 comboSexEdit.setSelectedIndex(0);
                 customerIdEdit = null;
                 modalEditCustomer.dispose();
-                
+
                 Notifications.getInstance().show(Notifications.Type.SUCCESS, "Cập nhật khách hàng thành công!");
             } else {
                 Notifications.getInstance().show(Notifications.Type.ERROR, "Cập nhật khách hàng thất bại!");
@@ -742,18 +742,18 @@ public class GD_QuanLyKhachHang extends javax.swing.JPanel {
 
         // Hiển thị hộp thoại xác nhận
         int confirm = javax.swing.JOptionPane.showConfirmDialog(
-            this,
-            "Bạn có chắc chắn muốn xóa khách hàng \"" + tenKH + "\" (Mã: " + maKH + ")?",
-            "Xác nhận xóa",
-            javax.swing.JOptionPane.YES_NO_OPTION,
-            javax.swing.JOptionPane.WARNING_MESSAGE
+                this,
+                "Bạn có chắc chắn muốn xóa khách hàng \"" + tenKH + "\" (Mã: " + maKH + ")?",
+                "Xác nhận xóa",
+                javax.swing.JOptionPane.YES_NO_OPTION,
+                javax.swing.JOptionPane.WARNING_MESSAGE
         );
 
         if (confirm == javax.swing.JOptionPane.YES_OPTION) {
             try {
                 // Gọi BUS để xóa khách hàng
                 boolean isDeleted = khachHangBUS.xoaKhachHang(maKH);
-                
+
                 if (isDeleted) {
                     // Xóa khỏi bảng
                     tableDesign.getModelTable().removeRow(selectedRow);

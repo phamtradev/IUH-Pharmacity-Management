@@ -102,40 +102,35 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         // Buttons chính
         ButtonStyles.apply(btnAdd, ButtonStyles.Type.SUCCESS);
         FontStyles.apply(btnAdd, FontStyles.Type.BUTTON_MEDIUM);
-        FontStyles.apply(btnAdd, FontStyles.Type.TEXT_MEDIUM);
         btnAdd.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnAdd.setPreferredSize(new java.awt.Dimension(95, 40));
-        
+
         ButtonStyles.apply(btnEditProduct, ButtonStyles.Type.PRIMARY);
         FontStyles.apply(btnEditProduct, FontStyles.Type.BUTTON_MEDIUM);
-        FontStyles.apply(btnEditProduct, FontStyles.Type.TEXT_MEDIUM);
         btnEditProduct.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnEditProduct.setPreferredSize(new java.awt.Dimension(95, 40));
-        
+
         ButtonStyles.apply(btnUpdate, ButtonStyles.Type.PRIMARY);
         FontStyles.apply(btnUpdate, FontStyles.Type.BUTTON_MEDIUM);
-        FontStyles.apply(btnUpdate, FontStyles.Type.TEXT_MEDIUM);
         btnUpdate.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnUpdate.setPreferredSize(new java.awt.Dimension(95, 40));
 
-        ButtonStyles.apply(btnViewDetail, ButtonStyles.Type.SUCCESS);
+        ButtonStyles.apply(btnViewDetail, ButtonStyles.Type.INFO);
         FontStyles.apply(btnViewDetail, FontStyles.Type.BUTTON_MEDIUM);
-        FontStyles.apply(btnViewDetail, FontStyles.Type.TEXT_MEDIUM);
         btnViewDetail.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnViewDetail.setPreferredSize(new java.awt.Dimension(125, 40));
 
         ButtonStyles.apply(btnOpenModalAddSup, ButtonStyles.Type.SUCCESS);
         FontStyles.apply(btnOpenModalAddSup, FontStyles.Type.BUTTON_MEDIUM);
-        FontStyles.apply(btnOpenModalAddSup, FontStyles.Type.TEXT_MEDIUM);
         btnOpenModalAddSup.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnOpenModalAddSup.setPreferredSize(new java.awt.Dimension(150, 40));
 
-        FontStyles.toUpperCase(
-                btnAdd,
-                btnViewDetail,
-                btnAddProduct,
-                btnOpenModalAddSup
-        );
+//        FontStyles.toUpperCase(
+//                btnAdd,
+//                btnViewDetail,
+//                btnAddProduct,
+//                btnOpenModalAddSup
+//        );
     }
 
     private void styleTextField(javax.swing.JTextField textField, String hintText) {

@@ -8,8 +8,8 @@ import java.util.EnumMap;
 import java.util.Map;
 
 /**
- * Tiện ích chuẩn hóa màu sắc cho các nút hành động.
- * Giúp đồng bộ giao diện giữa các dialog/screen.
+ * Tiện ích chuẩn hóa màu sắc cho các nút hành động. Giúp đồng bộ giao diện giữa
+ * các dialog/screen.
  */
 public final class ButtonStyles {
 
@@ -55,6 +55,7 @@ public final class ButtonStyles {
     }
 
     private static final class Style {
+
         private final String backgroundHex;
         private final String hoverHex;
         private final String pressedHex;
@@ -90,4 +91,3 @@ public final class ButtonStyles {
         }
     }
 }
-

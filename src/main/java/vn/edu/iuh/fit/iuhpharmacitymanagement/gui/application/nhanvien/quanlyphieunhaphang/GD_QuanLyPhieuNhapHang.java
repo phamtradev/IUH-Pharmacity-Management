@@ -71,6 +71,7 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonNhapHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhanVien;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonViTinh;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.FontStyles;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.util.BarcodeUtil;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -511,8 +512,11 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
 
     private void applyButtonStyles() {
         ButtonStyles.apply(btnMa, ButtonStyles.Type.SUCCESS);
+        FontStyles.apply(btnMa, FontStyles.Type.BUTTON_MEDIUM);
         ButtonStyles.apply(btnImportExcel, ButtonStyles.Type.INFO);
+        FontStyles.apply(btnImportExcel, FontStyles.Type.BUTTON_MEDIUM);
         ButtonStyles.apply(btnConfirmPurchase, ButtonStyles.Type.PRIMARY);
+        FontStyles.apply(btnConfirmPurchase, FontStyles.Type.BUTTON_MEDIUM);
     }
 
     private void setupPanelSanPham() {
@@ -2097,22 +2101,22 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
             }
             //chỉnh ở đây
             itemsTable.addCell(taoCellNhap("1", font, TextAlignment.CENTER));
-                itemsTable.addCell(taoCellNhap("2", font, TextAlignment.CENTER));
-                itemsTable.addCell(taoCellNhap("3", font, TextAlignment.CENTER));
-                itemsTable.addCell(taoCellNhap("4", font, TextAlignment.CENTER));
-                itemsTable.addCell(taoCellNhap("5", font, TextAlignment.CENTER));
-                itemsTable.addCell(taoCellNhap("6", font, TextAlignment.CENTER));
-                itemsTable.addCell(taoCellNhap("7", font, TextAlignment.CENTER));
-                itemsTable.addCell(taoCellNhap("8", font, TextAlignment.CENTER));
-                itemsTable.addCell(taoCellNhap("9", font, TextAlignment.CENTER));
-                itemsTable.addCell(taoCellNhap("10 = 7 x 8 x 9", font, TextAlignment.CENTER));
-                itemsTable.addCell(taoCellNhap("11 = 7 x 8 - 10", font, TextAlignment.CENTER));
-                itemsTable.addCell(taoCellNhap("12", font, TextAlignment.CENTER));
-                itemsTable.addCell(taoCellNhap("13 = 11 x 12", font, TextAlignment.LEFT));
-                itemsTable.addCell(taoCellNhap("14 = 11 + 13", font, TextAlignment.CENTER));
+            itemsTable.addCell(taoCellNhap("2", font, TextAlignment.CENTER));
+            itemsTable.addCell(taoCellNhap("3", font, TextAlignment.CENTER));
+            itemsTable.addCell(taoCellNhap("4", font, TextAlignment.CENTER));
+            itemsTable.addCell(taoCellNhap("5", font, TextAlignment.CENTER));
+            itemsTable.addCell(taoCellNhap("6", font, TextAlignment.CENTER));
+            itemsTable.addCell(taoCellNhap("7", font, TextAlignment.CENTER));
+            itemsTable.addCell(taoCellNhap("8", font, TextAlignment.CENTER));
+            itemsTable.addCell(taoCellNhap("9", font, TextAlignment.CENTER));
+            itemsTable.addCell(taoCellNhap("10 = 7 x 8 x 9", font, TextAlignment.CENTER));
+            itemsTable.addCell(taoCellNhap("11 = 7 x 8 - 10", font, TextAlignment.CENTER));
+            itemsTable.addCell(taoCellNhap("12", font, TextAlignment.CENTER));
+            itemsTable.addCell(taoCellNhap("13 = 11 x 12", font, TextAlignment.LEFT));
+            itemsTable.addCell(taoCellNhap("14 = 11 + 13", font, TextAlignment.CENTER));
 //                document.add(itemsTable);
 //                document.add(new Paragraph("\n"));
-                
+
             int stt = 1;
             for (ChiTietDonNhapHang chiTiet : danhSachChiTiet) {
                 LoHang loHang = chiTiet.getLoHang();

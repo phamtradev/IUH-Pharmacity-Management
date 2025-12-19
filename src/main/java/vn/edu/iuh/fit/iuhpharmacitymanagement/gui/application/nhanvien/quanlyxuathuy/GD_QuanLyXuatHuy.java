@@ -47,13 +47,14 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietHangHong;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.session.SessionManager;
 import raven.toast.Notifications;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.FontStyles;
 
 /**
  *
  * @author PhamTra
  */
 public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
-
+    
     private LoHangBUS loHangBUS;
     private ChiTietDonTraHangBUS chiTietDonTraHangBUS;
     private HangHongBUS hangHongBUS;
@@ -71,7 +72,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         configureMainLayout();
         applyButtonStyles();
         fillContent();
-
+        
         loadUserData();
     }
 
@@ -233,8 +234,9 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
     //áp dụng style cho các nút
     private void applyButtonStyles() {
         ButtonStyles.apply(btnTaoPhieu, ButtonStyles.Type.PRIMARY);
+        FontStyles.apply(btnTaoPhieu, FontStyles.Type.BUTTON_MEDIUM);
     }
-
+    
     private void fillContent() {
         // Tạo tiêu đề "DANH SÁCH THÔNG TIN XUẤT HỦY"
         createTitleHeader();
@@ -243,7 +245,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         // Tự động load sản phẩm hết hạn khi mở màn hình
         loadSanPhamHetHan();
     }
-
+    
     private void createTitleHeader() {
         // Tạo panel với FlowLayout giống DANH SÁCH THÔNG TIN THUỐC
         javax.swing.JPanel titlePanel = new javax.swing.JPanel(
@@ -252,16 +254,16 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         titlePanel.setPreferredSize(new java.awt.Dimension(1200, 50));
         titlePanel.setMinimumSize(new java.awt.Dimension(800, 50));
         titlePanel.setMaximumSize(new java.awt.Dimension(32767, 50));
-
+        
         javax.swing.JLabel lblTitle = new javax.swing.JLabel("DANH SÁCH THÔNG TIN XUẤT HỦY");
         lblTitle.setFont(new java.awt.Font("Segoe UI", 1, 16)); // Bold, size 16
         lblTitle.setForeground(new java.awt.Color(255, 255, 255)); // Chữ màu trắng
 
         titlePanel.add(lblTitle);
-
+        
         pnContent.add(titlePanel);
     }
-
+    
     private void createProductListHeader() {
         javax.swing.JPanel headerProductPanel = new javax.swing.JPanel();
         headerProductPanel.setBackground(new java.awt.Color(240, 248, 255));
@@ -318,7 +320,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         // Thêm header vào pnContent
         pnContent.add(headerProductPanel);
     }
-
+    
     private javax.swing.JLabel createHeaderLabel(String text, int width, int alignment) {
         javax.swing.JLabel label = new javax.swing.JLabel(text);
         label.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 14));
@@ -338,12 +340,12 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         if (pnMid == null || pnLeft == null) {
             return;
         }
-
+        
         remove(pnMid);
         remove(pnLeft);
-
+        
         add(pnMid, java.awt.BorderLayout.CENTER);
-
+        
         java.awt.Dimension barSize = pnLeft.getPreferredSize();
         if (barSize == null || barSize.height < 80) {
             barSize = new java.awt.Dimension(0, 96);
@@ -352,14 +354,14 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         pnLeft.setMinimumSize(new java.awt.Dimension(0, barSize.height));
         pnLeft.setMaximumSize(new java.awt.Dimension(Integer.MAX_VALUE, barSize.height));
         add(pnLeft, java.awt.BorderLayout.SOUTH);
-
+        
         revalidate();
         repaint();
     }
-
+    
     private void loadUserData() {
         NhanVien currentUser = SessionManager.getInstance().getCurrentUser();
-
+        
         if (currentUser != null) {
             txtEmpName.setText(currentUser.getTenNhanVien());
         } else {
@@ -377,14 +379,14 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         try {
             List<LoHang> danhSachLoHangHetHan = loHangBUS.layTatCaLoHangHetHan();
             List<ChiTietDonTraHang> danhSachHangTra = chiTietDonTraHangBUS.layTatCaChiTietCanHuy();
-
+            
             return danhSachLoHangHetHan.size() + danhSachHangTra.size();
         } catch (Exception e) {
             System.err.println("Lỗi khi đếm số đơn cần xuất hủy: " + e.getMessage());
             return 0;
         }
     }
-
+    
     private void btnTaoPhieuActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_btnTaoPhieuActionPerformed
         try {
             // 1. Kiểm tra có sản phẩm nào trong danh sách không
@@ -394,7 +396,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
                     danhSachPanel.add((Panel_ChiTietSanPhamXuatHuy) comp);
                 }
             }
-
+            
             if (danhSachPanel.isEmpty()) {
                 Notifications.getInstance().show(
                         Notifications.Type.WARNING,
@@ -410,7 +412,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
                     "Xác nhận tạo phiếu",
                     JOptionPane.YES_NO_OPTION,
                     JOptionPane.QUESTION_MESSAGE);
-
+            
             if (confirm != JOptionPane.YES_OPTION) {
                 return;
             }
@@ -442,16 +444,16 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
             java.util.Set<String> danhSachDonTraDaXuLy = new java.util.HashSet<>();
             // Track chi tiết đơn trả đã xuất hủy (maDonTra + maSanPham)
             java.util.List<vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonTraHang> danhSachChiTietDonTraDaXuatHuy = new java.util.ArrayList<>();
-
+            
             System.out.println("DEBUG: Bắt đầu xử lý " + danhSachPanel.size() + " panel...");
-
+            
             for (Panel_ChiTietSanPhamXuatHuy panel : danhSachPanel) {
                 LoHang loHang = panel.getLoHang();
                 if (loHang == null) {
                     System.err.println("Warning: Panel không có thông tin lô hàng");
                     continue;
                 }
-
+                
                 String maLoHang = loHang.getMaLoHang();
                 int soLuong = panel.getSoLuongHuy();
                 double donGia = panel.getDonGia();
@@ -483,7 +485,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
                     chiTiet.setHangHong(hangHong);
                     chiTiet.setLoHang(loHang);
                     chiTiet.setLyDoXuatHuy(lyDoXuatHuy);
-
+                    
                     mapChiTiet.put(keyUnique, chiTiet);
                     System.out.println(
                             "DEBUG: Thêm lô mới " + maLoHang + " (lý do: " + lyDoXuatHuy + ") - Số lượng: " + soLuong);
@@ -507,7 +509,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
             // 6. Hiển thị preview hóa đơn (chưa lưu vào DB, chỉ hiển thị)
             // Lưu vào DB chỉ khi bấm "In" trong dialog
             hienThiPhieuXuatHuy(hangHong, chiTietList, danhSachDonTraDaXuLy, danhSachChiTietDonTraDaXuatHuy);
-
+            
         } catch (Exception e) {
             e.printStackTrace();
             Notifications.getInstance().show(
@@ -523,14 +525,14 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         // Thêm lại 2 header
         createTitleHeader();
         createProductListHeader();
-
+        
         java.awt.Component[] components = pnContent.getComponents();
         for (java.awt.Component comp : components) {
             if (comp instanceof Panel_ChiTietSanPhamXuatHuy || comp instanceof javax.swing.JLabel) {
                 pnContent.remove(comp);
             }
         }
-
+        
         try {
             System.out.println("DEBUG GUI: Đang tải sản phẩm xuất hủy");
 
@@ -541,7 +543,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
             // 2. Lấy danh sách hàng bị trả từ ChiTietDonTraHangBUS
             List<ChiTietDonTraHang> danhSachHangTra = chiTietDonTraHangBUS.layTatCaChiTietCanHuy();
             System.out.println("DEBUG GUI: Tìm thấy " + danhSachHangTra.size() + " sản phẩm từ đơn trả hàng");
-
+            
             if (danhSachLoHangHetHan.isEmpty() && danhSachHangTra.isEmpty()) {
                 JLabel lblEmpty = new JLabel("Hiện không có sản phẩm nào cần xuất hủy.");
                 lblEmpty.setFont(new java.awt.Font("Segoe UI", java.awt.Font.ITALIC, 16));
@@ -551,9 +553,9 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
                 // Load các lô hàng hết hạn (số lượng KHÔNG thể chỉnh)
                 for (LoHang loHang : danhSachLoHangHetHan) {
                     SanPham sanPham = loHang.getSanPham();
-
+                    
                     Panel_ChiTietSanPhamXuatHuy panel = new Panel_ChiTietSanPhamXuatHuy();
-
+                    
                     panel.setTenSanPham(sanPham.getTenSanPham());
                     panel.setHinhAnh(sanPham.getHinhAnh()); // Load hình ảnh
                     // Hiển thị thông tin lô hàng
@@ -564,7 +566,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
 
                     // Lưu đối tượng LoHang vào panel
                     panel.setLoHangObject(loHang);
-
+                    
                     panel.setDonVi(sanPham.getDonViTinh().getTenDonVi());
                     // Đơn giá xuất hủy lấy theo giá nhập của lô (ưu tiên giaNhapLo), fallback về giá nhập sản phẩm
                     double donGiaHuy = loHang.getGiaNhapLo() > 0 ? loHang.getGiaNhapLo() : sanPham.getGiaNhap();
@@ -583,7 +585,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
                     // TÌM LÔ HÀNG THẬT của sản phẩm này (ưu tiên lô cũ nhất, có tồn kho)
                     String maSanPham = sanPham.getMaSanPham();
                     List<LoHang> danhSachLo = loHangBUS.layDanhSachLoHangTheoSanPham(maSanPham);
-
+                    
                     LoHang loHangChon = null;
                     for (LoHang lo : danhSachLo) {
                         if (lo.getTonKho() > 0) {
@@ -599,9 +601,9 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
                                 + ")");
                         continue;
                     }
-
+                    
                     Panel_ChiTietSanPhamXuatHuy panel = new Panel_ChiTietSanPhamXuatHuy();
-
+                    
                     panel.setTenSanPham(sanPham.getTenSanPham());
                     String hinhAnh = sanPham.getHinhAnh();
                     System.out.println(
@@ -618,7 +620,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
 
                     // LƯU THÔNG TIN CHI TIẾT ĐƠN TRẢ VÀO PANEL
                     panel.setChiTietDonTra(chiTiet);
-
+                    
                     panel.setDonVi(sanPham.getDonViTinh().getTenDonVi());
                     panel.setDonGia(chiTiet.getDonGia());
                     panel.setSoLuongHuy(chiTiet.getSoLuong());
@@ -633,7 +635,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
             pnContent.revalidate();
             pnContent.repaint();
             updateTongTien();
-
+            
         } catch (Exception e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(this, "Lỗi khi tải danh sách sản phẩm hết hạn: " + e.getMessage());
@@ -660,7 +662,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
     public javax.swing.JPanel getPnContent() {
         return pnContent;
     }
-
+    
     private void jLabel5AncestorAdded(javax.swing.event.AncestorEvent evt) {// GEN-FIRST:event_jLabel5AncestorAdded
         // TODO add your handling code here:
     }// GEN-LAST:event_jLabel5AncestorAdded
@@ -703,7 +705,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
                 String maLoHang = loHang.getMaLoHang();
                 int soLuongXuatHuy = chiTiet.getSoLuong();
                 String lyDoXuatHuy = chiTiet.getLyDoXuatHuy();
-
+                
                 if (lyDoXuatHuy != null && lyDoXuatHuy.contains("Hết hạn")) {
                     int tonKhoHienTai = mapTonKhoBanDau.get(maLoHang);
                     loHangBUS.updateTonKho(maLoHang, -tonKhoHienTai);
@@ -723,7 +725,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
                 if (daCapNhatTrangThai.contains(maLoHang)) {
                     continue;
                 }
-
+                
                 int soLuongXuatHuy = chiTiet.getSoLuong();
                 String lyDoXuatHuy = chiTiet.getLyDoXuatHuy();
                 int tonKhoBanDau = mapTonKhoBanDau.get(maLoHang);
@@ -783,7 +785,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
                     }
                 }
             }
-
+            
             return true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -803,15 +805,15 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
                 ngayHienTai.getDayOfMonth(),
                 ngayHienTai.getMonthValue(),
                 ngayHienTai.getYear());
-
+        
         String prefixHienTai = "HH" + ngayThangNam;
-
+        
         try (java.sql.Connection con = vn.edu.iuh.fit.iuhpharmacitymanagement.connectDB.ConnectDB.getConnection(); java.sql.PreparedStatement stmt = con.prepareStatement(
                 "SELECT TOP 1 maHangHong FROM HangHong WHERE maHangHong LIKE ? ORDER BY maHangHong DESC")) {
-
+            
             stmt.setString(1, prefixHienTai + "%");
             java.sql.ResultSet rs = stmt.executeQuery();
-
+            
             if (rs.next()) {
                 String maCuoi = rs.getString("maHangHong");
                 try {
@@ -823,7 +825,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
                     System.err.println("Mã phiếu xuất hủy không hợp lệ: " + maCuoi + ". Tạo mã mới.");
                 }
             }
-
+            
         } catch (java.sql.SQLException e) {
             e.printStackTrace();
         }
@@ -878,7 +880,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         javax.swing.JPanel headerPanel = new javax.swing.JPanel();
         headerPanel.setLayout(new javax.swing.BoxLayout(headerPanel, javax.swing.BoxLayout.Y_AXIS));
         headerPanel.setBackground(java.awt.Color.WHITE);
-
+        
         javax.swing.JLabel lblTitle = new javax.swing.JLabel("PHIẾU XUẤT HỦY");
         lblTitle.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 24));
         lblTitle.setForeground(new java.awt.Color(220, 53, 69));
@@ -896,20 +898,20 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         headerPanel.add(
                 createInfoLabel("Ngày lập: ", dateFormat.format(java.sql.Date.valueOf(hangHong.getNgayNhap())), false));
         headerPanel.add(createInfoLabel("Nhân viên: ", hangHong.getNhanVien().getTenNhanVien(), false));
-
+        
         mainPanel.add(headerPanel, java.awt.BorderLayout.NORTH);
 
         // === CHI TIẾT SẢN PHẨM ===
         String[] columnNames = {"STT", "Tên sản phẩm", "Lô", "HSD", "ĐV", "SL", "Đơn giá", "Thành tiền", "Lý do"};
         javax.swing.table.DefaultTableModel modelDetail = new javax.swing.table.DefaultTableModel(columnNames, 0);
-
+        
         int stt = 1;
         for (ChiTietHangHong chiTiet : danhSachChiTiet) {
             LoHang loHang = chiTiet.getLoHang();
             if (loHang == null || loHang.getSanPham() == null) {
                 continue;
             }
-
+            
             SanPham sp = loHang.getSanPham();
             String hsd = loHang.getHanSuDung() != null ? loHang.getHanSuDung().toString() : "N/A";
 
@@ -919,7 +921,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
                 // Fallback nếu không có lý do
                 lyDo = getLyDoFromLoHang(loHang);
             }
-
+            
             modelDetail.addRow(new Object[]{
                 stt++,
                 sp.getTenSanPham(),
@@ -932,12 +934,12 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
                 lyDo
             });
         }
-
+        
         javax.swing.JTable tableDetail = new javax.swing.JTable(modelDetail);
         tableDetail.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 12));
         tableDetail.setRowHeight(30);
         tableDetail.getTableHeader().setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 12));
-
+        
         javax.swing.JScrollPane scrollPane = new javax.swing.JScrollPane(tableDetail);
         mainPanel.add(scrollPane, java.awt.BorderLayout.CENTER);
 
@@ -946,16 +948,16 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         footerPanel.setLayout(new java.awt.BorderLayout());
         footerPanel.setBackground(java.awt.Color.WHITE);
         footerPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 0, 0, 0));
-
+        
         javax.swing.JPanel tongTienPanel = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT));
         tongTienPanel.setBackground(java.awt.Color.WHITE);
-
+        
         javax.swing.JLabel lblTongTien = new javax.swing.JLabel(
                 "TỔNG GIÁ TRỊ XUẤT HỦY:  " + currencyFormat.format(hangHong.getThanhTien()) + " ₫");
         lblTongTien.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 18));
         lblTongTien.setForeground(new java.awt.Color(220, 53, 69));
         tongTienPanel.add(lblTongTien);
-
+        
         footerPanel.add(tongTienPanel, java.awt.BorderLayout.NORTH);
 
         // === NÚT ĐÓNG VÀ IN HÓA ĐƠN ===
@@ -977,11 +979,11 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
                         "Không có dữ liệu sản phẩm để xuất PDF!");
                 return;
             }
-
+            
             try {
                 // Lưu vào DB trước khi xuất PDF
                 boolean luuThanhCong = luuPhieuXuatHuyVaoDB(hangHong, danhSachChiTiet, danhSachDonTraDaXuLy, danhSachChiTietDonTraDaXuatHuy);
-
+                
                 if (!luuThanhCong) {
                     Notifications.getInstance().show(
                             Notifications.Type.ERROR,
@@ -992,7 +994,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
                 // Xuất PDF sau khi lưu thành công (mã phiếu đã được tạo)
                 byte[] pdfData = taoHoaDonXuatHuyPdf(hangHong, danhSachChiTiet);
                 String pdfPath = hienThiPdfTamThoiXuatHuy(pdfData, hangHong);
-
+                
                 Notifications.getInstance().show(
                         Notifications.Type.SUCCESS,
                         Notifications.Location.TOP_CENTER,
@@ -1001,7 +1003,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
 
                 // Xóa trắng danh sách sản phẩm sau khi lưu thành công
                 xoaTrangDanhSachSanPham();
-
+                
                 dialog.dispose();
             } catch (Exception ex) {
                 ex.printStackTrace();
@@ -1035,12 +1037,12 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         btnDong.addActionListener(e -> {
             dialog.dispose();
         });
-
+        
         buttonPanel.add(btnInHoaDon);
         buttonPanel.add(btnHuy);
         buttonPanel.add(btnDong);
         footerPanel.add(buttonPanel, java.awt.BorderLayout.SOUTH);
-
+        
         mainPanel.add(footerPanel, java.awt.BorderLayout.SOUTH);
 
         // Thêm mainPanel vào scroll pane
@@ -1048,33 +1050,33 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         dialog.add(mainScrollPane);
         dialog.setVisible(true);
     }
-
+    
     private javax.swing.JPanel createInfoLabel(String title, String value, boolean bold) {
         javax.swing.JPanel panel = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 0, 5));
         panel.setBackground(java.awt.Color.WHITE);
-
+        
         javax.swing.JLabel lblTitle = new javax.swing.JLabel(title);
         lblTitle.setFont(new java.awt.Font("Segoe UI", bold ? java.awt.Font.BOLD : java.awt.Font.PLAIN, 14));
-
+        
         javax.swing.JLabel lblValue = new javax.swing.JLabel(value);
         lblValue.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 14));
-
+        
         panel.add(lblTitle);
         panel.add(lblValue);
-
+        
         return panel;
     }
-
+    
     private String getLyDoFromLoHang(LoHang loHang) {
         if (loHang.getMaLoHang().startsWith("HANGTRA_")) {
             return "Hàng trả lại";
         }
-
+        
         if (loHang.getHanSuDung() != null) {
             LocalDate hsd = loHang.getHanSuDung();
             LocalDate now = LocalDate.now();
             long monthsUntilExpiry = java.time.temporal.ChronoUnit.MONTHS.between(now, hsd);
-
+            
             if (monthsUntilExpiry <= 0) {
                 return "Hết hạn sử dụng";
             } else if (monthsUntilExpiry <= 6) {
@@ -1126,13 +1128,13 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         lblStoreName.setAlignmentX(java.awt.Component.CENTER_ALIGNMENT);
         mainPanel.add(lblStoreName);
         mainPanel.add(javax.swing.Box.createVerticalStrut(3));
-
+        
         javax.swing.JLabel lblAddress = new javax.swing.JLabel("12 Nguyen Van Bao, Ward 4, Go Vap District, HCMC");
         lblAddress.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 9));
         lblAddress.setAlignmentX(java.awt.Component.CENTER_ALIGNMENT);
         mainPanel.add(lblAddress);
         mainPanel.add(javax.swing.Box.createVerticalStrut(2));
-
+        
         javax.swing.JLabel lblContact = new javax.swing.JLabel("Hotline: 1800 6928 | Email: cskh@pharmacity.vn");
         lblContact.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 9));
         lblContact.setAlignmentX(java.awt.Component.CENTER_ALIGNMENT);
@@ -1154,7 +1156,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
                         .taoBarcode(hangHong.getMaHangHong());
                 java.awt.image.BufferedImage barcodeWithText = vn.edu.iuh.fit.iuhpharmacitymanagement.util.BarcodeUtil
                         .addTextBelow(barcodeImage, hangHong.getMaHangHong());
-
+                
                 javax.swing.JLabel lblBarcode = new javax.swing.JLabel(new javax.swing.ImageIcon(barcodeWithText));
                 lblBarcode.setAlignmentX(java.awt.Component.CENTER_ALIGNMENT);
                 mainPanel.add(lblBarcode);
@@ -1163,7 +1165,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
             }
         }
         mainPanel.add(javax.swing.Box.createVerticalStrut(2));
-
+        
         String ngayLap = hangHong.getNgayNhap().format(dateFormatter);
         javax.swing.JLabel lblDate = new javax.swing.JLabel("Ngay lap: " + ngayLap);
         lblDate.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 10));
@@ -1176,25 +1178,25 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         infoPanel.setLayout(new javax.swing.BoxLayout(infoPanel, javax.swing.BoxLayout.Y_AXIS));
         infoPanel.setBackground(java.awt.Color.WHITE);
         infoPanel.setMaximumSize(new java.awt.Dimension(600, 80));
-
+        
         NhanVien nhanVien = hangHong.getNhanVien();
         javax.swing.JPanel employeePanel = new javax.swing.JPanel();
         employeePanel.setLayout(new javax.swing.BoxLayout(employeePanel, javax.swing.BoxLayout.Y_AXIS));
         employeePanel.setBackground(java.awt.Color.WHITE);
         employeePanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(3, 3, 3, 3));
-
+        
         javax.swing.JLabel lblEmployeeTitle = new javax.swing.JLabel("THONG TIN NHAN VIEN");
         lblEmployeeTitle.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 9));
         lblEmployeeTitle.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
         employeePanel.add(lblEmployeeTitle);
         employeePanel.add(javax.swing.Box.createVerticalStrut(3));
-
+        
         if (nhanVien != null) {
             javax.swing.JLabel lblEmployeeName = new javax.swing.JLabel("Ho ten: " + nhanVien.getTenNhanVien());
             lblEmployeeName.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 9));
             lblEmployeeName.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
             employeePanel.add(lblEmployeeName);
-
+            
             if (nhanVien.getSoDienThoai() != null) {
                 javax.swing.JLabel lblEmployeePhone = new javax.swing.JLabel("SDT: " + nhanVien.getSoDienThoai());
                 lblEmployeePhone.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 9));
@@ -1202,7 +1204,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
                 employeePanel.add(lblEmployeePhone);
             }
         }
-
+        
         infoPanel.add(employeePanel);
         mainPanel.add(infoPanel);
         mainPanel.add(javax.swing.Box.createVerticalStrut(10));
@@ -1215,7 +1217,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
                 return false;
             }
         };
-
+        
         javax.swing.JTable table = new javax.swing.JTable(tableModel);
         table.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 9));
         table.setRowHeight(28);
@@ -1251,14 +1253,14 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
             if (loHang == null || loHang.getSanPham() == null) {
                 continue;
             }
-
+            
             SanPham sp = loHang.getSanPham();
             String tenLo = loHang.getTenLoHang() != null ? loHang.getTenLoHang() : loHang.getMaLoHang();
             String lyDo = chiTiet.getLyDoXuatHuy();
             if (lyDo == null || lyDo.trim().isEmpty()) {
                 lyDo = getLyDoFromLoHang(loHang);
             }
-
+            
             tableModel.addRow(new Object[]{
                 stt++,
                 sp.getTenSanPham(),
@@ -1269,7 +1271,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
                 lyDo
             });
         }
-
+        
         javax.swing.JScrollPane tableScrollPane = new javax.swing.JScrollPane(table);
         tableScrollPane.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(200, 200, 200)));
         tableScrollPane.setPreferredSize(new java.awt.Dimension(580, 250));
@@ -1289,17 +1291,17 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
             javax.swing.JPanel rowPanel = new javax.swing.JPanel(new java.awt.BorderLayout());
             rowPanel.setBackground(java.awt.Color.WHITE);
             rowPanel.setMaximumSize(new java.awt.Dimension(450, 25));
-
+            
             javax.swing.JLabel lblLeft = new javax.swing.JLabel(label);
             lblLeft.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 10));
-
+            
             javax.swing.JLabel lblRight = new javax.swing.JLabel(value);
             lblRight.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 10));
             lblRight.setHorizontalAlignment(javax.swing.JLabel.RIGHT);
-
+            
             rowPanel.add(lblLeft, java.awt.BorderLayout.WEST);
             rowPanel.add(lblRight, java.awt.BorderLayout.EAST);
-
+            
             paymentPanel.add(rowPanel);
             paymentPanel.add(javax.swing.Box.createVerticalStrut(3));
         };
@@ -1318,19 +1320,19 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         javax.swing.JPanel thanhTienPanel = new javax.swing.JPanel(new java.awt.BorderLayout());
         thanhTienPanel.setBackground(java.awt.Color.WHITE);
         thanhTienPanel.setMaximumSize(new java.awt.Dimension(450, 30));
-
+        
         javax.swing.JLabel lblThanhTienLeft = new javax.swing.JLabel("TONG GIA TRI XUAT HUY:");
         lblThanhTienLeft.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 12));
-
+        
         javax.swing.JLabel lblThanhTienRight = new javax.swing.JLabel(
                 currencyFormat.format(hangHong.getThanhTien()) + " đ");
         lblThanhTienRight.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 12));
         lblThanhTienRight.setForeground(new java.awt.Color(220, 53, 69));
         lblThanhTienRight.setHorizontalAlignment(javax.swing.JLabel.RIGHT);
-
+        
         thanhTienPanel.add(lblThanhTienLeft, java.awt.BorderLayout.WEST);
         thanhTienPanel.add(lblThanhTienRight, java.awt.BorderLayout.EAST);
-
+        
         paymentPanel.add(thanhTienPanel);
         paymentPanel.add(javax.swing.Box.createVerticalStrut(5));
 
@@ -1339,7 +1341,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         separator2Panel.setBackground(new java.awt.Color(200, 200, 200));
         separator2Panel.setMaximumSize(new java.awt.Dimension(450, 1));
         paymentPanel.add(separator2Panel);
-
+        
         mainPanel.add(paymentPanel);
         mainPanel.add(javax.swing.Box.createVerticalStrut(15));
 
@@ -1352,7 +1354,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
 
         // Thêm mainPanel vào scrollPane
         mainScrollPane.setViewportView(mainPanel);
-
+        
         dialog.add(mainScrollPane);
         dialog.setVisible(true);
     }
@@ -1368,7 +1370,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         // Load lại danh sách sản phẩm cần xuất hủy (loadSanPhamHetHan đã xóa và tạo lại
         // header)
         loadSanPhamHetHan();
-
+        
         System.out.println("DEBUG: Đã xóa và load lại danh sách sản phẩm sau khi tạo phiếu");
     }
 
@@ -1378,16 +1380,16 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
     private byte[] taoHoaDonXuatHuyPdf(HangHong hangHong,
             java.util.List<ChiTietHangHong> danhSachChiTiet)
             throws IOException {
-
+        
         java.text.DecimalFormat currencyFormat = new java.text.DecimalFormat("#,###");
         java.time.format.DateTimeFormatter dateFormatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
-
+        
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream(); PdfWriter writer = new PdfWriter(baos); PdfDocument pdfDoc = new PdfDocument(writer); Document document = new Document(pdfDoc, PageSize.A5)) {
-
+            
             document.setMargins(24, 24, 24, 24);
             PdfFont font = PdfFontFactory.createFont(StandardFonts.HELVETICA);
             PdfFont fontBold = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
-
+            
             document.add(new Paragraph("IUH PHARMACITY")
                     .setFont(fontBold)
                     .setFontSize(16)
@@ -1401,7 +1403,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
                     .setFont(font)
                     .setFontSize(9)
                     .setTextAlignment(TextAlignment.CENTER));
-
+            
             String maPhieu = (hangHong != null && hangHong.getMaHangHong() != null)
                     ? hangHong.getMaHangHong()
                     : "UNKNOWN";
@@ -1419,13 +1421,13 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
             } catch (Exception ex) {
                 document.add(new Paragraph(""));
             }
-
+            
             document.add(new Paragraph("PHIEU XUAT HUY")
                     .setFont(fontBold)
                     .setFontSize(13)
                     .setTextAlignment(TextAlignment.CENTER)
                     .setFontColor(ColorConstants.RED));
-
+            
             LocalDate ngayLap = (hangHong != null && hangHong.getNgayNhap() != null)
                     ? hangHong.getNgayNhap()
                     : LocalDate.now();
@@ -1433,24 +1435,24 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
                     .setFont(font)
                     .setFontSize(9)
                     .setTextAlignment(TextAlignment.CENTER));
-
+            
             Table infoTable = new Table(UnitValue.createPercentArray(new float[]{1}))
                     .useAllAvailableWidth();
             infoTable.addCell(new Cell()
                     .add(new Paragraph("THONG TIN NHAN VIEN").setFont(fontBold).setFontSize(9))
                     .setBackgroundColor(ColorConstants.LIGHT_GRAY)
                     .setTextAlignment(TextAlignment.CENTER));
-
+            
             NhanVien nhanVien = hangHong != null ? hangHong.getNhanVien() : null;
             String nhanVienInfo = (nhanVien != null ? "Ho ten: " + nhanVien.getTenNhanVien() : "Ho ten: N/A")
                     + (nhanVien != null && nhanVien.getSoDienThoai() != null
                     ? "\nSDT: " + nhanVien.getSoDienThoai()
                     : "");
-
+            
             infoTable.addCell(new Cell().add(new Paragraph(nhanVienInfo).setFont(font).setFontSize(9)));
             document.add(infoTable);
             document.add(new Paragraph("\n"));
-
+            
             Table itemsTable = new Table(UnitValue.createPercentArray(new float[]{8, 28, 12, 12, 16, 16, 8}))
                     .useAllAvailableWidth();
             String[] headers = {"STT", "Ten san pham", "Lo", "SL", "Don gia", "Thanh tien", "Ly do"};
@@ -1459,14 +1461,14 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
                         .add(new Paragraph(header).setFont(fontBold).setFontSize(9).setTextAlignment(TextAlignment.CENTER))
                         .setBackgroundColor(ColorConstants.LIGHT_GRAY));
             }
-
+            
             int stt = 1;
             for (ChiTietHangHong chiTiet : danhSachChiTiet) {
                 LoHang loHang = chiTiet.getLoHang();
                 if (loHang == null || loHang.getSanPham() == null) {
                     continue;
                 }
-
+                
                 SanPham sp = loHang.getSanPham();
                 String tenSP = sp.getTenSanPham();
                 String tenLo = loHang.getTenLoHang() != null ? loHang.getTenLoHang() : loHang.getMaLoHang();
@@ -1477,7 +1479,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
                 if (lyDo == null || lyDo.trim().isEmpty()) {
                     lyDo = getLyDoFromLoHang(loHang);
                 }
-
+                
                 itemsTable.addCell(new Cell().add(new Paragraph(String.valueOf(stt++))
                         .setFont(font)
                         .setFontSize(9)
@@ -1498,10 +1500,10 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
                         .setTextAlignment(TextAlignment.RIGHT)));
                 itemsTable.addCell(new Cell().add(new Paragraph(lyDo).setFont(font).setFontSize(9)));
             }
-
+            
             document.add(itemsTable);
             document.add(new Paragraph("\n"));
-
+            
             Table summaryTable = new Table(UnitValue.createPercentArray(new float[]{60, 40}))
                     .setHorizontalAlignment(HorizontalAlignment.CENTER)
                     .setWidth(UnitValue.createPercentValue(80));
@@ -1514,7 +1516,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
                             .setFont(fontBold)
                             .setFontSize(9)
                             .setTextAlignment(TextAlignment.RIGHT)));
-
+            
             document.add(summaryTable);
             document.add(new Paragraph("\nCam on ban da su dung he thong!")
                     .setFont(font)
@@ -1524,7 +1526,7 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
                     .setFont(font)
                     .setFontSize(8)
                     .setTextAlignment(TextAlignment.CENTER));
-
+            
             document.close();
             return baos.toByteArray();
         }
@@ -1535,17 +1537,17 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
      */
     private String hienThiPdfTamThoiXuatHuy(byte[] pdfData, HangHong hangHong)
             throws IOException {
-
+        
         if (pdfData == null || pdfData.length == 0) {
             throw new IOException("Dữ liệu PDF rỗng.");
         }
-
+        
         java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("ddMMyyyy");
         LocalDate ngayXuatHuy = (hangHong != null && hangHong.getNgayNhap() != null)
                 ? hangHong.getNgayNhap()
                 : LocalDate.now();
         String datePart = ngayXuatHuy.format(formatter);
-
+        
         String maHangHong = hangHong != null ? hangHong.getMaHangHong() : "";
         if (maHangHong == null) {
             maHangHong = "";
@@ -1554,24 +1556,24 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
         String last4 = numericCode.length() >= 4
                 ? numericCode.substring(numericCode.length() - 4)
                 : (numericCode.isEmpty() ? String.format("%04d", (int) (Math.random() * 10000)) : numericCode);
-
+        
         String baseFileName = String.format("phieu-xuat-huy-%s-%s", datePart, last4);
         Path tempDir = Path.of(System.getProperty("java.io.tmpdir"));
         Path tempFile = tempDir.resolve(baseFileName + ".pdf");
-
+        
         int counter = 1;
         while (Files.exists(tempFile)) {
             tempFile = tempDir.resolve(baseFileName + "-" + counter++ + ".pdf");
         }
-
+        
         Files.write(tempFile, pdfData, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING,
                 StandardOpenOption.WRITE);
         tempFile.toFile().deleteOnExit();
-
+        
         if (!Desktop.isDesktopSupported() || !Desktop.getDesktop().isSupported(Desktop.Action.OPEN)) {
             throw new IOException("Máy tính không hỗ trợ mở PDF tự động.");
         }
-
+        
         Desktop.getDesktop().open(tempFile.toFile());
         return tempFile.toAbsolutePath().toString();
     }
