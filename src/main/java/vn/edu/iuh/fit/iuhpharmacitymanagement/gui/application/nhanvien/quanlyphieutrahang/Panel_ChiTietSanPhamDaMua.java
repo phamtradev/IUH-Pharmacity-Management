@@ -4,6 +4,7 @@
  */
 package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.nhanvien.quanlyphieutrahang;
 
+import com.formdev.flatlaf.extras.FlatSVGIcon;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -123,9 +124,15 @@ public class Panel_ChiTietSanPhamDaMua extends javax.swing.JPanel {
 
         // 7. Icon trạng thái (checkmark màu xanh lá)
         javax.swing.JLabel lblStatus = new javax.swing.JLabel();
-        lblStatus.setFont(new java.awt.Font("Segoe UI", 1, 20));
-        lblStatus.setForeground(new java.awt.Color(34, 197, 94)); // Màu xanh lá
-        lblStatus.setText("✓");
+        try {
+            FlatSVGIcon checkIcon = new FlatSVGIcon("img/icons/check.svg", 30, 30);
+            lblStatus.setIcon(checkIcon);
+        } catch (Exception e) {
+            // Fallback to text if icon fails to load
+            lblStatus.setFont(new java.awt.Font("Segoe UI", 1, 20));
+            lblStatus.setForeground(new java.awt.Color(34, 197, 94)); // Màu xanh lá
+            lblStatus.setText("✓");
+        }
         lblStatus.setPreferredSize(new java.awt.Dimension(50, 100));
         lblStatus.setMinimumSize(new java.awt.Dimension(50, 100));
         lblStatus.setMaximumSize(new java.awt.Dimension(50, 100));
