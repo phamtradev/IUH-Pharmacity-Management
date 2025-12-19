@@ -9,6 +9,7 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.ChiTietDonHangBUS;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.DonHangBUS;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.DonNhapHangBUS;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.DonTraHangBUS;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.ChiTietDonHangDAO.ProductSalesSummary;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonNhapHang;
@@ -36,6 +37,11 @@ public class Panel_TongQuan extends javax.swing.JPanel {
     private final ChiTietDonHangBUS chiTietDonHangBUS;
 
     private String currentChartType = "Doanh thu"; // "Doanh thu" hoặc "Sản phẩm"
+    
+    // Cache dữ liệu để tránh load lại nhiều lần
+    private List<DonHang> cachedAllOrders = null;
+    private List<ChiTietDonHang> cachedAllOrderDetails = null;
+    private boolean isDataLoaded = false;
 
     public Panel_TongQuan() {
         donHangBUS = new DonHangBUS();
@@ -43,9 +49,39 @@ public class Panel_TongQuan extends javax.swing.JPanel {
         donNhapHangBUS = new DonNhapHangBUS();
         chiTietDonHangBUS = new ChiTietDonHangBUS();
         initComponents();
+        
+        // Load dữ liệu trong background thread để không block UI
+        loadDataInBackground();
+        
         initChart();
         initHeader();
         chart.start();
+    }
+    
+    /**
+     * Load dữ liệu trong background thread để không block UI
+     */
+    private void loadDataInBackground() {
+        new Thread(() -> {
+            try {
+                // Load dữ liệu đơn hàng và chi tiết đơn hàng một lần
+                cachedAllOrders = donHangBUS.layTatCaDonHang();
+                cachedAllOrderDetails = chiTietDonHangBUS.layTatCaChiTietDonHang();
+                isDataLoaded = true;
+                
+                // Sau khi load xong, cập nhật lại chart nếu đã được khởi tạo
+                javax.swing.SwingUtilities.invokeLater(() -> {
+                    if (chart != null) {
+                        changeDateSelect();
+                    }
+                });
+            } catch (Exception e) {
+                System.err.println("Lỗi khi load dữ liệu: " + e.getMessage());
+                e.printStackTrace();
+                // Fallback: load lại khi cần
+                isDataLoaded = false;
+            }
+        }).start();
     }
 
     private void initHeader() {
@@ -117,7 +153,9 @@ public class Panel_TongQuan extends javax.swing.JPanel {
     private void loadDataChart7Days() {
         chart.clear();
         LocalDate today = LocalDate.now();
-        List<DonHang> allOrders = donHangBUS.layTatCaDonHang();
+        
+        // Sử dụng cache nếu đã load, nếu chưa thì load trực tiếp
+        List<DonHang> allOrders = isDataLoaded ? cachedAllOrders : donHangBUS.layTatCaDonHang();
 
         for (int i = 6; i >= 0; i--) {
             LocalDate date = today.minusDays(i);
@@ -136,7 +174,10 @@ public class Panel_TongQuan extends javax.swing.JPanel {
     private void loadDataChartToday() {
         chart.clear();
         LocalDate today = LocalDate.now();
-        List<DonHang> todayOrders = donHangBUS.layTatCaDonHang().stream()
+        
+        // Sử dụng cache nếu đã load
+        List<DonHang> allOrders = isDataLoaded ? cachedAllOrders : donHangBUS.layTatCaDonHang();
+        List<DonHang> todayOrders = allOrders.stream()
                 .filter(dh -> dh.getNgayDatHang() != null && dh.getNgayDatHang().equals(today))
                 .collect(Collectors.toList());
 
@@ -153,7 +194,10 @@ public class Panel_TongQuan extends javax.swing.JPanel {
     private void loadDataChartYesterday() {
         chart.clear();
         LocalDate yesterday = LocalDate.now().minusDays(1);
-        List<DonHang> yesterdayOrders = donHangBUS.layTatCaDonHang().stream()
+        
+        // Sử dụng cache nếu đã load
+        List<DonHang> allOrders = isDataLoaded ? cachedAllOrders : donHangBUS.layTatCaDonHang();
+        List<DonHang> yesterdayOrders = allOrders.stream()
                 .filter(dh -> dh.getNgayDatHang() != null && dh.getNgayDatHang().equals(yesterday))
                 .collect(Collectors.toList());
 
@@ -170,7 +214,9 @@ public class Panel_TongQuan extends javax.swing.JPanel {
         chart.clear();
         LocalDate today = LocalDate.now();
         LocalDate lastDay = today.with(TemporalAdjusters.lastDayOfMonth());
-        List<DonHang> allOrders = donHangBUS.layTatCaDonHang();
+        
+        // Sử dụng cache nếu đã load
+        List<DonHang> allOrders = isDataLoaded ? cachedAllOrders : donHangBUS.layTatCaDonHang();
 
         for (int day = 1; day <= lastDay.getDayOfMonth(); day++) {
             LocalDate date = LocalDate.of(today.getYear(), today.getMonth(), day);
@@ -190,7 +236,9 @@ public class Panel_TongQuan extends javax.swing.JPanel {
         LocalDate today = LocalDate.now();
         LocalDate firstDayLastMonth = today.minusMonths(1).with(TemporalAdjusters.firstDayOfMonth());
         LocalDate lastDayLastMonth = today.minusMonths(1).with(TemporalAdjusters.lastDayOfMonth());
-        List<DonHang> allOrders = donHangBUS.layTatCaDonHang();
+        
+        // Sử dụng cache nếu đã load
+        List<DonHang> allOrders = isDataLoaded ? cachedAllOrders : donHangBUS.layTatCaDonHang();
 
         for (int day = 1; day <= lastDayLastMonth.getDayOfMonth(); day++) {
             LocalDate date = LocalDate.of(firstDayLastMonth.getYear(), firstDayLastMonth.getMonth(), day);
@@ -586,23 +634,30 @@ public class Panel_TongQuan extends javax.swing.JPanel {
         }
     }
 
-    // ==================== THỐNG KÊ SẢN PHẨM ====================
+    // ==================== THỐNG KÊ SẢN PHẨM BÁN CHẠY ====================
     private void loadProductChart7Days() {
         chart.clear();
         LocalDate today = LocalDate.now();
-        List<ChiTietDonHang> allDetails = chiTietDonHangBUS.layTatCaChiTietDonHang();
-
-        for (int i = 6; i >= 0; i--) {
-            LocalDate date = today.minusDays(i);
-
-            int totalQuantity = allDetails.stream()
-                    .filter(ct -> ct.getDonHang() != null && ct.getDonHang().getNgayDatHang() != null
-                    && ct.getDonHang().getNgayDatHang().equals(date))
-                    .mapToInt(ChiTietDonHang::getSoLuong)
-                    .sum();
-
-            String label = date.getDayOfMonth() + "/" + date.getMonthValue();
-            chart.addData(new ModelChart(label, new double[]{totalQuantity}));
+        LocalDate dateFrom = today.minusDays(6);
+        
+        // Lấy top 10 sản phẩm bán chạy trong 7 ngày qua
+        List<ProductSalesSummary> topProducts = chiTietDonHangBUS.layTopSanPhamBanChay(
+            dateFrom, today, null, 10
+        );
+        
+        if (topProducts.isEmpty()) {
+            chart.addData(new ModelChart("Không có dữ liệu", new double[]{0}));
+        } else {
+            // Hiển thị top sản phẩm bán chạy theo doanh thu (giá)
+            for (ProductSalesSummary product : topProducts) {
+                String fullProductName = product.getProductName(); // Tên đầy đủ cho tooltip
+                // Rút gọn tên sản phẩm nếu quá dài để hiển thị trên chart
+                String displayName = fullProductName;
+                if (displayName.length() > 15) {
+                    displayName = displayName.substring(0, 12) + "...";
+                }
+                chart.addData(new ModelChart(displayName, new double[]{product.getTotalRevenue()}, fullProductName));
+            }
         }
         chart.start();
     }
@@ -610,53 +665,75 @@ public class Panel_TongQuan extends javax.swing.JPanel {
     private void loadProductChartToday() {
         chart.clear();
         LocalDate today = LocalDate.now();
-        List<ChiTietDonHang> allDetails = chiTietDonHangBUS.layTatCaChiTietDonHang();
-
-        // Lấy tổng số lượng sản phẩm trong ngày hôm nay
-        int totalQuantity = allDetails.stream()
-                .filter(ct -> ct.getDonHang() != null && ct.getDonHang().getNgayDatHang() != null
-                && ct.getDonHang().getNgayDatHang().equals(today))
-                .mapToInt(ChiTietDonHang::getSoLuong)
-                .sum();
-
-        // Hiển thị tổng số lượng trong 1 cột duy nhất
-        chart.addData(new ModelChart("Hôm nay", new double[]{totalQuantity}));
+        
+        // Lấy top 10 sản phẩm bán chạy hôm nay
+        List<ProductSalesSummary> topProducts = chiTietDonHangBUS.layTopSanPhamBanChay(
+            today, today, null, 10
+        );
+        
+        if (topProducts.isEmpty()) {
+            chart.addData(new ModelChart("Không có dữ liệu", new double[]{0}));
+        } else {
+            // Hiển thị top sản phẩm bán chạy theo doanh thu (giá)
+            for (ProductSalesSummary product : topProducts) {
+                String fullProductName = product.getProductName(); // Tên đầy đủ cho tooltip
+                String displayName = fullProductName;
+                if (displayName.length() > 15) {
+                    displayName = displayName.substring(0, 12) + "...";
+                }
+                chart.addData(new ModelChart(displayName, new double[]{product.getTotalRevenue()}, fullProductName));
+            }
+        }
         chart.start();
     }
 
     private void loadProductChartYesterday() {
         chart.clear();
         LocalDate yesterday = LocalDate.now().minusDays(1);
-        List<ChiTietDonHang> allDetails = chiTietDonHangBUS.layTatCaChiTietDonHang();
-
-        // Lấy tổng số lượng sản phẩm trong ngày hôm qua
-        int totalQuantity = allDetails.stream()
-                .filter(ct -> ct.getDonHang() != null && ct.getDonHang().getNgayDatHang() != null
-                && ct.getDonHang().getNgayDatHang().equals(yesterday))
-                .mapToInt(ChiTietDonHang::getSoLuong)
-                .sum();
-
-        // Hiển thị tổng số lượng trong 1 cột duy nhất
-        chart.addData(new ModelChart("Hôm qua", new double[]{totalQuantity}));
+        
+        // Lấy top 10 sản phẩm bán chạy hôm qua
+        List<ProductSalesSummary> topProducts = chiTietDonHangBUS.layTopSanPhamBanChay(
+            yesterday, yesterday, null, 10
+        );
+        
+        if (topProducts.isEmpty()) {
+            chart.addData(new ModelChart("Không có dữ liệu", new double[]{0}));
+        } else {
+            // Hiển thị top sản phẩm bán chạy theo doanh thu (giá)
+            for (ProductSalesSummary product : topProducts) {
+                String fullProductName = product.getProductName(); // Tên đầy đủ cho tooltip
+                String displayName = fullProductName;
+                if (displayName.length() > 15) {
+                    displayName = displayName.substring(0, 12) + "...";
+                }
+                chart.addData(new ModelChart(displayName, new double[]{product.getTotalRevenue()}, fullProductName));
+            }
+        }
         chart.start();
     }
 
     private void loadProductChartThisMonth() {
         chart.clear();
         LocalDate today = LocalDate.now();
-        LocalDate lastDay = today.with(TemporalAdjusters.lastDayOfMonth());
-        List<ChiTietDonHang> allDetails = chiTietDonHangBUS.layTatCaChiTietDonHang();
-
-        for (int day = 1; day <= lastDay.getDayOfMonth(); day++) {
-            LocalDate date = LocalDate.of(today.getYear(), today.getMonth(), day);
-
-            int totalQuantity = allDetails.stream()
-                    .filter(ct -> ct.getDonHang() != null && ct.getDonHang().getNgayDatHang() != null
-                    && ct.getDonHang().getNgayDatHang().equals(date))
-                    .mapToInt(ChiTietDonHang::getSoLuong)
-                    .sum();
-
-            chart.addData(new ModelChart(day + "", new double[]{totalQuantity}));
+        LocalDate firstDay = today.with(TemporalAdjusters.firstDayOfMonth());
+        
+        // Lấy top 15 sản phẩm bán chạy trong tháng này
+        List<ProductSalesSummary> topProducts = chiTietDonHangBUS.layTopSanPhamBanChay(
+            firstDay, today, null, 15
+        );
+        
+        if (topProducts.isEmpty()) {
+            chart.addData(new ModelChart("Không có dữ liệu", new double[]{0}));
+        } else {
+            // Hiển thị top sản phẩm bán chạy theo doanh thu (giá)
+            for (ProductSalesSummary product : topProducts) {
+                String fullProductName = product.getProductName(); // Tên đầy đủ cho tooltip
+                String displayName = fullProductName;
+                if (displayName.length() > 15) {
+                    displayName = displayName.substring(0, 12) + "...";
+                }
+                chart.addData(new ModelChart(displayName, new double[]{product.getTotalRevenue()}, fullProductName));
+            }
         }
         chart.start();
     }
@@ -664,19 +741,26 @@ public class Panel_TongQuan extends javax.swing.JPanel {
     private void loadProductChartLastMonth() {
         chart.clear();
         LocalDate lastMonth = LocalDate.now().minusMonths(1);
+        LocalDate firstDay = lastMonth.with(TemporalAdjusters.firstDayOfMonth());
         LocalDate lastDay = lastMonth.with(TemporalAdjusters.lastDayOfMonth());
-        List<ChiTietDonHang> allDetails = chiTietDonHangBUS.layTatCaChiTietDonHang();
-
-        for (int day = 1; day <= lastDay.getDayOfMonth(); day++) {
-            LocalDate date = LocalDate.of(lastMonth.getYear(), lastMonth.getMonth(), day);
-
-            int totalQuantity = allDetails.stream()
-                    .filter(ct -> ct.getDonHang() != null && ct.getDonHang().getNgayDatHang() != null
-                    && ct.getDonHang().getNgayDatHang().equals(date))
-                    .mapToInt(ChiTietDonHang::getSoLuong)
-                    .sum();
-
-            chart.addData(new ModelChart(day + "", new double[]{totalQuantity}));
+        
+        // Lấy top 15 sản phẩm bán chạy trong tháng trước
+        List<ProductSalesSummary> topProducts = chiTietDonHangBUS.layTopSanPhamBanChay(
+            firstDay, lastDay, null, 15
+        );
+        
+        if (topProducts.isEmpty()) {
+            chart.addData(new ModelChart("Không có dữ liệu", new double[]{0}));
+        } else {
+            // Hiển thị top sản phẩm bán chạy theo doanh thu (giá)
+            for (ProductSalesSummary product : topProducts) {
+                String fullProductName = product.getProductName(); // Tên đầy đủ cho tooltip
+                String displayName = fullProductName;
+                if (displayName.length() > 15) {
+                    displayName = displayName.substring(0, 12) + "...";
+                }
+                chart.addData(new ModelChart(displayName, new double[]{product.getTotalRevenue()}, fullProductName));
+            }
         }
         chart.start();
     }

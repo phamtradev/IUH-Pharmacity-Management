@@ -1,6 +1,7 @@
 package vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.piechart;
 
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -30,15 +31,22 @@ public class PieChart extends JPanel {
     public PieChart() {
         setOpaque(false);
         setPreferredSize(new Dimension(320, 320));
+        
+        // Enable tooltip
+        setToolTipText(""); // Set empty string để enable tooltip
         ToolTipManager toolTipManager = ToolTipManager.sharedInstance();
         toolTipManager.registerComponent(this);
         toolTipManager.setInitialDelay(0); // Hiển thị ngay lập tức
         toolTipManager.setReshowDelay(0); // Hiển thị lại ngay khi di chuyển
         toolTipManager.setDismissDelay(5000); // Giữ tooltip 5 giây
+        
+        // Đảm bảo component có thể nhận mouse events
+        setEnabled(true);
     }
 
     public void setData(List<PieChartItem> data) {
         items.clear();
+        sliceInfos.clear(); // Clear sliceInfos khi data thay đổi
         if (data != null) {
             items.addAll(data);
         }
@@ -47,6 +55,7 @@ public class PieChart extends JPanel {
 
     public void clear() {
         items.clear();
+        sliceInfos.clear(); // Clear sliceInfos khi clear
         repaint();
     }
 
@@ -60,6 +69,8 @@ public class PieChart extends JPanel {
 
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        
+        // Clear sliceInfos trước khi tạo lại
         sliceInfos.clear();
 
         double total = items.stream()
@@ -74,7 +85,6 @@ public class PieChart extends JPanel {
         if (total <= 0 || items.isEmpty() || size <= 0) {
             drawEmptyMessage(g2);
             g2.dispose();
-            setToolTipText(null);
             return;
         }
 
@@ -82,6 +92,8 @@ public class PieChart extends JPanel {
         double radius = size / 2d;
         double centerX = x + radius;
         double centerY = y + radius;
+        
+        // Tạo lại sliceInfos với thông tin đầy đủ
         for (PieChartItem item : items) {
             if (item.getValue() <= 0) {
                 continue;
@@ -91,7 +103,10 @@ public class PieChart extends JPanel {
             g2.setColor(item.getColor());
             g2.fill(new Arc2D.Double(x, y, size, size, startAngle, -angle, Arc2D.PIE));
             drawSliceLabel(g2, x, y, size, startAngle, angle, percent);
-            sliceInfos.add(new SliceInfo(item, startAngle, angle, centerX, centerY, radius, percent));
+            
+            // Lưu thông tin slice với tọa độ và góc chính xác
+            // Lưu ý: extent phải là giá trị âm để phù hợp với Arc2D (quay ngược chiều kim đồng hồ)
+            sliceInfos.add(new SliceInfo(item, startAngle, -angle, centerX, centerY, radius, percent));
             startAngle -= angle;
         }
 
@@ -134,24 +149,65 @@ public class PieChart extends JPanel {
         if (event == null) {
             return null;
         }
+        
         // Đảm bảo tooltip hiển thị ngay lập tức
         ToolTipManager toolTipManager = ToolTipManager.sharedInstance();
         toolTipManager.setInitialDelay(0);
         toolTipManager.setReshowDelay(0);
         toolTipManager.setDismissDelay(5000);
         
-        SliceInfo slice = findSliceAt(event.getPoint());
+        // Tìm slice tại vị trí chuột
+        Point point = event.getPoint();
+        SliceInfo slice = findSliceAt(point);
+        
         if (slice == null) {
+            // Debug: có thể log để kiểm tra
             return null;
         }
-        return String.format("%s: %s (%.1f%%)",
-                slice.item.getLabel(),
-                valueFormat.format(slice.item.getValue()),
-                slice.percent * 100);
+        
+        // Hiển thị tooltip với tên đầy đủ và thông tin chi tiết
+        String label = slice.item.getLabel();
+        String value = valueFormat.format(slice.item.getValue());
+        double percent = slice.percent * 100;
+        
+        // Format tooltip với HTML để hiển thị đẹp hơn
+        return String.format("<html><b>%s</b><br>Tổng: %s<br>Tỷ lệ: %.1f%%</html>",
+                htmlEscape(label),
+                value,
+                percent);
+    }
+    
+    /**
+     * Escape HTML special characters để tránh lỗi hiển thị
+     */
+    private String htmlEscape(String text) {
+        if (text == null) {
+            return "";
+        }
+        return text.replace("&", "&amp;")
+                   .replace("<", "&lt;")
+                   .replace(">", "&gt;")
+                   .replace("\"", "&quot;")
+                   .replace("'", "&#39;");
     }
 
     private SliceInfo findSliceAt(Point point) {
-        for (SliceInfo info : sliceInfos) {
+        // sliceInfos được tạo lại mỗi lần paintComponent
+        // Nếu rỗng nhưng có items, có thể component chưa được vẽ lần đầu
+        if (sliceInfos.isEmpty()) {
+            if (!items.isEmpty()) {
+                // Component chưa được vẽ, trigger repaint
+                // Nhưng không thể chờ repaint xong, nên return null lần này
+                // Tooltip sẽ hoạt động sau khi component được vẽ
+                return null;
+            }
+            return null;
+        }
+        
+        // Tìm slice chứa điểm chuột
+        // Duyệt ngược để ưu tiên slice được vẽ sau (có thể overlap)
+        for (int i = sliceInfos.size() - 1; i >= 0; i--) {
+            SliceInfo info = sliceInfos.get(i);
             if (info.contains(point.x, point.y)) {
                 return info;
             }
@@ -167,6 +223,7 @@ public class PieChart extends JPanel {
         private final double centerY;
         private final double radius;
         private final double percent;
+        private final Arc2D.Double arc; // Lưu Arc2D để dùng contains()
 
         private SliceInfo(PieChartItem item, double startAngle, double extent,
                           double centerX, double centerY, double radius, double percent) {
@@ -177,24 +234,18 @@ public class PieChart extends JPanel {
             this.centerY = centerY;
             this.radius = radius;
             this.percent = percent;
+            
+            // Tạo Arc2D để dùng contains() method
+            // Tính toán vị trí và kích thước của arc
+            double size = radius * 2;
+            double x = centerX - radius;
+            double y = centerY - radius;
+            this.arc = new Arc2D.Double(x, y, size, size, startAngle, extent, Arc2D.PIE);
         }
 
         private boolean contains(int x, int y) {
-            double dx = x - centerX;
-            double dy = centerY - y; // invert Y axis
-            double distance = Math.hypot(dx, dy);
-            if (distance <= 0 || distance > radius) {
-                return false;
-            }
-            double angle = Math.toDegrees(Math.atan2(dy, dx));
-            if (angle < 0) {
-                angle += 360;
-            }
-            double endAngle = normalizeAngle(startAngle - extent);
-            if (startAngle >= endAngle) {
-                return angle <= startAngle && angle >= endAngle;
-            }
-            return angle <= startAngle || angle >= endAngle;
+            // Sử dụng Arc2D.contains() để kiểm tra chính xác
+            return arc.contains(x, y);
         }
 
         private static double normalizeAngle(double angle) {

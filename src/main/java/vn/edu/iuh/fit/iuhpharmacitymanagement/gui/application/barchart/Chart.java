@@ -92,7 +92,8 @@ public class Chart extends javax.swing.JPanel {
                         // Lưu thông tin cột với tọa độ absolute trong BlankPlotChart
                         double value = model.get(index).getValues()[i];
                         String label = model.get(index).getLabel();
-                        barInfos.add(new BarInfo(barX, barY, barWidth, barHeight, value, legend.getName(), label, size));
+                        String fullLabel = model.get(index).getFullLabel();
+                        barInfos.add(new BarInfo(barX, barY, barWidth, barHeight, value, legend.getName(), label, fullLabel, size));
                     }
 
                     x += seriesSpace + seriesSize; // Cập nhật vị trí x cho cột tiếp theo
@@ -147,8 +148,10 @@ public class Chart extends javax.swing.JPanel {
         // Dùng Rectangle.contains() để check chính xác hơn
         for (BarInfo barInfo : barInfos) {
             if (barInfo.contains(point.x, point.y)) {
+                // Hiển thị tên đầy đủ trong tooltip
+                String displayLabel = barInfo.getFullLabel();
                 return String.format("%s - %s: %s", 
-                    barInfo.getLabel(),
+                    displayLabel,
                     barInfo.getLegendName(),
                     valueFormatter.apply(barInfo.getValue()));
             }
@@ -163,13 +166,15 @@ public class Chart extends javax.swing.JPanel {
         private final java.awt.Rectangle rect; // Dùng Rectangle để check contains dễ hơn
         private final double value;
         private final String legendName;
-        private final String label;
+        private final String label; // Label rút gọn để hiển thị trên chart
+        private final String fullLabel; // Tên đầy đủ để hiển thị trong tooltip
         
-        public BarInfo(int x, int y, int width, int height, double value, String legendName, String label, SeriesSize seriesSize) {
+        public BarInfo(int x, int y, int width, int height, double value, String legendName, String label, String fullLabel, SeriesSize seriesSize) {
             this.rect = new java.awt.Rectangle(x, y, width, height);
             this.value = value;
             this.legendName = legendName;
             this.label = label;
+            this.fullLabel = fullLabel != null ? fullLabel : label;
         }
         
         public boolean contains(int px, int py) {
@@ -191,6 +196,10 @@ public class Chart extends javax.swing.JPanel {
         
         public String getLabel() {
             return label;
+        }
+        
+        public String getFullLabel() {
+            return fullLabel;
         }
     }
 
