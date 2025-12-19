@@ -27,7 +27,7 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.FontStyles;
 
 /**
  *
- * 
+ *
  * @author PhamTra
  */
 public class GD_QuanLyNhanVien extends javax.swing.JPanel {
@@ -52,7 +52,7 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
         ButtonStyles.apply(btnXoa, ButtonStyles.Type.DANGER);
         ButtonStyles.apply(btnTimKiem, ButtonStyles.Type.SUCCESS);
         ButtonStyles.apply(btnDatLaiMatKhau, ButtonStyles.Type.WARNING);
-        
+
         // Style cho các button trong dialog
         ButtonStyles.apply(btnAddNewEmployee, ButtonStyles.Type.SUCCESS);
         ButtonStyles.apply(btnCancelAddEmployee, ButtonStyles.Type.SECONDARY);
@@ -60,12 +60,6 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
         ButtonStyles.apply(btnCancelUpdateEmployee, ButtonStyles.Type.DANGER);
         ButtonStyles.apply(btnCofirmResetPassword, ButtonStyles.Type.PRIMARY);
         ButtonStyles.apply(btnCancelResetPassword, ButtonStyles.Type.DANGER);
-        
-        FontStyles.apply(btnThem, FontStyles.Type.TEXT_MEDIUM);
-        FontStyles.apply(btnSua, FontStyles.Type.TEXT_MEDIUM);
-        FontStyles.apply(btnXoa, FontStyles.Type.TEXT_MEDIUM);
-        FontStyles.apply(btnTimKiem, FontStyles.Type.TEXT_MEDIUM);
-        FontStyles.apply(btnDatLaiMatKhau, FontStyles.Type.TEXT_MEDIUM);
 
         setUIManager();
         fillTable();
@@ -123,7 +117,7 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
             txtAddPassword.requestFocus();
             return false;
         }
-        
+
         // Validate mật khẩu theo regex
         if (!password.trim().matches(TaiKhoan.MAT_KHAU_REGEX)) {
             Notifications.getInstance().show(Notifications.Type.ERROR, TaiKhoan.MAT_KHAU_SAI);
@@ -215,7 +209,7 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
     }
 
     private void fillTable() {
-        String[] headers = { "Mã nhân viên", "Tên nhân viên", "CCCD", "Email", "Số điện thoại", "Địa chỉ", "Vai trò", "Giới tính" };
+        String[] headers = {"Mã nhân viên", "Tên nhân viên", "CCCD", "Email", "Số điện thoại", "Địa chỉ", "Vai trò", "Giới tính"};
         List<Integer> tableWidths = Arrays.asList(80, 140, 120, 200, 120, 200, 100, 100);
         tableDesign = new TableDesign(headers, tableWidths);
         scrollEmployee.setViewportView(tableDesign.getTable());
@@ -232,15 +226,15 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
     private void fillContent(List<NhanVien> employees) {
         tableDesign.getModelTable().setRowCount(0);
         for (NhanVien nv : employees) {
-            tableDesign.getModelTable().addRow(new Object[] {
-                    nv.getMaNhanVien(),
-                    nv.getTenNhanVien(),
-                    nv.getCccd(),
-                    nv.getEmail(),
-                    nv.getSoDienThoai(),
-                    nv.getDiaChi(),
-                    nv.getVaiTro(),
-                    nv.getGioiTinh()
+            tableDesign.getModelTable().addRow(new Object[]{
+                nv.getMaNhanVien(),
+                nv.getTenNhanVien(),
+                nv.getCccd(),
+                nv.getEmail(),
+                nv.getSoDienThoai(),
+                nv.getDiaChi(),
+                nv.getVaiTro(),
+                nv.getGioiTinh()
             });
         }
     }
@@ -1181,7 +1175,7 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
 
             nhanVienBUS.taoNhanVien(emp);
             boolean taoTaiKhoanThanhCong = taiKhoanBUS.taoTaiKhoan(acc);
-            
+
             if (!taoTaiKhoanThanhCong) {
                 Notifications.getInstance().show(Notifications.Type.ERROR, "Lỗi khi tạo tài khoản! Vui lòng kiểm tra lại mật khẩu.");
                 return;
@@ -1368,7 +1362,6 @@ public class GD_QuanLyNhanVien extends javax.swing.JPanel {
             modalResetPassword.setVisible(true);
         }
     }// GEN-LAST:event_btnDatLaiMatKhauActionPerformed
-
 
     private String openImageChooser(String currentPath) {
         JFileChooser fileChooser = new JFileChooser();

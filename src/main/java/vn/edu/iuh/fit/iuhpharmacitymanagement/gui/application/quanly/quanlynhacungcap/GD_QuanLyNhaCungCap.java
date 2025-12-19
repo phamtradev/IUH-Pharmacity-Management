@@ -29,64 +29,60 @@ public class GD_QuanLyNhaCungCap extends javax.swing.JPanel {
     public GD_QuanLyNhaCungCap() {
         this.nhaCungCapBUS = new NhaCungCapBUS();
         initComponents();
-        
+
         // Áp dụng ButtonStyles và FontStyles
         applyStyles();
-        
+
         setUIManager();
         fillTable();
         setupModalSize();
     }
-    
+
     private void applyStyles() {
         // Buttons chính
         ButtonStyles.apply(btnThem, ButtonStyles.Type.SUCCESS);
         FontStyles.apply(btnThem, FontStyles.Type.BUTTON_MEDIUM);
         btnThem.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnThem.setPreferredSize(new java.awt.Dimension(95, 40));
-        FontStyles.apply(btnThem, FontStyles.Type.TEXT_MEDIUM);
-        
+
         ButtonStyles.apply(btnSua, ButtonStyles.Type.PRIMARY);
         FontStyles.apply(btnSua, FontStyles.Type.BUTTON_MEDIUM);
         btnSua.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnSua.setPreferredSize(new java.awt.Dimension(95, 40));
-        FontStyles.apply(btnSua, FontStyles.Type.TEXT_MEDIUM);
-        
+
         ButtonStyles.apply(btnXoa, ButtonStyles.Type.DANGER);
         FontStyles.apply(btnXoa, FontStyles.Type.BUTTON_MEDIUM);
         btnXoa.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnXoa.setPreferredSize(new java.awt.Dimension(95, 40));
-        FontStyles.apply(btnXoa, FontStyles.Type.TEXT_MEDIUM);
-        
+
         ButtonStyles.apply(btnTimKiem, ButtonStyles.Type.SUCCESS);
         FontStyles.apply(btnTimKiem, FontStyles.Type.BUTTON_MEDIUM);
         btnTimKiem.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnTimKiem.setPreferredSize(new java.awt.Dimension(150, 40));
-        FontStyles.apply(btnTimKiem, FontStyles.Type.TEXT_MEDIUM);
-        
+
         // Buttons trong modal
         ButtonStyles.apply(btnSupplierAdd, ButtonStyles.Type.SUCCESS);
         FontStyles.apply(btnSupplierAdd, FontStyles.Type.BUTTON_MEDIUM);
-        
+
         ButtonStyles.apply(btnSupplierEdit, ButtonStyles.Type.PRIMARY);
         FontStyles.apply(btnSupplierEdit, FontStyles.Type.BUTTON_MEDIUM);
-        
+
         ButtonStyles.apply(btnSupplierExit, ButtonStyles.Type.DANGER);
         FontStyles.apply(btnSupplierExit, FontStyles.Type.BUTTON_MEDIUM);
-        
+
         ButtonStyles.apply(btnSupplierExit2, ButtonStyles.Type.DANGER);
         FontStyles.apply(btnSupplierExit2, FontStyles.Type.BUTTON_MEDIUM);
     }
-    
+
     private void setupModalSize() {
         // Tăng kích thước modal lên 900x800
         modelSupplierAdd.setSize(900, 800);
         modelSupplierEdit.setSize(900, 800);
-        
+
         // Thêm tiêu đề đẹp cho modal
         modelSupplierAdd.setTitle("THÊM NHÀ CUNG CẤP MỚI");
         modelSupplierEdit.setTitle("CẬP NHẬT THÔNG TIN NHÀ CUNG CẤP");
-        
+
         // Loại bỏ viền thừa của panel trong modal
         jPanel7.putClientProperty(FlatClientProperties.STYLE, "background:#F8F9FA;border:0,0,0,0");
         jPanel8.putClientProperty(FlatClientProperties.STYLE, "background:#F8F9FA;border:0,0,0,0");
@@ -140,7 +136,7 @@ public class GD_QuanLyNhaCungCap extends javax.swing.JPanel {
     private void loadSampleData() {
         DefaultTableModel model = tableDesign.getModelTable();
         model.setRowCount(0);
-        
+
         try {
             List<vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhaCungCap> danhSachNCC = nhaCungCapBUS.layTatCaNhaCungCap();
             for (vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhaCungCap ncc : danhSachNCC) {
@@ -656,16 +652,16 @@ public class GD_QuanLyNhaCungCap extends javax.swing.JPanel {
     private void txtTimKiemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtTimKiemActionPerformed
         performSearch();
     }//GEN-LAST:event_txtTimKiemActionPerformed
-    
+
     private void performSearch() {
         String keyword = txtTimKiem.getText().trim();
-        
+
         // Xóa dữ liệu cũ trong bảng
         tableDesign.getModelTable().setRowCount(0);
-        
+
         try {
             List<vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhaCungCap> danhSachNCC;
-            
+
             // Nếu từ khóa rỗng, load tất cả
             if (keyword.isEmpty()) {
                 danhSachNCC = nhaCungCapBUS.layTatCaNhaCungCap();
@@ -673,7 +669,7 @@ public class GD_QuanLyNhaCungCap extends javax.swing.JPanel {
                 // Tìm kiếm theo tên, số điện thoại, email
                 danhSachNCC = nhaCungCapBUS.timKiemTheoText(keyword);
             }
-            
+
             // Thêm kết quả tìm kiếm vào bảng
             for (vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhaCungCap ncc : danhSachNCC) {
                 tableDesign.getModelTable().addRow(new Object[]{
@@ -685,7 +681,7 @@ public class GD_QuanLyNhaCungCap extends javax.swing.JPanel {
                     ncc.getMaSoThue()
                 });
             }
-            
+
             // Hiển thị thông báo nếu không tìm thấy
             if (danhSachNCC.isEmpty() && !keyword.isEmpty()) {
                 Notifications.getInstance().show(Notifications.Type.INFO, Notifications.Location.TOP_CENTER, 2000, "Không tìm thấy nhà cung cấp nào!");
@@ -762,38 +758,38 @@ public class GD_QuanLyNhaCungCap extends javax.swing.JPanel {
             String diaChi = txtSupAddressEdit.getText().trim();
             String email = txtSupEmailEdit.getText().trim();
             String maSoThue = txtSupTaxCodeEdit.getText().trim();
-            
+
             // Validation
             if (tenNCC.isEmpty()) {
                 Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER, 2500, "Vui lòng nhập tên nhà cung cấp!");
                 txtSupNameEdit.requestFocus();
                 return;
             }
-            
+
             if (sdt.isEmpty() || !sdt.matches("^0[0-9]{9}$")) {
                 Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER, 2500, "Số điện thoại phải bắt đầu bằng 0 và gồm 10 chữ số!");
                 txtSupPhoneEdit.requestFocus();
                 return;
             }
-            
+
             if (diaChi.isEmpty()) {
                 Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER, 2500, "Vui lòng nhập địa chỉ!");
                 txtSupAddressEdit.requestFocus();
                 return;
             }
-            
+
             if (email.isEmpty() || !email.matches("^[^@]+@[^@]+\\.[a-zA-Z]{2,}$")) {
                 Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER, 2500, "Email không đúng định dạng!");
                 txtSupEmailEdit.requestFocus();
                 return;
             }
-            
+
             if (maSoThue.isEmpty() || !maSoThue.matches("^[0-9]{10}(-[0-9]{3})?$")) {
                 Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER, 2500, "Mã số thuế phải gồm 10 số hoặc 13 ký tự dạng 0123456789-001!");
                 txtSupTaxCodeEdit.requestFocus();
                 return;
             }
-            
+
             // Tạo đối tượng NhaCungCap
             vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhaCungCap ncc = new vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhaCungCap();
             ncc.setMaNhaCungCap(supplierIdEdit);
@@ -802,10 +798,10 @@ public class GD_QuanLyNhaCungCap extends javax.swing.JPanel {
             ncc.setDiaChi(diaChi);
             ncc.setEmail(email);
             ncc.setMaSoThue(maSoThue);
-            
+
             // Cập nhật trong database
             boolean success = nhaCungCapBUS.capNhatNhaCungCap(ncc);
-            
+
             if (success) {
                 // Cập nhật trên bảng
                 int selectedRow = tableDesign.getTable().getSelectedRow();
@@ -814,11 +810,11 @@ public class GD_QuanLyNhaCungCap extends javax.swing.JPanel {
                 tableDesign.getTable().setValueAt(ncc.getSoDienThoai(), selectedRow, 3);
                 tableDesign.getTable().setValueAt(ncc.getEmail(), selectedRow, 4);
                 tableDesign.getTable().setValueAt(ncc.getMaSoThue(), selectedRow, 5);
-                
+
                 // Clear form và đóng modal
                 clearData(txtSupNameEdit, txtSupPhoneEdit, txtSupEmailEdit, txtSupAddressEdit, txtSupTaxCodeEdit);
                 modelSupplierEdit.dispose();
-                
+
                 Notifications.getInstance().show(Notifications.Type.SUCCESS, Notifications.Location.TOP_CENTER, 2500, "Cập nhật nhà cung cấp thành công!");
             } else {
                 Notifications.getInstance().show(Notifications.Type.ERROR, Notifications.Location.TOP_CENTER, 3000, "Cập nhật nhà cung cấp thất bại!");
@@ -850,38 +846,38 @@ public class GD_QuanLyNhaCungCap extends javax.swing.JPanel {
             String diaChi = txtSupAddressAdd.getText().trim();
             String email = txtSupEmailAdd.getText().trim();
             String maSoThue = txtSupTaxCodeAdd.getText().trim();
-            
+
             // Validation
             if (tenNCC.isEmpty()) {
                 Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER, 2500, "Vui lòng nhập tên nhà cung cấp!");
                 txtSupNameAdd.requestFocus();
                 return;
             }
-            
+
             if (sdt.isEmpty() || !sdt.matches("^0[0-9]{9}$")) {
                 Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER, 2500, "Số điện thoại phải bắt đầu bằng 0 và gồm 10 chữ số!");
                 txtSupPhoneAdd.requestFocus();
                 return;
             }
-            
+
             if (diaChi.isEmpty()) {
                 Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER, 2500, "Vui lòng nhập địa chỉ!");
                 txtSupAddressAdd.requestFocus();
                 return;
             }
-            
+
             if (email.isEmpty() || !email.matches("^[^@]+@[^@]+\\.[a-zA-Z]{2,}$")) {
                 Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER, 2500, "Email không đúng định dạng!");
                 txtSupEmailAdd.requestFocus();
                 return;
             }
-            
+
             if (maSoThue.isEmpty() || !maSoThue.matches("^[0-9]{10}(-[0-9]{3})?$")) {
                 Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER, 2500, "Mã số thuế phải gồm 10 số hoặc 13 ký tự dạng 0123456789-001!");
                 txtSupTaxCodeAdd.requestFocus();
                 return;
             }
-            
+
             // Kiểm tra trùng số điện thoại
             vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhaCungCap nccTrungSDT = nhaCungCapBUS.layNhaCungCapTheoSoDienThoai(sdt);
             if (nccTrungSDT != null) {
@@ -889,7 +885,7 @@ public class GD_QuanLyNhaCungCap extends javax.swing.JPanel {
                 txtSupPhoneAdd.requestFocus();
                 return;
             }
-            
+
             // Tạo đối tượng NhaCungCap
             vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhaCungCap ncc = new vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhaCungCap();
             ncc.setTenNhaCungCap(tenNCC);
@@ -897,10 +893,10 @@ public class GD_QuanLyNhaCungCap extends javax.swing.JPanel {
             ncc.setDiaChi(diaChi);
             ncc.setEmail(email);
             ncc.setMaSoThue(maSoThue);
-            
+
             // Thêm vào database
             boolean success = nhaCungCapBUS.taoNhaCungCap(ncc);
-            
+
             if (success) {
                 // Thêm vào bảng
                 tableDesign.getModelTable().addRow(new Object[]{
@@ -911,11 +907,11 @@ public class GD_QuanLyNhaCungCap extends javax.swing.JPanel {
                     ncc.getEmail(),
                     ncc.getMaSoThue()
                 });
-                
+
                 // Clear form và đóng modal
                 clearData(txtSupNameAdd, txtSupPhoneAdd, txtSupEmailAdd, txtSupAddressAdd, txtSupTaxCodeAdd);
                 modelSupplierAdd.dispose();
-                
+
                 Notifications.getInstance().show(Notifications.Type.SUCCESS, Notifications.Location.TOP_CENTER, 2500, "Thêm nhà cung cấp thành công!");
             } else {
                 Notifications.getInstance().show(Notifications.Type.ERROR, Notifications.Location.TOP_CENTER, 3000, "Thêm nhà cung cấp thất bại!");
@@ -958,17 +954,17 @@ public class GD_QuanLyNhaCungCap extends javax.swing.JPanel {
 
         // Hiển thị dialog xác nhận
         int confirm = javax.swing.JOptionPane.showConfirmDialog(
-            this, 
-            "Bạn có chắc chắn muốn xóa nhà cung cấp \"" + tenNCC + "\" không?", 
-            "Xác nhận xóa", 
-            javax.swing.JOptionPane.YES_NO_OPTION,
-            javax.swing.JOptionPane.QUESTION_MESSAGE
+                this,
+                "Bạn có chắc chắn muốn xóa nhà cung cấp \"" + tenNCC + "\" không?",
+                "Xác nhận xóa",
+                javax.swing.JOptionPane.YES_NO_OPTION,
+                javax.swing.JOptionPane.QUESTION_MESSAGE
         );
 
         if (confirm == javax.swing.JOptionPane.YES_OPTION) {
             // Gọi BUS để xóa nhà cung cấp
             boolean success = nhaCungCapBUS.xoaNhaCungCap(maNCC);
-            
+
             if (success) {
                 // Xóa trên giao diện
                 tableDesign.getModelTable().removeRow(selectedRow);

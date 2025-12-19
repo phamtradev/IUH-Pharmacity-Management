@@ -26,7 +26,7 @@ public final class FontStyles {
         FONT_MAP.put(Type.HEADING_SMALL, new FontConfig(18, Font.BOLD)); // Tiêu đề nhỏ
 
         FONT_MAP.put(Type.BUTTON_LARGE, new FontConfig(16, Font.PLAIN)); // Button lớn
-        FONT_MAP.put(Type.BUTTON_MEDIUM, new FontConfig(14, Font.BOLD)); // Button trung bình
+        FONT_MAP.put(Type.BUTTON_MEDIUM, new FontConfig(14, Font.PLAIN)); // Button trung bình
         FONT_MAP.put(Type.BUTTON_SMALL, new FontConfig(12, Font.PLAIN)); // Button nhỏ
 
         FONT_MAP.put(Type.TEXT_LARGE, new FontConfig(16, Font.PLAIN)); // Text lớn

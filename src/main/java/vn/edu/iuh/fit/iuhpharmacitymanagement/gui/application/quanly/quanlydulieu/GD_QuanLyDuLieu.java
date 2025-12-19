@@ -43,8 +43,8 @@ public class GD_QuanLyDuLieu extends JPanel {
     private JCheckBox chkAutoBackup;
     private JComboBox<String> cmbScheduledBackup;
 
-    private static final DateTimeFormatter DISPLAY_TIME_FORMAT =
-            DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss").withZone(ZoneId.systemDefault());
+    private static final DateTimeFormatter DISPLAY_TIME_FORMAT
+            = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss").withZone(ZoneId.systemDefault());
 
     public GD_QuanLyDuLieu() {
         this.currentDirectory = backupService.getDefaultBackupDirectory();
@@ -138,13 +138,13 @@ public class GD_QuanLyDuLieu extends JPanel {
             BackupPreferences.setAutoBackupEnabled(chkAutoBackup.isSelected());
         });
         center.add(chkAutoBackup, gbc);
-        
+
         gbc.gridy = 3;
         gbc.gridx = 0;
         gbc.gridwidth = 1;
         gbc.anchor = GridBagConstraints.WEST;
         center.add(new JLabel("Sao lưu theo lịch:"), gbc);
-        
+
         gbc.gridx = 1;
         gbc.gridwidth = 1;
         gbc.fill = GridBagConstraints.NONE;
@@ -179,7 +179,7 @@ public class GD_QuanLyDuLieu extends JPanel {
         card.add(title, BorderLayout.NORTH);
 
         historyModel = new DefaultTableModel(new Object[]{
-                "Tên file", "Ngày tạo", "Dung lượng", "Đường dẫn"
+            "Tên file", "Ngày tạo", "Dung lượng", "Đường dẫn"
         }, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -259,10 +259,9 @@ public class GD_QuanLyDuLieu extends JPanel {
     }
 
     /**
-     * Xử lý nút "Sao lưu ngay":
-     * - Đảm bảo thư mục tồn tại
-     * - Gọi {@link DataBackupService#backup} trên luồng nền
-     * - Cập nhật lịch sử (manifest) và status/progress trên UI.
+     * Xử lý nút "Sao lưu ngay": - Đảm bảo thư mục tồn tại - Gọi
+     * {@link DataBackupService#backup} trên luồng nền - Cập nhật lịch sử
+     * (manifest) và status/progress trên UI.
      */
     private void performBackup() {
         Path directory = Path.of(txtFolder.getText());
@@ -301,13 +300,13 @@ public class GD_QuanLyDuLieu extends JPanel {
                             result.databaseName()
                     );
                     manifestService.append(record);
-                    
+
                     // Tự động xóa backup cũ, chỉ giữ 15 bản gần nhất
                     ScheduledBackupService.getInstance().cleanupOldBackups();
-                    
+
                     reloadHistory();
-            showNotification(Notifications.Type.SUCCESS,
-                    "Sao lưu thành công vào:\n" + result.file());
+                    showNotification(Notifications.Type.SUCCESS,
+                            "Sao lưu thành công vào:\n" + result.file());
                 } catch (Exception ex) {
                     showError("Sao lưu thất bại: " + ex.getMessage());
                 }
@@ -317,8 +316,8 @@ public class GD_QuanLyDuLieu extends JPanel {
     }
 
     /**
-     * Khôi phục từ bản backup được chọn trong bảng lịch sử.
-     * Lấy đường dẫn từ cột "Đường dẫn" rồi gọi {@link #confirmAndRestore(Path)}.
+     * Khôi phục từ bản backup được chọn trong bảng lịch sử. Lấy đường dẫn từ
+     * cột "Đường dẫn" rồi gọi {@link #confirmAndRestore(Path)}.
      */
     private void restoreSelected() {
         int row = tblHistory.getSelectedRow();
@@ -360,8 +359,8 @@ public class GD_QuanLyDuLieu extends JPanel {
     }
 
     /**
-     * Cho phép người dùng chọn một file .zip bất kỳ trên máy
-     * (không nhất thiết nằm trong thư mục mặc định) rồi thực hiện khôi phục.
+     * Cho phép người dùng chọn một file .zip bất kỳ trên máy (không nhất thiết
+     * nằm trong thư mục mặc định) rồi thực hiện khôi phục.
      */
     private void restoreFromFile() {
         JFileChooser chooser = new JFileChooser(currentDirectory.toFile());
@@ -373,9 +372,10 @@ public class GD_QuanLyDuLieu extends JPanel {
 
     /**
      * Hiện hộp thoại xác nhận, sau đó chạy quá trình khôi phục trên luồng nền:
-     * - Gọi {@link DataBackupService#restore(Path, java.util.function.Consumer)}
-     * - Cập nhật status trên thanh trạng thái
-     * - Hiển thị thông báo thành công/thất bại bằng toast.
+     * - Gọi
+     * {@link DataBackupService#restore(Path, java.util.function.Consumer)} -
+     * Cập nhật status trên thanh trạng thái - Hiển thị thông báo thành
+     * công/thất bại bằng toast.
      */
     private void confirmAndRestore(Path backupFile) {
         if (!Files.exists(backupFile)) {
@@ -423,9 +423,9 @@ public class GD_QuanLyDuLieu extends JPanel {
     }
 
     /**
-     * Đọc file manifest để hiển thị danh sách các bản sao lưu đã tạo:
-     * - Xóa các bản ghi trỏ tới file không còn tồn tại
-     * - Đưa dữ liệu lên bảng lịch sử (tên file, ngày tạo, dung lượng, đường dẫn).
+     * Đọc file manifest để hiển thị danh sách các bản sao lưu đã tạo: - Xóa các
+     * bản ghi trỏ tới file không còn tồn tại - Đưa dữ liệu lên bảng lịch sử
+     * (tên file, ngày tạo, dung lượng, đường dẫn).
      */
     private void reloadHistory() {
         manifestService.pruneMissingFiles();
@@ -433,17 +433,17 @@ public class GD_QuanLyDuLieu extends JPanel {
         historyModel.setRowCount(0);
         for (BackupRecord record : records) {
             historyModel.addRow(new Object[]{
-                    record.fileName(),
-                    formatTimestamp(record.createdAtIso()),
-                    formatSize(record.sizeInBytes()),
-                    record.absolutePath()
+                record.fileName(),
+                formatTimestamp(record.createdAtIso()),
+                formatSize(record.sizeInBytes()),
+                record.absolutePath()
             });
         }
     }
 
     /**
-     * Khóa/mở các nút thao tác trong lúc đang thực hiện backup/restore
-     * và đồng thời hiển thị tiến trình + dòng trạng thái ở cuối màn hình.
+     * Khóa/mở các nút thao tác trong lúc đang thực hiện backup/restore và đồng
+     * thời hiển thị tiến trình + dòng trạng thái ở cuối màn hình.
      */
     private void setBusy(boolean busy, String message) {
         btnBackupNow.setEnabled(!busy);
@@ -502,4 +502,3 @@ public class GD_QuanLyDuLieu extends JPanel {
         return String.format(Locale.US, "%.1f %s", size, units[unitIndex]);
     }
 }
-

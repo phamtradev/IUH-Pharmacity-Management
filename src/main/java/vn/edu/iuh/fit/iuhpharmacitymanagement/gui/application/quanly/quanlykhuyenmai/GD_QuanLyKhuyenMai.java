@@ -26,6 +26,7 @@ import raven.toast.Notifications;
 import javax.swing.JOptionPane;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.constant.LoaiKhuyenMai;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.FontStyles;
 
 /**
  *
@@ -202,17 +203,23 @@ public class GD_QuanLyKhuyenMai extends javax.swing.JPanel {
         add(pnAll);
     }// </editor-fold>//GEN-END:initComponents
 
-     private void setUIManager() {
+    private void setUIManager() {
         txtMaKhuyenMai.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Mã khuyến mãi");
         UIManager.put("Button.arc", 10);
-        
+
         ButtonStyles.apply(btnThem, ButtonStyles.Type.SUCCESS);
         ButtonStyles.apply(btnSua, ButtonStyles.Type.PRIMARY);
         ButtonStyles.apply(btnXoa, ButtonStyles.Type.DANGER);
         ButtonStyles.apply(btnXemChiTiet, ButtonStyles.Type.INFO);
         ButtonStyles.apply(btnTimKiem, ButtonStyles.Type.PRIMARY);
         ButtonStyles.apply(btnLamMoi, ButtonStyles.Type.INFO);
-        
+        FontStyles.apply(btnThem, FontStyles.Type.BUTTON_MEDIUM);
+        FontStyles.apply(btnSua, FontStyles.Type.BUTTON_MEDIUM);
+        FontStyles.apply(btnXoa, FontStyles.Type.BUTTON_MEDIUM);
+        FontStyles.apply(btnXemChiTiet, FontStyles.Type.BUTTON_MEDIUM);
+        FontStyles.apply(btnTimKiem, FontStyles.Type.BUTTON_MEDIUM);
+        FontStyles.apply(btnLamMoi, FontStyles.Type.BUTTON_MEDIUM);
+
         // Đảm bảo style được áp dụng
         SwingUtilities.invokeLater(() -> {
             btnThem.repaint();
@@ -236,13 +243,12 @@ public class GD_QuanLyKhuyenMai extends javax.swing.JPanel {
     }
 
     // phần logic
-    
     private void fillContent(List<KhuyenMai> danhSach) {
         tableDesign.getModelTable().setRowCount(0);
         for (KhuyenMai km : danhSach) {
             String loaiKM = km.getLoaiKhuyenMai() == LoaiKhuyenMai.SAN_PHAM ? "Sản phẩm" : "Đơn hàng";
             String trangThai = km.isTrangThai() ? "Còn hạn" : "Hết hạn";
-            
+
             tableDesign.getModelTable().addRow(new Object[]{
                 km.getMaKhuyenMai(),
                 km.getTenKhuyenMai(),
@@ -262,12 +268,12 @@ public class GD_QuanLyKhuyenMai extends javax.swing.JPanel {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         return date.format(formatter);
     }
-    
+
     private void btnThemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnThemActionPerformed
         // Mở dialog thêm khuyến mãi
         ThemKhuyenMaiDialog dialog = new ThemKhuyenMaiDialog((java.awt.Frame) SwingUtilities.getWindowAncestor(this), true);
         dialog.setVisible(true);
-        
+
         // Nếu thêm thành công thì refresh table
         if (dialog.isThemThanhCong()) {
             fillTable();
@@ -281,24 +287,24 @@ public class GD_QuanLyKhuyenMai extends javax.swing.JPanel {
             Notifications.getInstance().show(Notifications.Type.WARNING, "Hãy chọn khuyến mãi cần sửa!");
             return;
         }
-        
+
         // Lấy thông tin khuyến mãi được chọn
         String maKhuyenMai = (String) tableDesign.getModelTable().getValueAt(selectedRow, 0);
         List<KhuyenMai> danhSach = khuyenMaiBUS.getAllKhuyenMai();
         KhuyenMai kmCanSua = danhSach.stream()
-            .filter(km -> km.getMaKhuyenMai().equals(maKhuyenMai))
-            .findFirst()
-            .orElse(null);
-        
+                .filter(km -> km.getMaKhuyenMai().equals(maKhuyenMai))
+                .findFirst()
+                .orElse(null);
+
         if (kmCanSua == null) {
             Notifications.getInstance().show(Notifications.Type.ERROR, "Không tìm thấy khuyến mãi!");
             return;
         }
-        
+
         // Mở dialog sửa khuyến mãi
         SuaKhuyenMaiDialog dialog = new SuaKhuyenMaiDialog((java.awt.Frame) SwingUtilities.getWindowAncestor(this), true, kmCanSua);
         dialog.setVisible(true);
-        
+
         // Nếu sửa thành công thì refresh table
         if (dialog.isSuaThanhCong()) {
             fillTable();
@@ -312,20 +318,20 @@ public class GD_QuanLyKhuyenMai extends javax.swing.JPanel {
             Notifications.getInstance().show(Notifications.Type.WARNING, "Hãy chọn khuyến mãi cần xem chi tiết!");
             return;
         }
-        
+
         // Lấy thông tin khuyến mãi được chọn
         String maKhuyenMai = (String) tableDesign.getModelTable().getValueAt(selectedRow, 0);
         List<KhuyenMai> danhSach = khuyenMaiBUS.getAllKhuyenMai();
         KhuyenMai kmCanXem = danhSach.stream()
-            .filter(km -> km.getMaKhuyenMai().equals(maKhuyenMai))
-            .findFirst()
-            .orElse(null);
-        
+                .filter(km -> km.getMaKhuyenMai().equals(maKhuyenMai))
+                .findFirst()
+                .orElse(null);
+
         if (kmCanXem == null) {
             Notifications.getInstance().show(Notifications.Type.ERROR, "Không tìm thấy khuyến mãi!");
             return;
         }
-        
+
         // Mở dialog xem chi tiết khuyến mãi
         XemChiTietKhuyenMaiDialog dialog = new XemChiTietKhuyenMaiDialog((java.awt.Frame) SwingUtilities.getWindowAncestor(this), true, kmCanXem);
         dialog.setVisible(true);
@@ -338,16 +344,16 @@ public class GD_QuanLyKhuyenMai extends javax.swing.JPanel {
             Notifications.getInstance().show(Notifications.Type.WARNING, "Hãy chọn khuyến mãi cần xóa!");
             return;
         }
-        
+
         String maKhuyenMai = (String) tableDesign.getModelTable().getValueAt(selectedRow, 0);
         int confirm = JOptionPane.showConfirmDialog(
-            this,
-            "Bạn có chắc chắn muốn xóa khuyến mãi " + maKhuyenMai + "?",
-            "Xác nhận xóa",
-            JOptionPane.YES_NO_OPTION,
-            JOptionPane.QUESTION_MESSAGE
+                this,
+                "Bạn có chắc chắn muốn xóa khuyến mãi " + maKhuyenMai + "?",
+                "Xác nhận xóa",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE
         );
-        
+
         if (confirm == JOptionPane.YES_OPTION) {
             try {
                 boolean success = khuyenMaiBUS.xoaKhuyenMai(maKhuyenMai);
@@ -366,26 +372,26 @@ public class GD_QuanLyKhuyenMai extends javax.swing.JPanel {
     private void btnTimKiemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTimKiemActionPerformed
         String maKhuyenMai = txtMaKhuyenMai.getText().trim();
         String loaiKM = (String) cboLoaiKhuyenMai.getSelectedItem();
-        
+
         List<KhuyenMai> danhSach = khuyenMaiBUS.getAllKhuyenMai();
-        
+
         // Lọc theo mã khuyến mãi
         if (!maKhuyenMai.isEmpty()) {
             danhSach = danhSach.stream()
-                .filter(km -> km.getMaKhuyenMai().toLowerCase().contains(maKhuyenMai.toLowerCase()))
-                .toList();
+                    .filter(km -> km.getMaKhuyenMai().toLowerCase().contains(maKhuyenMai.toLowerCase()))
+                    .toList();
         }
-        
+
         // Lọc theo loại khuyến mãi
         if (!loaiKM.equals("Tất cả")) {
             LoaiKhuyenMai loai = loaiKM.equals("Sản phẩm") ? LoaiKhuyenMai.SAN_PHAM : LoaiKhuyenMai.DON_HANG;
             danhSach = danhSach.stream()
-                .filter(km -> km.getLoaiKhuyenMai() == loai)
-                .toList();
+                    .filter(km -> km.getLoaiKhuyenMai() == loai)
+                    .toList();
         }
-        
+
         fillContent(danhSach);
-        
+
         if (danhSach.isEmpty()) {
             Notifications.getInstance().show(Notifications.Type.INFO, "Không tìm thấy khuyến mãi nào!");
         } else {
@@ -401,67 +407,67 @@ public class GD_QuanLyKhuyenMai extends javax.swing.JPanel {
             Notifications.getInstance().show(Notifications.Type.WARNING, "Hãy chọn khuyến mãi cần phát hành!");
             return;
         }
-        
+
         // Lấy thông tin khuyến mãi được chọn
         String maKhuyenMai = (String) tableDesign.getModelTable().getValueAt(selectedRow, 0);
         List<KhuyenMai> danhSach = khuyenMaiBUS.getAllKhuyenMai();
         KhuyenMai khuyenMai = danhSach.stream()
-            .filter(km -> km.getMaKhuyenMai().equals(maKhuyenMai))
-            .findFirst()
-            .orElse(null);
-        
+                .filter(km -> km.getMaKhuyenMai().equals(maKhuyenMai))
+                .findFirst()
+                .orElse(null);
+
         if (khuyenMai == null) {
             Notifications.getInstance().show(Notifications.Type.ERROR, "Không tìm thấy khuyến mãi!");
             return;
         }
-        
+
         // Kiểm tra khuyến mãi có còn hạn không
         if (!khuyenMai.isTrangThai()) {
             Notifications.getInstance().show(Notifications.Type.WARNING, "Khuyến mãi đã hết hạn, không thể phát hành!");
             return;
         }
-        
+
         // Xác nhận phát hành
         int confirm = JOptionPane.showConfirmDialog(
-            this,
-            "Bạn có chắc chắn muốn gửi email khuyến mãi này đến tất cả khách hàng?\n" +
-            "Khuyến mãi: " + khuyenMai.getTenKhuyenMai(),
-            "Xác nhận phát hành",
-            JOptionPane.YES_NO_OPTION,
-            JOptionPane.QUESTION_MESSAGE
+                this,
+                "Bạn có chắc chắn muốn gửi email khuyến mãi này đến tất cả khách hàng?\n"
+                + "Khuyến mãi: " + khuyenMai.getTenKhuyenMai(),
+                "Xác nhận phát hành",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE
         );
-        
+
         if (confirm != JOptionPane.YES_OPTION) {
             return;
         }
-        
+
         // Kiểm tra cấu hình email
         if (!EmailUtil.kiemTraCauHinhEmail()) {
-            Notifications.getInstance().show(Notifications.Type.WARNING, 
-                "Chưa cấu hình email! Vui lòng cấu hình email trong EmailUtil.java");
+            Notifications.getInstance().show(Notifications.Type.WARNING,
+                    "Chưa cấu hình email! Vui lòng cấu hình email trong EmailUtil.java");
             return;
         }
-        
+
         // Lấy danh sách khách hàng có email
         List<KhachHang> danhSachKhachHang = khachHangBUS.getAllKhachHang();
         List<KhachHang> khachHangCoEmail = danhSachKhachHang.stream()
-            .filter(kh -> kh.getEmail() != null && !kh.getEmail().trim().isEmpty())
-            .toList();
-        
+                .filter(kh -> kh.getEmail() != null && !kh.getEmail().trim().isEmpty())
+                .toList();
+
         if (khachHangCoEmail.isEmpty()) {
             Notifications.getInstance().show(Notifications.Type.WARNING, "Không có khách hàng nào có email!");
             return;
         }
-        
+
         // Hiển thị thông báo bắt đầu
-        Notifications.getInstance().show(Notifications.Type.INFO, 
-            "Đang gửi khuyến mãi đến các khách hàng có trong hệ thống...");
-        
+        Notifications.getInstance().show(Notifications.Type.INFO,
+                "Đang gửi khuyến mãi đến các khách hàng có trong hệ thống...");
+
         // Gửi email trong background thread
         new Thread(() -> {
             int soEmailThanhCong = 0;
             int soEmailThatBai = 0;
-            
+
             for (KhachHang kh : khachHangCoEmail) {
                 boolean success = EmailUtil.guiEmailKhuyenMai(kh, khuyenMai);
                 if (success) {
@@ -469,7 +475,7 @@ public class GD_QuanLyKhuyenMai extends javax.swing.JPanel {
                 } else {
                     soEmailThatBai++;
                 }
-                
+
                 // Delay giữa các email để tránh spam
                 try {
                     Thread.sleep(100); // 0.1 giây
@@ -477,18 +483,18 @@ public class GD_QuanLyKhuyenMai extends javax.swing.JPanel {
                     e.printStackTrace();
                 }
             }
-            
+
             final int thanhCong = soEmailThanhCong;
             final int thatBai = soEmailThatBai;
-            
+
             // Hiển thị kết quả trên UI thread
             SwingUtilities.invokeLater(() -> {
                 if (thatBai == 0) {
-                    Notifications.getInstance().show(Notifications.Type.SUCCESS, 
-                        "Đã gửi thành công");
+                    Notifications.getInstance().show(Notifications.Type.SUCCESS,
+                            "Đã gửi thành công");
                 } else {
-                    Notifications.getInstance().show(Notifications.Type.WARNING, 
-                        "Hoàn thành! Thành công: " + thanhCong + ", Thất bại: " + thatBai);
+                    Notifications.getInstance().show(Notifications.Type.WARNING,
+                            "Hoàn thành! Thành công: " + thanhCong + ", Thất bại: " + thatBai);
                 }
             });
         }).start();

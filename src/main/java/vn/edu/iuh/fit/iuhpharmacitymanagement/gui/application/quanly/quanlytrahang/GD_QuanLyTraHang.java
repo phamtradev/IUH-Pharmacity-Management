@@ -61,10 +61,10 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
         UIManager.put("Button.arc", 10);
         jDateFrom.setDate(Date.valueOf(LocalDate.now()));
         jDateTo.setDate(Date.valueOf(LocalDate.now()));
-        
-        FontStyles.apply(btnView, FontStyles.Type.TEXT_MEDIUM);
-        FontStyles.apply(btnSearch, FontStyles.Type.TEXT_MEDIUM);
-        FontStyles.apply(txtExport, FontStyles.Type.TEXT_MEDIUM);
+
+        FontStyles.apply(btnView, FontStyles.Type.BUTTON_MEDIUM);
+        FontStyles.apply(btnSearch, FontStyles.Type.BUTTON_MEDIUM);
+        FontStyles.apply(txtExport, FontStyles.Type.BUTTON_MEDIUM);
 
         btnView.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         btnSearch.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -73,21 +73,22 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
         ButtonStyles.apply(btnView, ButtonStyles.Type.PRIMARY);
         ButtonStyles.apply(btnSearch, ButtonStyles.Type.SUCCESS);
         ButtonStyles.apply(txtExport, ButtonStyles.Type.SUCCESS);
-        
+
         // Thiết lập barcode scanner cho textfield tìm kiếm
         setupBarcodeScanner();
     }
 
     /**
      * Thiết lập barcode scanner listener cho textfield tìm kiếm phiếu trả hàng
-     * Hỗ trợ cả quét barcode (tự động xử lý) và nhập thủ công (xử lý khi nhấn Enter)
+     * Hỗ trợ cả quét barcode (tự động xử lý) và nhập thủ công (xử lý khi nhấn
+     * Enter)
      */
     private void setupBarcodeScanner() {
         // Biến để theo dõi trạng thái xử lý (tránh xử lý nhiều lần)
         final java.util.concurrent.atomic.AtomicBoolean isProcessing = new java.util.concurrent.atomic.AtomicBoolean(false);
         final java.util.concurrent.atomic.AtomicBoolean isClearing = new java.util.concurrent.atomic.AtomicBoolean(false);
         final javax.swing.Timer[] barcodeTimer = new javax.swing.Timer[1]; // Mảng để có thể thay đổi trong lambda
-        
+
         // Theo dõi thời gian giữa các lần gõ để phân biệt quét vs nhập thủ công
         final long[] lastKeyTime = new long[1];
         lastKeyTime[0] = System.currentTimeMillis();
@@ -102,12 +103,12 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
             public void keyTyped(java.awt.event.KeyEvent e) {
                 long currentTime = System.currentTimeMillis();
                 long timeSinceLastKey = currentTime - lastKeyTime[0];
-                
+
                 // Ghi nhận thời gian ký tự đầu tiên
                 if (firstKeyTime[0] == 0) {
                     firstKeyTime[0] = currentTime;
                 }
-                
+
                 // Nếu khoảng cách giữa các lần gõ < 50ms → có thể là quét barcode
                 if (timeSinceLastKey < 50) {
                     keyCount[0]++;
@@ -119,7 +120,7 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
                     // Khoảng cách 50-200ms → có thể là gõ nhanh, tăng counter
                     keyCount[0]++;
                 }
-                
+
                 lastKeyTime[0] = currentTime;
             }
         });
@@ -131,7 +132,7 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
                 if (isClearing.get()) {
                     return;
                 }
-                
+
                 // Hủy timer cũ nếu có
                 if (barcodeTimer[0] != null && barcodeTimer[0].isRunning()) {
                     barcodeTimer[0].stop();
@@ -140,10 +141,10 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
                 // Tạo timer mới: đợi 200ms không có thay đổi → kiểm tra xem có phải quét không
                 barcodeTimer[0] = new javax.swing.Timer(200, evt -> {
                     String scannedText = txtOrder.getText().trim();
-                    
+
                     // Loại bỏ ký tự đặc biệt từ barcode scanner (\r, \n, \t)
                     scannedText = scannedText.replaceAll("[\\r\\n\\t]", "");
-                    
+
                     // Cập nhật lại textfield với giá trị đã làm sạch (nếu cần)
                     if (!scannedText.equals(txtOrder.getText().trim()) && !isClearing.get()) {
                         isClearing.set(true);
@@ -156,7 +157,7 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
                     // - Nhập thủ công: ít ký tự hoặc gõ chậm → không tự động xử lý, chờ Enter
                     long totalTime = firstKeyTime[0] > 0 ? (System.currentTimeMillis() - firstKeyTime[0]) : 0;
                     boolean isBarcodeScan = scannedText.length() >= 5 && keyCount[0] >= 5 && totalTime < 500;
-                    
+
                     if (!scannedText.isEmpty() && !isProcessing.get() && !isClearing.get() && isBarcodeScan) {
                         isProcessing.set(true);
                         // Tự động tìm kiếm phiếu trả hàng khi quét barcode
@@ -176,7 +177,7 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
                             clearTimer.start();
                         });
                     }
-                    
+
                     // Reset counter sau một khoảng thời gian (nếu không phải quét)
                     if (!isBarcodeScan) {
                         keyCount[0] = 0;
@@ -214,23 +215,23 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
         if (maPhieuTra == null || maPhieuTra.trim().isEmpty()) {
             return;
         }
-        
+
         // Lấy ngày từ form
         java.util.Date date1 = jDateFrom.getDate();
         java.util.Date date2 = jDateTo.getDate();
-        
+
         if (date1 == null || date2 == null) {
             Notifications.getInstance().show(Notifications.Type.WARNING, "Vui lòng chọn khoảng thời gian!");
             return;
         }
-        
+
         LocalDate dateFrom = date1.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
         LocalDate dateTo = date2.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-        
+
         // Tìm kiếm theo mã phiếu trả
         List<DonTraHang> result = searchDonTraHang(dateFrom, dateTo, "", maPhieuTra);
         fillContent(result);
-        
+
         if (result.isEmpty()) {
             Notifications.getInstance().show(Notifications.Type.INFO, "Không tìm thấy phiếu trả hàng với mã: " + maPhieuTra);
         } else {
@@ -240,8 +241,8 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
     }
 
     private void fillTable() {
-        String[] headers = { "Mã phiếu trả", "Mã hóa đơn", "Ngày trả", "Nhân viên", "Tổng tiền", "Trạng thái",
-                "Thao tác" };
+        String[] headers = {"Mã phiếu trả", "Mã hóa đơn", "Ngày trả", "Nhân viên", "Tổng tiền", "Trạng thái",
+            "Thao tác"};
         List<Integer> tableWidths = Arrays.asList(150, 150, 120, 200, 150, 120, 120);
         tableDesign = new TableDesign(headers, tableWidths);
         scrollTable.setViewportView(tableDesign.getTable());
@@ -264,14 +265,14 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
             // Lấy trạng thái từ đơn trả hàng
             String trangThai = dth.getTrangThaiXuLy() != null ? dth.getTrangThaiXuLy() : "Chưa xử lý";
 
-            tableDesign.getModelTable().addRow(new Object[] {
-                    dth.getMaDonTraHang(),
-                    maDonHang,
-                    formatDate(dth.getNgayTraHang()),
-                    tenNV,
-                    formatToVND(dth.getThanhTien()),
-                    trangThai,
-                    "Xem chi tiết" // Placeholder, sẽ được thay bằng button
+            tableDesign.getModelTable().addRow(new Object[]{
+                dth.getMaDonTraHang(),
+                maDonHang,
+                formatDate(dth.getNgayTraHang()),
+                tenNV,
+                formatToVND(dth.getThanhTien()),
+                trangThai,
+                "Xem chi tiết" // Placeholder, sẽ được thay bằng button
             });
         }
     }
@@ -290,8 +291,8 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
 
             // Lọc theo nhân viên
             if (!tenNV.isEmpty()) {
-                if (dth.getNhanVien() == null ||
-                        !dth.getNhanVien().getMaNhanVien().toLowerCase().contains(tenNV.toLowerCase())) {
+                if (dth.getNhanVien() == null
+                        || !dth.getNhanVien().getMaNhanVien().toLowerCase().contains(tenNV.toLowerCase())) {
                     continue;
                 }
             }
@@ -311,8 +312,9 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
     }
 
     private String formatDate(LocalDate date) {
-        if (date == null)
+        if (date == null) {
             return "N/A";
+        }
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         return date.format(formatter);
     }
@@ -463,8 +465,8 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
             mainPanel.add(headerPanel, java.awt.BorderLayout.NORTH);
 
             // === TABLE PANEL - Chi tiết sản phẩm trả ===
-            String[] columns = { "Mã hàng", "Tên hàng", "Đơn vị tính", "Số lượng",
-                    "Giá trả hàng", "Thành tiền", "Lý do trả", "Thao tác" };
+            String[] columns = {"Mã hàng", "Tên hàng", "Đơn vị tính", "Số lượng",
+                "Giá trả hàng", "Thành tiền", "Lý do trả", "Thao tác"};
             List<Integer> columnWidths = Arrays.asList(100, 200, 100, 80, 120, 120, 200, 200);
             // Chỉ cho phép edit cột "Thao tác" (cột cuối cùng)
             List<Boolean> canEdit = Arrays.asList(false, false, false, false, false, false, false, true);
@@ -561,8 +563,8 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
             String lyDoTra = ct.getLyDoTra() != null ? ct.getLyDoTra() : "N/A";
 
             // Không lưu trạng thái ở chi tiết nữa, mặc định là button
-            tableDesign.getModelTable().addRow(new Object[] {
-                    maSP, tenSP, donVi, soLuong, donGia, thanhTien, lyDoTra, ""
+            tableDesign.getModelTable().addRow(new Object[]{
+                maSP, tenSP, donVi, soLuong, donGia, thanhTien, lyDoTra, ""
             });
         }
     }
@@ -586,12 +588,12 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
                         : "Chờ duyệt";
 
                 // Kiểm tra nếu chi tiết này đã được xử lý
-                if (processedRows.contains(row) ||
-                        "Đã thêm vào kho".equals(trangThaiChiTiet) ||
-                        "Đã duyệt xuất hủy".equals(trangThaiChiTiet) ||
-                        "Đã xuất hủy".equals(trangThaiChiTiet) ||
-                        "Chờ xuất hủy".equals(trangThaiDon) ||
-                        "Đã xử lý".equals(trangThaiDon)) {
+                if (processedRows.contains(row)
+                        || "Đã thêm vào kho".equals(trangThaiChiTiet)
+                        || "Đã duyệt xuất hủy".equals(trangThaiChiTiet)
+                        || "Đã xuất hủy".equals(trangThaiChiTiet)
+                        || "Chờ xuất hủy".equals(trangThaiDon)
+                        || "Đã xử lý".equals(trangThaiDon)) {
                     // Không cho phép edit nếu đã xử lý hoặc đã duyệt
                     String labelText = "✓ Đã xử lý";
                     javax.swing.JLabel lblStatus = new javax.swing.JLabel(labelText);
@@ -643,12 +645,12 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
                                 : "Chờ duyệt";
 
                         // Kiểm tra nếu chi tiết này đã được xử lý
-                        if (processedRows.contains(currentRow) ||
-                                "Đã thêm vào kho".equals(trangThaiChiTiet) ||
-                                "Đã duyệt xuất hủy".equals(trangThaiChiTiet) ||
-                                "Đã xuất hủy".equals(trangThaiChiTiet) ||
-                                "Chờ xuất hủy".equals(trangThaiDon) ||
-                                "Đã xử lý".equals(trangThaiDon)) {
+                        if (processedRows.contains(currentRow)
+                                || "Đã thêm vào kho".equals(trangThaiChiTiet)
+                                || "Đã duyệt xuất hủy".equals(trangThaiChiTiet)
+                                || "Đã xuất hủy".equals(trangThaiChiTiet)
+                                || "Chờ xuất hủy".equals(trangThaiDon)
+                                || "Đã xử lý".equals(trangThaiDon)) {
                             // Không cho phép edit nếu đã xử lý hoặc đã duyệt
                             String labelText = "✓ Đã xử lý";
                             javax.swing.JLabel lblStatus = new javax.swing.JLabel(labelText);
@@ -780,8 +782,7 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
                     System.out.println(String.format(
                             "  ✗ BỎ QUA - Lô: %s | HSD: %s | Tồn kho: %d | Lý do: Hết hạn (đã cập nhật trạng thái)",
                             lh.getMaLoHang(), hanSuDung, lh.getTonKho()));
-                }
-                // CHỈ GIỮ LẠI CÁC LÔ CÒN HẠN VÀ ĐANG HOẠT ĐỘNG
+                } // CHỈ GIỮ LẠI CÁC LÔ CÒN HẠN VÀ ĐANG HOẠT ĐỘNG
                 else if (conHan && trangThai) {
                     danhSachLoHang.add(lh);
                     System.out.println(
@@ -800,10 +801,10 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
 
             if (danhSachLoHang.isEmpty()) {
                 Notifications.getInstance().show(Notifications.Type.ERROR,
-                        String.format("❌ KHÔNG THỂ THÊM SẢN PHẨM '%s' VÀO KHO!\n\n" +
-                                "Không còn lô hàng nào CÒN HẠN và đang hoạt động.\n" +
-                                "Tất cả các lô hàng đều đã hết hạn hoặc ngừng hoạt động.\n\n" +
-                                "⚠️ BẮT BUỘC: Vui lòng XUẤT HỦY các lô hàng hết hạn trước, sau đó tạo lô hàng mới với hạn sử dụng hợp lệ.",
+                        String.format("❌ KHÔNG THỂ THÊM SẢN PHẨM '%s' VÀO KHO!\n\n"
+                                + "Không còn lô hàng nào CÒN HẠN và đang hoạt động.\n"
+                                + "Tất cả các lô hàng đều đã hết hạn hoặc ngừng hoạt động.\n\n"
+                                + "⚠️ BẮT BUỘC: Vui lòng XUẤT HỦY các lô hàng hết hạn trước, sau đó tạo lô hàng mới với hạn sử dụng hợp lệ.",
                                 tenSanPham));
                 return;
             }
@@ -846,9 +847,9 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
                 System.err.println("Hạn sử dụng: " + hanSuDungCuoiCung);
                 System.err.println("Ngày hôm nay: " + today);
                 Notifications.getInstance().show(Notifications.Type.ERROR,
-                        String.format("❌ LỖI HỆ THỐNG!\n\n" +
-                                "Lô hàng '%s' đã HẾT HẠN (HSD: %s) nhưng vẫn được chọn.\n" +
-                                "Vui lòng liên hệ quản trị viên để xử lý.",
+                        String.format("❌ LỖI HỆ THỐNG!\n\n"
+                                + "Lô hàng '%s' đã HẾT HẠN (HSD: %s) nhưng vẫn được chọn.\n"
+                                + "Vui lòng liên hệ quản trị viên để xử lý.",
                                 loHangPhongHop.getMaLoHang(), hanSuDungCuoiCung));
                 return;
             }
@@ -1297,10 +1298,10 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
     private void txtOrderActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_txtOrderActionPerformed
         // Xử lý tìm kiếm phiếu trả hàng khi nhấn Enter (nhập thủ công)
         String maPhieuTra = txtOrder.getText().trim();
-        
+
         // Loại bỏ ký tự đặc biệt
         maPhieuTra = maPhieuTra.replaceAll("[\\r\\n\\t]", "");
-        
+
         if (!maPhieuTra.isEmpty()) {
             timKiemVaHienThiPhieuTra(maPhieuTra);
             // Clear textfield sau khi xử lý để sẵn sàng tìm kiếm tiếp
@@ -1459,7 +1460,7 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
         mainPanel.add(javax.swing.Box.createVerticalStrut(10));
 
         // ========== BẢNG SẢN PHẨM TRẢ ==========
-        String[] columnNames = { "STT", "Ten san pham", "SL", "Don gia", "Thanh tien", "Ly do" };
+        String[] columnNames = {"STT", "Ten san pham", "SL", "Don gia", "Thanh tien", "Ly do"};
         javax.swing.table.DefaultTableModel tableModel = new javax.swing.table.DefaultTableModel(columnNames, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -1501,13 +1502,13 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
             String tenSP = sanPham != null ? sanPham.getTenSanPham() : "";
             String lyDo = chiTiet.getLyDoTra() != null ? chiTiet.getLyDoTra() : "";
 
-            tableModel.addRow(new Object[] {
-                    stt++,
-                    tenSP,
-                    chiTiet.getSoLuong(),
-                    currencyFormat.format(chiTiet.getDonGia()) + " đ",
-                    currencyFormat.format(chiTiet.getThanhTien()) + " đ",
-                    lyDo
+            tableModel.addRow(new Object[]{
+                stt++,
+                tenSP,
+                chiTiet.getSoLuong(),
+                currencyFormat.format(chiTiet.getDonGia()) + " đ",
+                currencyFormat.format(chiTiet.getThanhTien()) + " đ",
+                lyDo
             });
         }
 

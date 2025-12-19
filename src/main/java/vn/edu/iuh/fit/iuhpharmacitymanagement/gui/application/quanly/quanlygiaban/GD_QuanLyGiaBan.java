@@ -10,6 +10,7 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.LoHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.BangLaiChuan;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.ButtonStyles;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.theme.FontStyles;
 import raven.toast.Notifications;
 
 import javax.swing.*;
@@ -97,10 +98,12 @@ public class GD_QuanLyGiaBan extends JPanel {
         JPanel actionWrapper = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 8));
         btnAddConfigRow = new JButton("Thêm dòng");
         ButtonStyles.apply(btnAddConfigRow, ButtonStyles.Type.INFO);
+        FontStyles.apply(btnAddConfigRow, FontStyles.Type.BUTTON_MEDIUM);
         btnAddConfigRow.addActionListener(e -> addConfigRow());
 
         btnRemoveConfigRow = new JButton("Xóa dòng");
         ButtonStyles.apply(btnRemoveConfigRow, ButtonStyles.Type.DANGER);
+        FontStyles.apply(btnRemoveConfigRow, FontStyles.Type.BUTTON_MEDIUM);
         btnRemoveConfigRow.addActionListener(e -> removeSelectedConfigRows());
 
         actionWrapper.add(btnAddConfigRow);
@@ -119,6 +122,7 @@ public class GD_QuanLyGiaBan extends JPanel {
 
         btnSaveLaiChuan = new JButton("Lưu cấu hình lãi chuẩn");
         ButtonStyles.apply(btnSaveLaiChuan, ButtonStyles.Type.PRIMARY);
+        FontStyles.apply(btnSaveLaiChuan, FontStyles.Type.BUTTON_MEDIUM);
         btnSaveLaiChuan.addActionListener(e -> saveBangLaiChuan());
         JPanel pnlSave = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         pnlSave.add(btnSaveLaiChuan);
@@ -169,10 +173,12 @@ public class GD_QuanLyGiaBan extends JPanel {
 
         btnReload = new JButton("Tải lại");
         ButtonStyles.apply(btnReload, ButtonStyles.Type.PRIMARY);
+        FontStyles.apply(btnReload, FontStyles.Type.BUTTON_MEDIUM);
         btnReload.addActionListener(e -> reloadFromOriginalData());
 
         btnApplySelected = new JButton("Áp dụng giá đề xuất cho dòng chọn");
         ButtonStyles.apply(btnApplySelected, ButtonStyles.Type.SUCCESS);
+        FontStyles.apply(btnApplySelected, FontStyles.Type.BUTTON_MEDIUM);
         btnApplySelected.addActionListener(e -> applySuggestedPriceForSelected());
 
         bottomPanel.add(btnReload);
@@ -766,24 +772,24 @@ public class GD_QuanLyGiaBan extends JPanel {
     }
 
     /**
-     * Tìm tỷ lệ lãi áp dụng cho giá nhập và loại sản phẩm.
-     * Logic ưu tiên: Bảng cụ thể (theo loại sản phẩm) > Bảng tổng quát (null).
-     * 
-     * Ví dụ: Nếu có cả bảng cho tất cả (null) và bảng cho THUOC,
-     * thì sản phẩm THUOC sẽ dùng bảng THUOC, không dùng bảng tổng quát.
+     * Tìm tỷ lệ lãi áp dụng cho giá nhập và loại sản phẩm. Logic ưu tiên: Bảng
+     * cụ thể (theo loại sản phẩm) > Bảng tổng quát (null).
+     *
+     * Ví dụ: Nếu có cả bảng cho tất cả (null) và bảng cho THUOC, thì sản phẩm
+     * THUOC sẽ dùng bảng THUOC, không dùng bảng tổng quát.
      */
     private double timTyLeLaiTheoCauHinh(double giaNhap, LoaiSanPham loaiSanPham, List<BangLaiChuan> cauHinhDangSuDung) {
         if (cauHinhDangSuDung == null || cauHinhDangSuDung.isEmpty()) {
             return 0;
         }
         double fallback = 0; // Tỷ lệ lãi từ bảng tổng quát (null)
-        
+
         for (BangLaiChuan b : cauHinhDangSuDung) {
             double tu = b.getGiaNhapTu();
             double den = b.getGiaNhapDen();
             boolean matchTu = giaNhap >= tu;
             boolean matchDen = (den <= 0) || (giaNhap <= den);
-            
+
             if (matchTu && matchDen) {
                 // Ưu tiên 1: Nếu có bảng cụ thể cho loại sản phẩm này → dùng ngay
                 if (loaiSanPham != null && loaiSanPham.equals(b.getLoaiSanPham())) {

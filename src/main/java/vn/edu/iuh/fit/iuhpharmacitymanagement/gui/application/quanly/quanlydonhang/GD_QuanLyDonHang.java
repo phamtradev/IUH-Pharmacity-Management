@@ -112,7 +112,7 @@ public class GD_QuanLyDonHang extends javax.swing.JPanel {
         btnSearch.setBackground(new java.awt.Color(115, 165, 71));
         btnSearch.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
         btnSearch.setForeground(new java.awt.Color(255, 255, 255));
-        btnSearch.setText("TÌM KIẾM");
+        btnSearch.setText("Tìm Kiếm");
         btnSearch.setMaximumSize(new java.awt.Dimension(150, 40));
         btnSearch.setMinimumSize(new java.awt.Dimension(150, 40));
         btnSearch.setPreferredSize(new java.awt.Dimension(150, 40));
@@ -137,10 +137,10 @@ public class GD_QuanLyDonHang extends javax.swing.JPanel {
         jLabel2.setFont(new java.awt.Font("Segoe UI", 0, 20)); // NOI18N
         jLabel2.setText("-->");
 
-        txtOrder.setBackground(new java.awt.Color(76, 175, 80));
+        txtOrder.setBackground(new java.awt.Color(115, 165, 71));
         txtOrder.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
         txtOrder.setForeground(new java.awt.Color(255, 255, 255));
-        txtOrder.setText("XUẤT EXCEL");
+        txtOrder.setText("Xuất excel");
         txtOrder.setMaximumSize(new java.awt.Dimension(150, 40));
         txtOrder.setMinimumSize(new java.awt.Dimension(150, 40));
         txtOrder.setPreferredSize(new java.awt.Dimension(150, 40));
@@ -151,7 +151,7 @@ public class GD_QuanLyDonHang extends javax.swing.JPanel {
         });
 
         btnView.setFont(new java.awt.Font("Roboto", 1, 14)); // NOI18N
-        btnView.setText("XEM CHI TIẾT");
+        btnView.setText("Xem Chi Tiết");
         btnView.setBorder(null);
         btnView.setBorderPainted(false);
         btnView.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
@@ -172,7 +172,7 @@ public class GD_QuanLyDonHang extends javax.swing.JPanel {
             .addGroup(jPanel5Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(btnView, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED, 10, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED, 115, Short.MAX_VALUE)
                 .addComponent(jDateFrom, javax.swing.GroupLayout.PREFERRED_SIZE, 210, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel2)
@@ -182,29 +182,26 @@ public class GD_QuanLyDonHang extends javax.swing.JPanel {
                 .addComponent(txtOrderCode, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(btnSearch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 65, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(txtOrder, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(21, 21, 21))
         );
         jPanel5Layout.setVerticalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel5Layout.createSequentialGroup()
+                .addGap(29, 29, 29)
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel5Layout.createSequentialGroup()
-                        .addGap(29, 29, 29)
-                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jDateTo, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                .addComponent(txtOrderCode, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(btnSearch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(txtOrder, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(jDateFrom, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(jPanel5Layout.createSequentialGroup()
-                                .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(12, 12, 12))))
-                    .addGroup(jPanel5Layout.createSequentialGroup()
-                        .addGap(29, 29, 29)
-                        .addComponent(btnView, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addComponent(jDateTo, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(txtOrderCode, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(btnSearch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(txtOrder, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(jDateFrom, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(jPanel5Layout.createSequentialGroup()
+                            .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGap(12, 12, 12)))
+                    .addComponent(btnView, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -215,65 +212,54 @@ public class GD_QuanLyDonHang extends javax.swing.JPanel {
         jPanel4.setBackground(new java.awt.Color(255, 255, 255));
         jPanel4.setMinimumSize(new java.awt.Dimension(1226, 174));
         jPanel4.setPreferredSize(new java.awt.Dimension(1226, 174));
-        jPanel4.setLayout(new java.awt.BorderLayout());
-
-        // Thêm tiêu đề "DANH SÁCH THÔNG TIN ĐƠN HÀNG"
-        javax.swing.JPanel titlePanel = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 12));
-        titlePanel.setBackground(new java.awt.Color(23, 162, 184)); // Màu xanh cyan
-        javax.swing.JLabel lblTitle = new javax.swing.JLabel("DANH SÁCH THÔNG TIN ĐƠN HÀNG");
-        lblTitle.setFont(new java.awt.Font("Segoe UI", 1, 16));
-        lblTitle.setForeground(new java.awt.Color(255, 255, 255)); // Chữ màu trắng
-        titlePanel.add(lblTitle);
-        jPanel4.add(titlePanel, java.awt.BorderLayout.NORTH);
-
-        jPanel4.add(scrollTable, java.awt.BorderLayout.CENTER);
+        jPanel4.setLayout(new javax.swing.BoxLayout(jPanel4, javax.swing.BoxLayout.LINE_AXIS));
+        jPanel4.add(scrollTable);
 
         pnAll.add(jPanel4, java.awt.BorderLayout.CENTER);
 
         add(pnAll);
     }// </editor-fold>//GEN-END:initComponents
 
-        /**
+    /**
      * Helper method để thêm field thông tin
      */
     private void addInfoField(javax.swing.JPanel panel, String label, String value) {
         javax.swing.JPanel fieldPanel = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 5, 0));
         fieldPanel.setBackground(java.awt.Color.WHITE);
-        
+
         javax.swing.JLabel lblLabel = new javax.swing.JLabel(label);
         lblLabel.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 13));
         lblLabel.setPreferredSize(new java.awt.Dimension(120, 25));
-        
+
         javax.swing.JLabel lblValue = new javax.swing.JLabel(value);
         lblValue.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 13));
-        
+
         fieldPanel.add(lblLabel);
         fieldPanel.add(lblValue);
-        
+
         panel.add(fieldPanel);
     }
-    
+
     //setUI cho toàn bộ các phần tử trong file
     private void setUIManager() {
         txtOrderCode.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Mã hóa đơn");
         UIManager.put("Button.arc", 10);
         jDateFrom.setDate(Date.valueOf(LocalDate.now()));
         jDateTo.setDate(Date.valueOf(LocalDate.now()));
-        
-        FontStyles.apply(btnView, FontStyles.Type.TEXT_MEDIUM);
-        FontStyles.apply(btnSearch, FontStyles.Type.TEXT_MEDIUM);
-        FontStyles.apply(txtOrder, FontStyles.Type.TEXT_MEDIUM);
-        
+
         btnView.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         btnSearch.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         txtOrder.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
         ButtonStyles.apply(btnView, ButtonStyles.Type.PRIMARY);
+        FontStyles.apply(btnView, FontStyles.Type.BUTTON_MEDIUM);
         ButtonStyles.apply(btnSearch, ButtonStyles.Type.SUCCESS);
+        FontStyles.apply(btnSearch, FontStyles.Type.BUTTON_MEDIUM);
         ButtonStyles.apply(txtOrder, ButtonStyles.Type.SUCCESS);
+        FontStyles.apply(txtOrder, FontStyles.Type.BUTTON_MEDIUM);
     }
-    
-      private void fillTable() {
+
+    private void fillTable() {
         String[] headers = {"Mã hóa đơn", "Ngày tạo", "Khuyến mãi", "Tổng tiền", "Thanh toán", "Khách hàng", "Nhân viên"};
         List<Integer> tableWidths = Arrays.asList(200, 200, 200, 200, 200, 200, 200);
         tableDesign = new TableDesign(headers, tableWidths);
@@ -283,7 +269,7 @@ public class GD_QuanLyDonHang extends javax.swing.JPanel {
         fillContent(donHangs);
     }
     //Phaanan Logic code
-    
+
     private void fillContent(List<DonHang> donHangs) {
         tableDesign.getModelTable().setRowCount(0);
         for (DonHang donHang : donHangs) {
@@ -306,7 +292,7 @@ public class GD_QuanLyDonHang extends javax.swing.JPanel {
             });
         }
     }
-    
+
     private void btnSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSearchActionPerformed
         // Lấy thông tin từ form
         java.util.Date date1 = jDateFrom.getDate();
@@ -371,7 +357,7 @@ public class GD_QuanLyDonHang extends javax.swing.JPanel {
             showChiTietDonHangDialog(maDonHang);
         }
     }//GEN-LAST:event_btnViewActionPerformed
-    
+
     /**
      * Hiển thị dialog chi tiết đơn hàng với đầy đủ thông tin
      */
@@ -383,79 +369,79 @@ public class GD_QuanLyDonHang extends javax.swing.JPanel {
             return;
         }
         DonHang donHang = ketQua.get(0);
-        
+
         // Lấy chi tiết đơn hàng
         List<ChiTietDonHang> chiTietDonHangs = chiTietDonHangBUS.layDanhSachChiTietTheoMaDonHang(maDonHang);
-        
+
         // Tạo dialog mới
         javax.swing.JDialog dialog = new javax.swing.JDialog();
         dialog.setTitle("Chi tiết hóa đơn - " + maDonHang);
         dialog.setSize(1200, 700);
         dialog.setLocationRelativeTo(null);
         dialog.setModal(true);
-        
+
         // Main panel
         javax.swing.JPanel mainPanel = new javax.swing.JPanel(new java.awt.BorderLayout(10, 10));
         mainPanel.setBackground(java.awt.Color.WHITE);
         mainPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(20, 20, 20, 20));
-        
+
         // ===================== HEADER PANEL =====================
         javax.swing.JPanel headerPanel = new javax.swing.JPanel();
         headerPanel.setLayout(new java.awt.GridLayout(0, 2, 20, 10));
         headerPanel.setBackground(java.awt.Color.WHITE);
         headerPanel.setBorder(javax.swing.BorderFactory.createCompoundBorder(
-            javax.swing.BorderFactory.createTitledBorder(
-                javax.swing.BorderFactory.createLineBorder(new java.awt.Color(23, 162, 184), 2),
-                "THÔNG TIN HÓA ĐƠN",
-                javax.swing.border.TitledBorder.LEFT,
-                javax.swing.border.TitledBorder.TOP,
-                new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 14),
-                new java.awt.Color(23, 162, 184)
-            ),
-            javax.swing.BorderFactory.createEmptyBorder(10, 15, 10, 15)
+                javax.swing.BorderFactory.createTitledBorder(
+                        javax.swing.BorderFactory.createLineBorder(new java.awt.Color(23, 162, 184), 2),
+                        "THÔNG TIN HÓA ĐƠN",
+                        javax.swing.border.TitledBorder.LEFT,
+                        javax.swing.border.TitledBorder.TOP,
+                        new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 14),
+                        new java.awt.Color(23, 162, 184)
+                ),
+                javax.swing.BorderFactory.createEmptyBorder(10, 15, 10, 15)
         ));
-        
+
         // Thêm thông tin header
         addInfoField(headerPanel, "Mã hóa đơn:", donHang.getMaDonHang());
         addInfoField(headerPanel, "Ngày tạo:", DinhDangNgay.dinhDangNgay(donHang.getNgayDatHang()));
-        
+
         String tenNV = "N/A";
         if (donHang.getNhanVien() != null) {
             tenNV = donHang.getNhanVien().getTenNhanVien();
         }
         addInfoField(headerPanel, "Nhân viên:", tenNV);
-        
+
         String tenKH = "Khách vãng lai";
         if (donHang.getKhachHang() != null) {
             tenKH = donHang.getKhachHang().getTenKhachHang();
         }
         addInfoField(headerPanel, "Khách hàng:", tenKH);
-        
+
         String khuyenMai = "Không có";
         if (donHang.getKhuyenMai() != null) {
-            khuyenMai = donHang.getKhuyenMai().getMaKhuyenMai() + " (-" + 
-                DinhDangSo.dinhDangPhanTramTrucTiep(donHang.getKhuyenMai().getGiamGia() * 100) + ")";
+            khuyenMai = donHang.getKhuyenMai().getMaKhuyenMai() + " (-"
+                    + DinhDangSo.dinhDangPhanTramTrucTiep(donHang.getKhuyenMai().getGiamGia() * 100) + ")";
         }
         addInfoField(headerPanel, "Khuyến mãi:", khuyenMai);
-        
-        String phuongThucTT = donHang.getPhuongThucThanhToan() == PhuongThucThanhToan.CHUYEN_KHOAN_NGAN_HANG 
-            ? "Chuyển khoản" : "Tiền mặt";
+
+        String phuongThucTT = donHang.getPhuongThucThanhToan() == PhuongThucThanhToan.CHUYEN_KHOAN_NGAN_HANG
+                ? "Chuyển khoản" : "Tiền mặt";
         addInfoField(headerPanel, "Thanh toán:", phuongThucTT);
-        
+
         mainPanel.add(headerPanel, java.awt.BorderLayout.NORTH);
-        
+
         // ===================== TABLE CHI TIẾT =====================
         String[] headers = {"STT", "Mã lô hàng", "Tên sản phẩm", "Đơn vị", "Số lượng", "Đơn giá", "Giảm giá", "Thành tiền"};
         List<Integer> tableWidths = Arrays.asList(50, 120, 250, 80, 80, 120, 100, 130);
         TableDesign tableDetail = new TableDesign(headers, tableWidths);
-        
+
         // Thêm dữ liệu vào bảng
         int stt = 1;
         for (ChiTietDonHang ct : chiTietDonHangs) {
             String maLoHang = ct.getLoHang() != null ? ct.getLoHang().getMaLoHang() : "N/A";
             String tenSanPham = "N/A";
             String donVi = "";
-            
+
             if (ct.getLoHang() != null && ct.getLoHang().getSanPham() != null) {
                 SanPham sp = ct.getLoHang().getSanPham();
                 tenSanPham = sp.getTenSanPham();
@@ -463,7 +449,7 @@ public class GD_QuanLyDonHang extends javax.swing.JPanel {
                     donVi = sp.getDonViTinh().getTenDonVi();
                 }
             }
-            
+
             tableDetail.getModelTable().addRow(new Object[]{
                 stt++,
                 maLoHang,
@@ -475,61 +461,59 @@ public class GD_QuanLyDonHang extends javax.swing.JPanel {
                 DinhDangSo.dinhDangTien(ct.getThanhTien())
             });
         }
-        
+
         javax.swing.JScrollPane scrollPane = new javax.swing.JScrollPane(tableDetail.getTable());
         scrollPane.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 0, 10, 0));
         mainPanel.add(scrollPane, java.awt.BorderLayout.CENTER);
-        
+
         // ===================== BOTTOM PANEL (Tổng tiền + Button Đóng) =====================
         javax.swing.JPanel bottomPanel = new javax.swing.JPanel(new java.awt.BorderLayout(10, 10));
         bottomPanel.setBackground(java.awt.Color.WHITE);
-        
+
         // Panel tổng tiền (bên trái)
         javax.swing.JPanel tongTienPanel = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 10, 5));
         tongTienPanel.setBackground(java.awt.Color.WHITE);
-        
+
         javax.swing.JLabel lblTongTienTitle = new javax.swing.JLabel("TỔNG TIỀN:");
         lblTongTienTitle.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 18));
         lblTongTienTitle.setForeground(new java.awt.Color(220, 53, 69));
-        
+
         javax.swing.JLabel lblTongTienValue = new javax.swing.JLabel(DinhDangSo.dinhDangTien(donHang.getThanhTien()));
         lblTongTienValue.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 20));
         lblTongTienValue.setForeground(new java.awt.Color(220, 53, 69));
-        
+
         tongTienPanel.add(lblTongTienTitle);
         tongTienPanel.add(lblTongTienValue);
-        
+
         bottomPanel.add(tongTienPanel, java.awt.BorderLayout.WEST);
-        
+
         // Panel button Đóng (bên phải)
         javax.swing.JPanel buttonPanel = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 10, 5));
         buttonPanel.setBackground(java.awt.Color.WHITE);
-        
+
         // Nút Đóng
         javax.swing.JButton btnDong = new javax.swing.JButton("ĐÓNG");
         btnDong.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 14));
         btnDong.setPreferredSize(new java.awt.Dimension(120, 40));
         btnDong.putClientProperty(FlatClientProperties.STYLE, ""
-            + "background:#6C757D;"
-            + "foreground:#FFFFFF;"
-            + "hoverBackground:#5A6268;"
-            + "pressedBackground:#545B62;"
-            + "arc:10;"
-            + "borderWidth:0");
+                + "background:#6C757D;"
+                + "foreground:#FFFFFF;"
+                + "hoverBackground:#5A6268;"
+                + "pressedBackground:#545B62;"
+                + "arc:10;"
+                + "borderWidth:0");
         btnDong.addActionListener(e -> dialog.dispose());
-        
+
         buttonPanel.add(btnDong);
-        
+
         bottomPanel.add(buttonPanel, java.awt.BorderLayout.EAST);
-        
+
         mainPanel.add(bottomPanel, java.awt.BorderLayout.SOUTH);
-        
+
         // Thêm main panel vào dialog
         dialog.add(mainPanel);
         dialog.setVisible(true);
     }
-    
-    
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnSearch;
@@ -545,8 +529,8 @@ public class GD_QuanLyDonHang extends javax.swing.JPanel {
     private javax.swing.JPanel pnAll;
     private javax.swing.JScrollPane scrollTable;
     private javax.swing.JScrollPane scrollTableDetail;
-    private javax.swing.JTextField txtOrderCode;
     private javax.swing.JButton txtOrder;
+    private javax.swing.JTextField txtOrderCode;
     // End of variables declaration//GEN-END:variables
 
 }

@@ -121,10 +121,10 @@ public class Panel_ThongKeTheoNam extends javax.swing.JPanel {
         });
 
         comboProductType.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        comboProductType.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Tất cả", "Thuốc", "Thuốc kê đơn", "Vật tư y tế", "Thực phẩm chức năng", "Chăm sóc trẻ em", "Thiết bị y tế" }));
+        comboProductType.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Tất cả", "Thuốc", "Vật tư y tế" }));
 
         comboPaymentType.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        comboPaymentType.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Tất cả", "Tiền mặt", "Chuyển khoản" }));
+        comboPaymentType.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Tất cả", "Tiền mặt", "Tín dụng" }));
 
         comboIsPromotion.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         comboIsPromotion.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Tất cả", "Không khuyến mãi", "Có khuyến mãi" }));
@@ -211,9 +211,6 @@ public class Panel_ThongKeTheoNam extends javax.swing.JPanel {
         jPanel1.add(headerPanel, java.awt.BorderLayout.NORTH);
 
         pnContent.setLayout(new java.awt.BorderLayout());
-        
-        // Thêm chart thực sự
-        pnContent.add(chart, java.awt.BorderLayout.CENTER);
 
         jPanel2.setBackground(new java.awt.Color(255, 255, 255));
         jPanel2.setBorder(javax.swing.BorderFactory.createMatteBorder(2, 0, 2, 0, new java.awt.Color(232, 232, 232)));

@@ -28,60 +28,56 @@ public class GD_QuanLyDonViTinh extends javax.swing.JPanel {
     public GD_QuanLyDonViTinh() {
         this.donViTinhBUS = new DonViTinhBUS(new DonViTinhDAO());
         initComponents();
-        
+
         // Áp dụng ButtonStyles và FontStyles
         applyStyles();
-        
+
         setUIManager();
         setupModalStyle();
         fillTable();
     }
-    
+
     private void applyStyles() {
         // Buttons chính
         ButtonStyles.apply(btnThem, ButtonStyles.Type.SUCCESS);
         FontStyles.apply(btnThem, FontStyles.Type.BUTTON_MEDIUM);
         btnThem.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnThem.setPreferredSize(new java.awt.Dimension(95, 40));
-        FontStyles.apply(btnThem, FontStyles.Type.TEXT_MEDIUM);
-        
+
         ButtonStyles.apply(btnSua, ButtonStyles.Type.PRIMARY);
         FontStyles.apply(btnSua, FontStyles.Type.BUTTON_MEDIUM);
         btnSua.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnSua.setPreferredSize(new java.awt.Dimension(95, 40));
-        FontStyles.apply(btnSua, FontStyles.Type.TEXT_MEDIUM);
-        
+
         ButtonStyles.apply(btnXoa, ButtonStyles.Type.DANGER);
         FontStyles.apply(btnXoa, FontStyles.Type.BUTTON_MEDIUM);
         btnXoa.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnXoa.setPreferredSize(new java.awt.Dimension(95, 40));
-        FontStyles.apply(btnXoa, FontStyles.Type.TEXT_MEDIUM);
-        
+
         ButtonStyles.apply(btnTimKiem, ButtonStyles.Type.SUCCESS);
         FontStyles.apply(btnTimKiem, FontStyles.Type.BUTTON_MEDIUM);
         btnTimKiem.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnTimKiem.setPreferredSize(new java.awt.Dimension(150, 40));
-        FontStyles.apply(btnTimKiem, FontStyles.Type.TEXT_MEDIUM);
     }
-    
+
     private void setupModalStyle() {
         // Cấu hình Modal Add
         modalAddUnit.setTitle("THÊM ĐƠN VỊ TÍNH MỚI");
         modalAddUnit.setSize(750, 300);
-        
+
         // Cấu hình Modal Edit
         modalEditUnit.setTitle("CẬP NHẬT ĐƠN VỊ TÍNH");
         modalEditUnit.setSize(750, 300);
-        
+
         // Loại bỏ viền thừa của panel trong modal
         jPanel2.putClientProperty(FlatClientProperties.STYLE, "background:#F8F9FA;border:0,0,0,0");
         jPanel3.putClientProperty(FlatClientProperties.STYLE, "background:#F8F9FA;border:0,0,0,0");
-        
+
         // Style cho text fields
         txtNameUnitAdd.putClientProperty(FlatClientProperties.STYLE, "arc:10");
         txtNameUnitEdit.putClientProperty(FlatClientProperties.STYLE, "arc:10");
         txtTimKiem.putClientProperty(FlatClientProperties.STYLE, "arc:10");
-        
+
         // Style cho buttons trong modal Add - giống modal Quản lý Sản phẩm
         btnAddUnit.putClientProperty(FlatClientProperties.STYLE, ""
                 + "background:#5C6BC0;"
@@ -90,10 +86,10 @@ public class GD_QuanLyDonViTinh extends javax.swing.JPanel {
                 + "pressedBackground:#3949AB;"
                 + "arc:10;"
                 + "borderWidth:0");
-        
+
         btnExitModalAdd.putClientProperty(FlatClientProperties.STYLE, ""
                 + "arc:10");
-        
+
         // Style cho buttons trong modal Edit - giống modal Quản lý Sản phẩm
         btnEditUnit.putClientProperty(FlatClientProperties.STYLE, ""
                 + "background:#5C6BC0;"
@@ -102,7 +98,7 @@ public class GD_QuanLyDonViTinh extends javax.swing.JPanel {
                 + "pressedBackground:#3949AB;"
                 + "arc:10;"
                 + "borderWidth:0");
-        
+
         btnExitModalEdit.putClientProperty(FlatClientProperties.STYLE, ""
                 + "arc:10");
     }
@@ -546,18 +542,18 @@ public class GD_QuanLyDonViTinh extends javax.swing.JPanel {
             Notifications.getInstance().show(Notifications.Type.WARNING, "Vui lòng chọn đơn vị tính cần xóa!");
             return;
         }
-        
+
         String maDonViTinh = (String) tableDesign.getTable().getValueAt(selectedRow, 0);
         String tenDonViTinh = (String) tableDesign.getTable().getValueAt(selectedRow, 1);
-        
+
         int confirm = javax.swing.JOptionPane.showConfirmDialog(
-            this,
-            "Bạn có chắc chắn muốn xóa đơn vị tính \"" + tenDonViTinh + "\" không?",
-            "Xác nhận xóa",
-            javax.swing.JOptionPane.YES_NO_OPTION,
-            javax.swing.JOptionPane.WARNING_MESSAGE
+                this,
+                "Bạn có chắc chắn muốn xóa đơn vị tính \"" + tenDonViTinh + "\" không?",
+                "Xác nhận xóa",
+                javax.swing.JOptionPane.YES_NO_OPTION,
+                javax.swing.JOptionPane.WARNING_MESSAGE
         );
-        
+
         if (confirm == javax.swing.JOptionPane.YES_OPTION) {
             try {
                 boolean result = donViTinhBUS.xoaDonViTinh(maDonViTinh);

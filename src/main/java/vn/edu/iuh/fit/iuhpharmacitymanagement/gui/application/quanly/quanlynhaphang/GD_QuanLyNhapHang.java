@@ -58,9 +58,9 @@ public class GD_QuanLyNhapHang extends javax.swing.JPanel {
         jDateFrom.setDate(Date.valueOf(LocalDate.now()));
         jDateTo.setDate(Date.valueOf(LocalDate.now()));
 
-        FontStyles.apply(btnView, FontStyles.Type.TEXT_MEDIUM);
-        FontStyles.apply(btnSearch, FontStyles.Type.TEXT_MEDIUM);
-        FontStyles.apply(txtOrder, FontStyles.Type.TEXT_MEDIUM);
+        FontStyles.apply(btnView, FontStyles.Type.BUTTON_MEDIUM);
+        FontStyles.apply(btnSearch, FontStyles.Type.BUTTON_MEDIUM);
+        FontStyles.apply(txtOrder, FontStyles.Type.BUTTON_MEDIUM);
 
         btnView.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         btnSearch.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -658,7 +658,6 @@ public class GD_QuanLyNhapHang extends javax.swing.JPanel {
             return label;
         }
     }
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnSearch;

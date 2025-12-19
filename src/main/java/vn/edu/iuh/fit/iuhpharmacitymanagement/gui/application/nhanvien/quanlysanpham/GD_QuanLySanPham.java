@@ -86,6 +86,8 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         // Quyền theo vai trò
         if (isManager) {
             btnDelete.setVisible(true);
+            ButtonStyles.apply(btnDelete, ButtonStyles.Type.DANGER);
+            FontStyles.apply(btnDelete, FontStyles.Type.BUTTON_MEDIUM);
             btnUpdate.setVisible(true);
         } else {
             // Nhân viên không được sửa sản phẩm
