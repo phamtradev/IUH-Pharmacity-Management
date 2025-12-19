@@ -77,25 +77,47 @@ jobs:
       - name: Tạo ứng dụng Windows (jpackage, sử dụng shaded JAR)
         shell: pwsh
         run: |
-          $appName   = "iuhpharmacitymanagement"
-          $mainJar   = "target/iuhpharmacitymanagement-1.0-SNAPSHOT-shaded.jar"
-          $mainClass = "vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.MainApplication"
+          $appName        = "IUH Pharmacity Management"
+          $appNameDir     = "IUHPharmacityManagement"
+          $appVersion     = "1.0"
+          $appDescription = "IUH Pharmacity Management - Hệ thống quản lý nhà thuốc"
+          $mainJar        = "target/iuhpharmacitymanagement-1.0-SNAPSHOT-shaded.jar"
+          $mainClass      = "vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.MainApplication"
 
           if (-not (Test-Path $mainJar)) {
             Write-Error "Không tìm thấy JAR chính: $mainJar"
             exit 1
           }
 
+          # Kiểm tra xem resources có trong JAR không
+          Write-Host "Kiểm tra resources trong JAR..."
+          $resources = jar tf $mainJar | Select-String "img/"
+          if ($resources) {
+            Write-Host "Tìm thấy các resources:"
+            $resources | ForEach-Object { Write-Host "  $_" }
+          } else {
+            Write-Warning "Không tìm thấy resources img/ trong JAR!"
+          }
+
           New-Item -ItemType Directory -Path dist -Force | Out-Null
 
+          # Tạo app image với jpackage
+          # --input target sẽ copy tất cả file trong target, bao gồm JAR và resources
+          # Resources sẽ được tự động extract từ JAR khi chạy ứng dụng
+          # --name: tên hiển thị của ứng dụng (có thể có khoảng trắng)
+          # Tên thư mục sẽ được tạo tự động từ --name
           jpackage `
             --type app-image `
-            --name $appName `
+            --name "$appName" `
+            --app-version $appVersion `
+            --description "$appDescription" `
             --input target `
             --main-jar (Split-Path $mainJar -Leaf) `
             --main-class $mainClass `
             --dest dist `
-            --win-console
+            --win-console `
+            --java-options "-Dfile.encoding=UTF-8" `
+            --java-options "-Djava.awt.headless=false"
 
       # ===============================
       # Kiểm tra kết quả

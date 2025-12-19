@@ -187,6 +187,10 @@
                         <configuration>
                             <shadedArtifactAttached>true</shadedArtifactAttached>
                             <shadedClassifierName>shaded</shadedClassifierName>
+                            <!-- Đảm bảo resources được include vào JAR -->
+                            <includes>
+                                <include>**/*</include>
+                            </includes>
                             <!-- Loại bỏ chữ ký để tránh lỗi "Invalid signature file digest" -->
                             <filters>
                                 <filter>
@@ -202,6 +206,8 @@
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <mainClass>vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.MainApplication</mainClass>
                                 </transformer>
+                                <!-- Đảm bảo resources được merge đúng cách -->
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                             </transformers>
                         </configuration>
                     </execution>

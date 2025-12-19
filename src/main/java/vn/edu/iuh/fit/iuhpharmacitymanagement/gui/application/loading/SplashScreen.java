@@ -69,7 +69,8 @@ public class SplashScreen extends javax.swing.JFrame {
                 
                 // Bước 2: Load hình ảnh (thực tế)
                 updateProgress("Đang tải hình ảnh...", 5);
-                setImageToLabel(BackgroundImg, "/img/landing.png");
+                // Thử cả hai trường hợp: landing.png và landing.PNG (file thực tế là landing.PNG)
+                setImageToLabel(BackgroundImg, "/img/landing.PNG");
                 updateProgress("Đang tải hình ảnh...", 10);
                 //setImageToLabel(IUHLogo, "/img/IUH_New.png");
                 updateProgress("Đã tải hình ảnh", 15);
@@ -150,22 +151,67 @@ public class SplashScreen extends javax.swing.JFrame {
 
     private void setImageToLabel(javax.swing.JLabel label, String imagePath) {
         try {
-            java.net.URL imgURL = getClass().getResource(imagePath);
-            System.out.println("Đường dẫn ảnh: " + imgURL);
+            // Thử nhiều cách để load hình ảnh (case-insensitive và các biến thể)
+            java.net.URL imgURL = null;
+            
+            // Thử 1: Đường dẫn chính xác như được truyền vào
+            imgURL = getClass().getResource(imagePath);
+            
+            // Thử 2: Nếu không tìm thấy, thử với extension chữ hoa
+            if (imgURL == null && imagePath.toLowerCase().endsWith(".png")) {
+                String altPath = imagePath.substring(0, imagePath.length() - 4) + ".PNG";
+                imgURL = getClass().getResource(altPath);
+            }
+            
+            // Thử 3: Nếu vẫn không tìm thấy, thử load từ classloader
+            if (imgURL == null) {
+                imgURL = Thread.currentThread().getContextClassLoader().getResource(imagePath.substring(1)); // Bỏ dấu / đầu
+            }
+            
+            // Thử 4: Thử với extension chữ hoa từ classloader
+            if (imgURL == null && imagePath.toLowerCase().endsWith(".png")) {
+                String altPath = imagePath.substring(1, imagePath.length() - 4) + ".PNG";
+                imgURL = Thread.currentThread().getContextClassLoader().getResource(altPath);
+            }
+            
+            System.out.println("Đường dẫn ảnh: " + imgURL + " (từ path: " + imagePath + ")");
 
             if (imgURL != null) {
                 ImageIcon originalIcon = new ImageIcon(imgURL);
-                Image scaledImage = originalIcon.getImage().getScaledInstance(
-                        label.getWidth(),
-                        label.getHeight(),
+                Image image = originalIcon.getImage();
+                
+                // Đảm bảo image được load hoàn toàn
+                if (image.getWidth(null) <= 0 || image.getHeight(null) <= 0) {
+                    MediaTracker tracker = new MediaTracker(label);
+                    tracker.addImage(image, 0);
+                    try {
+                        tracker.waitForID(0);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
+                
+                // Scale image
+                int labelWidth = label.getWidth() > 0 ? label.getWidth() : 1200;
+                int labelHeight = label.getHeight() > 0 ? label.getHeight() : 600;
+                Image scaledImage = image.getScaledInstance(
+                        labelWidth,
+                        labelHeight,
                         Image.SCALE_SMOOTH
                 );
                 label.setIcon(new ImageIcon(scaledImage));
+                logger.info("Đã load hình ảnh thành công: " + imagePath);
             } else {
                 logger.warning("Không tìm thấy ảnh ở đường dẫn: " + imagePath);
+                // Set một màu nền thay vì để trống
+                label.setBackground(new java.awt.Color(240, 240, 240));
+                label.setOpaque(true);
             }
         } catch (Exception e) {
-            logger.log(java.util.logging.Level.SEVERE, "Lỗi khi load hình ảnh", e);
+            logger.log(java.util.logging.Level.SEVERE, "Lỗi khi load hình ảnh: " + imagePath, e);
+            // Set màu nền fallback
+            label.setBackground(new java.awt.Color(240, 240, 240));
+            label.setOpaque(true);
         }
     }
 

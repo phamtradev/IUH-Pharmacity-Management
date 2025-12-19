@@ -26,6 +26,9 @@
             <configuration>
               <shadedArtifactAttached>true</shadedArtifactAttached>
               <shadedClassifierName>shaded</shadedClassifierName>
+              <includes>
+                <include>**/*</include>
+              </includes>
               <filters>
                 <filter>
                   <artifact>*:*</artifact>
@@ -40,6 +43,7 @@
                 <transformer>
                   <mainClass>vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.MainApplication</mainClass>
                 </transformer>
+                <transformer />
               </transformers>
             </configuration>
           </execution>
