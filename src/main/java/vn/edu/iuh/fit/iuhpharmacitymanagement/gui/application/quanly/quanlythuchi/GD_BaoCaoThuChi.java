@@ -48,10 +48,16 @@ public class GD_BaoCaoThuChi extends javax.swing.JPanel {
     private final HangHongBUS hangHongBUS;
     private final ChiTietDonHangBUS chiTietDonHangBUS;
     private final ChiTietHangHongBUS chiTietHangHongBUS;
+    private final ChiTietDonTraHangBUS chiTietDonTraHangBUS;
+    private final ChiTietDonNhapHangBUS chiTietDonNhapHangBUS;
     private final BaoCaoBUS baoCaoBUS;
     private final SanPhamBUS sanPhamBUS;
     private TableDesign tableDesign;
     private TableDesign tableDetail;
+    private javax.swing.JLabel lblMaPhieuInfo;
+    private javax.swing.JLabel lblNgayLapInfo;
+    private javax.swing.JLabel lblNguoiLapInfo;
+    private javax.swing.JLabel lblGiaTriInfo;
 
     public GD_BaoCaoThuChi() {
         donHangBUS = new DonHangBUS();
@@ -60,6 +66,8 @@ public class GD_BaoCaoThuChi extends javax.swing.JPanel {
         hangHongBUS = new HangHongBUS();
         chiTietDonHangBUS = new ChiTietDonHangBUS();
         chiTietHangHongBUS = new ChiTietHangHongBUS();
+        chiTietDonTraHangBUS = new ChiTietDonTraHangBUS();
+        chiTietDonNhapHangBUS = new ChiTietDonNhapHangBUS();
         baoCaoBUS = new BaoCaoBUS();
         sanPhamBUS = new SanPhamBUS(new vn.edu.iuh.fit.iuhpharmacitymanagement.dao.SanPhamDAO());
         initComponents();
@@ -92,6 +100,17 @@ public class GD_BaoCaoThuChi extends javax.swing.JPanel {
         tableDesign = new TableDesign(headers, tableWidths);
         scrollTable.setViewportView(tableDesign.getTable());
         scrollTable.setBorder(BorderFactory.createEmptyBorder(15, 20, 20, 20));
+        
+        // Thêm double-click listener để xem chi tiết
+        tableDesign.getTable().addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                if (evt.getClickCount() == 2) {
+                    btnViewActionPerformed(null);
+                }
+            }
+        });
+        
         BaoCaoBUS.BaoCaoThuChi r = baoCaoBUS.layBaoCaoTheoThoiGian(LocalDate.now(), LocalDate.now(),
                 (String) comboboxType.getSelectedItem());
         fillContent(r);
@@ -252,14 +271,46 @@ public class GD_BaoCaoThuChi extends javax.swing.JPanel {
                         .addGap(0, 238, Short.MAX_VALUE));
 
         modalDetail.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        modalDetail.setTitle("Chi tiết phiếu nhập hàng");
+        modalDetail.setTitle("Chi tiết phiếu");
         modalDetail.setMinimumSize(new java.awt.Dimension(1311, 700));
         modalDetail.setModal(true);
         modalDetail.setResizable(false);
 
         jPanel3.setBackground(new java.awt.Color(255, 255, 255));
-        jPanel3.setLayout(new javax.swing.BoxLayout(jPanel3, javax.swing.BoxLayout.LINE_AXIS));
-        jPanel3.add(scrollTableDetail);
+        jPanel3.setLayout(new java.awt.BorderLayout());
+        
+        // Thêm panel thông tin phiếu ở trên
+        javax.swing.JPanel infoPanel = new javax.swing.JPanel();
+        infoPanel.setBackground(new java.awt.Color(240, 240, 240));
+        infoPanel.setBorder(javax.swing.BorderFactory.createCompoundBorder(
+            javax.swing.BorderFactory.createMatteBorder(0, 0, 1, 0, new java.awt.Color(200, 200, 200)),
+            javax.swing.BorderFactory.createEmptyBorder(15, 20, 15, 20)
+        ));
+        infoPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 20, 5));
+        
+        lblMaPhieuInfo = new javax.swing.JLabel("Mã phiếu: ");
+        lblMaPhieuInfo.setFont(new java.awt.Font("Segoe UI", 1, 14));
+        
+        lblNgayLapInfo = new javax.swing.JLabel("Ngày lập: ");
+        lblNgayLapInfo.setFont(new java.awt.Font("Segoe UI", 0, 14));
+        
+        lblNguoiLapInfo = new javax.swing.JLabel("Người lập: ");
+        lblNguoiLapInfo.setFont(new java.awt.Font("Segoe UI", 0, 14));
+        
+        lblGiaTriInfo = new javax.swing.JLabel("Tổng giá trị: ");
+        lblGiaTriInfo.setFont(new java.awt.Font("Segoe UI", 1, 14));
+        lblGiaTriInfo.setForeground(new java.awt.Color(0, 128, 0));
+        
+        infoPanel.add(lblMaPhieuInfo);
+        infoPanel.add(new javax.swing.JLabel("|"));
+        infoPanel.add(lblNgayLapInfo);
+        infoPanel.add(new javax.swing.JLabel("|"));
+        infoPanel.add(lblNguoiLapInfo);
+        infoPanel.add(new javax.swing.JLabel("|"));
+        infoPanel.add(lblGiaTriInfo);
+        
+        jPanel3.add(infoPanel, java.awt.BorderLayout.NORTH);
+        jPanel3.add(scrollTableDetail, java.awt.BorderLayout.CENTER);
 
         javax.swing.GroupLayout modalDetailLayout = new javax.swing.GroupLayout(modalDetail.getContentPane());
         modalDetail.getContentPane().setLayout(modalDetailLayout);
@@ -871,6 +922,20 @@ public class GD_BaoCaoThuChi extends javax.swing.JPanel {
         }
         String loaiPhieu = (String) table.getValueAt(selectedRow, 2);
         String maPhieu = (String) table.getValueAt(selectedRow, 0);
+        String ngayLap = (String) table.getValueAt(selectedRow, 1);
+        String nguoiLap = (String) table.getValueAt(selectedRow, 3);
+        String giaTri = (String) table.getValueAt(selectedRow, 4);
+        
+        // Cập nhật tiêu đề modal theo loại phiếu
+        modalDetail.setTitle("Chi tiết " + loaiPhieu + " - Mã phiếu: " + maPhieu);
+        
+        // Cập nhật thông tin phiếu ở panel trên cùng
+        if (lblMaPhieuInfo != null) {
+            lblMaPhieuInfo.setText("Mã phiếu: " + maPhieu);
+            lblNgayLapInfo.setText("Ngày lập: " + ngayLap);
+            lblNguoiLapInfo.setText("Người lập: " + nguoiLap);
+            lblGiaTriInfo.setText("Tổng giá trị: " + giaTri);
+        }
 
         if (loaiPhieu.equalsIgnoreCase("Bán hàng")) {
             String[] headers = {"Mã lô hàng", "Tên sản phẩm", "Số lượng", "Đơn giá", "Giảm giá", "Thành tiền"};
@@ -885,6 +950,7 @@ public class GD_BaoCaoThuChi extends javax.swing.JPanel {
             tableDetail.getModelTable().setRowCount(0);
 
             // Thêm chi tiết đơn hàng vào bảng
+            double tongTien = 0;
             for (ChiTietDonHang ct : chiTietDonHangs) {
                 String maLoHang = ct.getLoHang() != null ? ct.getLoHang().getMaLoHang() : "";
                 String tenSanPham = "N/A";
@@ -900,106 +966,165 @@ public class GD_BaoCaoThuChi extends javax.swing.JPanel {
                     DinhDangSo.dinhDangTien(ct.getGiamGiaSanPham()),
                     DinhDangSo.dinhDangTien(ct.getThanhTien())
                 });
+                tongTien += ct.getThanhTien();
             }
+            
+            // Thêm dòng tổng cộng
+            tableDetail.getModelTable().addRow(new Object[]{
+                "", "TỔNG CỘNG", 
+                chiTietDonHangs.stream().mapToInt(ChiTietDonHang::getSoLuong).sum(),
+                "", "", DinhDangSo.dinhDangTien(tongTien)
+            });
         }
 
         if (loaiPhieu.equalsIgnoreCase("Trả hàng")) {
-            String[] headers = {"Mã sản phẩm", "Tên sản phẩm", "Số lượng trả", "Đơn giá", "Thành tiền", "Lý do trả"};
-            List<Integer> tableWidths = Arrays.asList(150, 250, 120, 150, 150, 250);
-            tableDetail = new TableDesign(headers, tableWidths);
-            scrollTableDetail.setViewportView(tableDetail.getTable());
-            scrollTableDetail.setBorder(BorderFactory.createEmptyBorder(15, 20, 20, 20));
+            try {
+                String[] headers = {"Mã sản phẩm", "Tên sản phẩm", "Số lượng trả", "Đơn giá", "Thành tiền", "Lý do trả"};
+                List<Integer> tableWidths = Arrays.asList(150, 250, 120, 150, 150, 250);
+                tableDetail = new TableDesign(headers, tableWidths);
+                scrollTableDetail.setViewportView(tableDetail.getTable());
+                scrollTableDetail.setBorder(BorderFactory.createEmptyBorder(15, 20, 20, 20));
 
-            DonTraHang dth = donTraHangBUS.layDonTraHangTheoMa(maPhieu);
-            List<ChiTietDonTraHang> chiTietList = dth.getChiTietDonTraHang();
+                // Lấy chi tiết từ BUS thay vì từ entity
+                List<ChiTietDonTraHang> chiTietList = chiTietDonTraHangBUS.layChiTietTheoMaDonTra(maPhieu);
 
-            // Xóa dữ liệu cũ trong bảng
-            tableDetail.getModelTable().setRowCount(0);
+                // Xóa dữ liệu cũ trong bảng
+                tableDetail.getModelTable().setRowCount(0);
 
-            if (chiTietList != null && !chiTietList.isEmpty()) {
-                for (ChiTietDonTraHang ct : chiTietList) {
-                    String maSanPham = ct.getSanPham() != null ? ct.getSanPham().getMaSanPham() : "N/A";
-                    String tenSanPham = "N/A";
-                    if (ct.getSanPham() != null) {
-                        SanPham sp = sanPhamBUS.laySanPhamTheoMa(maSanPham);
-                        if (sp != null) {
-                            tenSanPham = sp.getTenSanPham();
+                double tongTien = 0;
+                if (chiTietList != null && !chiTietList.isEmpty()) {
+                    for (ChiTietDonTraHang ct : chiTietList) {
+                        String maSanPham = ct.getSanPham() != null ? ct.getSanPham().getMaSanPham() : "N/A";
+                        String tenSanPham = "N/A";
+                        if (ct.getSanPham() != null) {
+                            tenSanPham = ct.getSanPham().getTenSanPham();
+                            if (tenSanPham == null || tenSanPham.isEmpty()) {
+                                SanPham sp = sanPhamBUS.laySanPhamTheoMa(maSanPham);
+                                if (sp != null) {
+                                    tenSanPham = sp.getTenSanPham();
+                                }
+                            }
                         }
-                    }
 
+                        tableDetail.getModelTable().addRow(new Object[]{
+                            maSanPham,
+                            tenSanPham,
+                            ct.getSoLuong(),
+                            DinhDangSo.dinhDangTien(ct.getDonGia()),
+                            DinhDangSo.dinhDangTien(ct.getThanhTien()),
+                            ct.getLyDoTra() != null ? ct.getLyDoTra() : ""
+                        });
+                        tongTien += ct.getThanhTien();
+                    }
+                    
+                    // Thêm dòng tổng cộng
                     tableDetail.getModelTable().addRow(new Object[]{
-                        maSanPham,
-                        tenSanPham,
-                        ct.getSoLuong(),
-                        DinhDangSo.dinhDangTien(ct.getDonGia()),
-                        DinhDangSo.dinhDangTien(ct.getThanhTien()),
-                        ct.getLyDoTra()
+                        "", "TỔNG CỘNG", 
+                        chiTietList.stream().mapToInt(ChiTietDonTraHang::getSoLuong).sum(),
+                        "", DinhDangSo.dinhDangTien(tongTien), ""
                     });
+                } else {
+                    Notifications.getInstance().show(Notifications.Type.WARNING, "Không có chi tiết đơn trả hàng!");
                 }
+            } catch (Exception e) {
+                Notifications.getInstance().show(Notifications.Type.ERROR, "Lỗi khi lấy chi tiết đơn trả hàng: " + e.getMessage());
+                e.printStackTrace();
             }
         }
 
         if (loaiPhieu.equalsIgnoreCase("Nhập hàng")) {
-            String[] headers = {"Mã lô hàng", "Tên sản phẩm", "Số lượng", "Đơn giá", "Thành tiền"};
-            List<Integer> tableWidths = Arrays.asList(200, 300, 150, 200, 200);
-            tableDetail = new TableDesign(headers, tableWidths);
-            scrollTableDetail.setViewportView(tableDetail.getTable());
-            scrollTableDetail.setBorder(BorderFactory.createEmptyBorder(15, 20, 20, 20));
+            try {
+                String[] headers = {"Mã lô hàng", "Tên sản phẩm", "Số lượng", "Đơn giá", "Thành tiền"};
+                List<Integer> tableWidths = Arrays.asList(200, 300, 150, 200, 200);
+                tableDetail = new TableDesign(headers, tableWidths);
+                scrollTableDetail.setViewportView(tableDetail.getTable());
+                scrollTableDetail.setBorder(BorderFactory.createEmptyBorder(15, 20, 20, 20));
 
-            DonNhapHang dnh = donNhapHangBUS.layDonNhapHangTheoMa(maPhieu);
-            List<ChiTietDonNhapHang> chiTietList = dnh.getChiTietDonNhapHang();
+                // Lấy chi tiết từ BUS thay vì từ entity
+                List<ChiTietDonNhapHang> chiTietList = chiTietDonNhapHangBUS.layChiTietDonNhapHangTheoMaDonNhapHang(maPhieu);
 
-            // Xóa dữ liệu cũ trong bảng
-            tableDetail.getModelTable().setRowCount(0);
+                // Xóa dữ liệu cũ trong bảng
+                tableDetail.getModelTable().setRowCount(0);
 
-            if (chiTietList != null && !chiTietList.isEmpty()) {
-                for (ChiTietDonNhapHang ct : chiTietList) {
-                    String maLoHang = ct.getLoHang() != null ? ct.getLoHang().getMaLoHang() : "N/A";
-                    String tenSP = "N/A";
-                    if (ct.getLoHang() != null && ct.getLoHang().getSanPham() != null) {
-                        tenSP = ct.getLoHang().getSanPham().getTenSanPham();
+                double tongTien = 0;
+                if (chiTietList != null && !chiTietList.isEmpty()) {
+                    for (ChiTietDonNhapHang ct : chiTietList) {
+                        String maLoHang = ct.getLoHang() != null ? ct.getLoHang().getMaLoHang() : "N/A";
+                        String tenSP = "N/A";
+                        if (ct.getLoHang() != null && ct.getLoHang().getSanPham() != null) {
+                            tenSP = ct.getLoHang().getSanPham().getTenSanPham();
+                        }
+
+                        tableDetail.getModelTable().addRow(new Object[]{
+                            maLoHang,
+                            tenSP,
+                            ct.getSoLuong(),
+                            DinhDangSo.dinhDangTien(ct.getDonGia()),
+                            DinhDangSo.dinhDangTien(ct.getThanhTien())
+                        });
+                        tongTien += ct.getThanhTien();
                     }
-
+                    
+                    // Thêm dòng tổng cộng
                     tableDetail.getModelTable().addRow(new Object[]{
-                        maLoHang,
-                        tenSP,
-                        ct.getSoLuong(),
-                        DinhDangSo.dinhDangTien(ct.getDonGia()),
-                        DinhDangSo.dinhDangTien(ct.getThanhTien())
+                        "", "TỔNG CỘNG", 
+                        chiTietList.stream().mapToInt(ChiTietDonNhapHang::getSoLuong).sum(),
+                        "", DinhDangSo.dinhDangTien(tongTien)
                     });
+                } else {
+                    Notifications.getInstance().show(Notifications.Type.WARNING, "Không có chi tiết đơn nhập hàng!");
                 }
+            } catch (Exception e) {
+                Notifications.getInstance().show(Notifications.Type.ERROR, "Lỗi khi lấy chi tiết đơn nhập hàng: " + e.getMessage());
+                e.printStackTrace();
             }
         }
 
         if (loaiPhieu.equalsIgnoreCase("Xuất hủy")) {
-            String[] headers = {"Mã lô hàng", "Tên sản phẩm", "Số lượng", "Đơn giá", "Thành tiền"};
-            List<Integer> tableWidths = Arrays.asList(200, 300, 150, 200, 200);
-            tableDetail = new TableDesign(headers, tableWidths);
-            scrollTableDetail.setViewportView(tableDetail.getTable());
-            scrollTableDetail.setBorder(BorderFactory.createEmptyBorder(15, 20, 20, 20));
+            try {
+                String[] headers = {"Mã lô hàng", "Tên sản phẩm", "Số lượng", "Đơn giá", "Thành tiền"};
+                List<Integer> tableWidths = Arrays.asList(200, 300, 150, 200, 200);
+                tableDetail = new TableDesign(headers, tableWidths);
+                scrollTableDetail.setViewportView(tableDetail.getTable());
+                scrollTableDetail.setBorder(BorderFactory.createEmptyBorder(15, 20, 20, 20));
 
-            HangHong hh = hangHongBUS.layHangHongTheoMa(maPhieu);
-            List<ChiTietHangHong> chiTietList = hh.getChiTietHangHong();
+                // Lấy chi tiết từ BUS thay vì từ entity
+                List<ChiTietHangHong> chiTietList = chiTietHangHongBUS.layChiTietTheoMaHangHong(maPhieu);
 
-            // Xóa dữ liệu cũ trong bảng
-            tableDetail.getModelTable().setRowCount(0);
+                // Xóa dữ liệu cũ trong bảng
+                tableDetail.getModelTable().setRowCount(0);
 
-            if (chiTietList != null && !chiTietList.isEmpty()) {
-                for (ChiTietHangHong ct : chiTietList) {
-                    String maLoHang = ct.getLoHang() != null ? ct.getLoHang().getMaLoHang() : "N/A";
-                    String tenSP = "N/A";
-                    if (ct.getLoHang() != null && ct.getLoHang().getSanPham() != null) {
-                        tenSP = ct.getLoHang().getSanPham().getTenSanPham();
+                double tongTien = 0;
+                if (chiTietList != null && !chiTietList.isEmpty()) {
+                    for (ChiTietHangHong ct : chiTietList) {
+                        String maLoHang = ct.getLoHang() != null ? ct.getLoHang().getMaLoHang() : "N/A";
+                        String tenSP = "N/A";
+                        if (ct.getLoHang() != null && ct.getLoHang().getSanPham() != null) {
+                            tenSP = ct.getLoHang().getSanPham().getTenSanPham();
+                        }
+
+                        tableDetail.getModelTable().addRow(new Object[]{
+                            maLoHang,
+                            tenSP,
+                            ct.getSoLuong(),
+                            DinhDangSo.dinhDangTien(ct.getDonGia()),
+                            DinhDangSo.dinhDangTien(ct.getThanhTien())
+                        });
+                        tongTien += ct.getThanhTien();
                     }
-
+                    
+                    // Thêm dòng tổng cộng
                     tableDetail.getModelTable().addRow(new Object[]{
-                        maLoHang,
-                        tenSP,
-                        ct.getSoLuong(),
-                        DinhDangSo.dinhDangTien(ct.getDonGia()),
-                        DinhDangSo.dinhDangTien(ct.getThanhTien())
+                        "", "TỔNG CỘNG", 
+                        chiTietList.stream().mapToInt(ChiTietHangHong::getSoLuong).sum(),
+                        "", DinhDangSo.dinhDangTien(tongTien)
                     });
+                } else {
+                    Notifications.getInstance().show(Notifications.Type.WARNING, "Không có chi tiết phiếu xuất hủy!");
                 }
+            } catch (Exception e) {
+                Notifications.getInstance().show(Notifications.Type.ERROR, "Lỗi khi lấy chi tiết phiếu xuất hủy: " + e.getMessage());
+                e.printStackTrace();
             }
         }
 
