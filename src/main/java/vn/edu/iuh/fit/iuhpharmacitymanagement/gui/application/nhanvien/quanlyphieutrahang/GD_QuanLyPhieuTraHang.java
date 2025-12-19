@@ -976,11 +976,11 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
         gbc.weightx = 0.0;
         headerPanel.add(lblHeaderTotal, gbc);
 
-        // 7. Trạng thái - 50px
+        // 7. Trạng thái - 90px
         javax.swing.JLabel lblHeaderStatus = new javax.swing.JLabel("Trạng thái");
         lblHeaderStatus.setFont(new java.awt.Font("Segoe UI", 1, 13));
-        lblHeaderStatus.setPreferredSize(new java.awt.Dimension(50, 30));
-        lblHeaderStatus.setMinimumSize(new java.awt.Dimension(50, 30));
+        lblHeaderStatus.setPreferredSize(new java.awt.Dimension(90, 30));
+        lblHeaderStatus.setMinimumSize(new java.awt.Dimension(90, 30));
         lblHeaderStatus.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         gbc.gridx = 6;
         gbc.weightx = 0.0;

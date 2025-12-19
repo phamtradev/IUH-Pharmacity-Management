@@ -133,9 +133,9 @@ public class Panel_ChiTietSanPhamDaMua extends javax.swing.JPanel {
             lblStatus.setForeground(new java.awt.Color(34, 197, 94)); // Màu xanh lá
             lblStatus.setText("✓");
         }
-        lblStatus.setPreferredSize(new java.awt.Dimension(50, 100));
-        lblStatus.setMinimumSize(new java.awt.Dimension(50, 100));
-        lblStatus.setMaximumSize(new java.awt.Dimension(50, 100));
+        lblStatus.setPreferredSize(new java.awt.Dimension(90, 100));
+        lblStatus.setMinimumSize(new java.awt.Dimension(90, 100));
+        lblStatus.setMaximumSize(new java.awt.Dimension(90, 100));
         lblStatus.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         lblStatus.setVerticalAlignment(javax.swing.SwingConstants.CENTER);
         gbc.gridx = 6;

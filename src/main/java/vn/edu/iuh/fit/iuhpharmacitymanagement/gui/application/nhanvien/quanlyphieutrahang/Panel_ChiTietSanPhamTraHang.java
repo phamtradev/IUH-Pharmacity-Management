@@ -275,11 +275,12 @@ public class Panel_ChiTietSanPhamTraHang extends javax.swing.JPanel {
     public void setLyDoTraHang(String lyDo) {
         this.lyDoTraHang = lyDo;
         if (lyDo != null && !lyDo.trim().isEmpty()) {
-            btnLyDo.setText("Lý do");
+            btnLyDo.setText(""); // Xóa text, chỉ hiển thị icon
             btnLyDo.setIcon(new FlatSVGIcon("img/icons/check.svg", 24, 24)); 
             ButtonStyles.apply(btnLyDo, ButtonStyles.Type.SUCCESS);
         } else {
             btnLyDo.setText("Lý do");
+            btnLyDo.setIcon(null); // Xóa icon khi không có lý do
             ButtonStyles.apply(btnLyDo, ButtonStyles.Type.INFO);
         }
     }
