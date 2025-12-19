@@ -81,9 +81,9 @@ public class GD_ChatBot extends javax.swing.JPanel {
         } catch (Exception e) {
             System.err.println("Không thể đọc API key từ config: " + e.getMessage());
         }
-        // Fallback: trả về key mặc định (nếu file config không tồn tại)
-        // Lưu ý: Key này sẽ bị leak nếu commit vào Git, nên luôn dùng file config
-        return "AIzaSyCLx6iK70qDzzXTZ0oMvffTgpS8Slh67Qs";
+        System.err.println("CẢNH BÁO: Không tìm thấy API key trong chatbot-config.properties!");
+        System.err.println("Vui lòng kiểm tra file: src/main/resources/chatbot-config.properties");
+        return ""; // Trả về rỗng để tránh gọi API với key không hợp lệ
     }
 
     public GD_ChatBot() {
@@ -335,6 +335,14 @@ public class GD_ChatBot extends javax.swing.JPanel {
      * Gọi OpenAI-compatible API (Gemini via OpenAI endpoint)
      */
     private String callChatBotAPI(String message) throws Exception {
+        // Kiểm tra API key trước khi gọi API để bảo vệ
+        if (OPENAI_API_KEY == null || OPENAI_API_KEY.trim().isEmpty()) {
+            throw new Exception("API key chưa được cấu hình!\n\n" +
+                    "Vui lòng kiểm tra file: src/main/resources/chatbot-config.properties\n" +
+                    "và đảm bảo có dòng: api.key=YOUR_API_KEY_HERE\n\n" +
+                    "Lấy API key mới tại: https://aistudio.google.com/apikey");
+        }
+        
         try {
             // Kiểm tra xem câu hỏi có liên quan đến database không
             String databaseContext = checkAndQueryDatabase(message);
