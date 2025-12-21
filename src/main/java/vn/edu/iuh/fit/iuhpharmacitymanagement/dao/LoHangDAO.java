@@ -374,7 +374,7 @@ public class LoHangDAO implements DAOInterface<LoHang, String> {
         //join cả 3 bảng LoHang, SanPham, và DonViTinh
         // Điều kiện: HSD <= 6 tháng kể từ hôm nay VÀ tồn kho > 0 VÀ trạng thái = true (còn hoạt động)
         // (Tự động loại bỏ các lô hết hạn đã xuất hủy: HSD < hôm nay và tồn kho = 0 hoặc trạng thái = false)
-        String sql = "SELECT lh.maLoHang, lh.tenLoHang, lh.hanSuDung, lh.tonKho, lh.trangThai, "
+        String sql = "SELECT lh.maLoHang, lh.tenLoHang, lh.hanSuDung, lh.tonKho, lh.giaNhapLo, lh.trangThai, "
                 + "       sp.maSanPham, sp.tenSanPham, sp.giaNhap, sp.hinhAnh, "
                 + "       dvt.tenDonVi "
                 + "FROM LoHang lh "
@@ -407,6 +407,13 @@ public class LoHangDAO implements DAOInterface<LoHang, String> {
                 loHang.setHanSuDung(rs.getDate("hanSuDung").toLocalDate());
                 loHang.setTonKhoNoValidation(rs.getInt("tonKho")); // Dùng NoValidation khi load từ DB
                 loHang.setTrangThai(rs.getBoolean("trangThai")); // Set trạng thái
+                // Đọc giá nhập lô nếu có trong SELECT
+                try {
+                    double giaNhapLo = rs.getDouble("giaNhapLo");
+                    loHang.setGiaNhapLo(giaNhapLo);
+                } catch (SQLException ex) {
+                    // Nếu cột không tồn tại hoặc lỗi, giữ mặc định 0
+                }
                 loHang.setSanPham(sanPham); // Gán sản phẩm vào lô hàng
 
                 danhSach.add(loHang);

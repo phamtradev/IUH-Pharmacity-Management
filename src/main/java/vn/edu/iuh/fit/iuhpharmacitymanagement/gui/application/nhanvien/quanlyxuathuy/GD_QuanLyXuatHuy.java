@@ -570,6 +570,10 @@ public class GD_QuanLyXuatHuy extends javax.swing.JPanel {
                     panel.setDonVi(sanPham.getDonViTinh().getTenDonVi());
                     // Đơn giá xuất hủy lấy theo giá nhập của lô (ưu tiên giaNhapLo), fallback về giá nhập sản phẩm
                     double donGiaHuy = loHang.getGiaNhapLo() > 0 ? loHang.getGiaNhapLo() : sanPham.getGiaNhap();
+                    System.out.println("[DEBUG XUATHUY] maLo=" + loHang.getMaLoHang()
+                            + " | giaNhapLo=" + loHang.getGiaNhapLo()
+                            + " | sanPham.giaNhap=" + sanPham.getGiaNhap()
+                            + " | donGiaHuy=" + donGiaHuy);
                     panel.setDonGia(donGiaHuy);
                     panel.setSoLuongHuy(loHang.getTonKho());
                     panel.setLyDoXuatHuy("Hết hạn sử dụng (còn <= 6 tháng)");
