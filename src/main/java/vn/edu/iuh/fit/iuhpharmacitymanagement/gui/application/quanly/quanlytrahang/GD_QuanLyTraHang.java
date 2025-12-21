@@ -241,15 +241,13 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
     }
 
     private void fillTable() {
-        String[] headers = {"Mã phiếu trả", "Mã hóa đơn", "Ngày trả", "Nhân viên", "Tổng tiền", "Trạng thái",
-            "Thao tác"};
-        List<Integer> tableWidths = Arrays.asList(150, 150, 120, 200, 150, 120, 120);
+        String[] headers = {"Mã phiếu trả", "Mã hóa đơn", "Ngày trả", "Nhân viên", "Tổng tiền", "Trạng thái"};
+        List<Integer> tableWidths = Arrays.asList(150, 150, 120, 200, 150, 120);
         tableDesign = new TableDesign(headers, tableWidths);
         scrollTable.setViewportView(tableDesign.getTable());
         scrollTable.setBorder(BorderFactory.createEmptyBorder(15, 20, 20, 20));
 
-        // Tùy chỉnh renderer cho cột Thao tác
-        setupActionColumn();
+        // (No action column)
 
         // Lấy dữ liệu hoặc tạo dữ liệu giả lập
         List<DonTraHang> danhSach = layDuLieuDonTraHang();
@@ -271,8 +269,7 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
                 formatDate(dth.getNgayTraHang()),
                 tenNV,
                 formatToVND(dth.getThanhTien()),
-                trangThai,
-                "Xem chi tiết" // Placeholder, sẽ được thay bằng button
+                trangThai
             });
         }
     }
@@ -340,44 +337,7 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
     }
 
     // Thiết lập cột Thao tác với button
-    private void setupActionColumn() {
-        JTable table = tableDesign.getTable();
-
-        // Đảm bảo có thể click vào button
-        table.addMouseListener(new java.awt.event.MouseAdapter() {
-            @Override
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                int row = table.rowAtPoint(evt.getPoint());
-                int col = table.columnAtPoint(evt.getPoint());
-
-                // Kiểm tra nếu click vào cột Thao tác (cột index 6)
-                if (col == 6 && row >= 0) {
-                    String maDonTraHang = (String) table.getValueAt(row, 0);
-                    System.out.println("Clicked on row " + row + ", maDonTraHang: " + maDonTraHang);
-                    xemChiTietDonTraHang(maDonTraHang);
-                }
-            }
-        });
-
-        // Renderer cho cột Thao tác (ép màu primary, chữ trắng)
-        table.setRowHeight(36);
-        table.getColumnModel().getColumn(6).setCellRenderer(new DefaultTableCellRenderer() {
-            @Override
-            public Component getTableCellRendererComponent(JTable table, Object value,
-                    boolean isSelected, boolean hasFocus, int row, int column) {
-                JButton btnAction = new JButton("Xem chi tiết");
-                // ensure consistent primary color with white text
-                ButtonStyles.apply(btnAction, ButtonStyles.Type.PRIMARY);
-                btnAction.setBackground(new java.awt.Color(13, 110, 253)); // #0D6EFD
-                btnAction.setForeground(java.awt.Color.WHITE);
-                btnAction.setOpaque(true);
-                btnAction.setBorderPainted(false);
-                btnAction.setFocusPainted(false);
-                btnAction.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-                return btnAction;
-            }
-        });
-    }
+    // (Action column removed)
 
     // Xem chi tiết đơn trả hàng
     private void xemChiTietDonTraHang(String maDonTraHang) {
