@@ -144,6 +144,17 @@ jobs:
       # ===============================
       # Create tag and GitHub release (upload dist/**)
       # ===============================
+      - name: Pack dist to zip
+        shell: pwsh
+        run: |
+          if (Test-Path dist) {
+            Compress-Archive -Path dist\* -DestinationPath dist.zip -Force
+            Write-Host "Created dist.zip"
+          } else {
+            Write-Error "dist not found"
+            exit 1
+          }
+
       - name: Get version
         id: version
         shell: pwsh
@@ -166,6 +177,6 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ steps.version.outputs.v }}
-          files: dist/**
+          files: dist.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
