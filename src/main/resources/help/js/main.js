@@ -4,7 +4,7 @@ console.log("IUH Pharmacity guide loaded");
 function searchQuestions(query) {
   const searchResults = document.getElementById('search-results');
   const cardsContainer = document.querySelector('.cards-section .cards-container');
-  
+
   if (!query || query.trim() === '') {
     searchResults.innerHTML = '';
     searchResults.style.display = 'none';
@@ -74,7 +74,7 @@ function searchQuestions(query) {
 
     // Thêm sự kiện click cho các nút xem chi tiết
     document.querySelectorAll('.btn-view-detail').forEach(btn => {
-      btn.addEventListener('click', function() {
+      btn.addEventListener('click', function () {
         const card = this.closest('.search-result-card');
         const category = card.dataset.category;
         const question = decodeURIComponent(card.dataset.question);
@@ -87,13 +87,13 @@ function searchQuestions(query) {
 }
 
 // Xử lý sự kiện tìm kiếm
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
   const searchInput = document.querySelector('.search-input');
-  
+
   if (searchInput) {
     // Tìm kiếm khi người dùng gõ (debounce)
     let searchTimeout;
-    searchInput.addEventListener('input', function(e) {
+    searchInput.addEventListener('input', function (e) {
       clearTimeout(searchTimeout);
       searchTimeout = setTimeout(() => {
         searchQuestions(e.target.value);
@@ -101,7 +101,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Tìm kiếm khi nhấn Enter
-    searchInput.addEventListener('keypress', function(e) {
+    searchInput.addEventListener('keypress', function (e) {
       if (e.key === 'Enter') {
         clearTimeout(searchTimeout);
         searchQuestions(e.target.value);

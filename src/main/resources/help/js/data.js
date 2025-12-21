@@ -801,12 +801,12 @@ const questionsData = {
         },
         {
           type: "text",
-          content:
-            "Bước 3: Nhân viên nhấn nút \"Thêm\"",
+          content: 'Bước 3: Nhân viên nhấn nút "Thêm"',
         },
         {
           type: "text",
-          content: "Bước 3.1: (Tùy chọn): Nhân viên nhấn dấu “+” nếu khách hàng mua hơn 1 sản phẩm",
+          content:
+            "Bước 3.1: (Tùy chọn): Nhân viên nhấn dấu “+” nếu khách hàng mua hơn 1 sản phẩm",
         },
         {
           type: "text",
@@ -818,16 +818,472 @@ const questionsData = {
         },
         {
           type: "text",
-          content: "Bước 5: Nhấn \"Bán hàng\"",
+          content: 'Bước 5: Nhấn "Bán hàng"',
         },
         {
           type: "image",
-          content: "../img/BanHang_ThanhToan_NhanVien.png"
+          content: "../img/BanHang_ThanhToan_NhanVien.png",
         },
         {
           type: "text",
           content:
             "Bước 5.1(Tùy chọn): Nhân viên nhấn dấu <span class='text-danger'>Xóa</span> nếu khách hàng không mua nữa.",
+        },
+      ],
+    },
+  ],
+  //Thuốc
+  Thuốc: [
+    {
+      question: "Làm thế nào để nhân viên thêm sản phẩm?",
+      answer: [
+        {
+          type: "text",
+          content: "Bước 1: Chọn nút “Thêm” trên thanh công cụ.",
+        },
+        {
+          type: "image",
+          content: "../img/themSanPhamB1.png",
+        },
+        {
+          type: "text",
+          content:
+            "Bước 2: Người dùng nhập đầy đủ thông tin vào biểu mẫu.<br/>" +
+            "Biểu mẫu cho phép nhập thông tin sản phẩm bao gồm:<br/>" +
+            "• Tên sản phẩm<br/>" +
+            "• Loại sản phẩm<br/>" +
+            "• Số đăng ký<br/>" +
+            "• Giá nhập<br/>" +
+            "• Hoạt chất<br/>" +
+            "• Giá bán<br/>" +
+            "• Thuế VAT (%)<br/>" +
+            "• Liều lượng<br/>" +
+            "• Quy trình đóng gói<br/>" +
+            "• Nhà sản xuất<br/>" +
+            "• Đơn vị tính<br/>" +
+            "• Xuất xứ",
+        },
+        {
+          type: "text",
+          content: 'Bước 3: Nhân viên nhấn nút "Thêm" để lưu sản phẩm.',
+        },
+        {
+          type: "image",
+          content: "../img/themSanPhamB2.png",
+        },
+        {
+          type: "text",
+          content:
+            'Bước 3.1: Nhân viên nhấn nút "Thoát" nếu không muốn thêm sản phẩm mới nữa.',
+        },
+      ],
+    },
+    {
+      question: "Làm thế nào để sửa sản phẩm?",
+      answer: [
+        {
+          type: "text",
+          content:
+            "Bước 1: Người dùng chọn sản phẩm cần sửa thông tin (Khi chọn sản phẩm, ngay hàng của sản phẩm đó sẽ có màu xám nhạt hiện lên cho biết người dùng đang chọn sản phẩm nào).",
+        },
+
+        {
+          type: "text",
+          content: "Bước 2: Người dùng chọn chức năng “Sửa”.",
+        },
+        {
+          type: "image",
+          content: "../img/suaSPB1.png",
+        },
+        {
+          type: "text",
+          content: "Bước 3: Người dùng sửa thông tin cần thay đổi.",
+        },
+        {
+          type: "text",
+          content: "Bước 4: Nhấn “Sửa” để lưu thông tin mới.",
+        },
+        {
+          type: "image",
+          content: "../img/suaSPB2.png",
+        },
+        {
+          type: "text",
+          content:
+            "Bước 4.1 (Tùy chọn): Người dùng nhấn “Thoát” nếu không muốn sửa thông tin nữa.",
+        },
+      ],
+    },
+    {
+      question: "Làm thế nào để xem chi tiết sản phẩm?",
+      answer: [
+        {
+          type: "text",
+          content:
+            "Bước 1: Người dùng chọn sản phẩm cần sửa thông tin (Khi chọn sản phẩm, ngay hàng của sản phẩm đó sẽ có màu xám nhạt hiện lên cho biết người dùng đang chọn sản phẩm nào).",
+        },
+        {
+          type: "text",
+          content: "Bước 2: Nhấn xem chi tiết",
+        },
+        {
+          type: "image",
+          content: "../img/xemCTSPb1.png",
+        },
+        {
+          type: "text",
+          content: "Bước 3: người dùng chọn đóng để quay lại.",
+        },
+        {
+          type: "image",
+          content: "../img/xemCTSPb2.png",
+        },
+      ],
+    },
+    {
+      question: "Làm thế nào để xóa sản phẩm?",
+      answer: [
+        {
+          type: "text",
+          content:
+            "Bước 1: Người dùng chọn sản phẩm cần sửa thông tin (Khi chọn sản phẩm, ngay hàng của sản phẩm đó sẽ có màu xám nhạt hiện lên cho biết người dùng đang chọn sản phẩm nào).",
+        },
+        {
+          type: "text",
+          content: "Bước 2: Nhấn xóa",
+        },
+        {
+          type: "image",
+          content: "../img/xoaSPB1.png",
+        },
+        {
+          type: "text",
+          content: "Bước 3: Người dùng xác nhận xóa sản phẩm đã chọn",
+        },
+        {
+          type: "image",
+          content: "../img/xoaSPB2.png",
+        },
+      ],
+    },
+    {
+      question: "Làm thế nào để tìm sản phẩm?",
+      answer: [
+        {
+          type: "text",
+          content:
+            "Bước 1: Người dùng nhập thông tin của sản phẩm cần tìm (tên, số đăng ký), chọn loại sản phẩm và trạng thái hoạt động của sản phẩm.",
+        },
+        {
+          type: "text",
+          content: "Bước 2: Nhấn tìm kiếm.",
+        },
+        {
+          type: "text",
+          content:
+            "Bước 3: Kiểm tra dữ liệu trên bảng mà hệ thống đã lọc theo dữ liệu tìm kiếm của người dùng.",
+        },
+        {
+          type: "image",
+          content: "/img/timSP.png",
+        },
+      ],
+    },
+  ],
+  "Giá bán": [
+    {
+      question: "Làm thế nào để phát hành hay chỉnh sửa giá bán sản phẩm?",
+      answer: [
+        {
+          type: "text",
+          content:
+            "Bước 1: Chọn chức năng Quản lý giá bán từ menu Quản lý bán hàng.",
+        },
+        { type: "image", content: "../img/giaBanB1.png" },
+        {
+          type: "text",
+          content: "Bước 2: Chọn theo loại sản phảm ",
+        },
+        {
+          type: "text",
+          content:
+            "Bước 3: Nhập các thông tin cần thiết cho giá: giá nhập, lãi,...",
+        },
+        {
+          type: "image",
+          content: "../img/giaBanB2.png",
+        },
+        {
+          type: "text",
+          content: "Bước 4: Chọn sản phẩm cần phát hành",
+        },
+        {
+          type: "image",
+          content: "../img/giaBanB3.png",
+        },
+      ],
+    },
+  ],
+  //Lô hàng
+  "Lô hàng": [
+    // {
+    //   question: "Làm thế nào để người quản lý sửa lô hàng tính?",
+    //   answer: [
+    //     {
+    //       type: "text",
+    //       content: "Mở chức năng quản lý lô hàng",
+    //     },
+    //     { type: "image", content: "../img/suaLoHangB1.png" },
+    //     {
+    //       type: "text",
+    //       content: "Người dùng chọn chức năng Thêm",
+    //     },
+    //     {
+    //       type: "image",
+    //       content: "../img/QuanLyDonViTinh_Them_QuanLy.png",
+    //     },
+    //     {
+    //       type: "text",
+    //       content:
+    //         "Người dùng nhập tên đơn vị tính vào biểu mẫu và nhấn nút thêm",
+    //     },
+    //     {
+    //       type: "image",
+    //       content: "../img/QuanLyDonViTinh_FormThem_QuanLy.png",
+    //     },
+    //   ],
+    // },
+    {
+      question: "Hướng dẫn để sửa thông tin lô hàng ?",
+      answer: [
+        {
+          type: "text",
+          content: "Mở chức năng quản lý lô hàng ",
+        },
+        { type: "image", content: "../img/suaLoHangB1.png" },
+        {
+          type: "text",
+          content: "Người dùng chọn lô hàng cần sửa thông tin và nhấn nút sửa",
+        },
+        {
+          type: "image",
+          content: "../img/suaLoHangB2.png",
+        },
+        {
+          type: "text",
+          content: "Người dùng sửa lại thông tin và cập nhật",
+        },
+        {
+          type: "image",
+          content: "../img/suaLoHangB3.png",
+        },
+      ],
+    },
+    {
+      question: "Làm thế nào để người quản lý tìm kiếm Lô hàng?",
+      answer: [
+        {
+          type: "text",
+          content: "Mở chức năng tạo quản lý lô hàng ",
+        },
+        { type: "image", content: "../img/suaLoHangB1.png" },
+        {
+          type: "text",
+          content:
+            "Người dùng chọn trạng thái, nhập thông tin của lô hàng cần tìm và nhấn nút tìm kiếm, thông tin lô hàng sẽ được hiển thị ở mục danh sách thông tin lô hàng",
+        },
+        {
+          type: "image",
+          content: "../img/timLoHang.png",
+        },
+      ],
+    },
+    {
+      question: "Làm thế nào để người quản lý xóa Lô hàng?",
+      answer: [
+        {
+          type: "text",
+          content: "Mở chức năng tạo quản lý lô hàng ",
+        },
+        { type: "image", content: "../img/suaLoHangB1.png" },
+        {
+          type: "text",
+          content: "Chon lô hàng cần xóa và nhấn nút xóa",
+        },
+        {
+          type: "image",
+          content: "../img/xoaLoHangB1.png",
+        },
+        {
+          type: "text",
+          content: "Xác nhận xóa lô hàng",
+        },
+        {
+          type: "image",
+          content: "../img/xoaLoHangB2.png",
+        },
+      ],
+    },
+  ],
+  //đơn hàng
+  //Lô hàng
+  "Đơn hàng": [
+    {
+      question: "Hướng dẫn để xem chi tiết đơn hàng?",
+      answer: [
+        {
+          type: "text",
+          content: "Mở chức năng quản đơn hàng ",
+        },
+        { type: "image", content: "../img/donHangB1.png" },
+        {
+          type: "text",
+          content:
+            "Người dùng chọn đơn hàng cần xem thông tin và nhấn nút xem chi tiết",
+        },
+        {
+          type: "image",
+          content: "../img/xemDonHangB2.png",
+        },
+      ],
+    },
+    {
+      question: "Làm thế nào để người quản lý tìm kiếm Đơn hàng?",
+      answer: [
+        {
+          type: "text",
+          content: "Mở chức năng tạo quản lý đơn hàng ",
+        },
+        { type: "image", content: "../img/donHangB1.png" },
+        {
+          type: "text",
+          content:
+            "Người dùng chọn thời gian, nhập thông tin của đơn hàng cần tìm và nhấn nút tìm kiếm, thông tin đơn hàng sẽ được hiển thị ở mục danh sách thông tin đơn hàng",
+        },
+        {
+          type: "image",
+          content: "../img/timDonHangB1.png",
+        },
+      ],
+    },
+    {
+      question: "Làm thế nào để người quản lý xuất file excel đơn hàng?",
+      answer: [
+        {
+          type: "text",
+          content: "Mở chức năng tạo quản lý đơn hàng ",
+        },
+        { type: "image", content: "../img/donHangB1.png" },
+        {
+          type: "text",
+          content:
+            "Chon đơn hàng cần cần xuất file excel và nhấn nút xuất excel, chọn nơi lưu file excel",
+        },
+        {
+          type: "image",
+          content: "../img/xuatExcel.png",
+        },
+      ],
+    },
+  ],
+  "Thông tin": [
+    {
+      question: "Xem thông tin phần mềm?",
+      answer: [
+        {
+          type: "text",
+          content: `
+            <div >
+              <h2 style="text-align: center; font-weight: bold; margin-bottom: 0.5rem;">
+                PHẦN MỀM QUẢN LÝ BÁN THUỐC
+              </h2>
+
+              <p style="text-align: center; font-size: 1.2rem; margin-bottom: 1.5rem;">
+                Trường Đại học Công nghiệp TP. Hồ Chí Minh
+              </p>
+
+              <div>
+                <p><strong>Phiên bản:</strong> RELEASE 1.0</p>
+                <p><strong>Giảng viên hướng dẫn:</strong> ThS. Trần Thị Anh Thi</p>
+                <p><strong>Lớp học phần:</strong> DHKTMP19A</p>
+              </div>
+
+              <div >
+                <strong>Nhóm phát triển:</strong>
+                <ul>
+                  <li>Phạm Văn Trà</li>
+                  <li>Đỗ Hoài Nhớ</li>
+                  <li>Tô Nguyễn An Thuyên</li>
+                  <li>Nguyễn Công Tuyến</li>
+                  <li>Phạm Minh Thịnh</li>
+                </ul>
+              </div>
+            </div>
+          `,
+        },
+      ],
+    },
+  ],
+  "Sao lưu": [
+    {
+      question: "Làm thế nào để sao lưu dữ liệu?",
+      answer: [
+        {
+          type: "text",
+          content: "Bước 1: Quản lý vào chức năng quản lý dữ liệu",
+        },
+        { type: "image", content: "../img/saoLuuB1.png" },
+        {
+          type: "text",
+          content: "Bước 2: Chọn nơi lưu trữ file dữ liệu và chọn sao lưu ngay",
+        },
+        {
+          type: "text",
+          content: "Bước 3: Có thể chọn tự động sao lưu theo thời gian",
+        },
+        {
+          type: "image",
+          content: "../img/saoLuuB2.png",
+        },
+      ],
+    },
+  ],
+  "Phục hồi": [
+    {
+      question: "Phục hồi dữ liệu từ các file đã sao lưu trước đó",
+      answer: [
+        {
+          type: "text",
+          content: "Bước 1: Quản lý vào chức năng quản lý dữ liệu",
+        },
+        { type: "image", content: "../img/saoLuuB1.png" },
+        {
+          type: "text",
+          content:
+            "Bước 2: Chọn file dữ liệu đã sao lưu trước đó và chọn khôi phục từ file",
+        },
+        {
+          type: "image",
+          content: "../img/phucHoiB2.png",
+        },
+      ],
+    },
+    {
+      question: "Phục hồi dữ liệu từ bằng key ở trang đăng nhập",
+      answer: [
+        {
+          type: "text",
+          content: "Tại trang đăng nhập, chọn khôi phục dữ liệu",
+        },
+        { type: "image", content: "../img/phucHoiB1.1.png" },
+        {
+          type: "text",
+          content:
+            "Bước 2: Nhập key phục hồi dữ liệu và chọn file phù hợp khôi phục dữ liệu",
+        },
+        {
+          type: "image",
+          content: "../img/phucHoiB2.2.png",
         },
       ],
     },
