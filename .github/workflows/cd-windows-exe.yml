@@ -131,24 +131,44 @@ jobs:
 
           New-Item -ItemType Directory -Path dist -Force | Out-Null
 
+          # prepare a safe icon path (no spaces) and diagnostic info
+          $resolvedIco = $null
+          if (Test-Path $ico) {
+            $resolvedIco = (Resolve-Path $ico).Path
+            Write-Host "Resolved ICO path: $resolvedIco"
+            # verify ICO frames
+            magick identify -format "%m %wx%h %z\n" $resolvedIco | ForEach-Object { Write-Host "ICO frame: $_" } | Out-Null
+            $safeIcon = Join-Path $PWD "iuh_safe.ico"
+            Copy-Item -Path $resolvedIco -Destination $safeIcon -Force
+            Write-Host "Copied ICO to safe path: $safeIcon"
+          } else {
+            Write-Warning "ICO not generated; jpackage will proceed without icon."
+            $safeIcon = $null
+          }
+
           # Tạo app image với jpackage
           # --input target sẽ copy tất cả file trong target, bao gồm JAR và resources
           # Resources sẽ được tự động extract từ JAR khi chạy ứng dụng
           # --name: tên hiển thị của ứng dụng (có thể có khoảng trắng)
           # Tên thư mục sẽ được tạo tự động từ --name
-          jpackage `
-            --type app-image `
-            --name "$appName" `
-            --app-version $appVersion `
-            --description "$appDescription" `
-            --input target `
-            --main-jar (Split-Path $mainJar -Leaf) `
-            --main-class $mainClass `
-          --dest dist `
-          --icon src/main/resources/img/iuh.ico `
-            --win-console `
-            --java-options "-Dfile.encoding=UTF-8" `
-            --java-options "-Djava.awt.headless=false"
+          $jpackageCmd = @(
+            '--type','app-image',
+            '--name', $appName,
+            '--app-version', $appVersion,
+            '--description', $appDescription,
+            '--input', 'target',
+            '--main-jar', (Split-Path $mainJar -Leaf),
+            '--main-class', $mainClass,
+            '--dest', 'dist',
+            '--win-console',
+            '--java-options', '-Dfile.encoding=UTF-8',
+            '--java-options', '-Djava.awt.headless=false'
+          )
+          if ($safeIcon) {
+            $jpackageCmd += @('--icon', $safeIcon)
+          }
+          Write-Host "Running jpackage with arguments: $($jpackageCmd -join ' ')"
+          & jpackage @jpackageCmd
 
       # ===============================
       # Kiểm tra kết quả
