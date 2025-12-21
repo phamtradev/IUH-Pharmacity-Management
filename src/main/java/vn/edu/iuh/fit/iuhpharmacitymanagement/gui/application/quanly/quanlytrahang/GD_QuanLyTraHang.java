@@ -1048,6 +1048,16 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
         jPanel5.setBackground(new java.awt.Color(255, 255, 255));
         jPanel5.setPreferredSize(new java.awt.Dimension(590, 100));
 
+        cboStatus = new javax.swing.JComboBox<>();
+        cboStatus.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        cboStatus.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Tất cả", "Chưa xử lý", "Đã xử lý", "Chờ xuất hủy" }));
+        cboStatus.setPreferredSize(new java.awt.Dimension(150, 40));
+        cboStatus.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cboStatusActionPerformed(evt);
+            }
+        });
+
         txtOrder.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         txtOrder.setMinimumSize(new java.awt.Dimension(350, 40));
         txtOrder.setPreferredSize(new java.awt.Dimension(350, 40));
@@ -1121,7 +1131,10 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
                                 .addContainerGap()
                                 .addComponent(btnView, javax.swing.GroupLayout.PREFERRED_SIZE,
                                         javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED, 115,
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(cboStatus, javax.swing.GroupLayout.PREFERRED_SIZE, 150,
+                                        javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 20,
                                         Short.MAX_VALUE)
                                 .addComponent(jDateFrom, javax.swing.GroupLayout.PREFERRED_SIZE, 210,
                                         javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1147,7 +1160,7 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
                                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                         .addGroup(jPanel5Layout.createSequentialGroup()
                                                 .addGap(29, 29, 29)
-                                                .addGroup(jPanel5Layout
+                                                        .addGroup(jPanel5Layout
                                                         .createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                                                         .addComponent(jDateTo, javax.swing.GroupLayout.PREFERRED_SIZE,
                                                                 40, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1171,7 +1184,9 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
                                                                 .addComponent(jLabel2,
                                                                         javax.swing.GroupLayout.PREFERRED_SIZE, 18,
                                                                         javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                                .addGap(12, 12, 12))))
+                                                                .addGap(12, 12, 12))
+                                                        .addComponent(cboStatus, javax.swing.GroupLayout.PREFERRED_SIZE,
+                                                                40, javax.swing.GroupLayout.PREFERRED_SIZE)))
                                         .addGroup(jPanel5Layout.createSequentialGroup()
                                                 .addGap(29, 29, 29)
                                                 .addComponent(btnView, javax.swing.GroupLayout.PREFERRED_SIZE,
@@ -1280,6 +1295,27 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
                     "Vui lòng nhập mã phiếu trả hàng!");
         }
     }// GEN-LAST:event_txtOrderActionPerformed
+
+    private void cboStatusActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_cboStatusActionPerformed
+        try {
+            String selected = (String) cboStatus.getSelectedItem();
+            List<DonTraHang> all = layDuLieuDonTraHang();
+            if (selected == null || "Tất cả".equals(selected)) {
+                fillContent(all);
+                return;
+            }
+            List<DonTraHang> filtered = new ArrayList<>();
+            for (DonTraHang d : all) {
+                String trangThai = d.getTrangThaiXuLy() != null ? d.getTrangThaiXuLy() : "Chưa xử lý";
+                if (selected.equals(trangThai)) {
+                    filtered.add(d);
+                }
+            }
+            fillContent(filtered);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }// GEN-LAST:event_cboStatusActionPerformed
 
     /**
      * Hiển thị preview hóa đơn trả hàng (UI giống hóa đơn bán hàng)
@@ -1552,6 +1588,7 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnSearch;
     private javax.swing.JButton btnView;
+    private javax.swing.JComboBox<String> cboStatus;
     private javax.swing.JPanel headerPanel;
     private com.toedter.calendar.JDateChooser jDateFrom;
     private com.toedter.calendar.JDateChooser jDateTo;
