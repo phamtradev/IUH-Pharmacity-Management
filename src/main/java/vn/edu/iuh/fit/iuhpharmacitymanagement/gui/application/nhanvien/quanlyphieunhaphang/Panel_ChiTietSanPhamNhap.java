@@ -526,15 +526,13 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
                 soLuongLoMoi = 1;
                 updateLoInfo(); // Hiển thị thẻ lô
             } else {
-                // Không tìm thấy lô trùng: Lưu thông tin từ Excel để người dùng nhập tên lô
+                // Không tìm thấy lô trùng: lưu thông tin lô mới TẠM (không lưu DB)
                 loHangDaChon = null;
-                // Lưu thông tin lô mới từ Excel (chưa có tên lô, người dùng sẽ nhập sau)
                 tenLoMoi = tenLoHangTuExcel; // Có thể null, người dùng sẽ nhập khi chọn "Tạo lô mới"
                 hsdLoMoi = hsdTuExcel != null ? hsdTuExcel : hanDung;
                 soLuongLoMoi = soLuongTuExcel != null ? soLuongTuExcel : 1;
-                // Tự động mở dialog "Chọn lô" với tab "Tạo lô mới" để người dùng nhập tên lô
-                updateLoInfo(); // Hiển thị nút "Chọn lô"
-                // Tự động mở dialog sau khi initComponents xong
+                // Hiển thị nút "Chọn lô" và mở dialog tạo lô mới để người dùng nhập tên lô
+                updateLoInfo();
                 javax.swing.SwingUtilities.invokeLater(() -> {
                     showDialogChonLoVoiTabTaoLoMoi();
                 });
