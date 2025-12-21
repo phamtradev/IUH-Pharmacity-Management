@@ -77,10 +77,36 @@ public class KhuyenMaiBUS {
 
     //Xóa một chương trình khuyến mãi.
     public boolean xoaKhuyenMai(String maKhuyenMai) throws Exception {
-        //Không được xóa khuyến mãi nếu đã được áp dụng
+        // Lấy thông tin khuyến mãi hiện tại
+        var khuyenMaiOpt = khuyenMaiDAO.findById(maKhuyenMai);
+        if (khuyenMaiOpt.isEmpty()) {
+            throw new Exception("Không tìm thấy khuyến mãi: " + maKhuyenMai);
+        }
+        KhuyenMai km = khuyenMaiOpt.get();
+
+        // Không được xóa nếu khuyến mãi đang còn hiệu lực (trong khoảng ngày áp dụng)
+        java.time.LocalDate today = java.time.LocalDate.now();
+        if (km.getNgayBatDau() != null && km.getNgayKetThuc() != null) {
+            boolean isActive = !today.isBefore(km.getNgayBatDau()) && !today.isAfter(km.getNgayKetThuc());
+            if (isActive) {
+                throw new Exception(String.format("Không thể xóa khuyến mãi '%s' vì còn hiệu lực (%s - %s).",
+                        maKhuyenMai, km.getNgayBatDau(), km.getNgayKetThuc()));
+            }
+        } else if (km.isTrangThai()) {
+            // Fallback: nếu không có ngày nhưng flag trangThai=true thì coi là đang hiệu lực
+            throw new Exception("Không thể xóa khuyến mãi này vì đang được kích hoạt.");
+        }
+
+        // Không được xóa khuyến mãi nếu đã được áp dụng cho đơn hàng nào
         long soLuongDonHang = donHangDAO.countByKhuyenMai(maKhuyenMai);
         if (soLuongDonHang > 0) {
             throw new Exception("Không thể xóa khuyến mãi này vì đã được áp dụng cho " + soLuongDonHang + " đơn hàng.");
+        }
+
+        // Nếu là khuyến mãi theo sản phẩm, kiểm tra có ràng buộc chi tiết KM với sản phẩm hay không
+        var chiTietList = chiTietKhuyenMaiSanPhamDAO.findByMaKhuyenMai(maKhuyenMai);
+        if (chiTietList != null && !chiTietList.isEmpty()) {
+            throw new Exception("Không thể xóa khuyến mãi này vì đang liên kết với " + chiTietList.size() + " mục sản phẩm.");
         }
 
         return khuyenMaiDAO.delete(maKhuyenMai);
