@@ -83,13 +83,26 @@ jobs:
       - name: Tạo ứng dụng Windows (jpackage, sử dụng shaded JAR)
         shell: pwsh
         run: |
-          # Generate ICO from PNG so jpackage can use it
+          # Generate ICO from PNG using BMP frames (more compatible with jpackage/WiX)
           choco install imagemagick -y
           $png = "src/main/resources/img/iuh.png"
           $ico = "src/main/resources/img/iuh.ico"
           if (Test-Path $png) {
-            magick convert $png -define icon:auto-resize=256,128,64,48,32,16 $ico
-            Write-Host "Generated ICO from PNG: $ico"
+            Write-Host "Generating BMP frames from $png"
+            $sizes = 256,128,64,48,32,16
+            $tmpFiles = @()
+            foreach ($s in $sizes) {
+              $bmp = Join-Path $env:TEMP ("iuh_$s.bmp")
+              magick convert $png -resize ${s}x${s} -background white -alpha remove $bmp
+              $tmpFiles += $bmp
+            }
+            Write-Host "Combining BMP frames into ICO: $ico"
+            magick convert $tmpFiles $ico
+            Write-Host "Generated ICO (BMP based): $ico"
+            # cleanup
+            foreach ($f in $tmpFiles) { Remove-Item -Force $f -ErrorAction SilentlyContinue }
+            # verify
+            magick identify -format "%m %wx%h %z\n" $ico | ForEach-Object { Write-Host "ICO frame: $_" }
           } else {
             Write-Warning "PNG icon not found at $png; jpackage will proceed without icon."
           }
