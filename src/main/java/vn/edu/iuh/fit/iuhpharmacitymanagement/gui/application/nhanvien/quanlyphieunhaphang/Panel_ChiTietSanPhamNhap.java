@@ -531,11 +531,8 @@ public class Panel_ChiTietSanPhamNhap extends javax.swing.JPanel {
                 tenLoMoi = tenLoHangTuExcel; // Có thể null, người dùng sẽ nhập khi chọn "Tạo lô mới"
                 hsdLoMoi = hsdTuExcel != null ? hsdTuExcel : hanDung;
                 soLuongLoMoi = soLuongTuExcel != null ? soLuongTuExcel : 1;
-                // Hiển thị nút "Chọn lô" và mở dialog tạo lô mới để người dùng nhập tên lô
+                // Hiển thị nút "Chọn lô" — người dùng sẽ tự bấm để mở dialog tạo lô mới
                 updateLoInfo();
-                javax.swing.SwingUtilities.invokeLater(() -> {
-                    showDialogChonLoVoiTabTaoLoMoi();
-                });
             }
 
             updateTongTien();
