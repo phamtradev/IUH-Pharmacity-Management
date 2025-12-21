@@ -43,8 +43,8 @@ import java.util.zip.ZipOutputStream;
 // Thực hiện sao lưu/khôi phục toàn bộ dữ liệu SQL Server sang file zip
 public class DataBackupService {
 
-    private static final DateTimeFormatter FILE_TIME_FORMATTER =
-            DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss").withLocale(Locale.US);
+    private static final DateTimeFormatter FILE_TIME_FORMATTER
+            = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss").withLocale(Locale.US);
     private static final Gson GSON = new GsonBuilder()
             .serializeNulls()
             .setPrettyPrinting()
@@ -123,7 +123,7 @@ public class DataBackupService {
         if (!ConnectDB.createDatabaseIfNotExists()) {
             throw new SQLException("Không thể tạo database. Vui lòng kiểm tra quyền truy cập SQL Server.");
         }
-        
+
         if (progressCallback != null) {
             progressCallback.accept("Đang kết nối database...");
         }
@@ -143,12 +143,16 @@ public class DataBackupService {
                     progressCallback.accept("Đang tắt ràng buộc...");
                 }
                 disableConstraints(connection, orderedTables);
+                // Tắt trigger toàn cục để tránh trigger business logic (ví dụ validate expiry) chặn quá trình insert
+                disableTriggers(connection, orderedTables);
                 deleteExistingData(connection, deleteOrder, progressCallback);
                 insertRows(connection, orderedTables, progressCallback);
                 if (progressCallback != null) {
                     progressCallback.accept("Đang bật lại ràng buộc...");
                 }
                 enableConstraints(connection, orderedTables);
+                // Bật lại triggers sau khi constraints đã được bật và dữ liệu đã sẵn sàng
+                enableTriggers(connection, orderedTables);
                 if (progressCallback != null) {
                     progressCallback.accept("Đang lưu thay đổi...");
                 }
@@ -164,6 +168,7 @@ public class DataBackupService {
                 if (orderedTables != null) {
                     try {
                         enableConstraints(connection, orderedTables);
+                        enableTriggers(connection, orderedTables);
                     } catch (SQLException e) {
                         // Log lỗi nhưng không throw để không che giấu lỗi gốc
                         System.err.println("Lỗi khi bật lại constraints: " + e.getMessage());
@@ -175,12 +180,13 @@ public class DataBackupService {
     }
 
     /**
-     * Xóa toàn bộ dữ liệu hiện có trong các bảng trước khi insert dữ liệu mới từ file backup.
-     * Được gọi trong quá trình {@link #restore(Path, Consumer)} sau khi đã tắt ràng buộc khóa ngoại.
+     * Xóa toàn bộ dữ liệu hiện có trong các bảng trước khi insert dữ liệu mới
+     * từ file backup. Được gọi trong quá trình {@link #restore(Path, Consumer)}
+     * sau khi đã tắt ràng buộc khóa ngoại.
      */
     private void deleteExistingData(Connection connection,
-                                    List<TableDump> tables,
-                                    Consumer<String> progressCallback) throws SQLException {
+            List<TableDump> tables,
+            Consumer<String> progressCallback) throws SQLException {
         // Dùng DELETE FROM thay vì TRUNCATE vì TRUNCATE không hoạt động 
         // khi có foreign key references, ngay cả khi đã disable constraints
         for (TableDump dump : tables) {
@@ -200,12 +206,13 @@ public class DataBackupService {
     }
 
     /**
-     * Insert lại toàn bộ các dòng dữ liệu đã đọc từ file backup vào database hiện tại.
-     * Nếu bảng chưa tồn tại, hàm sẽ tự tạo bảng dựa trên metadata (tên cột, kiểu cột).
+     * Insert lại toàn bộ các dòng dữ liệu đã đọc từ file backup vào database
+     * hiện tại. Nếu bảng chưa tồn tại, hàm sẽ tự tạo bảng dựa trên metadata
+     * (tên cột, kiểu cột).
      */
     private void insertRows(Connection connection,
-                            List<TableDump> tables,
-                            Consumer<String> progressCallback) throws SQLException {
+            List<TableDump> tables,
+            Consumer<String> progressCallback) throws SQLException {
         for (TableDump dump : tables) {
             JsonArray rows = dump.rows();
             if (progressCallback != null) {
@@ -214,7 +221,7 @@ public class DataBackupService {
             if (rows.isEmpty()) {
                 continue;
             }
-            
+
             // Tạo bảng nếu chưa tồn tại
             if (!tableExists(connection, dump)) {
                 if (progressCallback != null) {
@@ -222,11 +229,10 @@ public class DataBackupService {
                 }
                 createTableIfNotExists(connection, dump);
             }
-            
+
             boolean hasIdentity = hasIdentityColumn(connection, dump);
             String insertSql = buildInsertSql(dump);
-            try (Statement identityStmt = hasIdentity ? connection.createStatement() : null;
-                 PreparedStatement preparedStatement = connection.prepareStatement(insertSql)) {
+            try (Statement identityStmt = hasIdentity ? connection.createStatement() : null; PreparedStatement preparedStatement = connection.prepareStatement(insertSql)) {
                 if (hasIdentity) {
                     identityStmt.execute("SET IDENTITY_INSERT " + dump.qualifiedName() + " ON");
                 }
@@ -257,8 +263,8 @@ public class DataBackupService {
     }
 
     /**
-     * Tạm thời tắt toàn bộ foreign key constraints trong database
-     * để tránh lỗi khi xóa/ghi dữ liệu theo thứ tự mới.
+     * Tạm thời tắt toàn bộ foreign key constraints trong database để tránh lỗi
+     * khi xóa/ghi dữ liệu theo thứ tự mới.
      */
     private void disableConstraints(Connection connection, List<TableDump> tables) throws SQLException {
         // Disable tất cả foreign key constraints trong database
@@ -278,7 +284,8 @@ public class DataBackupService {
     }
 
     /**
-     * Bật lại toàn bộ foreign key constraints sau khi đã khôi phục dữ liệu xong.
+     * Bật lại toàn bộ foreign key constraints sau khi đã khôi phục dữ liệu
+     * xong.
      */
     private void enableConstraints(Connection connection, List<TableDump> tables) throws SQLException {
         // Enable lại tất cả foreign key constraints
@@ -297,7 +304,37 @@ public class DataBackupService {
     }
 
     /**
-     * Kiểm tra bảng (schema + tên bảng) có tồn tại trong database hiện tại hay không.
+     * Vô hiệu toàn bộ table-level triggers trước khi insert hàng loạt.
+     * Sử dụng sp_msforeachtable để disable trigger trên tất cả bảng người dùng.
+     */
+    private void disableTriggers(Connection connection, List<TableDump> tables) throws SQLException {
+        try (Statement statement = connection.createStatement()) {
+            try (ResultSet rs = statement.executeQuery(
+                    "SELECT COUNT(*) as cnt FROM sys.tables WHERE is_ms_shipped = 0")) {
+                if (rs.next() && rs.getInt("cnt") > 0) {
+                    statement.execute("EXEC sp_msforeachtable 'DISABLE TRIGGER ALL ON ?'");
+                }
+            }
+        }
+    }
+
+    /**
+     * Bật lại toàn bộ table-level triggers sau khi insert xong.
+     */
+    private void enableTriggers(Connection connection, List<TableDump> tables) throws SQLException {
+        try (Statement statement = connection.createStatement()) {
+            try (ResultSet rs = statement.executeQuery(
+                    "SELECT COUNT(*) as cnt FROM sys.tables WHERE is_ms_shipped = 0")) {
+                if (rs.next() && rs.getInt("cnt") > 0) {
+                    statement.execute("EXEC sp_msforeachtable 'ENABLE TRIGGER ALL ON ?'");
+                }
+            }
+        }
+    }
+
+    /**
+     * Kiểm tra bảng (schema + tên bảng) có tồn tại trong database hiện tại hay
+     * không.
      */
     private boolean tableExists(Connection connection, TableDump dump) throws SQLException {
         final String sql = """
@@ -316,21 +353,22 @@ public class DataBackupService {
     }
 
     /**
-     * Tạo schema/bảng tương ứng với dữ liệu trong file backup nếu nó chưa tồn tại trong database.
-     * Bảng được tạo dựa trên danh sách cột và kiểu dữ liệu đã lưu trong JSON.
+     * Tạo schema/bảng tương ứng với dữ liệu trong file backup nếu nó chưa tồn
+     * tại trong database. Bảng được tạo dựa trên danh sách cột và kiểu dữ liệu
+     * đã lưu trong JSON.
      */
     private void createTableIfNotExists(Connection connection, TableDump dump) throws SQLException {
         // Tạo schema nếu chưa tồn tại
         try (Statement stmt = connection.createStatement()) {
-            String createSchemaSql = "IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = '" + 
-                escapeIdentifier(dump.schema()) + "') EXEC('CREATE SCHEMA [" + escapeIdentifier(dump.schema()) + "]')";
+            String createSchemaSql = "IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = '"
+                    + escapeIdentifier(dump.schema()) + "') EXEC('CREATE SCHEMA [" + escapeIdentifier(dump.schema()) + "]')";
             stmt.execute(createSchemaSql);
         }
-        
+
         // Tạo bảng với các cột từ metadata
         StringBuilder createTableSql = new StringBuilder();
         createTableSql.append("CREATE TABLE ").append(dump.qualifiedName()).append(" (");
-        
+
         for (int i = 0; i < dump.columns().size(); i++) {
             if (i > 0) {
                 createTableSql.append(", ");
@@ -340,46 +378,69 @@ public class DataBackupService {
             createTableSql.append('[').append(escapeIdentifier(columnName)).append("] ");
             createTableSql.append(getSqlTypeName(sqlType));
         }
-        
+
         createTableSql.append(")");
-        
+
         try (Statement stmt = connection.createStatement()) {
             stmt.execute(createTableSql.toString());
         }
     }
 
     /**
-     * Chuyển mã kiểu dữ liệu JDBC (java.sql.Types) sang tên kiểu dữ liệu tương ứng trong SQL Server.
+     * Chuyển mã kiểu dữ liệu JDBC (java.sql.Types) sang tên kiểu dữ liệu tương
+     * ứng trong SQL Server.
      */
     private String getSqlTypeName(int sqlType) {
         // Chuyển đổi SQL type code thành tên type trong SQL Server
         return switch (sqlType) {
-            case Types.BIT -> "BIT";
-            case Types.TINYINT -> "TINYINT";
-            case Types.SMALLINT -> "SMALLINT";
-            case Types.INTEGER -> "INT";
-            case Types.BIGINT -> "BIGINT";
-            case Types.REAL -> "REAL";
-            case Types.FLOAT, Types.DOUBLE -> "FLOAT";
-            case Types.DECIMAL, Types.NUMERIC -> "DECIMAL(18,2)";
-            case Types.CHAR -> "CHAR(255)";
-            case Types.VARCHAR -> "VARCHAR(MAX)";
-            case Types.NCHAR -> "NCHAR(255)";
-            case Types.NVARCHAR -> "NVARCHAR(MAX)";
-            case Types.DATE -> "DATE";
-            case Types.TIME -> "TIME";
-            case Types.TIMESTAMP -> "DATETIME2";
-            case Types.BINARY -> "BINARY(MAX)";
-            case Types.VARBINARY -> "VARBINARY(MAX)";
-            case Types.BLOB -> "VARBINARY(MAX)";
-            case Types.CLOB -> "NVARCHAR(MAX)";
-            case Types.NCLOB -> "NVARCHAR(MAX)";
-            default -> "NVARCHAR(MAX)"; // Default fallback
+            case Types.BIT ->
+                "BIT";
+            case Types.TINYINT ->
+                "TINYINT";
+            case Types.SMALLINT ->
+                "SMALLINT";
+            case Types.INTEGER ->
+                "INT";
+            case Types.BIGINT ->
+                "BIGINT";
+            case Types.REAL ->
+                "REAL";
+            case Types.FLOAT, Types.DOUBLE ->
+                "FLOAT";
+            case Types.DECIMAL, Types.NUMERIC ->
+                "DECIMAL(18,2)";
+            case Types.CHAR ->
+                "CHAR(255)";
+            case Types.VARCHAR ->
+                "VARCHAR(MAX)";
+            case Types.NCHAR ->
+                "NCHAR(255)";
+            case Types.NVARCHAR ->
+                "NVARCHAR(MAX)";
+            case Types.DATE ->
+                "DATE";
+            case Types.TIME ->
+                "TIME";
+            case Types.TIMESTAMP ->
+                "DATETIME2";
+            case Types.BINARY ->
+                "BINARY(MAX)";
+            case Types.VARBINARY ->
+                "VARBINARY(MAX)";
+            case Types.BLOB ->
+                "VARBINARY(MAX)";
+            case Types.CLOB ->
+                "NVARCHAR(MAX)";
+            case Types.NCLOB ->
+                "NVARCHAR(MAX)";
+            default ->
+                "NVARCHAR(MAX)"; // Default fallback
         };
     }
 
     /**
-     * Kiểm tra xem bảng có cột IDENTITY hay không để bật/tắt IDENTITY_INSERT khi insert dữ liệu.
+     * Kiểm tra xem bảng có cột IDENTITY hay không để bật/tắt IDENTITY_INSERT
+     * khi insert dữ liệu.
      */
     private boolean hasIdentityColumn(Connection connection, TableDump dump) throws SQLException {
         // Kiểm tra xem bảng có tồn tại không trước
@@ -403,8 +464,8 @@ public class DataBackupService {
     }
 
     /**
-     * Sinh câu lệnh INSERT theo danh sách cột của bảng cần khôi phục.
-     * Ví dụ: INSERT INTO [dbo].[NhanVien] ([id], [ten], ...) VALUES (?, ?, ...)
+     * Sinh câu lệnh INSERT theo danh sách cột của bảng cần khôi phục. Ví dụ:
+     * INSERT INTO [dbo].[NhanVien] ([id], [ten], ...) VALUES (?, ?, ...)
      */
     private String buildInsertSql(TableDump dump) {
         StringBuilder builder = new StringBuilder();
@@ -430,7 +491,8 @@ public class DataBackupService {
 
     /**
      * Đọc metadata từ SQL Server để lấy danh sách tất cả các bảng người dùng
-     * (bỏ qua schema hệ thống như sys, INFORMATION_SCHEMA) phục vụ cho việc backup.
+     * (bỏ qua schema hệ thống như sys, INFORMATION_SCHEMA) phục vụ cho việc
+     * backup.
      */
     private List<TableInfo> loadTables(Connection connection) throws SQLException {
         List<TableInfo> tables = new ArrayList<>();
@@ -453,8 +515,8 @@ public class DataBackupService {
     }
 
     /**
-     * Đọc toàn bộ dữ liệu của một bảng và chuyển thành JSON (metadata + danh sách dòng)
-     * để ghi vào file backup (.json trong file .zip).
+     * Đọc toàn bộ dữ liệu của một bảng và chuyển thành JSON (metadata + danh
+     * sách dòng) để ghi vào file backup (.json trong file .zip).
      */
     private JsonObject exportTable(Connection connection, TableInfo tableInfo) throws SQLException {
         JsonObject payload = new JsonObject();
@@ -490,10 +552,9 @@ public class DataBackupService {
     }
 
     /**
-     * Chuẩn hóa giá trị đọc từ ResultSet sang JSON:
-     * - Kiểu thời gian → chuỗi ISO
-     * - Nhị phân → base64 kèm _type = "binary"
-     * - Clob/Blob → đọc toàn bộ nội dung.
+     * Chuẩn hóa giá trị đọc từ ResultSet sang JSON: - Kiểu thời gian → chuỗi
+     * ISO - Nhị phân → base64 kèm _type = "binary" - Clob/Blob → đọc toàn bộ
+     * nội dung.
      */
     private JsonElement serializeValue(Object value) throws SQLException {
         if (value == null) {
@@ -536,8 +597,9 @@ public class DataBackupService {
     }
 
     /**
-     * Đọc file backup (.zip), duyệt từng entry JSON của bảng (bỏ qua metadata.json)
-     * và build thành danh sách {@link TableDump} để phục vụ việc khôi phục.
+     * Đọc file backup (.zip), duyệt từng entry JSON của bảng (bỏ qua
+     * metadata.json) và build thành danh sách {@link TableDump} để phục vụ việc
+     * khôi phục.
      */
     private List<TableDump> loadBackupPayloads(Path backupFile, Consumer<String> progressCallback) throws IOException {
         List<TableDump> dumps = new ArrayList<>();
@@ -575,8 +637,9 @@ public class DataBackupService {
     }
 
     /**
-     * Gán giá trị JSON tương ứng vào PreparedStatement theo đúng kiểu JDBC.
-     * Hàm này là "cầu nối" giữa dữ liệu JSON trong file backup và câu lệnh INSERT thực tế.
+     * Gán giá trị JSON tương ứng vào PreparedStatement theo đúng kiểu JDBC. Hàm
+     * này là "cầu nối" giữa dữ liệu JSON trong file backup và câu lệnh INSERT
+     * thực tế.
      */
     private void setStatementValue(PreparedStatement ps, int index, JsonElement value, int sqlType) throws SQLException {
         if (value == null || value.isJsonNull()) {
@@ -592,16 +655,24 @@ public class DataBackupService {
             }
         }
         switch (sqlType) {
-            case Types.INTEGER, Types.SMALLINT, Types.TINYINT -> ps.setInt(index, value.getAsInt());
-            case Types.BIGINT -> ps.setLong(index, value.getAsLong());
-            case Types.FLOAT, Types.REAL -> ps.setFloat(index, value.getAsFloat());
-            case Types.DOUBLE -> ps.setDouble(index, value.getAsDouble());
-            case Types.NUMERIC, Types.DECIMAL -> ps.setBigDecimal(index, value.getAsBigDecimal());
-            case Types.BIT, Types.BOOLEAN -> ps.setBoolean(index, value.getAsBoolean());
-            case Types.CHAR, Types.NCHAR, Types.VARCHAR, Types.NVARCHAR,
-                    Types.LONGVARCHAR, Types.LONGNVARCHAR -> ps.setString(index, value.getAsString());
-            case Types.DATE -> ps.setDate(index, Date.valueOf(value.getAsString()));
-            case Types.TIME -> ps.setTime(index, Time.valueOf(value.getAsString()));
+            case Types.INTEGER, Types.SMALLINT, Types.TINYINT ->
+                ps.setInt(index, value.getAsInt());
+            case Types.BIGINT ->
+                ps.setLong(index, value.getAsLong());
+            case Types.FLOAT, Types.REAL ->
+                ps.setFloat(index, value.getAsFloat());
+            case Types.DOUBLE ->
+                ps.setDouble(index, value.getAsDouble());
+            case Types.NUMERIC, Types.DECIMAL ->
+                ps.setBigDecimal(index, value.getAsBigDecimal());
+            case Types.BIT, Types.BOOLEAN ->
+                ps.setBoolean(index, value.getAsBoolean());
+            case Types.CHAR, Types.NCHAR, Types.VARCHAR, Types.NVARCHAR, Types.LONGVARCHAR, Types.LONGNVARCHAR ->
+                ps.setString(index, value.getAsString());
+            case Types.DATE ->
+                ps.setDate(index, Date.valueOf(value.getAsString()));
+            case Types.TIME ->
+                ps.setTime(index, Time.valueOf(value.getAsString()));
             case Types.TIMESTAMP, Types.TIMESTAMP_WITH_TIMEZONE -> {
                 Timestamp timestamp = Timestamp.from(Instant.parse(value.getAsString()));
                 ps.setTimestamp(index, timestamp);
@@ -610,7 +681,8 @@ public class DataBackupService {
                 byte[] data = Base64.getDecoder().decode(value.getAsString());
                 ps.setBytes(index, data);
             }
-            default -> ps.setObject(index, value.getAsString());
+            default ->
+                ps.setObject(index, value.getAsString());
         }
     }
 
@@ -622,8 +694,8 @@ public class DataBackupService {
     }
 
     /**
-     * Sắp xếp lại danh sách bảng theo thứ tự phụ thuộc khóa ngoại (topological sort)
-     * để đảm bảo insert bảng cha trước rồi mới insert bảng con.
+     * Sắp xếp lại danh sách bảng theo thứ tự phụ thuộc khóa ngoại (topological
+     * sort) để đảm bảo insert bảng cha trước rồi mới insert bảng con.
      */
     private List<TableDump> sortTablesForInsert(Connection connection, List<TableDump> dumps) throws SQLException {
         Map<String, TableDump> tableMap = new LinkedHashMap<>();
@@ -693,19 +765,22 @@ public class DataBackupService {
     }
 
     /**
-     * Tạo key duy nhất cho một bảng theo dạng "schema.name" (viết thường) để lưu map phụ thuộc.
+     * Tạo key duy nhất cho một bảng theo dạng "schema.name" (viết thường) để
+     * lưu map phụ thuộc.
      */
     private static String tableKey(String schema, String name) {
         return (schema + "." + name).toLowerCase(Locale.ROOT);
     }
 
     public record BackupResult(Path file, String databaseName, int tableCount, long rowCount) {
+
     }
 
     /**
      * Thông tin rút gọn về một bảng trong database dùng cho quá trình backup.
      */
     private record TableInfo(String schema, String name) {
+
         String qualifiedName() {
             return "[" + escapeIdentifier(schema) + "].[" + escapeIdentifier(name) + "]";
         }
@@ -720,10 +795,12 @@ public class DataBackupService {
     }
 
     /**
-     * Đại diện cho dữ liệu đầy đủ của một bảng được đọc từ/ghi ra file JSON trong gói backup.
-     * Bao gồm: schema, tên bảng, danh sách cột, kiểu cột và toàn bộ các dòng dữ liệu.
+     * Đại diện cho dữ liệu đầy đủ của một bảng được đọc từ/ghi ra file JSON
+     * trong gói backup. Bao gồm: schema, tên bảng, danh sách cột, kiểu cột và
+     * toàn bộ các dòng dữ liệu.
      */
     private static class TableDump {
+
         private final String schema;
         private final String name;
         private final List<String> columns;
@@ -783,4 +860,3 @@ public class DataBackupService {
         }
     }
 }
-
