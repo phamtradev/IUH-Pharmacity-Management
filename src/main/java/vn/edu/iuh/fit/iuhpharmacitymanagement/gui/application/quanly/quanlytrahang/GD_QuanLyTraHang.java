@@ -359,13 +359,20 @@ public class GD_QuanLyTraHang extends javax.swing.JPanel {
             }
         });
 
-        // Renderer cho cột Thao tác
+        // Renderer cho cột Thao tác (ép màu primary, chữ trắng)
+        table.setRowHeight(36);
         table.getColumnModel().getColumn(6).setCellRenderer(new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value,
                     boolean isSelected, boolean hasFocus, int row, int column) {
                 JButton btnAction = new JButton("Xem chi tiết");
-                ButtonStyles.apply(btnAction, ButtonStyles.Type.INFO);
+                // ensure consistent primary color with white text
+                ButtonStyles.apply(btnAction, ButtonStyles.Type.PRIMARY);
+                btnAction.setBackground(new java.awt.Color(13, 110, 253)); // #0D6EFD
+                btnAction.setForeground(java.awt.Color.WHITE);
+                btnAction.setOpaque(true);
+                btnAction.setBorderPainted(false);
+                btnAction.setFocusPainted(false);
                 btnAction.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
                 return btnAction;
             }
