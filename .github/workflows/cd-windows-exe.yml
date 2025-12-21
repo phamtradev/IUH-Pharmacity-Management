@@ -1,5 +1,8 @@
 name: CD - Build Windows App Image
 
+permissions:
+  contents: write
+
 on:
   workflow_dispatch:
   push:
@@ -16,6 +19,9 @@ jobs:
       # ===============================
       - name: Lấy mã nguồn
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       # ===============================
       # Cài đặt Java 21
