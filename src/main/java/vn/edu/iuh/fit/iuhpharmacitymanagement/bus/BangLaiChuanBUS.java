@@ -10,6 +10,9 @@ import java.util.List;
 /**
  * BUS cho cấu hình lãi chuẩn theo khoảng giá nhập.
  */
+/**
+ * BUS cho cấu hình lãi chuẩn theo khoảng giá nhập.
+ */
 public class BangLaiChuanBUS {
 
     private final BangLaiChuanDAO dao;

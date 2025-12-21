@@ -82,6 +82,9 @@ public class ThemKhuyenMaiDialog extends javax.swing.JDialog {
         dateNgayBatDau.setMinSelectableDate(new Date());
         dateNgayKetThuc.setMinSelectableDate(new Date());
         
+        // Mặc định đặt ngày bắt đầu là hôm nay
+        dateNgayBatDau.setDate(new Date());
+        
         // Thêm PropertyChangeListener cho date editor để validate ngay khi chọn ngày
         PropertyChangeListener listenerNgayBatDau = new PropertyChangeListener() {
             @Override
@@ -440,8 +443,8 @@ public class ThemKhuyenMaiDialog extends javax.swing.JDialog {
             .toLocalDate();
         LocalDate today = LocalDate.now();
         
-        // Nếu chọn ngày hiện tại hoặc trước ngày hiện tại
-        if (selectedLocalDate.isBefore(today) || selectedLocalDate.isEqual(today)) {
+        // Nếu chọn trước ngày hiện tại (ngày bằng ngày hiện tại được phép)
+        if (selectedLocalDate.isBefore(today)) {
             // Set flag để tránh trigger lại
             isValidatingDate = true;
             // Xóa ngày đã chọn
@@ -451,7 +454,7 @@ public class ThemKhuyenMaiDialog extends javax.swing.JDialog {
             // Hiển thị thông báo lỗi
             Notifications.getInstance().show(Notifications.Type.ERROR, 
                 Notifications.Location.TOP_CENTER,
-                "Ngày bắt đầu phải sau ngày hiện tại!");
+                "Ngày bắt đầu không được nhỏ hơn ngày hiện tại!");
             return;
         }
         
@@ -492,8 +495,8 @@ public class ThemKhuyenMaiDialog extends javax.swing.JDialog {
             .toLocalDate();
         LocalDate today = LocalDate.now();
         
-        // Nếu chọn ngày hiện tại hoặc trước ngày hiện tại
-        if (selectedLocalDate.isBefore(today) || selectedLocalDate.isEqual(today)) {
+        // Nếu chọn trước ngày hiện tại (ngày bằng ngày hiện tại được phép)
+        if (selectedLocalDate.isBefore(today)) {
             // Set flag để tránh trigger lại
             isValidatingDate = true;
             // Xóa ngày đã chọn
@@ -503,7 +506,7 @@ public class ThemKhuyenMaiDialog extends javax.swing.JDialog {
             // Hiển thị thông báo lỗi
             Notifications.getInstance().show(Notifications.Type.ERROR, 
                 Notifications.Location.TOP_CENTER,
-                "Ngày kết thúc phải sau ngày hiện tại!");
+                "Ngày kết thúc không được nhỏ hơn ngày hiện tại!");
             return;
         }
         
@@ -907,6 +910,13 @@ public class ThemKhuyenMaiDialog extends javax.swing.JDialog {
             // Convert Date to LocalDate
             LocalDate ngayBatDau = ngayBD.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
             LocalDate ngayKetThuc = ngayKT.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+
+            // Ngày bắt đầu không được nhỏ hơn ngày hiện tại
+            LocalDate today = LocalDate.now();
+            if (ngayBatDau.isBefore(today)) {
+                Notifications.getInstance().show(Notifications.Type.WARNING, "Ngày bắt đầu không được nhỏ hơn ngày hiện tại!");
+                return;
+            }
 
             // Kiểm tra ngày
             if (ngayKetThuc.isBefore(ngayBatDau)) {

@@ -11,6 +11,8 @@ src/main/resources/email.properties
 src/main/resources/chatbot-config.properties
 
 # File backup và temp
+# File backup và temp
+# File backup và temp
 *.DS_Store
 *.bak
 *.tmp

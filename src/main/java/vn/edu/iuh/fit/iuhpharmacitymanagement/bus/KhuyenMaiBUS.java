@@ -61,6 +61,19 @@ public class KhuyenMaiBUS {
         if (khuyenMaiDAO.existsByName(km.getTenKhuyenMai())) {
             throw new Exception("Tên khuyến mãi '" + km.getTenKhuyenMai() + "' đã tồn tại.");
         }
+        // Ngày bắt đầu không được nhỏ hơn ngày hiện tại
+        if (km.getNgayBatDau() != null) {
+            LocalDate today = LocalDate.now();
+            if (km.getNgayBatDau().isBefore(today)) {
+                throw new Exception("Ngày bắt đầu không được nhỏ hơn ngày hiện tại.");
+            }
+        }
+        // Kiểm tra ngày kết thúc >= ngày bắt đầu
+        if (km.getNgayBatDau() != null && km.getNgayKetThuc() != null) {
+            if (km.getNgayKetThuc().isBefore(km.getNgayBatDau())) {
+                throw new Exception("Ngày kết thúc phải sau hoặc bằng ngày bắt đầu.");
+            }
+        }
         return khuyenMaiDAO.insert(km);
     }
 
@@ -70,6 +83,20 @@ public class KhuyenMaiBUS {
         KhuyenMai kmTheoTen = khuyenMaiDAO.findByName(km.getTenKhuyenMai());
         if (kmTheoTen != null && !kmTheoTen.getMaKhuyenMai().equals(km.getMaKhuyenMai())) {
             throw new Exception("Tên khuyến mãi '" + km.getTenKhuyenMai() + "' đã tồn tại.");
+        }
+
+        // Ngày bắt đầu không được nhỏ hơn ngày hiện tại
+        if (km.getNgayBatDau() != null) {
+            LocalDate today = LocalDate.now();
+            if (km.getNgayBatDau().isBefore(today)) {
+                throw new Exception("Ngày bắt đầu không được nhỏ hơn ngày hiện tại.");
+            }
+        }
+        // Kiểm tra ngày kết thúc >= ngày bắt đầu
+        if (km.getNgayBatDau() != null && km.getNgayKetThuc() != null) {
+            if (km.getNgayKetThuc().isBefore(km.getNgayBatDau())) {
+                throw new Exception("Ngày kết thúc phải sau hoặc bằng ngày bắt đầu.");
+            }
         }
 
         return khuyenMaiDAO.update(km);

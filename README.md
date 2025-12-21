@@ -37,7 +37,7 @@ IUH Pharmacity Management System is a comprehensive pharmacy management applicat
 
 Before setting up and running the application, ensure you have the following installed and configured:
 
-- Java Development Kit (JDK) 21 or higher installed.
+- Java Development Kit (JDK) 21 or higher.
 - Maven 3.8+ build tool installed.
 - Microsoft SQL Server 2019+ database system set up and configured.
 - SQL Server Management Studio (SSMS) for database management (recommended).

@@ -78,13 +78,14 @@ public class Chart extends javax.swing.JPanel {
                     g2.setColor(legend.getColor());
                     double seriesValues = chart.getSeriesValuesOf(model.get(index).getValues()[i], size.getHeight()) * animate;
 
-                    // Chỉ vẽ cột nếu giá trị khác 0
-                    if (seriesValues > 0) {
+                    // Vẽ cột nếu giá trị khác 0 (bao gồm cả giá trị âm) — hiển thị thanh để người dùng thấy series tồn tại
+                    if (Math.abs(seriesValues) > 1e-6) {
                         // Tọa độ trong Graphics2D context (đã là absolute trong BlankPlotChart)
                         int barX = (int) (size.getX() + x - 6);
-                        int barY = (int) (size.getY() + size.getHeight() - seriesValues);
                         int barWidth = seriesSize + 18;
-                        int barHeight = (int) seriesValues;
+                        int barHeight = (int) Math.abs(seriesValues);
+                        // Đặt barY để cột luôn bắt đầu từ đáy chart lên trên (giữ cùng quy ước hiển thị)
+                        int barY = (int) (size.getY() + size.getHeight() - barHeight);
 
                         // Vẽ cột
                         g2.fillRect(barX, barY, barWidth, barHeight);

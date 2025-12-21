@@ -194,6 +194,8 @@
                                 <include>**/*</include>
                             </includes>
                             <!-- Loại bỏ chữ ký để tránh lỗi "Invalid signature file digest" -->
+                            <!-- Loại bỏ chữ ký để tránh lỗi "Invalid signature file digest" -->
+                            <!-- Loại bỏ chữ ký để tránh lỗi "Invalid signature file digest" -->
                             <filters>
                                 <filter>
                                     <artifact>*:*</artifact>

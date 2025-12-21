@@ -750,6 +750,13 @@ public class SuaKhuyenMaiDialog extends javax.swing.JDialog {
             LocalDate ngayBatDau = ngayBD.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
             LocalDate ngayKetThuc = ngayKT.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 
+            // Ngày bắt đầu không được nhỏ hơn ngày hiện tại
+            LocalDate today = LocalDate.now();
+            if (ngayBatDau.isBefore(today)) {
+                Notifications.getInstance().show(Notifications.Type.WARNING, "Ngày bắt đầu không được nhỏ hơn ngày hiện tại!");
+                return;
+            }
+
             // Kiểm tra ngày
             if (ngayKetThuc.isBefore(ngayBatDau)) {
                 Notifications.getInstance().show(Notifications.Type.WARNING, "Ngày kết thúc phải sau ngày bắt đầu!");
