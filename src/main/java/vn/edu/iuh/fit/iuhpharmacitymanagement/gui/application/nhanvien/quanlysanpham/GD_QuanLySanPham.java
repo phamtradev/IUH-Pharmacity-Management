@@ -219,12 +219,66 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         // (VAT sẽ hiển thị riêng ở cột Thuế VAT (%) và dùng cho tính toán khác)
         String[] headers = {"Mã sản phẩm", "Tên sản phẩm", "Đơn vị tính", "Số đăng kí", "Xuất xứ", "Loại sản phẩm", "Giá nhập", "Thuế VAT (%)", "Giá bán (đã VAT)", "Trạng thái"};
         List<Integer> tableWidths = Arrays.asList(120, 280, 110, 120, 110, 130, 130, 110, 140, 110);
-        tableDesign = new TableDesign(headers, tableWidths);
+        java.util.List<Boolean> canEdit = new java.util.ArrayList<>();
+        for (int i = 0; i < headers.length; i++) {
+            canEdit.add(false);
+        }
+        // Cho phép chỉnh sửa cột trạng thái (chỉ khi có quyền quản lý)
+        canEdit.set(headers.length - 1, this.isManager);
+        tableDesign = new TableDesign(headers, tableWidths, canEdit);
         ProductScrollPane.setViewportView(tableDesign.getTable());
         ProductScrollPane.setBorder(BorderFactory.createEmptyBorder(15, 20, 20, 20));
 
         // Load dữ liệu
         loadTableData(sanPhamBUS.layTatCaSanPham());
+        
+        // Nếu cột trạng thái có thể chỉnh sửa, thêm editor và listener để lưu thay đổi
+        if (this.isManager) {
+            javax.swing.JTable table = tableDesign.getTable();
+            javax.swing.JComboBox<String> combo = new javax.swing.JComboBox<>(new String[] {"Đang bán", "Ngưng bán"});
+            table.getColumnModel().getColumn(headers.length - 1).setCellEditor(new javax.swing.DefaultCellEditor(combo));
+
+            table.getModel().addTableModelListener(e -> {
+                if (e.getType() == javax.swing.event.TableModelEvent.UPDATE) {
+                    int col = e.getColumn();
+                    int row = e.getFirstRow();
+                    if (col == headers.length - 1 && row >= 0) {
+                        String maSanPham = table.getValueAt(row, 0).toString();
+                        String newStatus = table.getValueAt(row, col).toString();
+                        boolean hoatDong = "Đang bán".equalsIgnoreCase(newStatus);
+                        try {
+                            vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham sp = sanPhamBUS.laySanPhamTheoMa(maSanPham);
+                            sp.setHoatDong(hoatDong);
+                            boolean ok = sanPhamBUS.capNhatSanPham(sp);
+                            if (!ok) {
+                                Notifications.getInstance().show(Notifications.Type.ERROR, Notifications.Location.TOP_CENTER, 3000, "Cập nhật trạng thái thất bại!");
+                                // reload row to previous
+                                table.setValueAt(sp.isHoatDong() ? "Đang bán" : "Ngưng bán", row, col);
+                            } else {
+                                Notifications.getInstance().show(Notifications.Type.SUCCESS, Notifications.Location.TOP_CENTER, 2000, "Cập nhật trạng thái thành công!");
+                            }
+                        } catch (Exception ex) {
+                            Notifications.getInstance().show(Notifications.Type.ERROR, Notifications.Location.TOP_CENTER, 4000, "Lỗi khi cập nhật trạng thái: " + ex.getMessage());
+                        }
+                    }
+                }
+            });
+            
+            // Chỉ enable nút Xóa khi hàng đang chọn có trạng thái "Ngưng bán"
+            table.getSelectionModel().addListSelectionListener(evt -> {
+                if (!evt.getValueIsAdjusting()) {
+                    int sel = table.getSelectedRow();
+                    if (sel >= 0) {
+                        Object statusObj = table.getValueAt(sel, headers.length - 1);
+                        String status = statusObj != null ? statusObj.toString() : "";
+                        boolean canDelete = "Ngưng bán".equalsIgnoreCase(status);
+                        btnDelete.setEnabled(canDelete && this.isManager);
+                    } else {
+                        btnDelete.setEnabled(false);
+                    }
+                }
+            });
+        }
     }
 
     private void loadTableData(List<SanPham> danhSachSanPham) {
@@ -1772,8 +1826,23 @@ public class GD_QuanLySanPham extends javax.swing.JPanel {
         );
 
         if (confirm == JOptionPane.YES_OPTION) {
-            // TODO: Thêm logic xóa sản phẩm từ database
-            Notifications.getInstance().show(Notifications.Type.INFO, "Chức năng xóa sản phẩm đang được phát triển!");
+            try {
+                boolean deleted = sanPhamBUS.xoaSanPham(maSanPham);
+                if (deleted) {
+                    // Remove from table
+                    tableDesign.getModelTable().removeRow(selectedRow);
+                    Notifications.getInstance().show(Notifications.Type.SUCCESS, "Xóa sản phẩm thành công!");
+                } else {
+                    String detail = sanPhamBUS.getLastErrorMessage();
+                    if (detail != null && !detail.trim().isEmpty()) {
+                        Notifications.getInstance().show(Notifications.Type.ERROR, Notifications.Location.TOP_CENTER, 4000, detail);
+                    } else {
+                        Notifications.getInstance().show(Notifications.Type.ERROR, "Xóa sản phẩm thất bại!");
+                    }
+                }
+            } catch (Exception e) {
+                Notifications.getInstance().show(Notifications.Type.ERROR, e.getMessage());
+            }
         }
     }//GEN-LAST:event_btnDeleteActionPerformed
 

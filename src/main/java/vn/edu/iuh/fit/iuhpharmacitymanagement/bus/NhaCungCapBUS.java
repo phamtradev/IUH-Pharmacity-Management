@@ -6,6 +6,7 @@ import java.util.List;
 
 public class NhaCungCapBUS {
     private NhaCungCapDAO nhaCungCapDAO;
+    private String lastErrorMessage = null;
     
     public NhaCungCapBUS() {
         this.nhaCungCapDAO = new NhaCungCapDAO();
@@ -54,12 +55,53 @@ public class NhaCungCapBUS {
         return nhaCungCapDAO.timTheoText(text);
     }
     
+    public NhaCungCap layNhaCungCapTheoMaSoThue(String maSoThue) {
+        return nhaCungCapDAO.timTheoMaSoThue(maSoThue);
+    }
+
     public boolean xoaNhaCungCap(String maNhaCungCap) {
         try {
-            return nhaCungCapDAO.delete(maNhaCungCap);
+            boolean ok = nhaCungCapDAO.delete(maNhaCungCap);
+            if (!ok) {
+                lastErrorMessage = "Xóa không thành công (không có bản ghi bị xóa).";
+            } else {
+                lastErrorMessage = null;
+            }
+            return ok;
+        } catch (java.sql.SQLException e) {
+            // SQL Server foreign key violation error code = 547
+            String msg = e.getMessage() != null ? e.getMessage() : "";
+            if (e.getErrorCode() == 547 || msg.contains("REFERENCE") || msg.contains("REFERENCES")) {
+                // Try to parse referenced table from message
+                String table = "bảng tham chiếu";
+                try {
+                    java.util.regex.Matcher m = java.util.regex.Pattern.compile("table \"[^\"]*\\.([^\\\"]+)\"").matcher(msg);
+                    if (m.find()) {
+                        table = m.group(1);
+                    } else {
+                        // fallback: look for 'table \"' then next token
+                        m = java.util.regex.Pattern.compile("table \"([^\"]+)\"").matcher(msg);
+                        if (m.find()) {
+                            table = m.group(1);
+                        }
+                    }
+                } catch (Exception ex) {
+                    // ignore parse errors
+                }
+                lastErrorMessage = "Không thể xóa nhà cung cấp vì còn dữ liệu liên quan ở " + table + ". Vui lòng xóa hoặc cập nhật các bản ghi liên quan trước khi xóa.";
+            } else {
+                lastErrorMessage = "Lỗi khi xóa nhà cung cấp: " + msg;
+            }
+            System.err.println("NhaCungCapBUS.xoaNhaCungCap SQLException: " + msg);
+            return false;
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            lastErrorMessage = e.getMessage();
+            System.err.println("NhaCungCapBUS.xoaNhaCungCap Exception: " + e.getMessage());
             return false;
         }
+    }
+
+    public String getLastErrorMessage() {
+        return lastErrorMessage;
     }
 }

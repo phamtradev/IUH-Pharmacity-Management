@@ -34,6 +34,9 @@ public class NhaCungCapDAO implements DAOInterface<NhaCungCap, String> {
     private final String SQL_TIM_THEO_TEXT = 
             "SELECT * FROM NhaCungCap WHERE tenNhaCungCap LIKE ? OR email LIKE ? OR soDienThoai LIKE ?";
     
+    private final String SQL_TIM_THEO_MASOTHUE =
+            "SELECT * FROM NhaCungCap WHERE maSoThue = ?";
+    
     private final String SQL_LAY_MA_CUOI = 
             "SELECT TOP 1 maNhaCungCap FROM NhaCungCap ORDER BY maNhaCungCap DESC";
     
@@ -169,6 +172,25 @@ public class NhaCungCapDAO implements DAOInterface<NhaCungCap, String> {
         return null;
     }
 
+    public NhaCungCap timTheoMaSoThue(String maSoThue) {
+        if (maSoThue == null || maSoThue.trim().isEmpty()) {
+            return null;
+        }
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(SQL_TIM_THEO_MASOTHUE)) {
+            
+            stmt.setString(1, maSoThue.trim());
+            ResultSet rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                return mapResultSetToNhaCungCap(rs);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public List<NhaCungCap> timTheoText(String text) {
         List<NhaCungCap> danhSachNhaCungCap = new ArrayList<>();
         
@@ -191,15 +213,12 @@ public class NhaCungCapDAO implements DAOInterface<NhaCungCap, String> {
         return danhSachNhaCungCap;
     }
     
-    public boolean delete(String maNhaCungCap) {
+    public boolean delete(String maNhaCungCap) throws SQLException {
         try (Connection con = ConnectDB.getConnection();
              PreparedStatement stmt = con.prepareStatement(SQL_XOA)) {
             
             stmt.setString(1, maNhaCungCap);
             return stmt.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
         }
     }
 

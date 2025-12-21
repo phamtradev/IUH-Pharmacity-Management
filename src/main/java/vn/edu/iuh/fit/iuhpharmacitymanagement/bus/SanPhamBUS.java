@@ -2,6 +2,8 @@ package vn.edu.iuh.fit.iuhpharmacitymanagement.bus;
 
 import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.SanPhamDAO;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.DonViTinhDAO;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.NhaCungCapBUS;
+import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhaCungCap;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.SanPham;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.constant.LoaiSanPham;
 
@@ -11,6 +13,7 @@ import java.util.Optional;
 public class SanPhamBUS {
 
     private final SanPhamDAO sanPhamDAO;
+    private final NhaCungCapBUS nhaCungCapBUS = new NhaCungCapBUS();
 
     public SanPhamBUS(SanPhamDAO sanPhamDAO) {
         this.sanPhamDAO = sanPhamDAO;
@@ -23,6 +26,80 @@ public class SanPhamBUS {
 
     public boolean capNhatSanPham(SanPham sanPham) {
         return sanPhamDAO.update(sanPham);
+    }
+    
+    private String lastErrorMessage;
+
+    public boolean xoaSanPham(String maSanPham) {
+        try {
+            // Check product exists
+            Optional<SanPham> spOpt = sanPhamDAO.findById(maSanPham);
+            if (spOpt.isEmpty()) {
+                lastErrorMessage = "Không tìm thấy sản phẩm với mã: " + maSanPham;
+                return false;
+            }
+            SanPham sp = spOpt.get();
+
+            // Only allow delete if product is not active (hoatDong == false)
+            if (sp.isHoatDong()) {
+                lastErrorMessage = "Chỉ xóa được khi sản phẩm ở trạng thái 'Ngưng bán'. Vui lòng đưa sản phẩm về trạng thái 'Ngưng bán' trước khi xóa.";
+                return false;
+            }
+
+            // Check if product already linked to any supplier (via soDangKy)
+            String soDangKy = sp.getSoDangKy();
+            if (soDangKy != null && !soDangKy.trim().isEmpty()) {
+                List<String> danhSachMaNCC = sanPhamDAO.getMaNhaCungCapBySoDangKy(soDangKy);
+                if (danhSachMaNCC != null && !danhSachMaNCC.isEmpty()) {
+                    // Build friendly list of supplier names (limit to first few)
+                    StringBuilder names = new StringBuilder();
+                    int limit = Math.min(danhSachMaNCC.size(), 3);
+                    for (int i = 0; i < limit; i++) {
+                        try {
+                            NhaCungCap ncc = nhaCungCapBUS.layNhaCungCapTheoMa(danhSachMaNCC.get(i));
+                            if (ncc != null) {
+                                if (names.length() > 0) names.append(", ");
+                                names.append(ncc.getTenNhaCungCap()).append(" (").append(ncc.getMaNhaCungCap()).append(")");
+                            }
+                        } catch (Exception ex) {
+                            if (names.length() > 0) names.append(", ");
+                            names.append(danhSachMaNCC.get(i));
+                        }
+                    }
+                    if (danhSachMaNCC.size() > limit) {
+                        names.append(", ...");
+                    }
+                    lastErrorMessage = "Sản phẩm đã được nhập bởi nhà cung cấp: " + names.toString() + ". Vui lòng xóa các nhập liên quan trước khi xóa sản phẩm.";
+                    return false;
+                }
+            }
+
+            boolean ok = sanPhamDAO.delete(maSanPham);
+            if (!ok) {
+                lastErrorMessage = "Xóa không thành công (không có bản ghi bị xóa).";
+            } else {
+                lastErrorMessage = null;
+            }
+            return ok;
+        } catch (java.sql.SQLException e) {
+            String msg = e.getMessage() != null ? e.getMessage() : "";
+            if (e.getErrorCode() == 547 || msg.contains("REFERENCE") || msg.contains("REFERENCES")) {
+                // foreign key violation
+                lastErrorMessage = "Không thể xóa sản phẩm vì còn dữ liệu liên quan (đơn hàng / lô hàng / khuyến mãi...). Vui lòng xóa các bản ghi liên quan trước.";
+            } else {
+                lastErrorMessage = "Lỗi khi xóa sản phẩm: " + msg;
+            }
+            System.err.println("SanPhamBUS.xoaSanPham SQLException: " + msg);
+            return false;
+        } catch (Exception e) {
+            lastErrorMessage = e.getMessage();
+            System.err.println("SanPhamBUS.xoaSanPham Exception: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public String getLastErrorMessage() {
+        return lastErrorMessage;
     }
 
     public Optional<SanPham> timSanPhamTheoMa(String maSanPham) {

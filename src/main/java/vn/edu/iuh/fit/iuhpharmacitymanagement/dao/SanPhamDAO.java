@@ -69,6 +69,8 @@ public class SanPhamDAO implements DAOInterface<SanPham, String> {
             "LEFT JOIN DonViTinh dv ON sp.maDonVi = dv.maDonVi " +
             "WHERE sp.soDangKy = ?";
     
+    private final String SQL_XOA = "DELETE FROM SanPham WHERE maSanPham = ?";
+    
     /**
      * SQL: Lấy danh sách Nhà Cung Cấp đã từng nhập sản phẩm có số đăng ký này
      * Logic: SoDangKy → SanPham → LoHang → ChiTietDonNhapHang → DonNhapHang → NhaCungCap
@@ -154,6 +156,20 @@ public class SanPhamDAO implements DAOInterface<SanPham, String> {
             e.printStackTrace();
         }
         return Optional.empty();
+    }
+
+    /**
+     * Xóa sản phẩm theo mã.
+     * @param maSanPham Mã sản phẩm
+     * @return true nếu xóa thành công
+     * @throws SQLException để tầng trên (BUS) xử lý (ví dụ FK vi phạm)
+     */
+    public boolean delete(String maSanPham) throws SQLException {
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(SQL_XOA)) {
+            stmt.setString(1, maSanPham);
+            return stmt.executeUpdate() > 0;
+        }
     }
 
     @Override

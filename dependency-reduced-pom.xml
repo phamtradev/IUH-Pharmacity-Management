@@ -64,6 +64,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.target>21</maven.compiler.target>
     <exec.mainClass>vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.MainApplication</exec.mainClass>
+    <jpackage.icon>${project.basedir}/src/main/resources/img/iuh.ico</jpackage.icon>
     <maven.compiler.source>21</maven.compiler.source>
   </properties>
 </project>

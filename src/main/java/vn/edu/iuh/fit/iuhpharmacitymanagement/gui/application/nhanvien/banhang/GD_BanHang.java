@@ -400,9 +400,13 @@ public class GD_BanHang extends javax.swing.JPanel {
         if (sanPhamOpt.isPresent()) {
             SanPham sanPham = sanPhamOpt.get();
 
-            if (!sanPham.isHoatDong()) {
+            // Nếu sản phẩm đã ngưng bán hoặc không còn hàng -> thông báo chung
+            LoHangBUS loHangBUS = new LoHangBUS();
+            List<LoHang> danhSachLoHangGoc = loHangBUS.getLoHangBySanPham(sanPham);
+            int tongTonKho = danhSachLoHangGoc.stream().filter(lh -> lh.getTonKho() > 0 && lh.isTrangThai()).mapToInt(LoHang::getTonKho).sum();
+            if (!sanPham.isHoatDong() || tongTonKho <= 0) {
                 Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER,
-                        "Sản phẩm '" + sanPham.getTenSanPham() + "' đã ngưng bán");
+                        "Sản phẩm '" + sanPham.getTenSanPham() + "' đã ngưng bán hoặc hết hàng");
                 txtTimSanPham.setText("");
                 txtTimSanPham.requestFocus();
                 return;

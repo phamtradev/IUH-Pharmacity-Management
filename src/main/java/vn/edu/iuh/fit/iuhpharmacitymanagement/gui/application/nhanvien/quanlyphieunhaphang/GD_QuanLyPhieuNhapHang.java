@@ -867,6 +867,75 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
                             if (nhaCungCap.getSoDienThoai() != null) {
                                 txtSearchSupplier.setText(nhaCungCap.getSoDienThoai());
                             }
+                            
+                            // Nếu NCC chưa có mã (chưa tồn tại trong DB) -> hành vi theo mã số thuế:
+                            // - Nếu có mã số thuế trong Excel: tìm theo mã số thuế; nếu tồn tại -> dùng NCC đó; nếu không -> tạo mới.
+                            // - Nếu không có mã số thuế: tạo NCC mới trực tiếp (không dò theo SĐT/tên/email để tránh gán nhầm NCC cũ).
+                            if (nhaCungCapHienTai.getMaNhaCungCap() == null) {
+                                try {
+                                    String tax = nhaCungCapHienTai.getMaSoThue();
+                                    if (tax != null && !tax.trim().isEmpty()) {
+                                        // Tìm theo mã số thuế
+                                        vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhaCungCap foundByTax =
+                                                nhaCungCapBUS.layNhaCungCapTheoMaSoThue(tax.trim());
+                                        if (foundByTax != null) {
+                                            nhaCungCapHienTai = foundByTax;
+                                            txtSupplierId.setText(foundByTax.getMaNhaCungCap());
+                                            txtSupplierName.setText(foundByTax.getTenNhaCungCap());
+                                        } else {
+                                            // Tạo mới vì mã số thuế chưa tồn tại
+                                            boolean created = nhaCungCapBUS.taoNhaCungCap(nhaCungCapHienTai);
+                                            if (!created) {
+                                                Notifications.getInstance().show(Notifications.Type.ERROR,
+                                                        Notifications.Location.TOP_CENTER,
+                                                        "Không thể tạo nhà cung cấp tự động từ Excel. Vui lòng kiểm tra dữ liệu NCC trong file.");
+                                                return;
+                                            }
+                                            // Lấy lại NCC vừa tạo, ưu tiên theo mã số thuế
+                                            vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhaCungCap saved = nhaCungCapBUS.layNhaCungCapTheoMaSoThue(tax.trim());
+                                            if (saved == null) {
+                                                saved = nhaCungCapBUS.layNhaCungCapTheoTen(nhaCungCapHienTai.getTenNhaCungCap());
+                                            }
+                                            if (saved != null) {
+                                                nhaCungCapHienTai = saved;
+                                                txtSupplierId.setText(saved.getMaNhaCungCap());
+                                                txtSupplierName.setText(saved.getTenNhaCungCap());
+                                            } else {
+                                                Notifications.getInstance().show(Notifications.Type.ERROR,
+                                                        Notifications.Location.TOP_CENTER,
+                                                        "Tạo nhà cung cấp thành công nhưng không thể đọc lại. Vui lòng kiểm tra DB.");
+                                                return;
+                                            }
+                                        }
+                                    } else {
+                                        // Không có mã số thuế -> luôn tạo mới
+                                        boolean created = nhaCungCapBUS.taoNhaCungCap(nhaCungCapHienTai);
+                                        if (!created) {
+                                            Notifications.getInstance().show(Notifications.Type.ERROR,
+                                                    Notifications.Location.TOP_CENTER,
+                                                    "Không thể tạo nhà cung cấp tự động từ Excel. Vui lòng kiểm tra dữ liệu NCC trong file.");
+                                            return;
+                                        }
+                                        vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhaCungCap saved =
+                                                nhaCungCapBUS.layNhaCungCapTheoTen(nhaCungCapHienTai.getTenNhaCungCap());
+                                        if (saved != null) {
+                                            nhaCungCapHienTai = saved;
+                                            txtSupplierId.setText(saved.getMaNhaCungCap());
+                                            txtSupplierName.setText(saved.getTenNhaCungCap());
+                                        } else {
+                                            Notifications.getInstance().show(Notifications.Type.ERROR,
+                                                    Notifications.Location.TOP_CENTER,
+                                                    "Tạo nhà cung cấp thành công nhưng không thể đọc lại. Vui lòng kiểm tra DB.");
+                                            return;
+                                        }
+                                    }
+                                } catch (Exception ex) {
+                                    Notifications.getInstance().show(Notifications.Type.ERROR,
+                                            Notifications.Location.TOP_CENTER,
+                                            "Lỗi khi tạo nhà cung cấp tự động: " + ex.getMessage());
+                                    return;
+                                }
+                            }
                         }
                     } catch (Exception ex) {
                         errors.append("Lỗi xử lý thông tin nhà cung cấp: ").append(ex.getMessage()).append("\n");
@@ -1212,27 +1281,21 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
 
         NhaCungCap ncc = null;
 
-        if (sdt != null && !sdt.trim().isEmpty()) {
-            ncc = nhaCungCapBUS.layNhaCungCapTheoSoDienThoai(sdt.trim());
-
-            if (ncc != null) {
-                if (tenNCC != null && !tenNCC.trim().isEmpty()
-                        && !tenNCC.trim().equalsIgnoreCase(ncc.getTenNhaCungCap())) {
+        // Nếu có mã số thuế trong Excel -> chỉ tìm theo mã số thuế (ưu tiên)
+        if (maSoThue != null && !maSoThue.trim().isEmpty()) {
+            try {
+                NhaCungCap byTax = nhaCungCapBUS.layNhaCungCapTheoMaSoThue(maSoThue.trim());
+                if (byTax != null) {
+                    return byTax;
                 }
-
-                return ncc;
+            } catch (Exception ex) {
+                // ignore and continue (will create new)
             }
-
-        } else if (tenNCC != null && !tenNCC.trim().isEmpty()) {
-            ncc = nhaCungCapBUS.layNhaCungCapTheoTen(tenNCC.trim());
-
-            if (ncc != null) {
-                return ncc;
-            }
-
-        } else {
-//            throw new Exception("Phải có ít nhất TÊN hoặc SĐT nhà cung cấp!");
         }
+
+        // Nếu không có mã số thuế (hoặc không tìm thấy theo mã số thuế),
+        // KHÔNG tự động map theo SĐT/tên để tránh gán nhầm nhà cung cấp cũ.
+        // Thay vào đó trả về object tạm (chưa lưu) để sau này tạo mới dựa trên thông tin Excel.
 
 //Tạm bỏ qua lỗi
 //        if (sdt != null && !sdt.trim().isEmpty() && !sdt.trim().matches(NhaCungCap.SO_DIEN_THOAI_REGEX)) {
@@ -1434,15 +1497,49 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
                     if (soDangKy != null && !soDangKy.trim().isEmpty()) {
                         boolean coTheNhap = sanPhamBUS.kiemTraNhaCungCapCoTheNhapSoDangKy(soDangKy, nhaCungCapHienTai.getMaNhaCungCap());
                         if (!coTheNhap) {
-                            // Lấy số điện thoại NCC đã nhập để hiển thị
-                            List<String> danhSachSDT = sanPhamDAO.getSoDienThoaiNCCBySoDangKy(soDangKy);
-                            String sdtNCCDaNhap = danhSachSDT != null && !danhSachSDT.isEmpty() ? danhSachSDT.get(0) : "không xác định";
-                            String sdtNCCHienTai = nhaCungCapHienTai.getSoDienThoai() != null ? nhaCungCapHienTai.getSoDienThoai() : "không xác định";
-                            Notifications.getInstance().show(Notifications.Type.ERROR,
-                                    Notifications.Location.TOP_CENTER,
-                                    "Số đăng ký '" + soDangKy + "' đã được nhập bởi nhà cung cấp có số điện thoại: " + sdtNCCDaNhap + ". Bạn đang nhập từ nhà cung cấp có số điện thoại: " + sdtNCCHienTai + ". Không thể nhập từ nhiều nhà cung cấp khác nhau!");
-                            allDetailsValid = false;
-                            continue;
+                            // Kiểm tra thêm bằng mã số thuế nếu có
+                            List<String> danhSachMaNCC = sanPhamDAO.getMaNhaCungCapBySoDangKy(soDangKy);
+                            String maSoThueDaNhap = null;
+                            try {
+                                if (danhSachMaNCC != null && !danhSachMaNCC.isEmpty()) {
+                                    // Lấy mã số thuế của nhà cung cấp đã nhập trước đó (nếu có)
+                                    for (String maNccExist : danhSachMaNCC) {
+                                        try {
+                                            vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhaCungCap nccExist = nhaCungCapBUS.layNhaCungCapTheoMa(maNccExist);
+                                            if (nccExist != null && nccExist.getMaSoThue() != null && !nccExist.getMaSoThue().trim().isEmpty()) {
+                                                maSoThueDaNhap = nccExist.getMaSoThue().trim();
+                                                break;
+                                            }
+                                        } catch (Exception ex) {
+                                            // ignore lookup failures, continue to next
+                                        }
+                                    }
+                                }
+                            } catch (Exception ex) {
+                                // ignore
+                            }
+
+                            String maSoThueHienTai = nhaCungCapHienTai.getMaSoThue() != null ? nhaCungCapHienTai.getMaSoThue().trim() : null;
+                            if (maSoThueDaNhap != null && maSoThueHienTai != null && !maSoThueDaNhap.equals(maSoThueHienTai)) {
+                                // Nếu mã số thuế khác nhau => báo lỗi rõ ràng
+                                Notifications.getInstance().show(Notifications.Type.ERROR,
+                                        Notifications.Location.TOP_CENTER,
+                                        "Số đăng ký '" + soDangKy + "' đã được nhập bởi nhà cung cấp có mã số thuế: " + maSoThueDaNhap
+                                        + ". Bạn đang nhập từ nhà cung cấp có mã số thuế: " + maSoThueHienTai
+                                        + ". Không thể nhập từ nhà cung cấp có mã số thuế khác nhau!");
+                                allDetailsValid = false;
+                                continue;
+                            } else {
+                                // Lấy số điện thoại NCC đã nhập để hiển thị (fallback)
+                                List<String> danhSachSDT = sanPhamDAO.getSoDienThoaiNCCBySoDangKy(soDangKy);
+                                String sdtNCCDaNhap = danhSachSDT != null && !danhSachSDT.isEmpty() ? danhSachSDT.get(0) : "không xác định";
+                                String sdtNCCHienTai = nhaCungCapHienTai.getSoDienThoai() != null ? nhaCungCapHienTai.getSoDienThoai() : "không xác định";
+                                Notifications.getInstance().show(Notifications.Type.ERROR,
+                                        Notifications.Location.TOP_CENTER,
+                                        "Số đăng ký '" + soDangKy + "' đã được nhập bởi nhà cung cấp có số điện thoại: " + sdtNCCDaNhap + ". Bạn đang nhập từ nhà cung cấp có số điện thoại: " + sdtNCCHienTai + ". Không thể nhập từ nhiều nhà cung cấp khác nhau!");
+                                allDetailsValid = false;
+                                continue;
+                            }
                         }
                     }
                 }

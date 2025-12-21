@@ -970,7 +970,13 @@ public class GD_QuanLyNhaCungCap extends javax.swing.JPanel {
                 tableDesign.getModelTable().removeRow(selectedRow);
                 Notifications.getInstance().show(Notifications.Type.SUCCESS, Notifications.Location.TOP_CENTER, 2500, "Đã xóa nhà cung cấp thành công!");
             } else {
-                Notifications.getInstance().show(Notifications.Type.ERROR, Notifications.Location.TOP_CENTER, 3000, "Xóa nhà cung cấp thất bại!");
+                // Hiển thị lỗi chi tiết nếu có
+                String detail = nhaCungCapBUS.getLastErrorMessage();
+                if (detail != null && !detail.trim().isEmpty()) {
+                    Notifications.getInstance().show(Notifications.Type.ERROR, Notifications.Location.TOP_CENTER, 4000, detail);
+                } else {
+                    Notifications.getInstance().show(Notifications.Type.ERROR, Notifications.Location.TOP_CENTER, 3000, "Xóa nhà cung cấp thất bại!");
+                }
             }
         }
     }//GEN-LAST:event_btnXoaActionPerformed
