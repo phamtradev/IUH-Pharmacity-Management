@@ -1442,7 +1442,11 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
 
         // TRƯỜNG HỢP 3: Có giảm giá hóa đơn (có thể kèm giảm giá sản phẩm)
         // → Phải phân bổ tiền giảm hóa đơn theo tỷ lệ giá trị sản phẩm SAU giảm giá sản phẩm
-        if (giamGiaHoaDonPhanBo > 0) {
+        // Lưu ý: chiTiet.getGiamGiaHoaDonPhanBo() có thể đã lưu phần phân bổ cho dòng này.
+        boolean hoaDonCoKhuyenMai = currentDonHang != null
+                && currentDonHang.getKhuyenMai() != null
+                && currentDonHang.getKhuyenMai().getGiamGia() > 0;
+        if (giamGiaHoaDonPhanBo > 0 || hoaDonCoKhuyenMai) {
             // BƯỚC 1: Tính giá trị sản phẩm này SAU giảm giá sản phẩm
             // Ví dụ: Yoosun sau giảm sản phẩm = 21.840
             double donGiaGoc = chiTiet.getDonGia();
@@ -1485,7 +1489,13 @@ public class GD_QuanLyPhieuTraHang extends javax.swing.JPanel {
 
             // BƯỚC 4: Phân bổ giảm giá hóa đơn cho sản phẩm này
             // Ví dụ: Phần giảm của Yoosun = 7.098 × 38.45% ≈ 2.729
-            double giamGiaHoaDonPhanBoMoi = tongGiamGiaHoaDon * tyLe;
+            double giamGiaHoaDonPhanBoMoi;
+            // Nếu chi tiết đã có phần giảm hóa đơn phân bổ (lưu trong DB), dùng trực tiếp
+            if (chiTiet.getGiamGiaHoaDonPhanBo() > 0) {
+                giamGiaHoaDonPhanBoMoi = chiTiet.getGiamGiaHoaDonPhanBo();
+            } else {
+                giamGiaHoaDonPhanBoMoi = tongGiamGiaHoaDon * tyLe;
+            }
 
             // BƯỚC 5: Tính tiền hoàn = giá trị sau giảm sản phẩm - phần giảm hóa đơn được phân bổ
             // Ví dụ: Tiền hoàn = 21.840 - 2.729 = 19.111
