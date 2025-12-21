@@ -85,7 +85,7 @@ jobs:
         run: |
           # Generate ICO from PNG using BMP frames (more compatible with jpackage/WiX)
           choco install imagemagick -y
-          $png = "src/main/resources/img/iuh.png"
+          $png = "src/main/resources/img/iuhlogo.png"
           $ico = "src/main/resources/img/iuh.ico"
           if (Test-Path $png) {
             Write-Host "Generating BMP frames from $png"
