@@ -156,14 +156,14 @@ public class DonViTinhDAO implements DAOInterface<DonViTinh, String> {
             
             if (rs.next()) {
                 String maCuoi = rs.getString("maDonVi");
-                String phanSo = maCuoi.substring(3);
+                String phanSo = maCuoi.substring(2);
                 int soTiepTheo = Integer.parseInt(phanSo) + 1;
-                return String.format("DVT%05d", soTiepTheo);
+                return String.format("DV%05d", soTiepTheo);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return "DVT00001";
+        return "DV00001";
     }
 
     public String getLastMaDonVi() {
