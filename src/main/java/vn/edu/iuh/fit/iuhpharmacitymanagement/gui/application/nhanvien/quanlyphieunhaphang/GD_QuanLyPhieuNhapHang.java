@@ -873,60 +873,121 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
                             // - Nếu không có mã số thuế: tạo NCC mới trực tiếp (không dò theo SĐT/tên/email để tránh gán nhầm NCC cũ).
                             if (nhaCungCapHienTai.getMaNhaCungCap() == null) {
                                 try {
+                                    // Ưu tiên tìm theo mã số thuế nếu có
                                     String tax = nhaCungCapHienTai.getMaSoThue();
                                     if (tax != null && !tax.trim().isEmpty()) {
-                                        // Tìm theo mã số thuế
-                                        vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhaCungCap foundByTax =
-                                                nhaCungCapBUS.layNhaCungCapTheoMaSoThue(tax.trim());
+                                        NhaCungCap foundByTax = nhaCungCapBUS.layNhaCungCapTheoMaSoThue(tax.trim());
                                         if (foundByTax != null) {
                                             nhaCungCapHienTai = foundByTax;
                                             txtSupplierId.setText(foundByTax.getMaNhaCungCap());
                                             txtSupplierName.setText(foundByTax.getTenNhaCungCap());
-                                        } else {
-                                            // Tạo mới vì mã số thuế chưa tồn tại
-                                            boolean created = nhaCungCapBUS.taoNhaCungCap(nhaCungCapHienTai);
-                                            if (!created) {
-                                                Notifications.getInstance().show(Notifications.Type.ERROR,
-                                                        Notifications.Location.TOP_CENTER,
-                                                        "Không thể tạo nhà cung cấp tự động từ Excel. Vui lòng kiểm tra dữ liệu NCC trong file.");
-                                                return;
-                                            }
-                                            // Lấy lại NCC vừa tạo, ưu tiên theo mã số thuế
-                                            vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhaCungCap saved = nhaCungCapBUS.layNhaCungCapTheoMaSoThue(tax.trim());
-                                            if (saved == null) {
-                                                saved = nhaCungCapBUS.layNhaCungCapTheoTen(nhaCungCapHienTai.getTenNhaCungCap());
-                                            }
-                                            if (saved != null) {
-                                                nhaCungCapHienTai = saved;
-                                                txtSupplierId.setText(saved.getMaNhaCungCap());
-                                                txtSupplierName.setText(saved.getTenNhaCungCap());
-                                            } else {
-                                                Notifications.getInstance().show(Notifications.Type.ERROR,
-                                                        Notifications.Location.TOP_CENTER,
-                                                        "Tạo nhà cung cấp thành công nhưng không thể đọc lại. Vui lòng kiểm tra DB.");
-                                                return;
+                                            // skip creation
+                                        }
+                                    }
+
+                                    // Nếu vẫn chưa có NCC, thử tạo với nhiều chiến lược giảm dần trường để tránh constraint
+                                    if (nhaCungCapHienTai.getMaNhaCungCap() == null) {
+                                        java.util.List<NhaCungCap> attempts = new java.util.ArrayList<>();
+                                        attempts.add(nhaCungCapHienTai);
+
+                                        // attempt without email
+                                        if (nhaCungCapHienTai.getEmail() != null && !nhaCungCapHienTai.getEmail().trim().isEmpty()) {
+                                            NhaCungCap noEmail = new NhaCungCap();
+                                            noEmail.setTenNhaCungCap(nhaCungCapHienTai.getTenNhaCungCap());
+                                            noEmail.setDiaChi(nhaCungCapHienTai.getDiaChi());
+                                            noEmail.setSoDienThoai(nhaCungCapHienTai.getSoDienThoai());
+                                            noEmail.setMaSoThue(nhaCungCapHienTai.getMaSoThue());
+                                            attempts.add(noEmail);
+                                        }
+
+                                        // attempt without tax
+                                        if (nhaCungCapHienTai.getMaSoThue() != null && !nhaCungCapHienTai.getMaSoThue().trim().isEmpty()) {
+                                            NhaCungCap noTax = new NhaCungCap();
+                                            noTax.setTenNhaCungCap(nhaCungCapHienTai.getTenNhaCungCap());
+                                            noTax.setDiaChi(nhaCungCapHienTai.getDiaChi());
+                                            noTax.setSoDienThoai(nhaCungCapHienTai.getSoDienThoai());
+                                            noTax.setEmail(nhaCungCapHienTai.getEmail());
+                                            attempts.add(noTax);
+                                        }
+
+                                        // attempt without email & tax
+                                        if ((nhaCungCapHienTai.getEmail() != null && !nhaCungCapHienTai.getEmail().trim().isEmpty())
+                                                || (nhaCungCapHienTai.getMaSoThue() != null && !nhaCungCapHienTai.getMaSoThue().trim().isEmpty())) {
+                                            NhaCungCap minimal = new NhaCungCap();
+                                            minimal.setTenNhaCungCap(nhaCungCapHienTai.getTenNhaCungCap());
+                                            minimal.setDiaChi(nhaCungCapHienTai.getDiaChi());
+                                            minimal.setSoDienThoai(nhaCungCapHienTai.getSoDienThoai());
+                                            attempts.add(minimal);
+                                        }
+
+                                        boolean created = false;
+                                        String lastErr = null;
+                                        for (NhaCungCap attempt : attempts) {
+                                            try {
+                                                boolean ok = nhaCungCapBUS.taoNhaCungCap(attempt);
+                                                lastErr = nhaCungCapBUS.getLastErrorMessage();
+                                                System.out.println("[BUS] Tạo NCC thử với email=" + attempt.getEmail() + " mst=" + attempt.getMaSoThue() + " => " + ok + " err=" + lastErr);
+                                                if (ok) {
+                                                    // đọc lại NCC vừa tạo ưu tiên theo mã số thuế -> email -> tên
+                                                    NhaCungCap saved = null;
+                                                    if (attempt.getMaSoThue() != null && !attempt.getMaSoThue().trim().isEmpty()) {
+                                                        saved = nhaCungCapBUS.layNhaCungCapTheoMaSoThue(attempt.getMaSoThue().trim());
+                                                    }
+                                                    if (saved == null && attempt.getEmail() != null && !attempt.getEmail().trim().isEmpty()) {
+                                                        saved = nhaCungCapBUS.layNhaCungCapTheoEmail(attempt.getEmail().trim());
+                                                    }
+                                                    if (saved == null) {
+                                                        saved = nhaCungCapBUS.layNhaCungCapTheoTen(attempt.getTenNhaCungCap());
+                                                    }
+                                                    if (saved != null) {
+                                                        nhaCungCapHienTai = saved;
+                                                        txtSupplierId.setText(saved.getMaNhaCungCap());
+                                                        txtSupplierName.setText(saved.getTenNhaCungCap());
+                                                        created = true;
+                                                        break;
+                                                    } else {
+                                                        System.out.println("[BUS] Tạo NCC thành công nhưng không đọc lại được. Thử chiến lược khác.");
+                                                    }
+                                                }
+                                            } catch (Exception ex) {
+                                                System.err.println("[BUS] Exception khi tạo NCC: " + ex.getMessage());
+                                                if (lastErr == null) lastErr = ex.getMessage();
                                             }
                                         }
-                                    } else {
-                                        // Không có mã số thuế -> luôn tạo mới
-                                        boolean created = nhaCungCapBUS.taoNhaCungCap(nhaCungCapHienTai);
+
                                         if (!created) {
-                                            Notifications.getInstance().show(Notifications.Type.ERROR,
-                                                    Notifications.Location.TOP_CENTER,
-                                                    "Không thể tạo nhà cung cấp tự động từ Excel. Vui lòng kiểm tra dữ liệu NCC trong file.");
-                                            return;
-                                        }
-                                        vn.edu.iuh.fit.iuhpharmacitymanagement.entity.NhaCungCap saved =
-                                                nhaCungCapBUS.layNhaCungCapTheoTen(nhaCungCapHienTai.getTenNhaCungCap());
-                                        if (saved != null) {
-                                            nhaCungCapHienTai = saved;
-                                            txtSupplierId.setText(saved.getMaNhaCungCap());
-                                            txtSupplierName.setText(saved.getTenNhaCungCap());
-                                        } else {
-                                            Notifications.getInstance().show(Notifications.Type.ERROR,
-                                                    Notifications.Location.TOP_CENTER,
-                                                    "Tạo nhà cung cấp thành công nhưng không thể đọc lại. Vui lòng kiểm tra DB.");
-                                            return;
+                                            // fallback lookup by tax/email/phone
+                                            NhaCungCap foundFallback = null;
+                                            try {
+                                                if (nhaCungCapHienTai.getMaSoThue() != null && !nhaCungCapHienTai.getMaSoThue().trim().isEmpty()) {
+                                                    foundFallback = nhaCungCapBUS.layNhaCungCapTheoMaSoThue(nhaCungCapHienTai.getMaSoThue().trim());
+                                                }
+                                                if (foundFallback == null && nhaCungCapHienTai.getEmail() != null && !nhaCungCapHienTai.getEmail().trim().isEmpty()) {
+                                                    foundFallback = nhaCungCapBUS.layNhaCungCapTheoEmail(nhaCungCapHienTai.getEmail().trim());
+                                                }
+                                                if (foundFallback == null && nhaCungCapHienTai.getSoDienThoai() != null && !nhaCungCapHienTai.getSoDienThoai().trim().isEmpty()) {
+                                                    foundFallback = nhaCungCapBUS.layNhaCungCapTheoSoDienThoai(nhaCungCapHienTai.getSoDienThoai().trim());
+                                                }
+                                            } catch (Exception ex) {
+                                                System.err.println("Fallback lookup error: " + ex.getMessage());
+                                            }
+
+                                            if (foundFallback != null) {
+                                                nhaCungCapHienTai = foundFallback;
+                                                txtSupplierId.setText(foundFallback.getMaNhaCungCap());
+                                                txtSupplierName.setText(foundFallback.getTenNhaCungCap());
+                                            } else {
+                                                String detail = lastErr;
+                                                try { detail = nhaCungCapBUS.getLastErrorMessage(); } catch (Exception ex) { /* ignore */ }
+                                                if (detail == null || detail.trim().isEmpty()) {
+                                                    detail = "Không thể tạo nhà cung cấp tự động từ Excel. Vui lòng kiểm tra quyền/constraint trên DB hoặc dữ liệu NCC trong file. Lỗi: " + (lastErr != null ? lastErr : "unknown");
+                                                }
+                                                Notifications.getInstance().show(Notifications.Type.ERROR,
+                                                        Notifications.Location.TOP_CENTER,
+                                                        detail);
+                                                System.err.println("Failed to create supplier from Excel: " + detail);
+                                                return;
+                                            }
                                         }
                                     }
                                 } catch (Exception ex) {
@@ -1306,28 +1367,17 @@ public class GD_QuanLyPhieuNhapHang extends javax.swing.JPanel {
         }
 
         if (email != null && !email.trim().isEmpty() && !email.trim().matches(NhaCungCap.EMAIL_REGEX)) {
-            throw new Exception("Email không đúng định dạng: " + email);
+            // Nếu email không hợp lệ theo regex hiện tại, không fail toàn bộ import — bỏ email để tạo NCC không gặp constraint
+            System.out.println("Email không hợp lệ từ Excel: '" + email + "'. Sẽ bỏ trường email khi tạo NCC tự động.");
+            email = null;
         }
 
         if (email != null && !email.trim().isEmpty()) {
             NhaCungCap nccTrungEmail = nhaCungCapBUS.layNhaCungCapTheoEmail(email.trim());
             if (nccTrungEmail != null) {
-                // Kiểm tra xem có phải cùng một nhà cung cấp không (theo SĐT hoặc tên)
-                boolean laCungNCC = false;
-                if (sdt != null && !sdt.trim().isEmpty()
-                        && nccTrungEmail.getSoDienThoai() != null
-                        && nccTrungEmail.getSoDienThoai().equals(sdt.trim())) {
-                    laCungNCC = true;
-                } else if (tenNCC != null && !tenNCC.trim().isEmpty()
-                        && nccTrungEmail.getTenNhaCungCap() != null
-                        && nccTrungEmail.getTenNhaCungCap().equalsIgnoreCase(tenNCC.trim())) {
-                    laCungNCC = true;
-                }
-
-                if (!laCungNCC) {
-                    throw new Exception("Email '" + email.trim() + "' đã được sử dụng bởi nhà cung cấp khác: "
-                            + nccTrungEmail.getTenNhaCungCap() + " (" + nccTrungEmail.getMaNhaCungCap() + ")");
-                }
+                // Nếu email đã tồn tại, dùng nhà cung cấp đó thay vì cố tạo mới (tránh duplicate key)
+                System.out.println("Email '" + email.trim() + "' đã tồn tại trong DB. Sử dụng NCC hiện có: " + nccTrungEmail.getMaNhaCungCap());
+                return nccTrungEmail;
             }
         }
 

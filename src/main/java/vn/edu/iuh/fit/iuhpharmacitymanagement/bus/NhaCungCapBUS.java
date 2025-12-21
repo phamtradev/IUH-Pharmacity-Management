@@ -14,9 +14,21 @@ public class NhaCungCapBUS {
     
     public boolean taoNhaCungCap(NhaCungCap nhaCungCap) {
         try {
-            return nhaCungCapDAO.insert(nhaCungCap);
+            boolean ok = nhaCungCapDAO.insert(nhaCungCap);
+            if (!ok) {
+                lastErrorMessage = "Không thể tạo nhà cung cấp (insert trả về false)"; // fallback
+            } else {
+                lastErrorMessage = null;
+            }
+            return ok;
+        } catch (RuntimeException e) {
+            // Capture detailed SQL error message from DAO
+            lastErrorMessage = e.getMessage();
+            System.err.println("NhaCungCapBUS.taoNhaCungCap error: " + e.getMessage());
+            return false;
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            lastErrorMessage = e.getMessage();
+            System.err.println("NhaCungCapBUS.taoNhaCungCap unexpected error: " + e.getMessage());
             return false;
         }
     }

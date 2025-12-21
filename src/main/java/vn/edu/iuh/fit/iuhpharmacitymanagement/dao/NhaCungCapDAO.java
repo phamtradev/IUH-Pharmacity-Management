@@ -47,27 +47,26 @@ public class NhaCungCapDAO implements DAOInterface<NhaCungCap, String> {
     public boolean insert(NhaCungCap nhaCungCap) {
         try (Connection con = ConnectDB.getConnection();
              PreparedStatement stmt = con.prepareStatement(SQL_THEM)) {
-            
+
             if (nhaCungCap.getMaNhaCungCap() == null || nhaCungCap.getMaNhaCungCap().trim().isEmpty()) {
                 try {
                     nhaCungCap.setMaNhaCungCap(taoMaNhaCungCap());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    return false;
+                } catch (Exception ex) {
+                    throw new RuntimeException("Không thể tạo mã NCC tự động: " + ex.getMessage(), ex);
                 }
             }
-            
+
             stmt.setString(1, nhaCungCap.getMaNhaCungCap());
             stmt.setString(2, nhaCungCap.getTenNhaCungCap());
             stmt.setString(3, nhaCungCap.getDiaChi());
             stmt.setString(4, nhaCungCap.getSoDienThoai());
             stmt.setString(5, nhaCungCap.getEmail());
             stmt.setString(6, nhaCungCap.getMaSoThue());
-            
+
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
+            // Rethrow as runtime so callers (BUS) can capture detailed message
+            throw new RuntimeException(e.getMessage(), e);
         }
     }
 
