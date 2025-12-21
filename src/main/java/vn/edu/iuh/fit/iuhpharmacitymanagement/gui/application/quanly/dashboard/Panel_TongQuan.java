@@ -10,13 +10,11 @@ import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.DonHangBUS;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.DonNhapHangBUS;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.bus.DonTraHangBUS;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.dao.ChiTietDonHangDAO.ProductSalesSummary;
-import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.ChiTietDonHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonNhapHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.entity.DonTraHang;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.gui.application.barchart.ModelChart;
 import vn.edu.iuh.fit.iuhpharmacitymanagement.util.DinhDangSo;
-import vn.edu.iuh.fit.iuhpharmacitymanagement.util.ResizeImage;
 
 import java.awt.Color;
 import java.time.LocalDate;
@@ -40,7 +38,6 @@ public class Panel_TongQuan extends javax.swing.JPanel {
     
     // Cache dữ liệu để tránh load lại nhiều lần
     private List<DonHang> cachedAllOrders = null;
-    private List<ChiTietDonHang> cachedAllOrderDetails = null;
     private boolean isDataLoaded = false;
 
     public Panel_TongQuan() {
@@ -66,7 +63,6 @@ public class Panel_TongQuan extends javax.swing.JPanel {
             try {
                 // Load dữ liệu đơn hàng và chi tiết đơn hàng một lần
                 cachedAllOrders = donHangBUS.layTatCaDonHang();
-                cachedAllOrderDetails = chiTietDonHangBUS.layTatCaChiTietDonHang();
                 isDataLoaded = true;
                 
                 // Sau khi load xong, cập nhật lại chart nếu đã được khởi tạo
@@ -146,7 +142,8 @@ public class Panel_TongQuan extends javax.swing.JPanel {
         if (currentChartType.equals("Doanh thu")) {
             chart.addLegend("Doanh thu", new Color(135, 189, 245));
         } else {
-            chart.addLegend("Số lượng sản phẩm", new Color(245, 189, 135));
+            // Mismatch: product chart data uses revenue, nên hiển thị 'Doanh thu' thay vì 'Số lượng sản phẩm'
+            chart.addLegend("Doanh thu", new Color(245, 189, 135));
         }
     }
 
