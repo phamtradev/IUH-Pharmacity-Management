@@ -219,6 +219,9 @@ public class Panel_ThongKeTheoNam extends javax.swing.JPanel {
         jPanel1.add(headerPanel, java.awt.BorderLayout.NORTH);
 
         pnContent.setLayout(new java.awt.BorderLayout());
+        
+        // Thêm chart vào vùng nội dung chính
+        pnContent.add(chart, java.awt.BorderLayout.CENTER);
 
         jPanel2.setBackground(new java.awt.Color(255, 255, 255));
         jPanel2.setBorder(javax.swing.BorderFactory.createMatteBorder(2, 0, 2, 0, new java.awt.Color(232, 232, 232)));

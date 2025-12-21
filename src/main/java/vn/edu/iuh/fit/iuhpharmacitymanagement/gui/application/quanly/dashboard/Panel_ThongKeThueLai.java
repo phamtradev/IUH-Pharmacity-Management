@@ -330,6 +330,7 @@ public class Panel_ThongKeThueLai extends javax.swing.JPanel {
         loadDataByDateRange(from, to, periodDesc);
     }
 
+
     /**
      * Load data theo khoảng thời gian tùy chỉnh
      */
@@ -361,6 +362,95 @@ public class Panel_ThongKeThueLai extends javax.swing.JPanel {
                     cardTySuat.updateDescription(periodDesc);
                 });
 
+                return null;
+            }
+            
+            @Override
+            protected void done() {
+                // Nếu user đang ở chế độ "Theo năm" thì load chart theo năm sau khi cập nhật các cards
+                if ("Theo năm".equals(currentDateMode)) {
+                    loadChartByYear(from, to);
+                } else {
+                    // Ngược lại, load các chart mặc định
+                    loadDataCharts();
+                }
+            }
+        };
+        worker.execute();
+    }
+
+    /**
+     * Load chart data aggregated by year for a custom date range.
+     */
+    private void loadChartByYear(LocalDate from, LocalDate to) {
+        chartThue.clear();
+        chartLai.clear();
+
+        javax.swing.SwingWorker<Void, Void> worker = new javax.swing.SwingWorker<Void, Void>() {
+            @Override
+            protected Void doInBackground() throws Exception {
+                java.util.Map<String, java.util.Map<String, Double>> thueData = new java.util.LinkedHashMap<>();
+                java.util.Map<String, java.util.Map<String, Double>> laiData = new java.util.LinkedHashMap<>();
+
+                int startYear = from.getYear();
+                int endYear = to.getYear();
+                for (int year = startYear; year <= endYear; year++) {
+                    LocalDate yFrom = LocalDate.of(year, 1, 1);
+                    LocalDate yTo = LocalDate.of(year, 12, 31);
+                    // clamp to requested range
+                    if (yFrom.isBefore(from)) yFrom = from;
+                    if (yTo.isAfter(to)) yTo = to;
+
+                    String label = String.valueOf(year);
+                    java.util.Map<String, Double> yearThue = new java.util.HashMap<>();
+                    yearThue.put("thueThu", thongKeService.tinhTongThueThu(yFrom, yTo));
+                    yearThue.put("thueTra", thongKeService.tinhTongThueTra(yFrom, yTo));
+                    yearThue.put("thueRong", thongKeService.tinhThueRong(yFrom, yTo));
+                    thueData.put(label, yearThue);
+
+                    java.util.Map<String, Double> yearLai = new java.util.HashMap<>();
+                    yearLai.put("doanhThu", thongKeService.tinhTongDoanhThu(yFrom, yTo));
+                    yearLai.put("giaVon", thongKeService.tinhTongGiaVon(yFrom, yTo));
+                    yearLai.put("loiNhuan", thongKeService.tinhTongLoiNhuan(yFrom, yTo));
+                    laiData.put(label, yearLai);
+                }
+
+                javax.swing.SwingUtilities.invokeLater(() -> {
+                    chartThue.clearLegends();
+                    chartThue.addLegend("Thuế thu", new Color(76, 175, 80));
+                    chartThue.addLegend("Thuế trả", new Color(244, 67, 54));
+                    chartThue.addLegend("Thuế ròng", new Color(33, 150, 243));
+
+                    chartLai.clearLegends();
+                    chartLai.addLegend("Doanh thu", new Color(76, 175, 80));
+                    chartLai.addLegend("Giá vốn", new Color(244, 67, 54));
+                    chartLai.addLegend("Lợi nhuận", new Color(33, 150, 243));
+
+                    for (java.util.Map.Entry<String, java.util.Map<String, Double>> entry : thueData.entrySet()) {
+                        String label = entry.getKey();
+                        java.util.Map<String, Double> values = entry.getValue();
+                        chartThue.addData(new ModelChart(label,
+                                new double[]{
+                                    values.getOrDefault("thueThu", 0.0),
+                                    values.getOrDefault("thueTra", 0.0),
+                                    values.getOrDefault("thueRong", 0.0)
+                                }));
+                    }
+
+                    for (java.util.Map.Entry<String, java.util.Map<String, Double>> entry : laiData.entrySet()) {
+                        String label = entry.getKey();
+                        java.util.Map<String, Double> values = entry.getValue();
+                        chartLai.addData(new ModelChart(label,
+                                new double[]{
+                                    values.getOrDefault("doanhThu", 0.0),
+                                    values.getOrDefault("giaVon", 0.0),
+                                    values.getOrDefault("loiNhuan", 0.0)
+                                }));
+                    }
+
+                    chartThue.start();
+                    chartLai.start();
+                });
                 return null;
             }
         };
